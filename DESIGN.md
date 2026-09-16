@@ -87,12 +87,12 @@ NAV and Dex tape disagree >2%.
 
 ## Website
 
-`web/` — Next.js + viem, no private keys. HUD: Oxanium, Syne, cyan/magenta
-void, starfield, pack-power XP bar, Gen-0 curator avatar, forge bay.
+`web/` — Next.js + viem, no private keys. Quiet dark UI: Instrument Serif + Outfit.
+HOODX is the platform. $696X is the first index, with 696_eth’s picture on the home card.
 
 | Route | |
 |---|---|
-| `/` | $696X card + forge |
+| `/` | HOODX home · featured $696X · create |
 | `/i/696x` | join / leave / book / curate |
 | `/i/[slug]` | any index |
 | `/create` | pick coins, set fee, mint, copy link |

@@ -258,20 +258,20 @@ export function VaultDesk({
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.22em] uppercase text-[var(--cyan)]">
-            {isGen0 ? "ape station · gen-0" : `ape station · /${slug}`}
+          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.18em] text-[var(--dim)]">
+            {isGen0 ? "Mint · first index" : `Mint · /${slug}`}
           </p>
-          <h1 className="mt-1 font-[family-name:var(--font-hud)] text-4xl leading-none tracking-wider sm:text-5xl">
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-none sm:text-5xl">
             ${token}
           </h1>
-          <p className="mt-2 max-w-xl text-[15px] leading-snug text-[var(--dim)]">
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[var(--dim)]">
             {isGen0
-              ? "Whole pack, one bag. ETH in, ETH out. Sleeves under $10 stay in ETH so the tail is never dust."
-              : "A shared meme basket. Ape ETH, get the pack, creator takes a cut on volume."}
+              ? "ETH in, one token out. Sleeves under $10 stay in ETH so the tail is never dust."
+              : "A shared basket. Send ETH, receive the index. The creator takes a cut on volume."}
           </p>
         </div>
         <button type="button" onClick={share} className="ghost rounded-sm px-4 py-2">
-          {copied ? "Copied" : "Drop the link"}
+          {copied ? "Copied" : "Copy link"}
         </button>
       </div>
 
@@ -302,7 +302,7 @@ export function VaultDesk({
         <p className="holo mt-5 rounded-lg px-4 py-3 text-sm text-[var(--dim)]">
           {isGen0
             ? "Factory is not deployed yet. This is the $200 696X book. Mint wires up when the vault address is set."
-            : "Unknown slug, or factory not live. Forge a basket from /create."}
+            : "Unknown slug, or factory not live. Create a basket from /create."}
         </p>
       )}
       {paused && (
@@ -312,22 +312,22 @@ export function VaultDesk({
       )}
 
       <section className="mt-8 grid gap-4 md:grid-cols-2">
-        <div className="holo rounded-2xl p-5">
-          <h2 className="relative z-10 font-[family-name:var(--font-hud)] text-2xl tracking-wider">Ape in</h2>
-          <p className="relative z-10 mt-1 text-sm text-[var(--dim)]">
+        <div className="holo rounded-xl p-5">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl">Join</h2>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--dim)]">
             Send ETH. Wrap, take {(feeBps / 100).toFixed(2)}%, mint ${token}. First mint ≥ {minFirst} ETH.
             Later ≥ {MIN_DEPOSIT_ETH} ETH.
           </p>
-          <label className="relative z-10 mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
+          <label className="mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
             ETH
           </label>
           <input
             value={joinAmt}
             onChange={(e) => setJoinAmt(e.target.value)}
             inputMode="decimal"
-            className="field relative z-10 mt-1 text-lg tabular"
+            className="field mt-1 text-lg tabular"
           />
-          <div className="relative z-10 mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {(isGen0 ? ["0.08", "0.02", "0.05", "0.2"] : ["0.02", "0.05", "0.1", "0.2"]).map((v) => (
               <button
                 key={v}
@@ -339,7 +339,7 @@ export function VaultDesk({
               </button>
             ))}
           </div>
-          <dl className="relative z-10 mt-4 grid grid-cols-2 gap-2 text-sm">
+          <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
             <div>
               <dt className="text-[var(--dim)]">You receive</dt>
               <dd className="font-[family-name:var(--font-mono)] tabular">
@@ -354,7 +354,7 @@ export function VaultDesk({
             </div>
           </dl>
           {joinTooSmall && (
-            <p className="relative z-10 mt-2 text-sm text-[var(--gold)]">
+            <p className="mt-2 text-sm text-[var(--gold)]">
               Minimum {onchainSupply === 0n ? "first deposit" : "join"} is {minJoin} ETH.
             </p>
           )}
@@ -362,40 +362,40 @@ export function VaultDesk({
             type="button"
             disabled={!live || !isConnected || wrongChain || busy || joinWei === 0n || joinTooSmall || paused}
             onClick={() => void onJoin()}
-            className="ape relative z-10 mt-5 w-full rounded-sm px-4 py-3 text-sm disabled:opacity-40"
+            className="ape mt-5 w-full rounded-sm px-4 py-3 text-sm disabled:opacity-40"
           >
-            {!live ? "Vault not live" : busy ? "Confirm in wallet…" : `Ape into ${token}`}
+            {!live ? "Vault not live" : busy ? "Confirm in wallet…" : `Join ${token}`}
           </button>
         </div>
 
-        <div className="holo rounded-2xl p-5">
-          <h2 className="relative z-10 font-[family-name:var(--font-hud)] text-2xl tracking-wider">Leave</h2>
-          <p className="relative z-10 mt-1 text-sm text-[var(--dim)]">
+        <div className="holo rounded-xl p-5">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl">Leave</h2>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--dim)]">
             Burn ${token}, receive ETH from the cash buffer. No token airdrop. Redeem fee is 0%.
           </p>
-          <p className="relative z-10 mt-3 font-[family-name:var(--font-mono)] text-sm tabular text-[var(--dim)]">
-            Your {token} {snap ? fmtEth(snap.userShares) : isConnected ? "…" : "jack in to see"}
+          <p className="mt-3 font-[family-name:var(--font-mono)] text-sm tabular text-[var(--dim)]">
+            Your {token} {snap ? fmtEth(snap.userShares) : isConnected ? "…" : "connect to see"}
             {live && snap && snap.buffer > 0n ? ` · buffer ${fmtEth(snap.buffer)}` : ""}
           </p>
-          <label className="relative z-10 mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
+          <label className="mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
             {token} to burn
           </label>
           <input
             value={leaveAmt}
             onChange={(e) => setLeaveAmt(e.target.value)}
             inputMode="decimal"
-            className="field relative z-10 mt-1 text-lg tabular"
+            className="field mt-1 text-lg tabular"
           />
           {snap && snap.userShares > 0n && (
             <button
               type="button"
               onClick={() => setLeaveAmt(formatEther(snap.userShares))}
-              className="relative z-10 mt-2 font-[family-name:var(--font-mono)] text-xs underline"
+              className="mt-2 font-[family-name:var(--font-mono)] text-xs underline"
             >
               Max
             </button>
           )}
-          <dl className="relative z-10 mt-4 grid grid-cols-2 gap-2 text-sm">
+          <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
             <div>
               <dt className="text-[var(--dim)]">You receive</dt>
               <dd className="font-[family-name:var(--font-mono)] tabular">
@@ -415,7 +415,7 @@ export function VaultDesk({
               !live || !isConnected || wrongChain || busy || leaveWei === 0n || paused || canLeave === false
             }
             onClick={() => void onLeave()}
-            className="ghost relative z-10 mt-5 w-full rounded-sm px-4 py-3 disabled:opacity-40"
+            className="ghost mt-5 w-full rounded-sm px-4 py-3 disabled:opacity-40"
           >
             {!live ? "Vault not live" : busy ? "Confirm in wallet…" : "Redeem to ETH"}
           </button>
@@ -435,7 +435,7 @@ export function VaultDesk({
       {book && (
         <section className="mt-12">
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-hud)] text-3xl tracking-wider">The pack</h2>
+            <h2 className="font-[family-name:var(--font-display)] text-3xl">Holdings</h2>
             <p className="max-w-md text-sm text-[var(--dim)]">
               Names under {fmtUsd(MIN_SLEEVE_USD, 0)} park in WETH until NAV grows.
               {isGen0 && (
@@ -448,8 +448,8 @@ export function VaultDesk({
               )}
             </p>
           </div>
-          <div className="holo mt-4 overflow-x-auto rounded-2xl">
-            <table className="relative z-10 w-full min-w-[640px] text-left text-sm">
+          <div className="holo mt-4 overflow-x-auto rounded-xl">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
                 <tr>
                   <th className="px-4 py-3">Name</th>
@@ -463,7 +463,7 @@ export function VaultDesk({
                   <tr key={s.id} className="border-t border-[var(--line)]">
                     <td className="px-4 py-2.5 font-medium">{s.symbol || s.id}</td>
                     <td className="px-4 py-2.5">
-                      <span className="rounded-sm border border-[var(--cyan)]/40 px-2 py-0.5 text-[12px] text-[var(--cyan)]">
+                      <span className="rounded-sm border border-[var(--line)] px-2 py-0.5 text-[12px] text-[var(--paper)]">
                         Held
                       </span>
                     </td>
@@ -525,11 +525,11 @@ export function VaultDesk({
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
     <div className="holo rounded-xl px-4 py-3">
-      <p className="relative z-10 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
+      <p className="relative font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
         {label}
       </p>
-      <p className="relative z-10 mt-1 font-[family-name:var(--font-hud)] text-2xl leading-none">{value}</p>
-      <p className="relative z-10 mt-1 text-xs text-[var(--dim)]">{hint}</p>
+      <p className="relative mt-1 font-[family-name:var(--font-display)] text-2xl leading-none">{value}</p>
+      <p className="relative mt-1 text-xs text-[var(--dim)]">{hint}</p>
     </div>
   );
 }

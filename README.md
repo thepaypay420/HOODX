@@ -1,12 +1,10 @@
 # HOODX
 
-Build your own meme index. Share it. Earn a cut when friends ape in.
+Build a meme index. Share it. Earn a cut.
 
-**$696X** is Gen-0 — [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one bag. Anyone else forges a pack, drops `/i/{slug}`, and takes a cut on ape-ins.
+HOODX is a factory for baskets on Robinhood Chain **4663**. Anyone mints an index, drops `/i/{slug}`, and takes a cut on joins. **$696X** is the first index — [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one bag.
 
-Private. Robinhood Chain **4663**. Look-only until you deploy.
-
-> Don’t pick one coin. Launch a basket. DYOR.
+Private. Look-only until you deploy. DYOR.
 
 ## Product
 
@@ -39,10 +37,10 @@ npm run dev                  # http://127.0.0.1:3100
 
 | Route | |
 |---|---|
-| `/` | $696X card + forge |
-| `/i/696x` | curator card, add/remove, ape / leave |
+| `/` | HOODX home · featured $696X · create |
+| `/i/696x` | first index: curator, add/remove, join / leave |
 | `/i/[slug]` | any index |
-| `/create` | forge a pack |
+| `/create` | mint a new index |
 
 No private keys on Vercel.
 

@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --void: #03050c;
-  --hud: #07101c;
-  --cyan: #5ef2ff;
-  --mag: #ff2bd6;
-  --gold: #f4c14e;
-  --lime: #b8ff6a;
-  --dim: #7d8ea3;
-  --line: rgba(94, 242, 255, 0.22);
-  --danger: #ff5a7a;
+  --void: #0b0b0a;
+  --hud: #121211;
+  --cyan: #c4a574;
+  --mag: #b08968;
+  --gold: #d4bc8c;
+  --lime: #9aaa7a;
+  --dim: #8a867c;
+  --line: rgba(243, 239, 230, 0.12);
+  --danger: #c97b6a;
   --muted: var(--dim);
   --ink: var(--cyan);
-  --paper: var(--void);
+  --paper: #f3efe6;
   --rule: var(--line);
-  --panel: rgba(7, 16, 28, 0.88);
+  --panel: rgba(18, 18, 17, 0.92);
   --hold: var(--cyan);
   --wait: var(--gold);
 }
@@ -22,7 +22,7 @@
 html,
 body {
   background: var(--void);
-  color: #e8f6ff;
+  color: var(--paper);
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -31,100 +31,38 @@ body {
 }
 
 body {
-  font-family: var(--font-display), system-ui, sans-serif;
+  --font-hud: var(--font-ui);
+  font-family: var(--font-ui), system-ui, sans-serif;
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  background-image:
-    linear-gradient(rgba(94, 242, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(94, 242, 255, 0.035) 1px, transparent 1px),
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(94, 242, 255, 0.16), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255, 43, 214, 0.12), transparent 50%);
-  background-size: 48px 48px, 48px 48px, auto, auto;
-}
-
-.scan {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 2px,
-    rgba(0, 0, 0, 0.14) 3px
-  );
-  mix-blend-mode: multiply;
-  opacity: 0.32;
-}
-
-@media (pointer: coarse), (max-width: 720px) {
-  .scan {
-    display: none;
-  }
+  background-image: radial-gradient(ellipse 70% 45% at 50% -10%, rgba(196, 165, 116, 0.08), transparent 55%);
 }
 
 .holo {
-  position: relative;
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(9, 24, 40, 0.92), rgba(4, 10, 18, 0.88));
-  box-shadow:
-    0 0 0 1px rgba(94, 242, 255, 0.08) inset,
-    0 0 40px rgba(94, 242, 255, 0.08);
-  overflow: hidden;
-}
-
-.holo::before {
-  content: "";
-  position: absolute;
-  inset: -40% 40% auto;
-  height: 80%;
-  background: linear-gradient(90deg, transparent, rgba(94, 242, 255, 0.14), transparent);
-  transform: rotate(18deg);
-  animation: sweep 6s linear infinite;
-}
-
-.holo::after {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border: 1px solid rgba(94, 242, 255, 0.08);
-  pointer-events: none;
-}
-
-@keyframes sweep {
-  from {
-    transform: translateX(-80%) rotate(18deg);
-  }
-  to {
-    transform: translateX(180%) rotate(18deg);
-  }
+  background: var(--hud);
 }
 
 .chip {
   border: 1px solid var(--line);
-  background: rgba(94, 242, 255, 0.06);
-  color: #d7fbff;
+  background: transparent;
+  color: var(--paper);
   transition: 140ms ease;
   cursor: pointer;
 }
 
 .chip:hover {
-  border-color: var(--cyan);
-  box-shadow: 0 0 12px rgba(94, 242, 255, 0.25);
-  transform: translateY(-1px);
+  border-color: rgba(196, 165, 116, 0.55);
 }
 
 .chip.on {
-  border-color: var(--cyan);
-  background: rgba(94, 242, 255, 0.16);
-  color: #fff;
-  box-shadow: 0 0 16px rgba(94, 242, 255, 0.18);
+  border-color: rgba(196, 165, 116, 0.7);
+  background: rgba(196, 165, 116, 0.12);
 }
 
 .chip.off {
-  opacity: 0.42;
-  filter: grayscale(0.55);
+  opacity: 0.45;
 }
 
 .chip.pop {
@@ -133,15 +71,14 @@ body {
 
 .chip.pending {
   border-color: var(--gold);
-  box-shadow: 0 0 14px rgba(244, 193, 78, 0.35);
 }
 
 @keyframes pop {
   0% {
-    transform: scale(0.86);
+    transform: scale(0.94);
   }
   60% {
-    transform: scale(1.08);
+    transform: scale(1.04);
   }
   100% {
     transform: scale(1);
@@ -149,13 +86,12 @@ body {
 }
 
 .ape {
-  background: linear-gradient(90deg, #5ef2ff, #b8ff6a);
-  color: #031016;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 0 24px rgba(94, 242, 255, 0.35);
-  font-family: var(--font-hud), sans-serif;
+  background: var(--paper);
+  color: var(--void);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  box-shadow: none;
+  font-family: var(--font-ui), sans-serif;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -163,46 +99,28 @@ body {
 }
 
 .ape:hover {
-  filter: brightness(1.08);
+  background: #fff;
 }
 
 .ape:disabled {
   opacity: 0.35;
-  box-shadow: none;
 }
 
 .ghost {
   border: 1px solid var(--line);
   color: var(--dim);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-family: var(--font-mono), monospace;
-  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 13px;
 }
 
 .ghost:hover {
   border-color: var(--cyan);
-  color: var(--cyan);
+  color: var(--paper);
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
-}
-
-.pulse-ring {
-  animation: ping 2.4s ease-out infinite;
-}
-
-@keyframes ping {
-  0% {
-    box-shadow: 0 0 0 0 rgba(94, 242, 255, 0.45);
-  }
-  70% {
-    box-shadow: 0 0 0 14px rgba(94, 242, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(94, 242, 255, 0);
-  }
 }
 
 .ticker {
@@ -214,10 +132,10 @@ body {
   display: flex;
   width: max-content;
   gap: 2.5rem;
-  animation: marquee 28s linear infinite;
+  animation: marquee 36s linear infinite;
   font-family: var(--font-mono), monospace;
   font-size: 11px;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--dim);
 }
@@ -234,17 +152,16 @@ body {
 .field {
   width: 100%;
   border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.4);
-  color: #e8f6ff;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--paper);
   border-radius: 2px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.75rem;
   outline: none;
   font-family: var(--font-mono), monospace;
 }
 
 .field:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 1px rgba(94, 242, 255, 0.25);
+  border-color: rgba(196, 165, 116, 0.7);
 }
 
 .toast {
@@ -263,6 +180,6 @@ body {
 }
 
 .xp {
-  background: linear-gradient(90deg, var(--mag), var(--cyan));
+  background: var(--cyan);
   height: 100%;
 }

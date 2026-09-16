@@ -25,7 +25,6 @@ export function Forge() {
   const [err, setErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const live = isAddress(FACTORY);
-  const power = Math.round((picked.length / 24) * 100);
   const slugOk = okUserSlug(slug);
   const ready = picked.length >= 2 && name.trim().length >= 2 && symbol.length >= 2 && slugOk;
 
@@ -71,7 +70,7 @@ export function Forge() {
       await publicClient.waitForTransactionReceipt({ hash });
       router.push(`/i/${slug}`);
     } catch (e) {
-      setErr(e instanceof Error ? e.message.slice(0, 220) : "forge failed");
+      setErr(e instanceof Error ? e.message.slice(0, 220) : "mint failed");
     } finally {
       setBusy(false);
     }
@@ -80,22 +79,22 @@ export function Forge() {
   const selected = useMemo(() => CATALOG.filter((c) => picked.includes(c.token)), [picked]);
 
   return (
-    <section id="forge" className="holo rounded-2xl p-5 sm:p-6">
-      <div className="relative z-10">
-        <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.28em] text-[var(--mag)]">
-          FORGE · USER INDEX
+    <section id="create" className="holo rounded-xl p-5 sm:p-7">
+      <div>
+        <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.22em] text-[var(--dim)]">
+          Create
         </p>
-        <h2 className="mt-1 font-[family-name:var(--font-hud)] text-3xl tracking-[0.08em] sm:text-4xl">
-          BUILD YOUR PACK
+        <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl sm:text-4xl">
+          Your index
         </h2>
-        <p className="mt-2 max-w-xl text-sm text-[var(--dim)]">
-          Lock 2–24 RH names. Drop /i/yourslug. Friends ape, you take {(feeBps / 100).toFixed(2)}%,
-          protocol always {(PROTOCOL_FEE_BPS / 100).toFixed(2)}% — same cut on user indexes. Point
-          payout at 696 in this mint, or switch later without giving up the pack.
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--dim)]">
+          Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on every join;
+          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Set a payout address now, or switch it
+          later without giving up the pack.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <Field label="Callsign" value={name} onChange={setName} placeholder="cats of hood" />
+          <Field label="Name" value={name} onChange={setName} placeholder="cats of hood" />
           <Field
             label="Ticker"
             value={symbol}
@@ -140,7 +139,7 @@ export function Forge() {
 
         <div className="mt-4">
           <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-            Optional payout (696’s wallet, or yours). Switch later without moving curation.
+            Optional payout wallet. Switch later without moving curation.
           </p>
           <input
             value={payout}
@@ -152,12 +151,8 @@ export function Forge() {
 
         <div className="mt-5 flex items-center justify-between font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
           <span>
-            Deck {picked.length}/24 · {selected.map((s) => s.symbol).join(" · ") || "empty"}
+            {picked.length}/24 · {selected.map((s) => s.symbol).join(" · ") || "none yet"}
           </span>
-          <span className="text-[var(--cyan)]">POWER {power}%</span>
-        </div>
-        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full bg-[var(--mag)]" style={{ width: `${power}%` }} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -183,7 +178,7 @@ export function Forge() {
         {err && <p className="mt-3 text-sm text-[var(--danger)]">{err}</p>}
         {!live && (
           <p className="mt-3 text-xs text-[var(--dim)]">
-            Factory offline. Save the deck anyway — mint arms when NEXT_PUBLIC_FACTORY_ADDRESS is set.
+            Factory offline. Save the draft — mint arms when the factory address is set.
           </p>
         )}
 
@@ -199,7 +194,7 @@ export function Forge() {
             }}
             className="ghost rounded-sm py-3"
           >
-            {saved ? "Draft locked" : "Save draft"}
+            {saved ? "Saved" : "Save draft"}
           </button>
           <button
             type="button"
@@ -213,7 +208,7 @@ export function Forge() {
             }}
             className="ape rounded-sm py-3 text-sm disabled:opacity-40"
           >
-            {!address ? (connecting ? "Linking…" : "Jack in to forge") : busy ? "Confirm…" : "Mint this index"}
+            {!address ? (connecting ? "Connecting…" : "Connect to mint") : busy ? "Confirm…" : "Mint this index"}
           </button>
         </div>
       </div>

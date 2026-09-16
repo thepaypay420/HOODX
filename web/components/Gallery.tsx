@@ -16,12 +16,10 @@ export function Gallery() {
 
   return (
     <section className="mt-14">
-      <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.28em] text-[var(--mag)]">
-        YOUR DECKS
+      <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.22em] text-[var(--dim)]">
+        Yours
       </p>
-      <h2 className="mt-1 font-[family-name:var(--font-hud)] text-2xl tracking-[0.08em]">
-        FORGED LOCALLY
-      </h2>
+      <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl">Draft indexes</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {packs.map((p) => {
           const names = p.tokens
@@ -31,12 +29,12 @@ export function Gallery() {
             .join(" · ");
           return (
             <article key={p.slug} className="holo rounded-xl p-4">
-              <div className="relative z-10 flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--cyan)]">
+                  <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--dim)]">
                     /i/{p.slug}
                   </p>
-                  <h3 className="font-[family-name:var(--font-hud)] text-xl tracking-wider">
+                  <h3 className="font-[family-name:var(--font-display)] text-2xl">
                     ${p.symbol}
                   </h3>
                   <p className="mt-1 text-sm text-[var(--dim)]">{p.name}</p>

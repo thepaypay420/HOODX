@@ -1,32 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Oxanium, Syne } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Serif, Outfit } from "next/font/google";
 import { Providers } from "./providers";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
-const hud = Oxanium({
+const display = Instrument_Serif({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-hud",
+  weight: "400",
+  variable: "--font-display",
 });
 
-const display = Syne({
+const ui = Outfit({
   subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-display",
+  weight: ["400", "500", "600"],
+  variable: "--font-ui",
 });
 
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500"],
   variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "696X — build a meme index",
+  title: "HOODX — build a meme index",
   description:
-    "Build your own meme index. Share it. Earn a cut when friends ape in. $696X is Gen-0: the 696_eth Robinhood watchlist. DYOR.",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "696X" },
+    "HOODX is a factory for meme indexes on Robinhood Chain. Build a basket, share the link, earn a cut when friends join. DYOR.",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "HOODX" },
   formatDetection: { telephone: false },
 };
 
@@ -34,14 +34,13 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#03050c",
+  themeColor: "#0b0b0a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${hud.variable} ${display.variable} ${mono.variable} antialiased`}>
-        <div className="scan" aria-hidden />
+      <body className={`${display.variable} ${ui.variable} ${mono.variable} antialiased`}>
         <Providers>
           {children}
           <SiteFooter />

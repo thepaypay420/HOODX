@@ -12,17 +12,9 @@ import { robinhood } from "@/lib/chain";
 export function Hud() {
   const { address, chainId, connecting, connect, disconnect, switchToRobinhood } = useWallet();
   const [bal, setBal] = useState<bigint | undefined>();
-  const [t, setT] = useState("");
   const [hint, setHint] = useState("");
   const on = Boolean(address);
   const wrong = on && chainId !== robinhood.id;
-
-  useEffect(() => {
-    const tick = () => setT(new Date().toISOString().slice(11, 19));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     if (!address) return setBal(undefined);
@@ -30,26 +22,22 @@ export function Hud() {
   }, [address]);
 
   return (
-    <header className="relative z-20 mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 pt-5 pb-[env(safe-area-inset-top)]">
-      <Link href="/" className="flex items-center gap-3">
-        <span className="pulse-ring grid h-10 w-10 place-items-center rounded-sm border border-[var(--cyan)] font-[family-name:var(--font-mono)] text-[10px] text-[var(--cyan)]">
-          696
-        </span>
-        <span className="font-[family-name:var(--font-hud)] text-lg tracking-[0.28em]">696X</span>
+    <header className="relative z-20 mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 pt-6 pb-[env(safe-area-inset-top)]">
+      <Link href="/" className="font-[family-name:var(--font-display)] text-[1.65rem] leading-none tracking-[0.12em]">
+        HOODX
       </Link>
-      <nav className="flex flex-wrap items-center gap-3 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.18em] text-[var(--dim)]">
-        <span className="hidden sm:inline text-[var(--cyan)]">{t} UTC</span>
-        <Link href={`/i/${GEN0_SLUG}`} className="inline-flex min-h-11 items-center hover:text-[var(--cyan)]">
-          Gen-0
+      <nav className="flex flex-wrap items-center gap-1 font-[family-name:var(--font-ui)] text-[13px] text-[var(--dim)] sm:gap-2">
+        <Link href={`/i/${GEN0_SLUG}`} className="inline-flex min-h-11 items-center px-2 hover:text-[var(--paper)]">
+          696X
         </Link>
-        <Link href="/#forge" className="inline-flex min-h-11 items-center hover:text-[var(--cyan)]">
-          Forge
+        <Link href="/#create" className="inline-flex min-h-11 items-center px-2 hover:text-[var(--paper)]">
+          Create
         </Link>
         <a
           href={GITHUB_REPO}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-11 items-center gap-1.5 hover:text-[var(--cyan)]"
+          className="inline-flex min-h-11 items-center gap-1.5 px-2 hover:text-[var(--paper)]"
         >
           <GitHubMark />
           <span className="hidden sm:inline">GitHub</span>
@@ -62,21 +50,21 @@ export function Hud() {
               void connect().catch((e) => {
                 setHint(
                   e instanceof Error && e.message === "OPEN_IN_WALLET"
-                    ? "Browse free. Open this in Rabby / MetaMask / Robinhood Wallet to ape."
+                    ? "Browse freely. Open this in a wallet app to mint."
                     : "Wallet closed — you can still browse.",
                 );
               })
             }
-            className="min-h-11 rounded-sm border border-[var(--cyan)] px-3 text-[var(--cyan)]"
+            className="min-h-11 rounded-sm border border-[var(--line)] px-3 text-[var(--paper)]"
           >
-            {connecting ? "Linking…" : "Jack in"}
+            {connecting ? "Connecting…" : "Connect"}
           </button>
         ) : wrong ? (
-          <button type="button" onClick={() => void switchToRobinhood()} className="min-h-11 text-[var(--gold)]">
+          <button type="button" onClick={() => void switchToRobinhood()} className="min-h-11 px-2 text-[var(--gold)]">
             Switch chain
           </button>
         ) : (
-          <span className="tabular text-[var(--cyan)]">
+          <span className="tabular px-2 text-[var(--paper)]">
             {shortAddr(address!)}
             {bal != null ? ` · ${fmtEth(bal, 3)}` : ""}
             <button type="button" className="ml-2 min-h-11 text-[var(--dim)]" onClick={() => disconnect()}>
@@ -86,9 +74,7 @@ export function Hud() {
         )}
       </nav>
       {hint && (
-        <p className="w-full font-[family-name:var(--font-mono)] text-[10px] normal-case tracking-normal text-[var(--gold)]">
-          {hint}
-        </p>
+        <p className="w-full font-[family-name:var(--font-mono)] text-[10px] text-[var(--gold)]">{hint}</p>
       )}
     </header>
   );

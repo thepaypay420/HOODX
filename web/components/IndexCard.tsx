@@ -21,7 +21,7 @@ function Glyph({ slug }: { slug: string }) {
     return Array.from({ length: 16 }, (_, i) => ((h >>> i) & 1) === 1);
   }, [slug]);
   return (
-    <span className="grid h-24 w-24 grid-cols-4 gap-0.5 border border-[var(--mag)] p-1 shadow-[0_0_24px_rgba(255,43,214,0.28)]">
+    <span className="grid h-20 w-20 grid-cols-4 gap-px border border-[var(--line)] p-1">
       {cells.map((on, i) => (
         <span key={i} className={on ? "bg-[var(--mag)]" : "bg-white/5"} />
       ))}
@@ -291,11 +291,11 @@ export function IndexCard({
     payout.toLowerCase() !== recipient.toLowerCase();
 
   return (
-    <article className="holo rounded-2xl p-5 sm:p-6">
-      <div className="relative z-10 flex flex-wrap items-start gap-5">
+    <article className="holo rounded-xl p-5 sm:p-7">
+      <div className="flex flex-wrap items-start gap-5">
         {gen0 ? (
           <a href={CURATOR_696.x} target="_blank" rel="noreferrer" className="shrink-0">
-            <span className="relative block h-24 w-24 overflow-hidden rounded-sm border border-[var(--cyan)] shadow-[0_0_24px_rgba(94,242,255,0.35)]">
+            <span className="relative block h-20 w-20 overflow-hidden rounded-full border border-[var(--line)]">
               <Image
                 src={CURATOR_696.avatar}
                 alt={`@${CURATOR_696.handle}`}
@@ -310,55 +310,57 @@ export function IndexCard({
           <Glyph slug={slug} />
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.28em] text-[var(--cyan)]">
-            {gen0 ? "GEN-0 · LEGENDARY · RH 4663" : "USER INDEX · RH 4663"}
+          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--dim)]">
+            {gen0 ? "First index · RH 4663" : "Index · RH 4663"}
           </p>
-          <h2 className="font-[family-name:var(--font-hud)] text-4xl tracking-[0.12em] sm:text-5xl">
+          <h2 className="font-[family-name:var(--font-display)] text-4xl tracking-wide sm:text-5xl">
             {title}
           </h2>
           {gen0 ? (
             <>
               <p className="mt-1 text-sm text-[var(--dim)]">
                 Curated by{" "}
-                <a className="text-[var(--cyan)]" href={CURATOR_696.x} target="_blank" rel="noreferrer">
+                <a className="text-[var(--paper)]" href={CURATOR_696.x} target="_blank" rel="noreferrer">
                   @{CURATOR_696.handle}
-                </a>{" "}
-                · {CURATOR_696.followers.toLocaleString()} on X · whole pack, one bag
+                </a>
+                {CURATOR_696.followers ? ` · ${CURATOR_696.followers.toLocaleString()} on X` : ""}
               </p>
-              <p className="mt-2 max-w-xl text-sm text-[#c5e8f4]">{CURATOR_696.blurb}</p>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--paper)]/80">
+                {CURATOR_696.blurb}
+              </p>
             </>
           ) : (
             <p className="mt-1 text-sm text-[var(--dim)]">
-              /i/{slug} · tap chips to lock or eject · reroute the creator cut anytime
+              /i/{slug} · tap names to add or remove · reroute the creator cut anytime
             </p>
           )}
         </div>
         <div className="font-[family-name:var(--font-mono)] text-right text-[11px] text-[var(--dim)]">
           <div>
-            PACK POWER <span className="text-[var(--cyan)] tabular">{power}%</span>
+            {on.length}/24 names
           </div>
-          <div className="mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-white/10">
-            <div className="xp" style={{ width: `${power}%` }} />
+          <div className="mt-1 h-px w-24 bg-[var(--line)]">
+            <div className="xp" style={{ width: `${power}%`, height: 1 }} />
           </div>
           <div className="mt-1">
-            {on.length}/24 SLOTS · {creatorBps / 100}% curator / {protocolBps / 100}% proto
+            {creatorBps / 100}% creator / {protocolBps / 100}% HOODX
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 mt-6">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-          <span>Assets · tap to add/remove · bursts sync in one tx</span>
+      <div className="mt-6">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--dim)]">
+          <span>Names · tap to add or remove</span>
           <span className={canEdit ? "text-[var(--cyan)]" : "text-[var(--dim)]"}>
             {syncing
-              ? "SYNCING"
+              ? "Syncing"
               : pending.length
-                ? `${pending.length} QUEUED`
+                ? `${pending.length} queued`
                 : canEdit
                   ? live
-                    ? "CURATOR LIVE"
-                    : "DRAFT"
-                  : "VIEW ONLY"}
+                    ? "Live"
+                    : "Draft"
+                  : "View only"}
           </span>
         </div>
         {canEdit && (
@@ -396,20 +398,19 @@ export function IndexCard({
         </div>
         {coinsOn.length > 0 && (
           <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--dim)]">
-            LIVE LINEUP · {coinsOn.map((c) => c.symbol).join(" · ")}
+            {coinsOn.map((c) => c.symbol).join(" · ")}
           </p>
         )}
       </div>
 
-      <div className="relative z-10 mt-6 grid gap-3 border-t border-[var(--line)] pt-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-3 border-t border-[var(--line)] pt-4 sm:grid-cols-2">
         <div>
-          <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-            Creator payout — switch without handing over the pack
+          <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--dim)]">
+            Creator payout
           </p>
-          <p className="mt-1 text-xs text-[var(--dim)]">
-            Every ape pays {protocolBps / 100}% to the platform
-            {live ? "" : " (user indexes too)"} + {creatorBps / 100}% to this address. Point it at 696
-            later. Curation stays with you.
+          <p className="mt-1 text-xs leading-relaxed text-[var(--dim)]">
+            Every join pays {protocolBps / 100}% to HOODX + {creatorBps / 100}% to this address.
+            Curation stays with you.
             {recipient ? ` Now: ${shortAddr(recipient)}` : ""}
             {payoutDirty ? " · saved address differs" : ""}
           </p>
@@ -430,20 +431,22 @@ export function IndexCard({
             >
               Set
             </button>
-            <button
-              type="button"
-              disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
-              onClick={giveTo696}
-              className="rounded-sm border border-[var(--mag)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--mag)] disabled:opacity-40"
-            >
-              Give to 696
-            </button>
+            {gen0 && (
+              <button
+                type="button"
+                disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
+                onClick={giveTo696}
+                className="rounded-sm border border-[var(--line)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--dim)] disabled:opacity-40"
+              >
+                Give to 696
+              </button>
+            )}
           </div>
         </div>
         {!compact && (
           <div className="flex flex-wrap items-end justify-end gap-2">
             <a href={`/i/${slug}`} className="ape rounded-sm px-5 py-3 text-sm">
-              Ape {title}
+              Open {title}
             </a>
             {gen0 && (
               <a
@@ -452,7 +455,7 @@ export function IndexCard({
                 rel="noreferrer"
                 className="ghost rounded-sm px-4 py-3"
               >
-                Source tape
+                Watchlist
               </a>
             )}
           </div>
