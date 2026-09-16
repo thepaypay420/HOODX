@@ -175,9 +175,23 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "addTokens",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "address[]", name: "who" }],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "removeToken",
     stateMutability: "nonpayable",
     inputs: [{ type: "address", name: "token" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "removeTokens",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "address[]", name: "who" }],
     outputs: [],
   },
   {
@@ -215,7 +229,10 @@ export const factoryAbi = [
     type: "function",
     name: "create696x",
     stateMutability: "nonpayable",
-    inputs: [{ type: "address[]", name: "tokens" }],
+    inputs: [
+      { type: "address[]", name: "tokens" },
+      { type: "address", name: "recipient_" },
+    ],
     outputs: [{ type: "address" }],
   },
   {
@@ -228,6 +245,7 @@ export const factoryAbi = [
       { type: "string", name: "slug" },
       { type: "address[]", name: "tokens" },
       { type: "uint16", name: "creatorFeeBps" },
+      { type: "address", name: "recipient_" },
     ],
     outputs: [{ type: "address" }],
   },

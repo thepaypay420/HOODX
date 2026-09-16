@@ -11,3 +11,6 @@ export const CURATOR_696 = {
 export const GEN0_SLUG = "696x";
 export const GEN0_SYMBOL = "696X";
 export const GEN0_NAME = "696x";
+
+/** Optional. Public payout wallet for the “Give to 696” one-tap. Not a key. */
+export const CURATOR_696_PAYOUT = (process.env.NEXT_PUBLIC_696_PAYOUT || "").trim();

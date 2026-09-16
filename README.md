@@ -25,12 +25,12 @@ ETH in, ETH out, one ERC20 per basket.
 | Smart floor | sleeves under $10 stay WETH | same |
 | Cash | ≥25% WETH | same |
 
-Creator fees land on `creatorRecipient`. The original creator (or curator)
-can **reroute that address** later — e.g. point 696X fees at 696 — without
-handing over add/remove.
+Creator fees land on `creatorRecipient`. Set it in the mint tx or later via
+**Give to 696** / Set. The original creator keeps that switch even if
+curation moves. Platform 10 bps is on user indexes too.
 
-Add/remove is owner-only. `removeToken` requires the vault balance of that
-coin to be 0 (sell to WETH first). Pack must keep at least 2 names.
+Add/remove is owner-only and instant in the HUD (bursts sync in one tx).
+`removeToken` requires vault balance 0 (sell to WETH first). Pack keeps ≥2 names.
 
 Slug `696x` is reserved (`create696x`). `hoodx` is also blocked.
 

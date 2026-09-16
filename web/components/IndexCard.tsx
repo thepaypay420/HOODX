@@ -1,16 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isAddress, type Address } from "viem";
 import { vaultAbi } from "@/lib/abi";
 import { CATALOG, byAddress, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, PROTOCOL_FEE_BPS } from "@/lib/config";
-import { CURATOR_696, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
+import { CURATOR_696, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
 import { shortAddr } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, savePayout, saveTokens } from "@/lib/packs";
 import { publicClient, useWallet } from "@/lib/wallet";
+
+const FLUSH_MS = 380;
 
 function Glyph({ slug }: { slug: string }) {
   const cells = useMemo(() => {
@@ -44,23 +46,23 @@ export function IndexCard({
   const [owner, setOwner] = useState("");
   const [creator, setCreator] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [creatorBps, setCreatorBps] = useState(CREATOR_FEE_BPS);
+  const [protocolBps, setProtocolBps] = useState(PROTOCOL_FEE_BPS);
   const [msg, setMsg] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [pop, setPop] = useState<string>("");
+  const [feeBusy, setFeeBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [pending, setPending] = useState<string[]>([]);
+  const [pop, setPop] = useState("");
   const live = Boolean(vault && isAddress(vault));
+  const addQ = useRef<Set<string>>(new Set());
+  const remQ = useRef<Set<string>>(new Set());
+  const flushTimer = useRef(0);
+  const flushing = useRef(false);
+  const payoutInput = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setOn(loadTokens(slug, gen0 ? defaultPack() : []));
-    setPayout(loadPayout(slug));
-  }, [slug, gen0]);
-
-  useEffect(() => {
-    if (on.length) saveTokens(slug, on);
-  }, [on, slug]);
-
-  useEffect(() => {
+  const reloadPack = useCallback(async () => {
     if (!live || !vault) return;
-    Promise.all([
+    const [own, creat, rec, list, cBps, pBps] = await Promise.all([
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "owner" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "creator" }),
       publicClient.readContract({
@@ -73,15 +75,37 @@ export function IndexCard({
         abi: vaultAbi,
         functionName: "constituents",
       }),
-    ])
-      .then(([own, creat, rec, list]) => {
-        setOwner(own);
-        setCreator(creat);
-        setRecipient(rec);
-        if (list?.length) setOn(list.map((a) => a.toLowerCase()));
-      })
-      .catch(() => {});
+      publicClient.readContract({
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "creatorFeeBps",
+      }),
+      publicClient.readContract({
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "protocolFeeBps",
+      }),
+    ]);
+    setOwner(own);
+    setCreator(creat);
+    setRecipient(rec);
+    setCreatorBps(Number(cBps));
+    setProtocolBps(Number(pBps));
+    if (list?.length) setOn(list.map((a) => a.toLowerCase()));
   }, [live, vault]);
+
+  useEffect(() => {
+    setOn(loadTokens(slug, gen0 ? defaultPack() : []));
+    setPayout(loadPayout(slug));
+  }, [slug, gen0]);
+
+  useEffect(() => {
+    if (on.length) saveTokens(slug, on);
+  }, [on, slug]);
+
+  useEffect(() => {
+    void reloadPack().catch(() => {});
+  }, [reloadPack]);
 
   const isOwner = Boolean(address && owner && address.toLowerCase() === owner.toLowerCase());
   const isCreator = Boolean(address && creator && address.toLowerCase() === creator.toLowerCase());
@@ -106,52 +130,83 @@ export function IndexCard({
     }
   }
 
-  async function chainAdd(token: string) {
+  const flush = useCallback(async () => {
     if (!live || !vault || !walletClient || !address) return;
-    setBusy(true);
+    if (flushing.current) return;
+    const adds = [...addQ.current] as Address[];
+    const rems = [...remQ.current] as Address[];
+    addQ.current.clear();
+    remQ.current.clear();
+    setPending([]);
+    if (!adds.length && !rems.length) return;
+    flushing.current = true;
+    setSyncing(true);
     try {
-      const hash = await walletClient.writeContract({
-        account: address,
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "addToken",
-        args: [token as Address],
-        chain: robinhood,
-      });
-      await publicClient.waitForTransactionReceipt({ hash });
-      flash("coin locked in", token);
+      if (adds.length === 1) {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "addToken",
+          args: [adds[0]],
+          chain: robinhood,
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+      } else if (adds.length > 1) {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "addTokens",
+          args: [adds],
+          chain: robinhood,
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+      if (rems.length === 1) {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "removeToken",
+          args: [rems[0]],
+          chain: robinhood,
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+      } else if (rems.length > 1) {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "removeTokens",
+          args: [rems],
+          chain: robinhood,
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+      const n = adds.length + rems.length;
+      flash(n === 1 ? "pack synced" : `${n} names synced`);
     } catch (e) {
-      setOn((p) => p.filter((x) => x !== token));
-      flash(e instanceof Error ? e.message.slice(0, 160) : "add failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function chainRemove(token: string) {
-    if (!live || !vault || !walletClient || !address) return;
-    setBusy(true);
-    try {
-      const hash = await walletClient.writeContract({
-        account: address,
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "removeToken",
-        args: [token as Address],
-        chain: robinhood,
-      });
-      await publicClient.waitForTransactionReceipt({ hash });
-      flash("coin ejected", token);
-    } catch (e) {
-      setOn((p) => [...p, token]);
       flash(e instanceof Error ? e.message.slice(0, 160) : "sell to WETH first, then eject");
+      await reloadPack().catch(() => {});
     } finally {
-      setBusy(false);
+      flushing.current = false;
+      setSyncing(false);
+      if (addQ.current.size || remQ.current.size) {
+        flushTimer.current = window.setTimeout(() => void flush(), FLUSH_MS);
+      }
     }
+  }, [live, vault, walletClient, address, reloadPack]);
+
+  function scheduleFlush() {
+    window.clearTimeout(flushTimer.current);
+    const ids = [...addQ.current, ...remQ.current];
+    setPending(ids);
+    flushTimer.current = window.setTimeout(() => void flush(), FLUSH_MS);
   }
 
   function toggle(coin: Coin) {
-    if (!canEdit || busy) return;
+    if (!canEdit) return;
     const has = on.includes(coin.token);
     if (has) {
       if (on.length <= 2) {
@@ -159,8 +214,12 @@ export function IndexCard({
         return;
       }
       setOn((p) => p.filter((x) => x !== coin.token));
-      flash(`− ${coin.symbol} ejected`, coin.token);
-      if (live && isOwner) void chainRemove(coin.token);
+      flash(`− ${coin.symbol}`, coin.token);
+      if (live && isOwner) {
+        if (addQ.current.has(coin.token)) addQ.current.delete(coin.token);
+        else remQ.current.add(coin.token);
+        scheduleFlush();
+      }
       return;
     }
     if (on.length >= 24) {
@@ -168,25 +227,31 @@ export function IndexCard({
       return;
     }
     setOn((p) => [...p, coin.token]);
-    flash(`+ ${coin.symbol} locked`, coin.token);
-    if (live && isOwner) void chainAdd(coin.token);
+    flash(`+ ${coin.symbol}`, coin.token);
+    if (live && isOwner) {
+      if (remQ.current.has(coin.token)) remQ.current.delete(coin.token);
+      else addQ.current.add(coin.token);
+      scheduleFlush();
+    }
   }
 
   async function setFeeAddr(who = payout) {
     if (!isAddress(who)) {
       flash("need a 0x address");
+      payoutInput.current?.focus();
       return;
     }
     savePayout(slug, who);
+    setPayout(who);
     if (!live || !vault || !walletClient || !address) {
-      flash("payout saved — applies when the vault is live");
+      flash("payout saved — lands in the mint tx / Set when live");
       return;
     }
     if (!canPayout) {
-      flash("only creator or curator");
+      flash("only the creator can move the cut");
       return;
     }
-    setBusy(true);
+    setFeeBusy(true);
     try {
       const hash = await walletClient.writeContract({
         account: address,
@@ -198,17 +263,32 @@ export function IndexCard({
       });
       await publicClient.waitForTransactionReceipt({ hash });
       setRecipient(who);
-      flash("payout rerouted");
+      flash("payout rerouted — pack stays yours");
     } catch (e) {
       flash(e instanceof Error ? e.message.slice(0, 160) : "failed");
     } finally {
-      setBusy(false);
+      setFeeBusy(false);
     }
+  }
+
+  function giveTo696() {
+    if (CURATOR_696_PAYOUT && isAddress(CURATOR_696_PAYOUT)) {
+      void setFeeAddr(CURATOR_696_PAYOUT);
+      return;
+    }
+    flash("paste 696’s wallet, then Set — you keep curation");
+    payoutInput.current?.focus();
   }
 
   const coinsOn = on.map((t) => byAddress(t)).filter(Boolean) as Coin[];
   const power = Math.round((on.length / 24) * 100);
   const title = gen0 ? `$${GEN0_SYMBOL}` : `$${slug.toUpperCase()}`;
+  const pendingSet = new Set(pending);
+  const payoutDirty =
+    Boolean(payout) &&
+    isAddress(payout) &&
+    recipient &&
+    payout.toLowerCase() !== recipient.toLowerCase();
 
   return (
     <article className="holo rounded-2xl p-5 sm:p-6">
@@ -261,16 +341,24 @@ export function IndexCard({
             <div className="xp" style={{ width: `${power}%` }} />
           </div>
           <div className="mt-1">
-            {on.length}/24 SLOTS · {CREATOR_FEE_BPS / 100}% curator / {PROTOCOL_FEE_BPS / 100}% proto
+            {on.length}/24 SLOTS · {creatorBps / 100}% curator / {protocolBps / 100}% proto
           </div>
         </div>
       </div>
 
       <div className="relative z-10 mt-6">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-          <span>Assets · tap to add/remove · live edit is instant</span>
+          <span>Assets · tap to add/remove · bursts sync in one tx</span>
           <span className={canEdit ? "text-[var(--cyan)]" : "text-[var(--dim)]"}>
-            {canEdit ? (live ? "CURATOR LIVE" : "DRAFT") : "VIEW ONLY"}
+            {syncing
+              ? "SYNCING"
+              : pending.length
+                ? `${pending.length} QUEUED`
+                : canEdit
+                  ? live
+                    ? "CURATOR LIVE"
+                    : "DRAFT"
+                  : "VIEW ONLY"}
           </span>
         </div>
         {canEdit && (
@@ -284,19 +372,24 @@ export function IndexCard({
         <div className="flex flex-wrap gap-2">
           {visible.map((c) => {
             const active = on.includes(c.token);
+            const wait = pendingSet.has(c.token);
             return (
               <button
                 key={c.token}
                 type="button"
-                disabled={!canEdit || busy}
+                disabled={!canEdit}
                 onClick={() => toggle(c)}
                 className={`chip inline-flex items-center gap-2 rounded-sm px-2 py-1 font-[family-name:var(--font-mono)] text-xs ${
                   active ? "on" : "off"
-                } ${pop === c.token ? "pop" : ""}`}
+                } ${pop === c.token ? "pop" : ""} ${wait ? "pending" : ""}`}
               >
                 <span className="text-[var(--gold)]">{tier(c.mcapUsd)}</span>
                 {c.symbol}
-                {canEdit && <span className={active ? "text-[var(--danger)]" : "text-[var(--lime)]"}>{active ? "×" : "+"}</span>}
+                {canEdit && (
+                  <span className={active ? "text-[var(--danger)]" : "text-[var(--lime)]"}>
+                    {wait ? "…" : active ? "×" : "+"}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -314,25 +407,36 @@ export function IndexCard({
             Creator payout — switch without handing over the pack
           </p>
           <p className="mt-1 text-xs text-[var(--dim)]">
-            Platform always takes {PROTOCOL_FEE_BPS / 100}%. Your {CREATOR_FEE_BPS / 100}% can point at
-            696 later.
-            {recipient ? ` On-chain: ${shortAddr(recipient)}` : ""}
+            Every ape pays {protocolBps / 100}% to the platform
+            {live ? "" : " (user indexes too)"} + {creatorBps / 100}% to this address. Point it at 696
+            later. Curation stays with you.
+            {recipient ? ` Now: ${shortAddr(recipient)}` : ""}
+            {payoutDirty ? " · saved address differs" : ""}
           </p>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <input
+              ref={payoutInput}
               value={payout}
               onChange={(e) => setPayout(e.target.value.trim())}
               placeholder="0x fee recipient"
-              className="field flex-1 text-xs"
+              className="field min-w-[12rem] flex-1 text-xs"
               disabled={!canPayout}
             />
             <button
               type="button"
-              disabled={busy || !canPayout || (live && chainId !== robinhood.id)}
+              disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
               onClick={() => void setFeeAddr()}
               className="rounded-sm border border-[var(--cyan)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--cyan)] disabled:opacity-40"
             >
               Set
+            </button>
+            <button
+              type="button"
+              disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
+              onClick={giveTo696}
+              className="rounded-sm border border-[var(--mag)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--mag)] disabled:opacity-40"
+            >
+              Give to 696
             </button>
           </div>
         </div>

@@ -118,6 +118,11 @@ body {
   animation: pop 280ms ease;
 }
 
+.chip.pending {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(244, 193, 78, 0.35);
+}
+
 @keyframes pop {
   0% {
     transform: scale(0.86);

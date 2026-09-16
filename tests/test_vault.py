@@ -138,6 +138,12 @@ class VaultMathTest(unittest.TestCase):
         _, total = issue_split(10**18)
         self.assertEqual(proto + creat, total)
 
+    def test_protocol_cut_on_user_indexes_even_if_creator_takes_zero(self):
+        net, proto, creat = issue_split_parts(10**18, protocol_bps=10, creator_bps=0)
+        self.assertEqual(proto, 10**18 * 10 // 10_000)
+        self.assertEqual(creat, 0)
+        self.assertEqual(net + proto, 10**18)
+
     def test_share_slug_rules(self):
         self.assertTrue(ok_slug("hoodx"))
         self.assertTrue(ok_slug("696x"))

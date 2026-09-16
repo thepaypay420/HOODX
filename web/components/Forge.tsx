@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { type Address } from "viem";
+import { zeroAddress, type Address } from "viem";
 import { factoryAbi } from "@/lib/abi";
 import { CATALOG, tier } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
@@ -59,12 +59,13 @@ export function Forge() {
     setErr(null);
     try {
       const tokens = picked as Address[];
+      const recipient = payout && isAddress(payout) ? (payout as Address) : zeroAddress;
       const hash = await walletClient.writeContract({
         account: address,
         address: FACTORY as Address,
         abi: factoryAbi,
         functionName: "create",
-        args: [name.trim(), symbol, slug, tokens, feeBps],
+        args: [name.trim(), symbol, slug, tokens, feeBps, recipient],
         chain: robinhood,
       });
       await publicClient.waitForTransactionReceipt({ hash });
@@ -89,7 +90,8 @@ export function Forge() {
         </h2>
         <p className="mt-2 max-w-xl text-sm text-[var(--dim)]">
           Lock 2–24 RH names. Drop /i/yourslug. Friends ape, you take {(feeBps / 100).toFixed(2)}%,
-          protocol {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Reroute your cut anytime — even to 696.
+          protocol always {(PROTOCOL_FEE_BPS / 100).toFixed(2)}% — same cut on user indexes. Point
+          payout at 696 in this mint, or switch later without giving up the pack.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -138,7 +140,7 @@ export function Forge() {
 
         <div className="mt-4">
           <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-            Optional payout address (else your wallet — switch later)
+            Optional payout (696’s wallet, or yours). Switch later without moving curation.
           </p>
           <input
             value={payout}

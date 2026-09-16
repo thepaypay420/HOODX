@@ -64,20 +64,23 @@ contract HoodxFactory {
     }
 
     /// @dev First index. 696_eth watchlist. 0.08 ETH first mint (~$200).
-    function create696x(address[] calldata tokens) external onlyOwner returns (address) {
-        return _create(msg.sender, "696x", "696X", "696x", tokens, 40, 0.08 ether);
+    /// recipient_ = 696's wallet when you are ready to point the cut; 0 keeps it on the creator.
+    function create696x(address[] calldata tokens, address recipient_) external onlyOwner returns (address) {
+        return _create(msg.sender, "696x", "696X", "696x", tokens, 40, 0.08 ether, recipient_);
     }
 
     /// @dev Anyone. Min 2 tokens. First mint 0.02 ETH. Drop /i/{slug}.
+    /// Platform still takes protocolFeeBps. recipient_ 0 → pay the creator wallet.
     function create(
         string calldata name_,
         string calldata symbol_,
         string calldata slug,
         address[] calldata tokens,
-        uint16 creatorFeeBps
+        uint16 creatorFeeBps,
+        address recipient_
     ) external returns (address) {
         if (_eq(slug, "696x") || _eq(slug, "hoodx")) revert Taken();
-        return _create(msg.sender, name_, symbol_, slug, tokens, creatorFeeBps, 0.02 ether);
+        return _create(msg.sender, name_, symbol_, slug, tokens, creatorFeeBps, 0.02 ether, recipient_);
     }
 
     function setTreasury(address who) external onlyOwner {
@@ -102,7 +105,8 @@ contract HoodxFactory {
         string memory slug,
         address[] calldata tokens,
         uint16 creatorFeeBps,
-        uint256 minFirst
+        uint256 minFirst,
+        address recipient_
     ) internal returns (address vault) {
         if (!_okSlug(slug)) revert BadSlug();
         if (bySlug[slug] != address(0)) revert Taken();
@@ -120,7 +124,8 @@ contract HoodxFactory {
             tokens,
             protocolFeeBps,
             creatorFeeBps,
-            minFirst
+            minFirst,
+            recipient_
         );
         bySlug[slug] = vault;
         slugOf[vault] = slug;

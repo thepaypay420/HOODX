@@ -122,7 +122,8 @@ contract HoodxIndex {
         address[] calldata constituents,
         uint16 protocolFeeBps_,
         uint16 creatorFeeBps_,
-        uint256 minFirstDeposit_
+        uint256 minFirstDeposit_,
+        address recipient_
     ) external {
         if (implLock || factory != address(0)) revert AlreadyInit();
         if (creator_ == address(0) || protocol_ == address(0) || weth_ == address(0)) revert Zero();
@@ -132,7 +133,7 @@ contract HoodxIndex {
         factory = msg.sender;
         owner = creator_;
         creator = creator_;
-        creatorRecipient = creator_;
+        creatorRecipient = recipient_ == address(0) ? creator_ : recipient_;
         protocol = protocol_;
         weth = weth_;
         swapRouter = router_;
@@ -296,6 +297,23 @@ contract HoodxIndex {
     }
 
     function addToken(address token) external onlyOwner {
+        _addToken(token);
+    }
+
+    function addTokens(address[] calldata who) external onlyOwner {
+        for (uint256 i; i < who.length; i++) _addToken(who[i]);
+    }
+
+    /// @dev Drop a name from the pack. Sell it to WETH first if the vault still holds any.
+    function removeToken(address token) external onlyOwner {
+        _removeToken(token);
+    }
+
+    function removeTokens(address[] calldata who) external onlyOwner {
+        for (uint256 i; i < who.length; i++) _removeToken(who[i]);
+    }
+
+    function _addToken(address token) internal {
         if (token == address(0) || token == weth || listed[token]) revert Listed();
         if (tokens.length >= 24) revert BadLen();
         listed[token] = true;
@@ -303,14 +321,13 @@ contract HoodxIndex {
         emit TokenAdded(token);
     }
 
-    /// @dev Drop a name from the pack. Sell it to WETH first if the vault still holds any.
-    function removeToken(address token) external onlyOwner {
+    function _removeToken(address token) internal {
         if (!listed[token]) revert Listed();
         if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
-        listed[token] = false;
-        targetBps[token] = 0;
         uint256 n = tokens.length;
         if (n <= 2) revert BadLen();
+        listed[token] = false;
+        targetBps[token] = 0;
         for (uint256 i; i < n; i++) {
             if (tokens[i] == token) {
                 tokens[i] = tokens[n - 1];

@@ -37,9 +37,11 @@ Fee on **mint volume** (not a Uni hook yet):
 
 Platform fee is on **every** index, including user-submitted ones.
 
-`creator` and `owner` can call `setCreatorRecipient(addr)` so fees can move
-to 696 later without transferring the pack. Curation (`addToken` /
-`removeToken`) stays with `owner`.
+`creator` (the address that minted the index) or `owner` can call
+`setCreatorRecipient(addr)` — or pass `recipient_` in `create` /
+`create696x` — so fees can move to 696 later without transferring the pack.
+Curation (`addToken` / `addTokens` / `removeToken` / `removeTokens`) stays
+with `owner`. Creator fee is 0–50 bps on top of the protocol cut.
 
 First mint: 696X **0.08 ETH (~$200)**. User-created indexes **0.02 ETH**.
 
@@ -64,10 +66,11 @@ default to equal weight unless they pick from the 696 tape (then sqrt).
 
 ## Add / remove
 
-Seamless in the HUD: every catalog chip is on or off. Tap to lock or eject.
-Drafts persist in localStorage. When the vault is live, the curator’s tap
-sends `addToken` / `removeToken`. Remove reverts if the vault still holds
-that ERC20 — sell to WETH first. Minimum 2 names.
+Seamless in the HUD: every catalog chip is on or off. Tap to lock or eject —
+the pack updates instantly. Live vaults debounce a burst of taps into one
+`addTokens` / `removeTokens` tx. Drafts persist in localStorage. Remove
+reverts if the vault still holds that ERC20 — sell to WETH first. Minimum 2
+names.
 
 ## Contracts
 
