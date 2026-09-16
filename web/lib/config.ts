@@ -23,3 +23,4 @@ export const ETH_USD_REF = 2400;
 export const MAX_NAV_DIVERGE = 0.02;
 export const HOODX_SLUG = "696x";
 export const TWEET = "https://x.com/696_eth/status/2100067116594725086";
+export const GITHUB_REPO = "https://github.com/thepaypay420/HOODX";

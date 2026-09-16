@@ -71,8 +71,8 @@ export default function Home() {
         <Gallery />
 
         <p className="mt-16 font-[family-name:var(--font-mono)] text-[11px] leading-relaxed text-[var(--dim)]">
-          Isolated side project on Robinhood Chain 4663. Not HOOD10. Not the LP desk. Not financial
-          advice. DYOR. Look-only until the factory is live.
+          HOODX on Robinhood Chain 4663. Not HOOD10. Not financial advice. DYOR. Look-only until
+          the factory is live.
         </p>
       </main>
     </>

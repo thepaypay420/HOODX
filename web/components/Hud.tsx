@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { GitHubMark } from "@/components/GitHubMark";
 import { fmtEth, shortAddr } from "@/lib/format";
 import { GEN0_SLUG } from "@/lib/curators";
+import { GITHUB_REPO } from "@/lib/config";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { robinhood } from "@/lib/chain";
 
@@ -43,6 +45,15 @@ export function Hud() {
         <Link href="/#forge" className="inline-flex min-h-11 items-center hover:text-[var(--cyan)]">
           Forge
         </Link>
+        <a
+          href={GITHUB_REPO}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex min-h-11 items-center gap-1.5 hover:text-[var(--cyan)]"
+        >
+          <GitHubMark />
+          <span className="hidden sm:inline">GitHub</span>
+        </a>
         {!on ? (
           <button
             type="button"

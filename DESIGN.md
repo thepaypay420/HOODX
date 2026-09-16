@@ -1,7 +1,8 @@
-# 696X — build a meme index, share it, earn a cut
+# HOODX — build a meme index, share it, earn a cut
 
-Isolated side project on Robinhood Chain 4663. Not the LP desk, not Krystal,
-not CHUMP, not Ramses. Do not seed from vault idle ETH.
+Isolated side project on Robinhood Chain 4663. Do not seed from vault idle ETH.
+
+`$696X` is Gen-0. The factory is HOODX.
 
 ## The product
 

@@ -508,8 +508,7 @@ export function VaultDesk({
       )}
 
       <p className="mt-16 border-t border-[var(--line)] pt-6 font-[family-name:var(--font-mono)] text-[11px] leading-relaxed text-[var(--dim)]">
-        Isolated side project on Robinhood Chain 4663. Not HOOD10. Not the LP desk. Not financial
-        advice. DYOR.
+        HOODX · Robinhood Chain 4663. Not HOOD10. Not financial advice. DYOR.
         {live && vault && (
           <>
             {" "}

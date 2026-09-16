@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Oxanium, Syne } from "next/font/google";
 import { Providers } from "./providers";
+import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
 const hud = Oxanium({
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${hud.variable} ${display.variable} ${mono.variable} antialiased`}>
         <div className="scan" aria-hidden />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <SiteFooter />
+        </Providers>
       </body>
     </html>
   );
