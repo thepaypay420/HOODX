@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Oxanium, Syne } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -25,6 +25,15 @@ export const metadata: Metadata = {
   title: "696X — build a meme index",
   description:
     "Build your own meme index. Share it. Earn a cut when friends ape in. $696X is Gen-0: the 696_eth Robinhood watchlist. DYOR.",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "696X" },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#03050c",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

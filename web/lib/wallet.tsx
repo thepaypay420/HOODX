@@ -92,7 +92,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(async () => {
     const eth = injectedProvider();
-    if (!eth) throw new Error("No injected wallet. Install Rabby, MetaMask, or Robinhood Wallet.");
+    if (!eth) {
+      throw new Error("OPEN_IN_WALLET");
+    }
     setConnecting(true);
     try {
       await eth.request({ method: "eth_requestAccounts" });
