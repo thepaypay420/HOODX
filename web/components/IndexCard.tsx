@@ -9,7 +9,7 @@ import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { CURATOR_696, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
 import { shortAddr } from "@/lib/format";
-import { defaultPack, loadPayout, loadTokens, savePayout, saveTokens } from "@/lib/packs";
+import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 const FLUSH_MS = 380;
@@ -53,6 +53,7 @@ export function IndexCard({
   const [syncing, setSyncing] = useState(false);
   const [pending, setPending] = useState<string[]>([]);
   const [pop, setPop] = useState("");
+  const [localDraft, setLocalDraft] = useState(false);
   const live = Boolean(vault && isAddress(vault));
   const addQ = useRef<Set<string>>(new Set());
   const remQ = useRef<Set<string>>(new Set());
@@ -95,22 +96,35 @@ export function IndexCard({
   }, [live, vault]);
 
   useEffect(() => {
-    setOn(loadTokens(slug, gen0 ? defaultPack() : []));
-    setPayout(loadPayout(slug));
-  }, [slug, gen0]);
+    setLocalDraft(ownsDraft(slug));
+  }, [slug]);
 
   useEffect(() => {
-    if (on.length) saveTokens(slug, on);
-  }, [on, slug]);
+    if (live) return;
+    const fallback = gen0 ? defaultPack() : [];
+    if (localDraft) {
+      setOn(loadTokens(slug, fallback));
+      setPayout(loadPayout(slug));
+      return;
+    }
+    setOn(fallback);
+    setPayout("");
+  }, [slug, gen0, live, localDraft]);
+
+  const isOwner = Boolean(address && owner && address.toLowerCase() === owner.toLowerCase());
+  const isCreator = Boolean(address && creator && address.toLowerCase() === creator.toLowerCase());
+  const canEdit = live ? isOwner : localDraft;
+  const canPayout = live ? isOwner || isCreator : localDraft;
+
+  useEffect(() => {
+    if (!canEdit || !on.length) return;
+    saveTokens(slug, on);
+  }, [on, slug, canEdit]);
 
   useEffect(() => {
     void reloadPack().catch(() => {});
   }, [reloadPack]);
 
-  const isOwner = Boolean(address && owner && address.toLowerCase() === owner.toLowerCase());
-  const isCreator = Boolean(address && creator && address.toLowerCase() === creator.toLowerCase());
-  const canEdit = !live || isOwner;
-  const canPayout = !live || isCreator || isOwner;
   const query = q.trim().toLowerCase();
   const visible = useMemo(() => {
     if (!query) return CATALOG;
@@ -331,7 +345,8 @@ export function IndexCard({
             </>
           ) : (
             <p className="mt-1 text-sm text-[var(--dim)]">
-              /i/{slug} · tap names to add or remove · reroute the creator cut anytime
+              /i/{slug}
+              {canEdit ? " · tap names to add or remove" : ""}
             </p>
           )}
         </div>
@@ -350,18 +365,12 @@ export function IndexCard({
 
       <div className="mt-6">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--dim)]">
-          <span>Names · tap to add or remove</span>
-          <span className={canEdit ? "text-[var(--cyan)]" : "text-[var(--dim)]"}>
-            {syncing
-              ? "Syncing"
-              : pending.length
-                ? `${pending.length} queued`
-                : canEdit
-                  ? live
-                    ? "Live"
-                    : "Draft"
-                  : "View only"}
-          </span>
+          <span>{canEdit ? "Names · tap to add or remove" : "Names"}</span>
+          {canEdit && (
+            <span className="text-[var(--cyan)]">
+              {syncing ? "Syncing" : pending.length ? `${pending.length} queued` : live ? "Live" : "Draft"}
+            </span>
+          )}
         </div>
         {canEdit && (
           <input
@@ -371,39 +380,47 @@ export function IndexCard({
             className="field mb-3 text-sm"
           />
         )}
-        <div className="flex flex-wrap gap-2">
-          {visible.map((c) => {
-            const active = on.includes(c.token);
-            const wait = pendingSet.has(c.token);
-            return (
-              <button
-                key={c.token}
-                type="button"
-                disabled={!canEdit}
-                onClick={() => toggle(c)}
-                className={`chip inline-flex items-center gap-2 rounded-sm px-2 py-1 font-[family-name:var(--font-mono)] text-xs ${
-                  active ? "on" : "off"
-                } ${pop === c.token ? "pop" : ""} ${wait ? "pending" : ""}`}
-              >
-                <span className="text-[var(--gold)]">{tier(c.mcapUsd)}</span>
-                {c.symbol}
-                {canEdit && (
+        {canEdit ? (
+          <div className="flex flex-wrap gap-2">
+            {visible.map((c) => {
+              const active = on.includes(c.token);
+              const wait = pendingSet.has(c.token);
+              return (
+                <button
+                  key={c.token}
+                  type="button"
+                  onClick={() => toggle(c)}
+                  className={`chip inline-flex items-center gap-2 rounded-sm px-2 py-1 font-[family-name:var(--font-mono)] text-xs ${
+                    active ? "on" : "off"
+                  } ${pop === c.token ? "pop" : ""} ${wait ? "pending" : ""}`}
+                >
+                  <span className="text-[var(--gold)]">{tier(c.mcapUsd)}</span>
+                  {c.symbol}
                   <span className={active ? "text-[var(--danger)]" : "text-[var(--lime)]"}>
                     {wait ? "…" : active ? "×" : "+"}
                   </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {coinsOn.length > 0 && (
-          <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--dim)]">
-            {coinsOn.map((c) => c.symbol).join(" · ")}
-          </p>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {coinsOn.map((c) => (
+              <span
+                key={c.token}
+                className="chip on inline-flex items-center gap-2 rounded-sm px-2 py-1 font-[family-name:var(--font-mono)] text-xs"
+              >
+                <span className="text-[var(--gold)]">{tier(c.mcapUsd)}</span>
+                {c.symbol}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
+      {(canPayout || !compact) && (
       <div className="mt-6 grid gap-3 border-t border-[var(--line)] pt-4 sm:grid-cols-2">
+        {canPayout && (
         <div>
           <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--dim)]">
             Creator payout
@@ -421,11 +438,10 @@ export function IndexCard({
               onChange={(e) => setPayout(e.target.value.trim())}
               placeholder="0x fee recipient"
               className="field min-w-[12rem] flex-1 text-xs"
-              disabled={!canPayout}
             />
             <button
               type="button"
-              disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
+              disabled={feeBusy || (live && chainId !== robinhood.id)}
               onClick={() => void setFeeAddr()}
               className="rounded-sm border border-[var(--cyan)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--cyan)] disabled:opacity-40"
             >
@@ -434,7 +450,7 @@ export function IndexCard({
             {gen0 && (
               <button
                 type="button"
-                disabled={feeBusy || !canPayout || (live && chainId !== robinhood.id)}
+                disabled={feeBusy || (live && chainId !== robinhood.id)}
                 onClick={giveTo696}
                 className="rounded-sm border border-[var(--line)] px-3 py-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--dim)] disabled:opacity-40"
               >
@@ -443,6 +459,7 @@ export function IndexCard({
             )}
           </div>
         </div>
+        )}
         {!compact && (
           <div className="flex flex-wrap items-end justify-end gap-2">
             <a href={`/i/${slug}`} className="ape rounded-sm px-5 py-3 text-sm">
@@ -461,6 +478,7 @@ export function IndexCard({
           </div>
         )}
       </div>
+      )}
       {msg && (
         <p className="toast relative z-10 mt-3 font-[family-name:var(--font-mono)] text-xs text-[var(--gold)]">
           {msg}

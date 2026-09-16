@@ -72,3 +72,7 @@ export function saveDraft(pack: DraftPack) {
 export function dropDraft(slug: string) {
   localStorage.setItem(GALLERY, JSON.stringify(loadGallery().filter((p) => p.slug !== slug)));
 }
+
+export function ownsDraft(slug: string) {
+  return loadGallery().some((p) => p.slug === slug);
+}
