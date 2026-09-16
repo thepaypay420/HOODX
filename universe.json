@@ -1,0 +1,372 @@
+{
+  "source": {
+    "curator": "696_eth",
+    "tweet": "https://x.com/696_eth/status/2100067116594725086",
+    "postedAt": "2026-09-16T03:39:52.000Z",
+    "note": "18-name RH watchlist. Screenshot mcaps are Dexscreener MCAP sort at tweet time."
+  },
+  "policy": "capped_sqrt",
+  "chainId": 4663,
+  "tokens": [
+    {
+      "id": "PONS",
+      "symbol": "PONS",
+      "name": "Pons",
+      "token": "0x39dbed3a2bd333467115de45665cc57f813c4571",
+      "listedMcapUsd": 412300000,
+      "listedQuote": "WETH",
+      "mcapUsd": 387045669.0,
+      "priceUsd": 0.5632,
+      "buyPool": "0xed50bdeea8adc232f159486192a4157281d722ff",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 5874974.47,
+      "vol24Usd": 11759927.9,
+      "hops": 1
+    },
+    {
+      "id": "AI",
+      "symbol": "AI",
+      "name": "Artificial Inu",
+      "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+      "listedMcapUsd": 268800000,
+      "listedQuote": "USDG",
+      "mcapUsd": 266001490.0,
+      "priceUsd": 0.266,
+      "buyPool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 4374085.55,
+      "vol24Usd": 3691780.49,
+      "hops": 1
+    },
+    {
+      "id": "CASHCAT",
+      "symbol": "CASHCAT",
+      "name": "Cash Cat",
+      "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+      "listedMcapUsd": 151300000,
+      "listedQuote": "WETH",
+      "mcapUsd": 168911905.0,
+      "priceUsd": 0.1709,
+      "buyPool": "0xa70fc67c9f69da90b63a0e4c05d229954574e313",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 4965109.2,
+      "vol24Usd": 959083.74,
+      "hops": 1
+    },
+    {
+      "id": "WALLET",
+      "symbol": "WALLET",
+      "name": "Robinhood Wallet",
+      "token": "0x0339f5459fc690ac85f1782e15782a151b4a9e1b",
+      "listedMcapUsd": 39300000,
+      "listedQuote": "WETH",
+      "mcapUsd": 50912514.0,
+      "priceUsd": 0.05386,
+      "buyPool": "0x9501a20bedb8bea0798fe5d4c411f5e270965d49",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 3463416.94,
+      "vol24Usd": 1159890.66,
+      "hops": 1
+    },
+    {
+      "id": "MEME",
+      "symbol": "MEME",
+      "name": "A Meme Coin",
+      "token": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
+      "listedMcapUsd": 29100000,
+      "listedQuote": "WETH",
+      "mcapUsd": 26982917.0,
+      "priceUsd": 0.02698,
+      "buyPool": "0xe2c12a7379706a291cadaaec1d22458be2f7239d",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 133107.42,
+      "vol24Usd": 896798.5,
+      "hops": 1
+    },
+    {
+      "id": "Index",
+      "symbol": "Index",
+      "name": "The Index",
+      "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+      "listedMcapUsd": 25300000,
+      "listedQuote": "ETH",
+      "mcapUsd": 23754248.0,
+      "priceUsd": 0.02422,
+      "buyPool": "0xd29893ffac8b29ec4db2cfe0cdb3fe1377c028ff",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 780926.77,
+      "vol24Usd": 1261892.37,
+      "hops": 1
+    },
+    {
+      "id": "STONKBROKER",
+      "symbol": "STONKBROKER",
+      "name": "StonkBroker",
+      "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+      "listedMcapUsd": 21800000,
+      "listedQuote": "ETH",
+      "mcapUsd": 24170597.0,
+      "priceUsd": 0.01013,
+      "buyPool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "ETH",
+      "buyQuoteAddr": "0x0000000000000000000000000000000000000000",
+      "buyTvlUsd": 2570367.42,
+      "vol24Usd": 513332.84,
+      "hops": 1
+    },
+    {
+      "id": "DELTA",
+      "symbol": "DELTA",
+      "name": "Delta",
+      "token": "0xe8ffd7e24187f72afb08d75b1bb13088a989a791",
+      "listedMcapUsd": 11100000,
+      "listedQuote": "WETH",
+      "mcapUsd": 13087698.0,
+      "priceUsd": 0.01314,
+      "buyPool": "0xd64fbda67e1015df43fa5e49f02ca844729e5f94",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 895444.98,
+      "vol24Usd": 1907716.0,
+      "hops": 1
+    },
+    {
+      "id": "QUOTRON",
+      "symbol": "QUOTRON",
+      "name": "QUOTRONS",
+      "token": "0x5a86828efd322bfb16d93cfed16ee9bc14940d7f",
+      "listedMcapUsd": 8000000,
+      "listedQuote": "WETH",
+      "mcapUsd": 7525423.0,
+      "priceUsd": 5457.19,
+      "buyPool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 396848.09,
+      "vol24Usd": 248484.54,
+      "hops": 1
+    },
+    {
+      "id": "UP",
+      "symbol": "UP",
+      "name": "up",
+      "token": "0x57c0e45cb534413d1c20a4240955d6bb250bb4f1",
+      "listedMcapUsd": 7400000,
+      "listedQuote": "WETH",
+      "mcapUsd": 7556306.0,
+      "priceUsd": 0.3721,
+      "buyPool": "0x4ef94cd1ab45ebbb50f9e73cd6e45c5027caa3f7",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 93649.68,
+      "vol24Usd": 93771.59,
+      "hops": 1
+    },
+    {
+      "id": "SHROOM",
+      "symbol": "SHROOM",
+      "name": "MUSHROOM",
+      "token": "0xab093def657f15df31b33922a95e047add645b29",
+      "listedMcapUsd": 6100000,
+      "listedQuote": "MU",
+      "hops": 1,
+      "mcapUsd": 7290721.0,
+      "priceUsd": 0.007395,
+      "buyPool": "0x778a632fdd85577efe9cfce4a2c9ac91b9decdb24c351f9b56e25d38fbe587b4",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "USDG",
+      "buyQuoteAddr": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+      "buyTvlUsd": 250557.16,
+      "vol24Usd": 985396.66
+    },
+    {
+      "id": "BOW",
+      "symbol": "BOW",
+      "name": "Longbow",
+      "token": "0x451b42a15100c340ca12f7c66de06fac5ea2d751",
+      "listedMcapUsd": 5600000,
+      "listedQuote": "SPY",
+      "hops": 1,
+      "mcapUsd": 5505274.0,
+      "priceUsd": 0.005505,
+      "buyPool": "0xdba909ac1600a59685928cf317fb953d518d405b4748371889e3cb2932adf4c2",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "SPY",
+      "buyQuoteAddr": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+      "buyTvlUsd": 192223.79,
+      "vol24Usd": 269694.1
+    },
+    {
+      "id": "HOOKR",
+      "symbol": "HOOKR",
+      "name": "Hookr.fun",
+      "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+      "listedMcapUsd": 5500000,
+      "listedQuote": "ETH",
+      "mcapUsd": 7658776.0,
+      "priceUsd": 0.007692,
+      "buyPool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "ETH",
+      "buyQuoteAddr": "0x0000000000000000000000000000000000000000",
+      "buyTvlUsd": 623674.05,
+      "vol24Usd": 1428590.31,
+      "hops": 1
+    },
+    {
+      "id": "website",
+      "symbol": "website",
+      "name": "this is not a website",
+      "token": "0x0762c1708f0d23f86b29d6b857121ff7df357506",
+      "listedMcapUsd": 5200000,
+      "listedQuote": "WETH",
+      "mcapUsd": 4640730.0,
+      "priceUsd": 0.004966,
+      "buyPool": "0x6d489e07d7fe2b4bc5749f75d56337888b68a34a",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 262548.89,
+      "vol24Usd": 463515.2,
+      "hops": 1
+    },
+    {
+      "id": "NET",
+      "symbol": "NET",
+      "name": "NetNet",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "listedMcapUsd": 4100000,
+      "listedQuote": "USDG",
+      "hops": 1,
+      "mcapUsd": 4123773.0,
+      "priceUsd": 854.79,
+      "buyPool": "0xd1ac85b1912b8ef1288a7ce001029ebcffce7516dbf25182c4f3ba3e50f58e15",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "ETH",
+      "buyQuoteAddr": "0x0000000000000000000000000000000000000000",
+      "buyTvlUsd": 177775.09,
+      "vol24Usd": 621877.01
+    },
+    {
+      "id": "QUOTIENT",
+      "symbol": "QUOTIENT",
+      "name": "Quotient",
+      "token": "0x013940c3daa5e2bb12df1ea94afe47ce84c0db4f",
+      "listedMcapUsd": 1600000,
+      "listedQuote": "WETH",
+      "mcapUsd": 477325.0,
+      "priceUsd": 0.0004773,
+      "buyPool": "0x10f49351db85bffc0c0d837771a6e4da2dd2daa1",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v3"
+      ],
+      "buyQuote": "WETH",
+      "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "buyTvlUsd": 379291.53,
+      "vol24Usd": 0.02,
+      "hops": 1
+    },
+    {
+      "id": "HARMONIC",
+      "symbol": "HARMONIC",
+      "name": "Harmonic Agent",
+      "token": "0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5",
+      "listedMcapUsd": 1400000,
+      "listedQuote": "ETH",
+      "mcapUsd": 1845341.0,
+      "priceUsd": 0.002027,
+      "buyPool": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "ETH",
+      "buyQuoteAddr": "0x0000000000000000000000000000000000000000",
+      "buyTvlUsd": 133666.47,
+      "vol24Usd": 457428.9,
+      "hops": 1
+    },
+    {
+      "id": "PROMETHEUS",
+      "symbol": "PROMETHEUS",
+      "name": "Prometheus",
+      "token": "0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261",
+      "listedMcapUsd": 657000,
+      "listedQuote": "SPCX",
+      "hops": 1,
+      "mcapUsd": 534901.0,
+      "priceUsd": 0.0005349,
+      "buyPool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
+      "buyDex": "uniswap",
+      "buyLabels": [
+        "v4"
+      ],
+      "buyQuote": "SPCX",
+      "buyQuoteAddr": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+      "buyTvlUsd": 74356.25,
+      "vol24Usd": 37200.57
+    }
+  ]
+}
