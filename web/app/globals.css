@@ -50,6 +50,7 @@ body {
   color: var(--paper);
   transition: 140ms ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .chip:hover {
@@ -109,9 +110,13 @@ body {
 .ghost {
   border: 1px solid var(--line);
   color: var(--dim);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   font-family: var(--font-ui), sans-serif;
   font-size: 13px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ghost:hover {
@@ -135,7 +140,7 @@ body {
   animation: marquee 36s linear infinite;
   font-family: var(--font-mono), monospace;
   font-size: 11px;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--dim);
 }

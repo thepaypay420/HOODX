@@ -3,7 +3,7 @@ import { GITHUB_REPO } from "@/lib/config";
 
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 pb-10 pt-2">
+    <footer className="relative z-10 mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pb-10 pt-2 sm:px-5">
       <p className="font-[family-name:var(--font-display)] text-sm tracking-[0.14em] text-[var(--dim)]">
         HOODX
       </p>

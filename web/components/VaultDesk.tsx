@@ -256,26 +256,26 @@ export function VaultDesk({
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.18em] text-[var(--dim)]">
-            {isGen0 ? "Mint · first index" : `Mint · /${slug}`}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] text-[var(--dim)]">
+            {isGen0 ? "Mint" : `Mint · /${slug}`}
           </p>
-          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-none sm:text-5xl">
+          <h1 className="mt-1 hidden font-[family-name:var(--font-display)] text-4xl leading-none sm:block sm:text-5xl">
             ${token}
           </h1>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[var(--dim)]">
+          <p className="mt-2 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
             {isGen0
               ? "ETH in, one token out. Sleeves under $10 stay in ETH so the tail is never dust."
               : "A shared basket. Send ETH, receive the index. The creator takes a cut on volume."}
           </p>
         </div>
-        <button type="button" onClick={share} className="ghost rounded-sm px-4 py-2">
+        <button type="button" onClick={share} className="ghost h-11 shrink-0 rounded-sm px-3 text-xs sm:px-4">
           {copied ? "Copied" : "Copy link"}
         </button>
       </div>
 
-      <section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
         <Stat
           label="NAV"
           value={displayNavUsd ? fmtUsd(displayNavUsd, 0) : "—"}
@@ -312,9 +312,9 @@ export function VaultDesk({
       )}
 
       <section className="mt-8 grid gap-4 md:grid-cols-2">
-        <div className="holo rounded-xl p-5">
+        <div className="holo rounded-2xl p-4 sm:p-5">
           <h2 className="font-[family-name:var(--font-display)] text-2xl">Join</h2>
-          <p className="mt-1 text-sm leading-relaxed text-[var(--dim)]">
+          <p className="mt-1 text-[15px] leading-6 text-[var(--dim)]">
             Send ETH. Wrap, take {(feeBps / 100).toFixed(2)}%, mint ${token}. First mint ≥ {minFirst} ETH.
             Later ≥ {MIN_DEPOSIT_ETH} ETH.
           </p>
@@ -368,9 +368,9 @@ export function VaultDesk({
           </button>
         </div>
 
-        <div className="holo rounded-xl p-5">
+        <div className="holo rounded-2xl p-4 sm:p-5">
           <h2 className="font-[family-name:var(--font-display)] text-2xl">Leave</h2>
-          <p className="mt-1 text-sm leading-relaxed text-[var(--dim)]">
+          <p className="mt-1 text-[15px] leading-6 text-[var(--dim)]">
             Burn ${token}, receive ETH from the cash buffer. No token airdrop. Redeem fee is 0%.
           </p>
           <p className="mt-3 font-[family-name:var(--font-mono)] text-sm tabular text-[var(--dim)]">
@@ -524,12 +524,10 @@ export function VaultDesk({
 
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="holo rounded-xl px-4 py-3">
-      <p className="relative font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
-        {label}
-      </p>
-      <p className="relative mt-1 font-[family-name:var(--font-display)] text-2xl leading-none">{value}</p>
-      <p className="relative mt-1 text-xs text-[var(--dim)]">{hint}</p>
+    <div className="holo rounded-xl px-3 py-3 sm:px-4">
+      <p className="text-[11px] leading-none text-[var(--dim)]">{label}</p>
+      <p className="mt-1.5 font-[family-name:var(--font-display)] text-xl leading-none sm:text-2xl">{value}</p>
+      <p className="mt-1.5 text-xs leading-5 text-[var(--dim)]">{hint}</p>
     </div>
   );
 }

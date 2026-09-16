@@ -79,15 +79,15 @@ export function Forge() {
   const selected = useMemo(() => CATALOG.filter((c) => picked.includes(c.token)), [picked]);
 
   return (
-    <section id="create" className="holo rounded-xl p-5 sm:p-7">
+    <section id="create" className="holo rounded-2xl p-4 sm:p-7">
       <div>
-        <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.22em] text-[var(--dim)]">
+        <p className="text-[11px] text-[var(--dim)]">
           Create
         </p>
-        <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl sm:text-4xl">
+        <h2 className="mt-1 font-[family-name:var(--font-display)] text-[1.85rem] leading-none sm:text-4xl">
           Your index
         </h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--dim)]">
+        <p className="mt-3 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
           Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on every join;
           HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Set a payout address now, or switch it
           later without giving up the pack.

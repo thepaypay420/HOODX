@@ -11,40 +11,41 @@ export function FeaturedIndex() {
     .map((c) => c!.symbol);
 
   return (
-    <section className="mt-24">
-      <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--dim)]">First index</p>
+    <section className="mt-16 sm:mt-24">
+      <p className="text-[11px] text-[var(--dim)]">First index</p>
       <Link
         href={`/i/${GEN0_SLUG}`}
-        className="holo mt-4 flex flex-col gap-6 rounded-xl p-5 transition-colors hover:border-[rgba(196,165,116,0.4)] sm:flex-row sm:items-center sm:p-6"
+        className="holo mt-3 block rounded-2xl p-4 transition-colors hover:border-[rgba(196,165,116,0.4)] sm:p-6"
       >
-        <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-full border border-[var(--line)]">
-          <Image
-            src={CURATOR_696.avatar}
-            alt={`@${CURATOR_696.handle}`}
-            width={400}
-            height={400}
-            priority
-            className="h-full w-full object-cover"
-          />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-wide sm:text-4xl">
-            ${GEN0_SYMBOL}
-          </h2>
-          <p className="mt-1 text-sm text-[var(--dim)]">
-            Curated by{" "}
-            <span className="text-[var(--paper)]">@{CURATOR_696.handle}</span>
-            {CURATOR_696.followers ? ` · ${CURATOR_696.followers.toLocaleString()} on X` : ""}
-          </p>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--paper)]/80">{CURATOR_696.blurb}</p>
-          {lineup.length > 0 && (
-            <p className="mt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-wide text-[var(--dim)]">
-              {lineup.slice(0, 10).join("  ·  ")}
-              {lineup.length > 10 ? "  ·  …" : ""}
+        <div className="flex items-center gap-3.5">
+          <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-full border border-[var(--line)] sm:h-20 sm:w-20">
+            <Image
+              src={CURATOR_696.avatar}
+              alt={`@${CURATOR_696.handle}`}
+              width={400}
+              height={400}
+              priority
+              className="h-full w-full object-cover"
+            />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate font-[family-name:var(--font-display)] text-[1.85rem] leading-none sm:text-4xl">
+              ${GEN0_SYMBOL}
+            </h2>
+            <p className="mt-1 text-[13px] leading-5 text-[var(--dim)]">
+              @{CURATOR_696.handle}
+              {CURATOR_696.followers ? ` · ${CURATOR_696.followers.toLocaleString()} on X` : ""}
             </p>
-          )}
+          </div>
+          <span className="hidden shrink-0 text-sm text-[var(--cyan)] sm:inline">Open →</span>
         </div>
-        <span className="text-sm text-[var(--cyan)] sm:self-center">Open →</span>
+        <p className="mt-4 text-[15px] leading-6 text-[var(--paper)]/85">{CURATOR_696.blurb}</p>
+        {lineup.length > 0 && (
+          <p className="mt-3 text-[12px] leading-5 text-[var(--dim)]">
+            {lineup.slice(0, 8).join(" · ")}
+            {lineup.length > 8 ? " · …" : ""}
+          </p>
+        )}
       </Link>
     </section>
   );

@@ -21,7 +21,7 @@ function Glyph({ slug }: { slug: string }) {
     return Array.from({ length: 16 }, (_, i) => ((h >>> i) & 1) === 1);
   }, [slug]);
   return (
-    <span className="grid h-20 w-20 grid-cols-4 gap-px border border-[var(--line)] p-1">
+    <span className="grid h-14 w-14 grid-cols-4 gap-px border border-[var(--line)] p-1 sm:h-20 sm:w-20">
       {cells.map((on, i) => (
         <span key={i} className={on ? "bg-[var(--mag)]" : "bg-white/5"} />
       ))}
@@ -295,7 +295,6 @@ export function IndexCard({
   }
 
   const coinsOn = on.map((t) => byAddress(t)).filter(Boolean) as Coin[];
-  const power = Math.round((on.length / 24) * 100);
   const title = gen0 ? `$${GEN0_SYMBOL}` : `$${slug.toUpperCase()}`;
   const pendingSet = new Set(pending);
   const payoutDirty =
@@ -305,11 +304,11 @@ export function IndexCard({
     payout.toLowerCase() !== recipient.toLowerCase();
 
   return (
-    <article className="holo rounded-xl p-5 sm:p-7">
-      <div className="flex flex-wrap items-start gap-5">
+    <article className="holo overflow-hidden rounded-2xl p-4 sm:p-7">
+      <div className="flex items-center gap-3.5 sm:gap-5">
         {gen0 ? (
           <a href={CURATOR_696.x} target="_blank" rel="noreferrer" className="shrink-0">
-            <span className="relative block h-20 w-20 overflow-hidden rounded-full border border-[var(--line)]">
+            <span className="relative block h-14 w-14 overflow-hidden rounded-full border border-[var(--line)] sm:h-20 sm:w-20">
               <Image
                 src={CURATOR_696.avatar}
                 alt={`@${CURATOR_696.handle}`}
@@ -321,50 +320,58 @@ export function IndexCard({
             </span>
           </a>
         ) : (
-          <Glyph slug={slug} />
+          <span className="shrink-0">
+            <Glyph slug={slug} />
+          </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--dim)]">
-            {gen0 ? "First index · RH 4663" : "Index · RH 4663"}
+          <p className="text-[11px] leading-none text-[var(--dim)]">
+            {gen0 ? "First index" : `/i/${slug}`}
           </p>
-          <h2 className="font-[family-name:var(--font-display)] text-4xl tracking-wide sm:text-5xl">
+          <h2 className="mt-1 truncate font-[family-name:var(--font-display)] text-[2rem] leading-none tracking-normal sm:text-5xl">
             {title}
           </h2>
-          {gen0 ? (
-            <>
-              <p className="mt-1 text-sm text-[var(--dim)]">
-                Curated by{" "}
-                <a className="text-[var(--paper)]" href={CURATOR_696.x} target="_blank" rel="noreferrer">
-                  @{CURATOR_696.handle}
-                </a>
-                {CURATOR_696.followers ? ` · ${CURATOR_696.followers.toLocaleString()} on X` : ""}
-              </p>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--paper)]/80">
-                {CURATOR_696.blurb}
-              </p>
-            </>
-          ) : (
-            <p className="mt-1 text-sm text-[var(--dim)]">
-              /i/{slug}
-              {canEdit ? " · tap names to add or remove" : ""}
-            </p>
-          )}
-        </div>
-        <div className="font-[family-name:var(--font-mono)] text-right text-[11px] text-[var(--dim)]">
-          <div>
-            {on.length}/24 names
-          </div>
-          <div className="mt-1 h-px w-24 bg-[var(--line)]">
-            <div className="xp" style={{ width: `${power}%`, height: 1 }} />
-          </div>
-          <div className="mt-1">
-            {creatorBps / 100}% creator / {protocolBps / 100}% HOODX
-          </div>
         </div>
       </div>
 
+      {gen0 ? (
+        <div className="mt-4">
+          <p className="text-[15px] leading-6 text-[var(--dim)]">
+            Curated by{" "}
+            <a className="text-[var(--paper)]" href={CURATOR_696.x} target="_blank" rel="noreferrer">
+              @{CURATOR_696.handle}
+            </a>
+            {CURATOR_696.followers ? (
+              <span> · {CURATOR_696.followers.toLocaleString()} on X</span>
+            ) : null}
+          </p>
+          <p className="mt-2 text-[15px] leading-6 text-[var(--paper)]/85">{CURATOR_696.blurb}</p>
+        </div>
+      ) : (
+        canEdit && (
+          <p className="mt-4 text-[15px] leading-6 text-[var(--dim)]">Tap names to add or remove.</p>
+        )
+      )}
+
+      <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-[var(--line)] pt-4">
+        <div>
+          <dt className="text-[11px] text-[var(--dim)]">Names</dt>
+          <dd className="mt-0.5 tabular text-sm text-[var(--paper)]">
+            {on.length}/24
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[11px] text-[var(--dim)]">Creator</dt>
+          <dd className="mt-0.5 tabular text-sm text-[var(--paper)]">{creatorBps / 100}%</dd>
+        </div>
+        <div>
+          <dt className="text-[11px] text-[var(--dim)]">HOODX</dt>
+          <dd className="mt-0.5 tabular text-sm text-[var(--paper)]">{protocolBps / 100}%</dd>
+        </div>
+      </dl>
+
       <div className="mt-6">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--dim)]">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--dim)]">
           <span>{canEdit ? "Names · tap to add or remove" : "Names"}</span>
           {canEdit && (
             <span className="text-[var(--cyan)]">
