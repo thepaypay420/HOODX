@@ -1,5 +1,4 @@
-# 696X — isolated meme-index project.
-# Never wired into a trading bot / CEO cycle / vault.
+# HOODX — secrets, caches, and HUD build artifacts.
 *-last.json
 .secrets/
 __pycache__/

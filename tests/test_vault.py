@@ -531,6 +531,10 @@ class LiveFundsTest(unittest.TestCase):
         self.assertEqual(live_supply(10**18 + 10**12, 10**12), 10**18)
         self.assertEqual(live_supply(10**12, 10**12), 0)
 
+    @unittest.skipUnless(
+        (Path(__file__).resolve().parents[1] / "wire_ui.py").is_file(),
+        "operator harnesses are not shipped in the HOODX product repo",
+    )
     def test_harnesses_call_the_guard(self):
         here = Path(__file__).resolve().parents[1]
         ui = (here / "wire_ui.py").read_text()

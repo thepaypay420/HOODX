@@ -1,12 +1,19 @@
 <p align="center">
-  <img src="web/public/brand/hoodx-hat.png" width="108" alt="HOODX" />
+  <img src="web/public/brand/hoodx-hat.png" width="96" alt="HOODX" />
 </p>
 
 <h1 align="center">HOODX</h1>
 
 <p align="center">
-  <b>Live on Robinhood Chain.</b> One token. A whole book.<br />
-  Mint an index. Share the link. Earn a cut. Redeem cannot be paused.
+  <strong>The index factory for Robinhood Chain.</strong><br />
+  One token. A whole book.
+</p>
+
+<p align="center">
+  <img alt="Live" src="https://img.shields.io/badge/status-LIVE-1fd4c6?style=flat-square&labelColor=070b0c" />
+  <img alt="Robinhood Chain 4663" src="https://img.shields.io/badge/chain-Robinhood%204663-e0b54a?style=flat-square&labelColor=070b0c" />
+  <img alt="Uniswap V3 + V4" src="https://img.shields.io/badge/uniswap-V3%20%2B%20V4-ff007a?style=flat-square&labelColor=070b0c" />
+  <img alt="$696X Gen-0" src="https://img.shields.io/badge/%24696X-Gen--0-1fd4c6?style=flat-square&labelColor=070b0c" />
 </p>
 
 <p align="center">
@@ -17,37 +24,61 @@
 </p>
 
 <p align="center">
-  <img src="docs/hud-home.png" alt="HOODX HUD" width="920" />
+  <img src="docs/hud-home.png" alt="HOODX HUD — One token. A whole book." width="920" />
 </p>
 
-HOODX is a factory for trustless meme baskets on **Robinhood Chain (4663)**. You pick 2–24 Uni V3 WETH or V4 ETH names, mint one ERC-20, and drop `/i/yourslug`. Friends send ETH. The vault buys the book. They hold one token — not seventeen airdrops.
+HOODX is live on **Robinhood Chain (4663)**. Anyone can mint a trustless meme basket — 2 to 24 Uniswap V3 WETH or V4 ETH names — as a single ERC-20. Friends send ETH. The vault buys the book. They hold one token, not a folder of airdrops.
 
-**$696X** is live. It is index zero: [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as a single bag, with 696’s X profile picture on the HUD. One share starts at **$100 of ETH**. Join buys the mix. Leave sells your slice back to ETH. Redeem is free.
+You drop `/i/yourslug`. You keep the book from going thin. You earn a cut on every join. **Redeem is free, and it cannot be paused.**
+
+---
+
+## $696X is live
+
+**$696X** is index zero: [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one bag. The HUD carries 696’s X picture. One share starts at **$100 of ETH**. Join buys the mix. Leave sells your slice back to ETH.
 
 <p align="center">
-  <img src="docs/hud-696x.png" alt="$696X desk — You, ROI, vault names, Join / Leave" width="920" />
+  <img src="docs/hud-696x.png" alt="$696X — You, ROI, vault names, Join and Leave" width="920" />
 </p>
 
-## Live
-
-| | Address |
+| | On-chain now |
 |---|---|
-| Chain | Robinhood **4663** |
-| Factory | [`0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9`](https://robinhoodchain.blockscout.com/address/0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9) |
-| Implementation | [`0x7057904c24c1BD1252415033370a252427c262cc`](https://robinhoodchain.blockscout.com/address/0x7057904c24c1BD1252415033370a252427c262cc) |
-| **$696X vault** | [`0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`](https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24) |
-| WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
+| Vault | [`0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`](https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24) |
+| Status | **Live** · joins open · redeem open |
+| Share | ~0.041 ETH · genesis peg **$100** of ETH |
+| Book | 14 listed names · Uni V3 TWAP + V4 spot · ~25%+ WETH cash |
+| Fees | 0.50% in · **0% out** |
+| First mint | Done (0.08 ETH). Later joins copy the live mix. |
 
-First 696X mint is done (0.08 ETH). Later joins copy the live mix. Do not redeploy that clone.
+Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
 
-## How it works
+---
+
+## Compose. Share. Earn.
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>01 · Compose</h3>
+      <p>Pick 2–24 RH names with a Uni V3 WETH or V4 ETH pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>02 · Share</h3>
+      <p>Every index lives at <code>/i/yourslug</code>. Friends ape ETH and receive one ERC-20. You curate. They don’t farm seventeen tickers.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>03 · Earn</h3>
+      <p><strong>0.40%</strong> to you, <strong>0.10%</strong> to HOODX, on every join. Redeem is 0% and stays open if joins are paused.</p>
+    </td>
+  </tr>
+</table>
 
 ```
 ETH in ── 0.10% protocol
        ── 0.40% creator
        └── net buys the book (Uni V3 TWAP / V4 ETH, 3% max slip)
-              ├── names too small stay WETH
-              ├── ~25% cash for exits
+              ├── thin names stay WETH
+              ├── cash sleeve for exits
               └── Leave sells your slice back to ETH. Fee: 0.
 ```
 
@@ -55,18 +86,26 @@ ETH in ── 0.10% protocol
 |---|---|---|
 | First mint | 0.08 ETH | 0.02 ETH |
 | Share at genesis | $100 of ETH | $100 of ETH |
-| Join fee | 0.50% | 0.10% protocol + 0–0.50% you |
+| Join | 0.50% | 0.10% protocol + 0–0.50% you |
 | Redeem | **0% · cannot be paused** | same |
 | Book | 2–24 names · curator rebalances | same |
 | Add a name | paste any RH `0x` with a V3 WETH or V4 ETH pool | same |
 
-A name that cannot fill inside 3% stays ETH. NAV is every sleeve plus WETH — not one pool token standing in for the fund. USD on the HUD is the live ETH tape, never a hardcoded price.
+A name that cannot fill inside 3% stays ETH. NAV is **every sleeve plus WETH** — not one pool token standing in for the fund. USD on the HUD is the live ETH tape, never a hardcoded price.
 
-## $696X
+---
 
-Capped **sqrt-mcap** weights (10% / 3% bands), ~25% WETH, 696’s list. The curator keeps the book from going thin. Creator fees and curation are separate keys: you can point the cut at 696 without handing add/remove.
+## Why a factory, not one token
 
-Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
+A single watchlist coin is a fund you have to market forever. The loop that spreads:
+
+**you** pick the pack → drop `/i/yourslug` → friends ape → **you** earn.
+
+$696X is the proof. Then anyone mints their own basket. Creator fees and curation are separate keys: point the cut at 696 without handing add/remove.
+
+`696x` and `hoodx` are reserved.
+
+---
 
 ## Create yours
 
@@ -75,7 +114,9 @@ Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
 3. Set your cut (0–50 bps). HOODX always takes 10 bps.
 4. Mint. Share `/i/yourslug`.
 
-`696x` and `hoodx` are reserved.
+The factory is permissionless. `HoodxFactory.create` is for anyone. `create696x` is Gen-0.
+
+---
 
 ## HUD
 
@@ -97,9 +138,26 @@ npm run dev     # http://127.0.0.1:3100
 
 Vercel root: `web/`. `.env.example` already points at the live factory and $696X vault.
 
+---
+
 ## Contracts
 
-EIP-1167 clones. `HoodxFactory.create` for anyone. `create696x` for gen-0.
+Robinhood Chain **4663**. EIP-1167 clones of `HoodxIndex`.
+
+| | Address |
+|---|---|
+| **Factory** | [`0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9`](https://robinhoodchain.blockscout.com/address/0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9) |
+| Implementation | [`0x7057904c24c1BD1252415033370a252427c262cc`](https://robinhoodchain.blockscout.com/address/0x7057904c24c1BD1252415033370a252427c262cc) |
+| **$696X vault** | [`0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`](https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24) |
+| WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
+| Uni V3 SwapRouter02 | [`0xCaf681a66D020601342297493863E78C959E5cb2`](https://robinhoodchain.blockscout.com/address/0xCaf681a66D020601342297493863E78C959E5cb2) |
+| Uni V4 PoolManager | [`0x8366a39CC670B4001A1121B8F6A443A643e40951`](https://robinhoodchain.blockscout.com/address/0x8366a39CC670B4001A1121B8F6A443A643e40951) |
+
+```
+contracts/HoodxFactory.sol   permissionless clones · create / create696x
+contracts/HoodxIndex.sol     ETH in / ETH out vault · deposit · withdraw
+contracts/UniTwap.sol        V3 TWAP + V4 spot
+```
 
 - `deposit(minShares)` — 97% of preview. Joins can close; **withdraw ignores pause**.
 - `withdraw(shares, minEthOut)` — sells the slice, 3% per swap.
@@ -112,9 +170,19 @@ python3 -m unittest tests.test_weights tests.test_vault
 
 Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain catalog.
 
+---
+
 ## Guarantees
 
-- Redeem stays open if joins are paused.
-- A typo owner (zero, vault, WETH, dead) reverts. New curator cannot steal the creator cut.
-- Do not redeploy live $696X. User ETH is already in the clone above.
+- **Redeem stays open** if joins are paused. User ETH is not a curator hostage.
+- A typo owner (zero, vault, WETH, dead) reverts. The new curator cannot steal the creator cut.
+- NAV sums every priced sleeve plus WETH. One dumped pool cannot mint the rest of the book cheap.
+- The live $696X clone above is canonical. Do not treat a second 696X deploy as this product.
 - DYOR. Not HOOD10. Not a seeded Uni pool yet. Not financial advice.
+
+---
+
+<p align="center">
+  <a href="https://t.me/HOODXINDEX"><strong>t.me/HOODXINDEX</strong></a><br />
+  <sub>Private repository. All rights reserved.</sub>
+</p>
