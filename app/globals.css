@@ -160,6 +160,14 @@ body {
   padding-left: 0.95rem;
 }
 
+@media (max-width: 639px) {
+  .vault-blurb {
+    max-width: none;
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+}
+
 .vault-blurb a {
   color: var(--cyan);
   text-decoration: none;

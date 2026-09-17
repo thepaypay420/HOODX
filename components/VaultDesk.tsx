@@ -513,14 +513,14 @@ export function VaultDesk({
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 flex-wrap items-start gap-3 sm:flex-nowrap sm:gap-5">
+        <div className="flex min-w-0 items-center gap-3 sm:flex-1 sm:items-start sm:gap-5">
           <TokenArt slug={slug} size="md" priority={isGen0} />
           <div className="min-w-0 shrink-0">
             <p className="text-[13px] text-[var(--dim)]">{isGen0 ? "Index" : `/${slug}`}</p>
             <h1 className="mt-0.5 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">${token}</h1>
           </div>
           {blurb ? (
-            <div className="min-w-0 flex-1 pt-0.5 sm:pt-[1.55rem]">
+            <div className="hidden min-w-0 flex-1 sm:block sm:pt-[1.55rem]">
               <VaultBlurb text={blurb} />
             </div>
           ) : null}
@@ -542,6 +542,11 @@ export function VaultDesk({
           </button>
         </div>
       </div>
+      {blurb ? (
+        <div className="mt-3 sm:hidden">
+          <VaultBlurb text={blurb} />
+        </div>
+      ) : null}
 
       <section data-testid="vault-board" className="holo desk mt-6 overflow-hidden sm:mt-8">
         <div className="desk-line grid grid-cols-2 gap-px">

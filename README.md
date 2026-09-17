@@ -19,6 +19,7 @@
 <p align="center">
   <a href="https://www.xhoodindex.com">App</a> ·
   <a href="https://www.xhoodindex.com/i/696x">$696X</a> ·
+  <a href="https://x.com/XHOODINDEX">X</a> ·
   <a href="https://t.me/HOODXINDEX">Telegram</a> ·
   <a href="https://x.com/696_eth/status/2100067116594725086">696 list</a> ·
   <a href="https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24">Vault</a> ·

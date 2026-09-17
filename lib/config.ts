@@ -35,3 +35,4 @@ export const HOODX_SLUG = "696x";
 export const TWEET = "https://x.com/696_eth/status/2100067116594725086";
 export const GITHUB_REPO = "https://github.com/thepaypay420/HOODX";
 export const TELEGRAM = "https://t.me/HOODXINDEX";
+export const X_ACCOUNT = "https://x.com/XHOODINDEX";
