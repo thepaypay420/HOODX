@@ -1,6 +1,7 @@
 # 696X — isolated meme-index project.
 # Never wired into a trading bot / CEO cycle / vault.
 *-last.json
+.secrets/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -11,4 +12,6 @@ web/out/
 web/.env
 web/.env.local
 web/*.log
+web/test-results/
+web/playwright-report/
 .DS_Store

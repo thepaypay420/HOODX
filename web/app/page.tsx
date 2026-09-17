@@ -4,6 +4,7 @@ import { FeaturedIndex } from "@/components/FeaturedIndex";
 import { Forge } from "@/components/Forge";
 import { Gallery } from "@/components/Gallery";
 import { Hud } from "@/components/Hud";
+import { LiveIndexes } from "@/components/LiveIndexes";
 import { Ticker } from "@/components/Ticker";
 import { CREATOR_FEE_BPS, PROTOCOL_FEE_BPS } from "@/lib/config";
 
@@ -11,52 +12,49 @@ export default function Home() {
   return (
     <>
       <Hud />
-      <main className="relative z-10 mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-5 sm:pb-28 sm:pt-16">
-        <p className="text-[11px] text-[var(--dim)]">Robinhood Chain · 4663</p>
-        <h1 className="mt-3 max-w-[12ch] font-[family-name:var(--font-display)] text-[2.6rem] leading-[1.05] sm:mt-5 sm:max-w-none sm:text-7xl sm:leading-[0.95]">
-          Build a meme index.
+      <main className="relative z-10 mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6 sm:pb-28 sm:pt-16">
+        <p className="text-[13px] text-[var(--dim)]">Robinhood Chain</p>
+        <h1 className="mt-3 max-w-[11ch] text-[2.7rem] font-semibold leading-[0.98] tracking-[-0.05em] sm:max-w-none sm:text-6xl">
+          One token. A whole book.
         </h1>
-        <p className="mt-4 max-w-xl text-[16px] leading-7 text-[var(--dim)] sm:mt-5 sm:text-lg sm:leading-relaxed">
-          HOODX is a factory for baskets. Pick the names, mint one token, share the link. You earn a
-          cut when people join.
+        <p className="mt-4 max-w-md text-[16px] leading-7 text-[var(--dim)] sm:text-[17px]">
+          Pick RH names, mint an index, share /i/yourslug. Join buys the basket. Leave sells your
+          slice to ETH. Redeem is free.
         </p>
-        <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap">
-          <Link href="#create" className="ape w-full rounded-sm px-6 py-3 text-sm sm:w-auto">
-            Create an index
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link href={`/i/696x`} className="ape w-full px-6 text-[15px] sm:w-auto">
+            Open 696X
           </Link>
-          <Link href="#how" className="ghost flex w-full items-center justify-center rounded-sm px-6 py-3 sm:w-auto">
-            How it works
+          <Link href="#create" className="ghost w-full px-6 sm:w-auto">
+            Create yours
           </Link>
         </div>
 
         <Ticker />
+        <FeaturedIndex />
 
-        <section id="how" className="mt-14 grid gap-8 sm:mt-16 sm:grid-cols-3">
+        <section id="how" className="mt-16 grid gap-8 sm:grid-cols-3">
           <Step n="01" title="Compose">
-            Two to twenty-four names on Robinhood Chain. Friends send ETH and receive one token — not
-            a bag of dust.
+            2–24 Uni V3 or V4 names. Friends send ETH and get one token.
           </Step>
           <Step n="02" title="Share">
-            Every index lives at /i/yourslug. Drop the link. They join; you keep the book from going
-            thin.
+            Every index lives at /i/yourslug. You keep the book from going thin.
           </Step>
           <Step n="03" title="Earn">
-            {(CREATOR_FEE_BPS / 100).toFixed(2)}% to the creator, {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%
-            to HOODX, on every mint. Redeem is free. Change the payout wallet anytime.
+            {(CREATOR_FEE_BPS / 100).toFixed(2)}% to you, {(PROTOCOL_FEE_BPS / 100).toFixed(2)}% to
+            HOODX, on every join. Redeem cannot be paused.
           </Step>
         </section>
-
-        <FeaturedIndex />
 
         <div className="mt-16">
           <Forge />
         </div>
 
         <Gallery />
+        <LiveIndexes />
 
-        <p className="mt-20 text-sm leading-relaxed text-[var(--dim)]">
-          HOODX on Robinhood Chain 4663. Not HOOD10. Not financial advice. DYOR. Look-only until the
-          factory is live.
+        <p className="mt-16 text-[13px] leading-6 text-[var(--dim)]">
+          NAV is Uni V3 TWAP or V4 spot. 3% max slip per swap. Not HOOD10. DYOR.
         </p>
       </main>
     </>
@@ -65,9 +63,9 @@ export default function Home() {
 
 function Step({ n, title, children }: { n: string; title: string; children: ReactNode }) {
   return (
-    <div>
-      <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--dim)]">{n}</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl">{title}</h2>
+    <div className="rise">
+      <p className="text-[12px] text-[var(--dim)]">{n}</p>
+      <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em]">{title}</h2>
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">{children}</p>
     </div>
   );

@@ -1,0 +1,158 @@
+{
+  "chainId": 4663,
+  "factory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
+  "implementation": "0x7057904c24c1BD1252415033370a252427c262cc",
+  "vault696x": "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24",
+  "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+  "swapRouter": "0xCaf681a66D020601342297493863E78C959E5cb2",
+  "v4Manager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+  "v4StateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+  "v4Posm": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "zapJoin": true,
+  "maxSlipBps": 300,
+  "pack": [
+    {
+      "id": "PONS",
+      "symbol": "PONS",
+      "token": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
+      "pool": "0xEd50bDeeA8aDC232f159486192a4157281D722ff",
+      "fee": 3000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "AI",
+      "symbol": "AI",
+      "token": "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
+      "pool": "0xc4a21f9d6485FC5893DD4A491B320a83DAF4Da1D",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "CASHCAT",
+      "symbol": "CASHCAT",
+      "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "pool": "0xA70fc67C9F69da90B63a0e4C05D229954574E313",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "WALLET",
+      "symbol": "WALLET",
+      "token": "0x0339f5459FC690aC85F1782e15782A151b4A9E1b",
+      "pool": "0x9501A20Bedb8beA0798FE5D4c411f5e270965D49",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "MEME",
+      "symbol": "MEME",
+      "token": "0x385F4f8ae47651ce5F58F5265395a669f8281e18",
+      "pool": "0xE2c12a7379706A291CadAaEc1d22458be2f7239D",
+      "fee": 3000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "Index",
+      "symbol": "Index",
+      "token": "0x56910D4409F3a0C78C64DD8D0545FF0705389870",
+      "pool": "0xD29893fFac8b29eC4Db2cfE0CDB3FE1377c028Ff",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "STONKBROKER",
+      "symbol": "STONKBROKER",
+      "token": "0xe934e36A439C94017B64a3FecE66AF12099aBF50",
+      "pool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+      "fee": 10000,
+      "tickSpacing": 200,
+      "hooks": "0x0000000000000000000000000000000000000000",
+      "v4": true,
+      "tick": 123137
+    },
+    {
+      "id": "DELTA",
+      "symbol": "DELTA",
+      "token": "0xe8ffd7e24187F72afB08d75B1bb13088A989a791",
+      "pool": "0xD64FbdA67E1015dF43Fa5e49F02cA844729E5F94",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "QUOTRON",
+      "symbol": "QUOTRON",
+      "token": "0x5a86828Efd322bfb16d93cFeD16EE9BC14940D7F",
+      "pool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
+      "fee": 8388608,
+      "tickSpacing": 60,
+      "hooks": "0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc",
+      "v4": true,
+      "tick": -7222
+    },
+    {
+      "id": "UP",
+      "symbol": "UP",
+      "token": "0x57C0E45cB534413D1C20A4240955d6bB250BB4F1",
+      "pool": "0x4EF94cD1Ab45eBbB50F9E73Cd6e45C5027caa3F7",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "HOOKR",
+      "symbol": "HOOKR",
+      "token": "0x18E674231A58c239Dc7DaeDcffE15Ec3A24cff5c",
+      "pool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
+      "fee": 2500,
+      "tickSpacing": 25,
+      "hooks": "0x0000000000000000000000000000000000000000",
+      "v4": true,
+      "tick": 126105
+    },
+    {
+      "id": "website",
+      "symbol": "website",
+      "token": "0x0762C1708F0D23F86b29D6B857121FF7DF357506",
+      "pool": "0x6D489e07d7Fe2b4Bc5749f75d56337888B68a34a",
+      "fee": 10000,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "QUOTIENT",
+      "symbol": "QUOTIENT",
+      "token": "0x013940c3daa5e2Bb12df1Ea94AfE47Ce84c0db4f",
+      "pool": "0x10F49351Db85BFfC0C0d837771A6e4DA2dd2Daa1",
+      "fee": 100,
+      "v4": false,
+      "twapOk": true
+    },
+    {
+      "id": "HARMONIC",
+      "symbol": "HARMONIC",
+      "token": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
+      "pool": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
+      "fee": 0,
+      "tickSpacing": 200,
+      "hooks": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+      "v4": true,
+      "tick": 136930
+    }
+  ],
+  "probeSlug": "zap221602",
+  "deprecatedFactory": "0xCeC65e26c593cfC94f3e6A803268A1a9585Eb7e7",
+  "deprecatedVault": "0x010cf76AB172EA9dB59b4548f9BF56CF9C0Db39c",
+  "deprecatedV3Factory": "0x87530eF180dF2CF41D86d5eD0DC08969287745c1",
+  "deprecatedV3Vault": "0x24e5A0b5DA2d5791dF4e8D67fB2Ef07128c430b4",
+  "deprecatedV2Factory": "0xb542f6b3D1F5f867363700FD1F61b34342d1C4C9",
+  "deprecatedV2Vault": "0x2C3E8D24C9E70B5fCB0bE8b071b36Fffa1A2Fc58"
+}

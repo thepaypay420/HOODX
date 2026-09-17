@@ -1,84 +1,86 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { GitHubMark } from "@/components/GitHubMark";
-import { fmtEth, shortAddr } from "@/lib/format";
+import { BrandMark } from "@/components/BrandMark";
+import { Socials } from "@/components/Socials";
+import { TokenArt } from "@/components/TokenArt";
 import { GEN0_SLUG } from "@/lib/curators";
-import { GITHUB_REPO } from "@/lib/config";
-import { publicClient, useWallet } from "@/lib/wallet";
+import { shortAddr } from "@/lib/format";
 import { robinhood } from "@/lib/chain";
+import { useWallet } from "@/lib/wallet";
+import { useState } from "react";
 
 export function Hud() {
   const { address, chainId, connecting, connect, disconnect, switchToRobinhood } = useWallet();
-  const [bal, setBal] = useState<bigint | undefined>();
   const [hint, setHint] = useState("");
   const on = Boolean(address);
   const wrong = on && chainId !== robinhood.id;
 
-  useEffect(() => {
-    if (!address) return setBal(undefined);
-    publicClient.getBalance({ address }).then(setBal).catch(() => setBal(undefined));
-  }, [address]);
-
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--void)]/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
-        <Link
-          href="/"
-          className="shrink-0 font-[family-name:var(--font-display)] text-[1.45rem] leading-none tracking-[0.14em] sm:text-[1.65rem]"
-        >
-          HOODX
+    <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--void)]/75 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2.5 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <BrandMark size={34} priority />
+          <span className="text-[17px] font-semibold tracking-[-0.04em]">HOODX</span>
         </Link>
-        <nav className="flex min-w-0 items-center gap-0.5 text-[13px] text-[var(--dim)] sm:gap-1">
+        <nav className="flex min-w-0 items-center gap-0.5 text-[13px] text-[var(--dim)]">
           <Link
             href={`/i/${GEN0_SLUG}`}
-            className="inline-flex h-11 items-center px-2 hover:text-[var(--paper)]"
+            data-testid="nav-696x"
+            className="inline-flex h-11 items-center gap-1.5 rounded-full px-2.5 hover:text-[var(--paper)]"
           >
-            696X
+            <TokenArt slug={GEN0_SLUG} size="xs" alt="696X" />
+            <span className="hidden xs:inline sm:inline">696X</span>
           </Link>
-          <Link href="/#create" className="inline-flex h-11 items-center px-2 hover:text-[var(--paper)]">
+          <Link
+            href="/#create"
+            data-testid="nav-create"
+            className="inline-flex h-11 items-center rounded-full px-2.5 hover:text-[var(--paper)]"
+          >
             Create
           </Link>
-          <a
-            href={GITHUB_REPO}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-11 w-11 items-center justify-center hover:text-[var(--paper)] sm:w-auto sm:gap-1.5 sm:px-2"
-            aria-label="GitHub"
-          >
-            <GitHubMark />
-            <span className="hidden sm:inline">GitHub</span>
-          </a>
+          <span className="hidden sm:flex">
+            <Socials />
+          </span>
           {!on ? (
             <button
               type="button"
+              data-testid="wallet-connect"
               disabled={connecting}
               onClick={() =>
                 void connect().catch((e) => {
                   setHint(
                     e instanceof Error && e.message === "OPEN_IN_WALLET"
-                      ? "Browse freely. Open this in a wallet app to mint."
-                      : "Wallet closed — you can still browse.",
+                      ? "Open this in a wallet to mint."
+                      : "Wallet closed.",
                   );
                 })
               }
-              className="ml-1 h-11 shrink-0 rounded-sm border border-[var(--line)] px-3 text-[var(--paper)]"
+              className="ape compact ml-1 shrink-0 text-[13px]"
             >
               {connecting ? "…" : "Connect"}
             </button>
           ) : wrong ? (
             <button
               type="button"
+              data-testid="wallet-switch"
               onClick={() => void switchToRobinhood()}
               className="ml-1 h-11 shrink-0 px-2 text-[var(--gold)]"
             >
               Switch
             </button>
           ) : (
-            <span className="ml-1 inline-flex h-11 shrink-0 items-center tabular text-[var(--paper)]">
+            <span
+              data-testid="wallet-addr"
+              className="ml-1 inline-flex h-11 shrink-0 items-center gap-2 rounded-full border border-[var(--line)] px-3 tabular text-[var(--paper)]"
+            >
               {shortAddr(address!)}
-              <button type="button" className="ml-2 text-[var(--dim)]" onClick={() => disconnect()}>
+              <button
+                type="button"
+                data-testid="wallet-out"
+                className="text-[var(--dim)]"
+                onClick={() => disconnect()}
+              >
                 out
               </button>
             </span>
@@ -86,9 +88,7 @@ export function Hud() {
         </nav>
       </div>
       {hint && (
-        <p className="mx-auto max-w-5xl px-4 pb-3 font-[family-name:var(--font-mono)] text-[11px] leading-5 text-[var(--gold)] sm:px-5">
-          {hint}
-        </p>
+        <p className="mx-auto max-w-5xl px-4 pb-3 text-[12px] text-[var(--gold)] sm:px-6">{hint}</p>
       )}
     </header>
   );

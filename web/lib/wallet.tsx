@@ -54,6 +54,17 @@ function injectedProvider(): Ethereum | undefined {
   return window.ethereum;
 }
 
+/** Wallets disagree: hex "0x1237", decimal "4663", or a number. */
+export function parseChainId(chain: unknown): number | undefined {
+  if (chain == null || chain === "") return undefined;
+  if (typeof chain === "bigint") return Number(chain);
+  if (typeof chain === "number" && Number.isFinite(chain)) return chain;
+  const s = String(chain).trim();
+  if (!s) return undefined;
+  const n = s.startsWith("0x") || s.startsWith("0X") ? Number.parseInt(s, 16) : Number.parseInt(s, 10);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<Address | undefined>();
   const [chainId, setChainId] = useState<number | undefined>();
@@ -67,7 +78,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       eth.request({ method: "eth_chainId" }) as Promise<string>,
     ]);
     setAddress(accounts[0] ? (accounts[0] as Address) : undefined);
-    setChainId(Number.parseInt(chain, 16));
+    setChainId(parseChainId(chain));
   }, []);
 
   useEffect(() => {
@@ -80,7 +91,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
     const onChain = (...args: never[]) => {
       const id = args[0] as string;
-      setChainId(Number.parseInt(id, 16));
+      setChainId(parseChainId(id));
     };
     eth.on?.("accountsChanged", onAccounts);
     eth.on?.("chainChanged", onChain);

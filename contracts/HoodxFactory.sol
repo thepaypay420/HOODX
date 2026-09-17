@@ -6,18 +6,20 @@ import {HoodxIndex} from "./HoodxIndex.sol";
 /// @title HoodxFactory — mint a meme index, drop the link, earn a cut
 /// @notice Isolated side project. Not the LP desk.
 ///
-/// create() clones HoodxIndex. Slug `696x` is reserved for the 696_eth
-/// watchlist (create696x, owner-only). Friends join via /i/{slug}.
-/// Creator fee is paid in WETH on every ape-in to `creatorRecipient`
-/// (reroute later to 696 without handing over the pack). Protocol takes a cut.
+/// create() clones HoodxIndex. Each constituent must ship a Uni V3 WETH pool
+/// or a Uni V4 ETH/WETH pool so NAV is on-chain, not an owner price.
+/// Slug `696x` is reserved (create696x, owner-only). Friends join via /i/{slug}.
 
 contract HoodxFactory {
     address public owner;
     address public immutable implementation;
     address public immutable weth;
     address public immutable swapRouter;
+    address public immutable v4Manager;
+    address public immutable v4StateView;
+    address public immutable v4Posm;
     address public treasury;
-    uint16 public protocolFeeBps = 10; // 0.10% platform. Creator default 40 → 0.50% total.
+    uint16 public protocolFeeBps = 10;
     uint16 public constant MAX_CREATOR_FEE_BPS = 50;
     uint16 public constant MAX_PROTOCOL_FEE_BPS = 50;
 
@@ -46,12 +48,23 @@ contract HoodxFactory {
         _;
     }
 
-    constructor(address weth_, address router_, address treasury_) {
-        if (weth_ == address(0) || treasury_ == address(0)) revert Zero();
+    constructor(
+        address weth_,
+        address router_,
+        address treasury_,
+        address v4Manager_,
+        address v4StateView_,
+        address v4Posm_
+    ) {
+        if (weth_ == address(0) || router_ == address(0) || treasury_ == address(0)) revert Zero();
+        if (v4Manager_ == address(0) || v4StateView_ == address(0) || v4Posm_ == address(0)) revert Zero();
         owner = msg.sender;
         weth = weth_;
         swapRouter = router_;
         treasury = treasury_;
+        v4Manager = v4Manager_;
+        v4StateView = v4StateView_;
+        v4Posm = v4Posm_;
         implementation = address(new HoodxIndex());
     }
 
@@ -64,23 +77,26 @@ contract HoodxFactory {
     }
 
     /// @dev First index. 696_eth watchlist. 0.08 ETH first mint (~$200).
-    /// recipient_ = 696's wallet when you are ready to point the cut; 0 keeps it on the creator.
-    function create696x(address[] calldata tokens, address recipient_) external onlyOwner returns (address) {
-        return _create(msg.sender, "696x", "696X", "696x", tokens, 40, 0.08 ether, recipient_);
+    function create696x(
+        address[] calldata tokens,
+        bytes32[] calldata pools,
+        address recipient_
+    ) external onlyOwner returns (address) {
+        return _create(msg.sender, "696x", "696X", "696x", tokens, pools, 40, 0.08 ether, recipient_);
     }
 
-    /// @dev Anyone. Min 2 tokens. First mint 0.02 ETH. Drop /i/{slug}.
-    /// Platform still takes protocolFeeBps. recipient_ 0 → pay the creator wallet.
+    /// @dev Anyone. Min 2 Uni V3 WETH or V4 ETH/WETH names. First mint 0.02 ETH.
     function create(
         string calldata name_,
         string calldata symbol_,
         string calldata slug,
         address[] calldata tokens,
+        bytes32[] calldata pools,
         uint16 creatorFeeBps,
         address recipient_
     ) external returns (address) {
         if (_eq(slug, "696x") || _eq(slug, "hoodx")) revert Taken();
-        return _create(msg.sender, name_, symbol_, slug, tokens, creatorFeeBps, 0.02 ether, recipient_);
+        return _create(msg.sender, name_, symbol_, slug, tokens, pools, creatorFeeBps, 0.02 ether, recipient_);
     }
 
     function setTreasury(address who) external onlyOwner {
@@ -104,6 +120,7 @@ contract HoodxFactory {
         string memory symbol_,
         string memory slug,
         address[] calldata tokens,
+        bytes32[] calldata pools,
         uint16 creatorFeeBps,
         uint256 minFirst,
         address recipient_
@@ -111,21 +128,28 @@ contract HoodxFactory {
         if (!_okSlug(slug)) revert BadSlug();
         if (bySlug[slug] != address(0)) revert Taken();
         if (tokens.length < 2 || tokens.length > 24) revert BadLen();
+        if (tokens.length != pools.length) revert BadLen();
         if (uint256(protocolFeeBps) + uint256(creatorFeeBps) > 100) revert MaxFee();
         if (creatorFeeBps > MAX_CREATOR_FEE_BPS) revert MaxFee();
         vault = _clone(implementation);
         HoodxIndex(payable(vault)).initialize(
-            creator,
-            treasury,
-            weth,
-            swapRouter,
-            name_,
-            symbol_,
+            HoodxIndex.InitParams({
+                creator: creator,
+                protocol: treasury,
+                weth: weth,
+                router: swapRouter,
+                v4Manager: v4Manager,
+                v4StateView: v4StateView,
+                v4Posm: v4Posm,
+                name: name_,
+                symbol: symbol_,
+                protocolFeeBps: protocolFeeBps,
+                creatorFeeBps: creatorFeeBps,
+                minFirstDeposit: minFirst,
+                recipient: recipient_
+            }),
             tokens,
-            protocolFeeBps,
-            creatorFeeBps,
-            minFirst,
-            recipient_
+            pools
         );
         bySlug[slug] = vault;
         slugOf[vault] = slug;

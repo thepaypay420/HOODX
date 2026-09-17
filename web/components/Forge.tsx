@@ -3,12 +3,15 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zeroAddress, type Address } from "viem";
+import { TokenArt } from "@/components/TokenArt";
+import { AddName } from "@/components/AddName";
 import { factoryAbi } from "@/lib/abi";
-import { CATALOG, tier } from "@/lib/catalog";
+import { INDEX_CATALOG, isIndexPool, byAddress, poolRef, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, FACTORY, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
 import { saveDraft, savePayout } from "@/lib/packs";
+import { fileToTokenImage, saveTokenImage } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 export function Forge() {
@@ -24,6 +27,8 @@ export function Forge() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [imageSrc, setImageSrc] = useState("");
+  const [extra, setExtra] = useState<Coin[]>([]);
   const live = isAddress(FACTORY);
   const slugOk = okUserSlug(slug);
   const ready = picked.length >= 2 && name.trim().length >= 2 && symbol.length >= 2 && slugOk;
@@ -40,6 +45,7 @@ export function Forge() {
       createdAt: Date.now(),
     });
     if (payout) savePayout(slug, payout);
+    if (imageSrc) saveTokenImage(slug, imageSrc);
   }
 
   function toggle(token: string) {
@@ -58,13 +64,20 @@ export function Forge() {
     setErr(null);
     try {
       const tokens = picked as Address[];
+      const pools = tokens.map((t) => {
+        const coin = byAddress(t);
+        if (!coin || !isIndexPool(coin) || !coin.buyPool) {
+          throw new Error("every name needs a Uni V3 WETH or V4 ETH/WETH pool");
+        }
+        return poolRef(coin);
+      });
       const recipient = payout && isAddress(payout) ? (payout as Address) : zeroAddress;
       const hash = await walletClient.writeContract({
         account: address,
         address: FACTORY as Address,
         abi: factoryAbi,
         functionName: "create",
-        args: [name.trim(), symbol, slug, tokens, feeBps, recipient],
+        args: [name.trim(), symbol, slug, tokens, pools, feeBps, recipient],
         chain: robinhood,
       });
       await publicClient.waitForTransactionReceipt({ hash });
@@ -76,25 +89,35 @@ export function Forge() {
     }
   }
 
-  const selected = useMemo(() => CATALOG.filter((c) => picked.includes(c.token)), [picked]);
+  const selected = useMemo(() => {
+    const catalog = [...INDEX_CATALOG, ...extra.filter((c) => !INDEX_CATALOG.some((x) => x.token === c.token))];
+    return catalog.filter((c) => picked.includes(c.token));
+  }, [picked, extra]);
+  const catalog = useMemo(() => {
+    const seen = new Set(INDEX_CATALOG.map((c) => c.token));
+    return [...INDEX_CATALOG, ...extra.filter((c) => !seen.has(c.token))];
+  }, [extra]);
 
   return (
-    <section id="create" className="holo rounded-2xl p-4 sm:p-7">
+    <section id="create" className="holo p-4 sm:p-6">
       <div>
-        <p className="text-[11px] text-[var(--dim)]">
-          Create
-        </p>
-        <h2 className="mt-1 font-[family-name:var(--font-display)] text-[1.85rem] leading-none sm:text-4xl">
+        <p className="text-[13px] text-[var(--dim)]">Create</p>
+        <h2 className="mt-1 text-[1.7rem] font-semibold leading-none tracking-[-0.04em] sm:text-3xl">
           Your index
         </h2>
         <p className="mt-3 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
-          Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on every join;
-          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Set a payout address now, or switch it
-          later without giving up the pack.
+          Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on each join;
+          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <Field label="Name" value={name} onChange={setName} placeholder="cats of hood" />
+          <Field
+            label="Name"
+            value={name}
+            onChange={setName}
+            placeholder="cats of hood"
+            testId="forge-name"
+          />
           <Field
             label="Ticker"
             value={symbol}
@@ -104,6 +127,7 @@ export function Forge() {
               if (!touched) setSlug(toSlug(s));
             }}
             placeholder="CATSX"
+            testId="forge-ticker"
           />
           <div>
             <Field
@@ -114,17 +138,18 @@ export function Forge() {
                 setSlug(toSlug(v));
               }}
               placeholder="catsx"
+              testId="forge-slug"
             />
-            <p className="mt-1 font-[family-name:var(--font-mono)] text-[10px] text-[var(--dim)]">
+            <p className="mt-1 text-[12px] text-[var(--dim)]">
               /i/{slug || "…"} {slug && !slugOk ? " · reserved or invalid" : ""}
             </p>
           </div>
         </div>
 
         <div className="mt-5">
-          <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
-            Your cut {feeBps} bps · $100 ape → {fmtUsd((100 * feeBps) / 10_000)} to you · proto always{" "}
-            {PROTOCOL_FEE_BPS} bps
+          <p className="text-[12px] text-[var(--dim)]">
+            Your cut {(feeBps / 100).toFixed(2)}% · $100 join → {fmtUsd((100 * feeBps) / 10_000)} to you ·
+            HOODX {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%
           </p>
           <input
             type="range"
@@ -133,12 +158,52 @@ export function Forge() {
             step={5}
             value={feeBps}
             onChange={(e) => setFeeBps(Number(e.target.value))}
-            className="mt-2 w-full accent-[#5ef2ff]"
+            className="mt-2 w-full accent-[#1fd4c6]"
           />
         </div>
 
+        <div className="mt-5 flex flex-wrap items-center gap-4">
+          <TokenArt slug={slug || "draft"} src={imageSrc || undefined} size="md" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] text-[var(--dim)]">Token image · optional</p>
+            <p className="mt-1 text-[13px] leading-6 text-[var(--dim)]">
+              Optional. Shown on HOODX. Wallets wait for a later factory image URI.
+            </p>
+            <label className="ghost mt-2 inline-flex cursor-pointer px-3 text-[13px] text-[var(--cyan)]">
+              {imageSrc ? "Replace image" : "Upload image"}
+              <input
+                data-testid="forge-image"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  void fileToTokenImage(file)
+                    .then((data) => {
+                      setImageSrc(data);
+                      setErr(null);
+                      if (slugOk) saveTokenImage(slug, data);
+                    })
+                    .catch((ex) => setErr(ex instanceof Error ? ex.message : "could not read image"));
+                }}
+              />
+            </label>
+            {imageSrc && (
+              <button
+                type="button"
+                className="ml-2 text-[11px] text-[var(--dim)] underline-offset-4 hover:underline"
+                onClick={() => setImageSrc("")}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="mt-4">
-          <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
+          <p className="text-[12px] text-[var(--dim)]">
             Optional payout wallet. Switch later without moving curation.
           </p>
           <input
@@ -149,24 +214,40 @@ export function Forge() {
           />
         </div>
 
-        <div className="mt-5 flex items-center justify-between font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
+        <div className="mt-5 text-[12px] text-[var(--dim)]">
           <span>
             {picked.length}/24 · {selected.map((s) => s.symbol).join(" · ") || "none yet"}
           </span>
         </div>
 
+        <AddName
+          testId="forge-add"
+          disabled={picked.length >= 24}
+          onResolved={(coin) => {
+            setExtra((p) => (p.some((x) => x.token === coin.token) ? p : [...p, coin]));
+            setPicked((cur) => {
+              if (cur.includes(coin.token) || cur.length >= 24) return cur;
+              return [...cur, coin.token];
+            });
+          }}
+        />
+
         <div className="mt-4 flex flex-wrap gap-2">
-          {CATALOG.map((c) => {
+          {catalog.map((c) => {
             const on = picked.includes(c.token);
             return (
               <button
                 key={c.token}
                 type="button"
+                data-testid={`pick-${c.symbol}`}
+                data-symbol={c.symbol}
+                data-on={on ? "1" : "0"}
                 onClick={() => toggle(c.token)}
-                className={`chip rounded-sm px-2 py-1 font-[family-name:var(--font-mono)] text-xs ${on ? "on" : "off"}`}
+                className={`chip px-2.5 text-[12px] ${on ? "on" : "off"}`}
               >
                 <span className="mr-1 text-[var(--gold)]">{tier(c.mcapUsd)}</span>
                 {c.symbol}
+                {(c.buyLabels || []).includes("v4") ? <span className="ml-1 text-[var(--dim)]">v4</span> : null}
                 <span className={`ml-1 ${on ? "text-[var(--danger)]" : "text-[var(--lime)]"}`}>
                   {on ? "×" : "+"}
                 </span>
@@ -175,7 +256,11 @@ export function Forge() {
           })}
         </div>
 
-        {err && <p className="mt-3 text-sm text-[var(--danger)]">{err}</p>}
+        {err && (
+          <p data-testid="forge-err" className="mt-3 text-sm text-[var(--danger)]">
+            {err}
+          </p>
+        )}
         {!live && (
           <p className="mt-3 text-xs text-[var(--dim)]">
             Factory offline. Save the draft — mint arms when the factory address is set.
@@ -185,6 +270,7 @@ export function Forge() {
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           <button
             type="button"
+            data-testid="forge-save"
             disabled={!ready}
             onClick={() => {
               persist();
@@ -192,12 +278,13 @@ export function Forge() {
               setSaved(true);
               window.setTimeout(() => setSaved(false), 1600);
             }}
-            className="ghost rounded-sm py-3"
+            className="ghost py-3"
           >
             {saved ? "Saved" : "Save draft"}
           </button>
           <button
             type="button"
+            data-testid="forge-mint"
             disabled={!ready || busy || (live && chainId !== robinhood.id)}
             onClick={() => {
               if (!address) {
@@ -206,9 +293,9 @@ export function Forge() {
               }
               void launch();
             }}
-            className="ape rounded-sm py-3 text-sm disabled:opacity-40"
+            className="ape py-3 text-sm disabled:opacity-40"
           >
-            {!address ? (connecting ? "Connecting…" : "Connect to mint") : busy ? "Confirm…" : "Mint this index"}
+            {!address ? (connecting ? "Connecting…" : "Connect to mint") : busy ? "Confirm…" : "Mint"}
           </button>
         </div>
       </div>
@@ -221,18 +308,21 @@ function Field({
   value,
   onChange,
   placeholder,
+  testId,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  testId?: string;
 }) {
   return (
     <label className="block">
-      <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--dim)]">
+      <span className="text-[12px] text-[var(--dim)]">
         {label}
       </span>
       <input
+        data-testid={testId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

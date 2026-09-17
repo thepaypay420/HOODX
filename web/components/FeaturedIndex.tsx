@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { TokenArt } from "@/components/TokenArt";
 import { byAddress } from "@/lib/catalog";
 import { CURATOR_696, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
 import { defaultPack } from "@/lib/packs";
@@ -11,37 +11,26 @@ export function FeaturedIndex() {
     .map((c) => c!.symbol);
 
   return (
-    <section className="mt-16 sm:mt-24">
-      <p className="text-[11px] text-[var(--dim)]">First index</p>
+    <section className="mt-14 sm:mt-16">
+      <p className="text-[13px] text-[var(--dim)]">First index</p>
       <Link
         href={`/i/${GEN0_SLUG}`}
-        className="holo mt-3 block rounded-2xl p-4 transition-colors hover:border-[rgba(196,165,116,0.4)] sm:p-6"
+        className="holo mt-3 block p-4 transition-[border-color,transform] hover:border-[rgba(31,212,198,0.35)] active:scale-[0.995] sm:p-5"
       >
         <div className="flex items-center gap-3.5">
-          <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-full border border-[var(--line)] sm:h-20 sm:w-20">
-            <Image
-              src={CURATOR_696.avatar}
-              alt={`@${CURATOR_696.handle}`}
-              width={400}
-              height={400}
-              priority
-              className="h-full w-full object-cover"
-            />
-          </span>
+          <TokenArt slug={GEN0_SLUG} size="md" priority />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate font-[family-name:var(--font-display)] text-[1.85rem] leading-none sm:text-4xl">
+            <h2 className="truncate text-[1.7rem] font-semibold leading-none tracking-[-0.04em] sm:text-3xl">
               ${GEN0_SYMBOL}
             </h2>
-            <p className="mt-1 text-[13px] leading-5 text-[var(--dim)]">
+            <p className="mt-1.5 text-[13px] text-[var(--dim)]">
               @{CURATOR_696.handle}
-              {CURATOR_696.followers ? ` · ${CURATOR_696.followers.toLocaleString()} on X` : ""}
             </p>
           </div>
-          <span className="hidden shrink-0 text-sm text-[var(--cyan)] sm:inline">Open →</span>
+          <span className="hidden text-sm text-[var(--cyan)] sm:inline">Open</span>
         </div>
-        <p className="mt-4 text-[15px] leading-6 text-[var(--paper)]/85">{CURATOR_696.blurb}</p>
         {lineup.length > 0 && (
-          <p className="mt-3 text-[12px] leading-5 text-[var(--dim)]">
+          <p className="mt-4 text-[13px] leading-5 text-[var(--dim)]">
             {lineup.slice(0, 8).join(" · ")}
             {lineup.length > 8 ? " · …" : ""}
           </p>

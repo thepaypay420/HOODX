@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --void: #0b0b0a;
-  --hud: #121211;
-  --cyan: #c4a574;
-  --mag: #b08968;
-  --gold: #d4bc8c;
-  --lime: #9aaa7a;
-  --dim: #8a867c;
-  --line: rgba(243, 239, 230, 0.12);
-  --danger: #c97b6a;
+  --void: #070b0c;
+  --hud: #10181a;
+  --lift: #162022;
+  --cyan: #1fd4c6;
+  --cyan-dim: rgba(31, 212, 198, 0.14);
+  --mag: #7ad4c8;
+  --gold: #e0b54a;
+  --lime: #1fd4c6;
+  --dim: #8a9a97;
+  --line: rgba(238, 248, 246, 0.08);
+  --danger: #ff7a6e;
   --muted: var(--dim);
   --ink: var(--cyan);
-  --paper: #f3efe6;
+  --paper: #eef8f6;
   --rule: var(--line);
-  --panel: rgba(18, 18, 17, 0.92);
+  --panel: rgba(16, 24, 26, 0.82);
   --hold: var(--cyan);
   --wait: var(--gold);
+  --radius: 20px;
+  --radius-sm: 14px;
 }
 
 html,
@@ -33,37 +37,87 @@ body {
 body {
   --font-hud: var(--font-ui);
   font-family: var(--font-ui), system-ui, sans-serif;
+  font-feature-settings: "ss01" on, "cv11" on;
+  letter-spacing: -0.011em;
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  background-image: radial-gradient(ellipse 70% 45% at 50% -10%, rgba(196, 165, 116, 0.08), transparent 55%);
+}
+
+.aura {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.aura::before,
+.aura::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(8px);
+}
+
+.aura::before {
+  width: min(42rem, 140vw);
+  height: min(42rem, 140vw);
+  left: 50%;
+  top: -18rem;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(31, 212, 198, 0.22), transparent 64%);
+  animation: drift 22s ease-in-out infinite;
+}
+
+.aura::after {
+  width: 18rem;
+  height: 18rem;
+  right: -4rem;
+  top: 12rem;
+  background: radial-gradient(circle, rgba(224, 181, 74, 0.16), transparent 68%);
+  animation: drift 28s ease-in-out infinite reverse;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 18px;
+  }
 }
 
 .holo {
   border: 1px solid var(--line);
   background: var(--hud);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 }
 
 .chip {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--paper);
-  transition: 140ms ease;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
   cursor: pointer;
   white-space: nowrap;
+  border-radius: 999px;
+  min-height: 36px;
 }
 
 .chip:hover {
-  border-color: rgba(196, 165, 116, 0.55);
+  border-color: rgba(31, 212, 198, 0.45);
 }
 
 .chip.on {
-  border-color: rgba(196, 165, 116, 0.7);
-  background: rgba(196, 165, 116, 0.12);
+  border-color: rgba(31, 212, 198, 0.7);
+  background: var(--cyan-dim);
 }
 
 .chip.off {
-  opacity: 0.45;
+  opacity: 0.5;
 }
 
 .chip.pop {
@@ -87,41 +141,58 @@ body {
 }
 
 .ape {
-  background: var(--paper);
-  color: var(--void);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  background: var(--cyan);
+  color: #04110f;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   box-shadow: none;
   font-family: var(--font-ui), sans-serif;
-  min-height: 44px;
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 16px;
+  transition: filter 160ms ease, transform 160ms ease;
 }
 
 .ape:hover {
-  background: #fff;
+  filter: brightness(1.06);
+}
+
+.ape:active {
+  transform: scale(0.985);
 }
 
 .ape:disabled {
-  opacity: 0.35;
+  opacity: 0.38;
+  filter: none;
+  transform: none;
+}
+
+.ape.compact {
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 0 1rem;
 }
 
 .ghost {
   border: 1px solid var(--line);
-  color: var(--dim);
-  letter-spacing: 0.02em;
+  color: var(--paper);
+  letter-spacing: -0.01em;
   font-family: var(--font-ui), sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 16px;
+  background: transparent;
+  transition: border-color 160ms ease, background 160ms ease;
 }
 
 .ghost:hover {
-  border-color: var(--cyan);
-  color: var(--paper);
+  border-color: rgba(31, 212, 198, 0.45);
+  background: var(--cyan-dim);
 }
 
 .tabular {
@@ -137,10 +208,9 @@ body {
   display: flex;
   width: max-content;
   gap: 2.5rem;
-  animation: marquee 36s linear infinite;
-  font-family: var(--font-mono), monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  animation: marquee 42s linear infinite;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dim);
 }
@@ -159,14 +229,54 @@ body {
   border: 1px solid var(--line);
   background: rgba(0, 0, 0, 0.28);
   color: var(--paper);
-  border-radius: 2px;
-  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
   outline: none;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-ui), sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .field:focus {
-  border-color: rgba(196, 165, 116, 0.7);
+  border-color: rgba(31, 212, 198, 0.55);
+}
+
+.swap-amt {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-size: clamp(1.85rem, 6vw, 2.35rem);
+  font-weight: 560;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  padding: 0.15rem 0;
+}
+
+.swap-amt::placeholder {
+  color: rgba(238, 248, 246, 0.22);
+}
+
+.token-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--void);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.kicker {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0;
 }
 
 .toast {
@@ -176,7 +286,22 @@ body {
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -187,4 +312,27 @@ body {
 .xp {
   background: var(--cyan);
   height: 100%;
+}
+
+.tone-up {
+  color: var(--cyan);
+}
+
+.tone-down {
+  color: var(--danger);
+}
+
+.tone-flat {
+  color: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura::before,
+  .aura::after,
+  .ticker-track,
+  .chip.pop,
+  .toast,
+  .rise {
+    animation: none;
+  }
 }

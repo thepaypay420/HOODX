@@ -1,4 +1,5 @@
 import universe from "../public/universe.json";
+import { isAddress } from "./format";
 
 export type Coin = {
   id: string;
@@ -9,12 +10,72 @@ export type Coin = {
   vol24Usd?: number;
   hops?: number;
   buyQuote?: string;
+  buyPool?: string;
+  buyLabels?: string[];
 };
 
 export const CATALOG: Coin[] = ((universe as { tokens?: Coin[] }).tokens || []).map((t) => ({
   ...t,
   token: t.token.toLowerCase(),
+  buyPool: t.buyPool?.toLowerCase(),
 }));
+
+export function isBytes32(id: string) {
+  return /^0x[a-fA-F0-9]{64}$/.test(id);
+}
+
+/** Uni V3 WETH pool with a 20-byte address. */
+export function isV3WethPool(c: Coin) {
+  const quote = (c.buyQuote || "").toUpperCase();
+  const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
+  return (
+    Boolean(c.buyPool && isAddress(c.buyPool)) &&
+    quote === "WETH" &&
+    (labels.length === 0 || labels.includes("v3"))
+  );
+}
+
+/** Uni V4 pool quoted in native ETH or WETH. Skip USDG / SPY / SPCX. */
+export function isV4EthWethPool(c: Coin) {
+  const quote = (c.buyQuote || "").toUpperCase();
+  const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
+  return (
+    Boolean(c.buyPool && isBytes32(c.buyPool)) &&
+    (quote === "WETH" || quote === "ETH") &&
+    labels.includes("v4")
+  );
+}
+
+/** Vault NAV is 1e18-wad. NET is 9 decimals; bind reverts. */
+const NON_WAD = new Set(["0xca9c78dd337a67f6e0077f65f5e9218719d30edf"]);
+
+export function isIndexPool(c: Coin) {
+  if (NON_WAD.has(c.token.toLowerCase())) return false;
+  return isV3WethPool(c) || isV4EthWethPool(c);
+}
+
+/** Pad a V3 pool address to bytes32; pass a V4 pool id through. */
+export function poolRef(c: Coin): `0x${string}` {
+  const p = c.buyPool || "";
+  if (isBytes32(p)) return p as `0x${string}`;
+  if (isAddress(p)) return `0x${p.slice(2).toLowerCase().padStart(64, "0")}` as `0x${string}`;
+  throw new Error("need a Uni V3 WETH or V4 ETH/WETH pool");
+}
+
+export const V3_CATALOG: Coin[] = CATALOG.filter(isV3WethPool);
+export const INDEX_CATALOG: Coin[] = CATALOG.filter(isIndexPool);
+
+const EXTRA: Coin[] = [];
+
+export function rememberCoin(c: Coin) {
+  const token = c.token.toLowerCase();
+  if (CATALOG.some((x) => x.token === token) || EXTRA.some((x) => x.token === token)) return;
+  EXTRA.push({ ...c, token, buyPool: c.buyPool?.toLowerCase() });
+}
+
+export function bookCatalog(): Coin[] {
+  return EXTRA.length ? [...INDEX_CATALOG, ...EXTRA] : INDEX_CATALOG;
+}
 
 export function tier(mcap = 0) {
   if (mcap >= 100_000_000) return "S";
@@ -25,5 +86,5 @@ export function tier(mcap = 0) {
 
 export function byAddress(addr: string) {
   const k = addr.toLowerCase();
-  return CATALOG.find((c) => c.token === k);
+  return CATALOG.find((c) => c.token === k) || EXTRA.find((c) => c.token === k);
 }

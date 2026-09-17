@@ -1,4 +1,5 @@
-import { CATALOG } from "@/lib/catalog";
+import { INDEX_CATALOG } from "@/lib/catalog";
+import { dropTokenImage } from "@/lib/tokenImage";
 
 export type DraftPack = {
   slug: string;
@@ -15,7 +16,7 @@ const packKey = (slug: string) => `696x-pack-v1:${slug}`;
 const payoutKey = (slug: string) => `696x-payout-v1:${slug}`;
 
 export function defaultPack(): string[] {
-  return CATALOG.filter((c) => (c.vol24Usd || 0) >= 100).map((c) => c.token);
+  return INDEX_CATALOG.filter((c) => (c.vol24Usd || 0) >= 100).map((c) => c.token);
 }
 
 export function loadTokens(slug: string, fallback?: string[]): string[] {
@@ -71,6 +72,7 @@ export function saveDraft(pack: DraftPack) {
 
 export function dropDraft(slug: string) {
   localStorage.setItem(GALLERY, JSON.stringify(loadGallery().filter((p) => p.slug !== slug)));
+  dropTokenImage(slug);
 }
 
 export function ownsDraft(slug: string) {

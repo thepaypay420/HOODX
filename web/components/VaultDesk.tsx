@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, zeroAddress, type Address } from "viem";
-import { vaultAbi } from "@/lib/abi";
+import { erc20Abi, vaultAbi } from "@/lib/abi";
+import { byAddress } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import {
   CASH_TARGET,
   CREATOR_FEE_BPS,
-  ETH_USD_REF,
   EXPLORER,
   ISSUE_FEE_BPS,
   MIN_CREATE_FIRST_ETH,
@@ -16,11 +16,17 @@ import {
   MIN_SLEEVE_USD,
   PROTOCOL_FEE_BPS,
   TWEET,
+  USD_PER_SHARE,
+  WETH,
+  isLive696x,
 } from "@/lib/config";
-import { fmtEth, fmtUsd, isAddress, shortAddr } from "@/lib/format";
+import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta, shortAddr, toneOf } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { activeBook, issueSplit, type Sleeve } from "@/lib/weights";
+import { TokenArt } from "@/components/TokenArt";
 import snapshot from "../public/sleeves.json";
+
+type Bag = { token: Address; symbol: string; wei: bigint; wethWei: bigint; targetBps: number };
 
 type VaultSnap = {
   assets: bigint;
@@ -31,8 +37,44 @@ type VaultSnap = {
   creatorBps: number;
   protocolBps: number;
   userShares: bigint;
+  userValue: bigint;
+  userCost: bigint;
+  sharePrice: bigint;
+  genesis: bigint;
   symbol: string;
+  minFirst: number;
+  shortfall: bigint;
+  listed: Address[];
+  bags: Bag[];
 };
+
+async function sleeveWeth(vault: Address, token: Address, wei: bigint): Promise<bigint> {
+  if (wei <= 0n) return 0n;
+  if (token.toLowerCase() === WETH.toLowerCase()) return wei;
+  try {
+    const px = await publicClient.readContract({
+      address: vault,
+      abi: vaultAbi,
+      functionName: "priceWethWad",
+      args: [token],
+    });
+    if (px > 0n) return (wei * px) / 10n ** 18n;
+  } catch {
+    /* TWAP can be cold */
+  }
+  try {
+    const px = await publicClient.readContract({
+      address: vault,
+      abi: vaultAbi,
+      functionName: "lastPxWad",
+      args: [token],
+    });
+    if (px > 0n) return (wei * px) / 10n ** 18n;
+  } catch {
+    /* */
+  }
+  return 0n;
+}
 
 export function VaultDesk({
   slug,
@@ -51,20 +93,24 @@ export function VaultDesk({
   const [dead] = useState<{ id: string; reason: string }[]>(() =>
     isGen0 ? ((snapshot.dropped || snapshot.skipped || []) as { id: string; reason: string }[]) : [],
   );
-  const [ethUsd, setEthUsd] = useState(ETH_USD_REF);
+  const [ethUsd, setEthUsd] = useState<number | null>(null);
   const [joinAmt, setJoinAmt] = useState(isGen0 ? "0.08" : "0.02");
   const [leaveAmt, setLeaveAmt] = useState("");
   const [snap, setSnap] = useState<VaultSnap | null>(null);
   const [onchainJoin, setOnchainJoin] = useState<{ shares: bigint; fee: bigint } | null>(null);
+  const [joinPlan, setJoinPlan] = useState<{ spent: bigint; kept: bigint; names: number } | null>(null);
   const [leaveNet, setLeaveNet] = useState<bigint | null>(null);
+  const [leaveMin, setLeaveMin] = useState<{ minOut: bigint; names: number } | null>(null);
   const [canLeave, setCanLeave] = useState<boolean | null>(null);
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [txErr, setTxErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [restoreToken, setRestoreToken] = useState("");
+  const [restoreAmt, setRestoreAmt] = useState("");
 
-  const { address, chainId, walletClient } = useWallet();
+  const { address, chainId, walletClient, connect, connecting, switchToRobinhood } = useWallet();
   const isConnected = Boolean(address);
   const wrongChain = isConnected && chainId !== robinhood.id;
 
@@ -83,7 +129,8 @@ export function VaultDesk({
       setSnap(null);
       return;
     }
-    const [assets, supply, buffer, paused, feeBps, creatorBps, protocolBps, symbol] = await Promise.all([
+    const [assets, supply, buffer, paused, feeBps, creatorBps, protocolBps, symbol, minFirstWei, shortfall, listed, genesis] =
+      await Promise.all([
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "totalAssets" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "totalSupply" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "wethBuffer" }),
@@ -92,15 +139,80 @@ export function VaultDesk({
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "creatorFeeBps" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "protocolFeeBps" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "symbol" }),
+      publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "minFirstDeposit" }),
+      publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "cashShortfall" }),
+      publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "constituents" }),
+      publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "genesisEthPerShare" }),
     ]);
+    let price = supply > 0n && assets > 0n ? (assets * 10n ** 18n) / supply : 0n;
+    try {
+      price = await publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "sharePrice" });
+    } catch {
+      /* pre-sharePrice impl: derive from NAV when supply > 0; never assume 1 ETH/share */
+    }
     let userShares = 0n;
+    let userValue = 0n;
+    let userCost = 0n;
     if (address) {
-      userShares = await publicClient.readContract({
-        address: vault,
-        abi: vaultAbi,
-        functionName: "balanceOf",
-        args: [address],
+      try {
+        const pos = await publicClient.readContract({
+          address: vault,
+          abi: vaultAbi,
+          functionName: "position",
+          args: [address],
+        });
+        userShares = pos[0];
+        userValue = pos[1];
+        userCost = pos[2];
+      } catch {
+        userShares = await publicClient.readContract({
+          address: vault,
+          abi: vaultAbi,
+          functionName: "balanceOf",
+          args: [address],
+        });
+        userValue = supply === 0n || userShares === 0n ? 0n : (userShares * assets) / supply;
+      }
+    }
+    const listedAddrs = listed as Address[];
+    const bagAddrs = [WETH as Address, ...listedAddrs];
+    const bags: Bag[] = [];
+    try {
+      const bals = await Promise.all(
+        bagAddrs.map((token) =>
+          publicClient.readContract({
+            address: token,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [vault],
+          }),
+        ),
+      );
+      const targets = await Promise.all(
+        listedAddrs.map((token) =>
+          publicClient.readContract({
+            address: vault,
+            abi: vaultAbi,
+            functionName: "targetBps",
+            args: [token],
+          }),
+        ),
+      );
+      const wethVals = await Promise.all(bagAddrs.map((token, i) => sleeveWeth(vault, token, bals[i])));
+      bagAddrs.forEach((token, i) => {
+        const coin = byAddress(token);
+        const isWeth = token.toLowerCase() === WETH.toLowerCase();
+        const listedIdx = listedAddrs.findIndex((t) => t.toLowerCase() === token.toLowerCase());
+        bags.push({
+          token,
+          symbol: coin?.symbol || (isWeth ? "WETH" : shortAddr(token)),
+          wei: bals[i],
+          wethWei: wethVals[i],
+          targetBps: listedIdx >= 0 ? Number(targets[listedIdx]) : 0,
+        });
       });
+    } catch {
+      /* explorer link still works if a sleeve balance fails */
     }
     setSnap({
       assets,
@@ -111,8 +223,17 @@ export function VaultDesk({
       creatorBps: Number(creatorBps),
       protocolBps: Number(protocolBps),
       userShares,
+      userValue,
+      userCost,
+      sharePrice: price,
+      genesis,
       symbol,
+      minFirst: Number(formatEther(minFirstWei)),
+      shortfall,
+      listed: listed as Address[],
+      bags,
     });
+    if (!restoreToken && listed.length) setRestoreToken(listed[0]);
   }, [vault, address]);
 
   useEffect(() => {
@@ -120,11 +241,64 @@ export function VaultDesk({
   }, [loadVault]);
 
   const navEth = snap && snap.assets > 0n ? Number(formatEther(snap.assets)) : 0;
-  const displayNavUsd = navEth > 0 ? navEth * ethUsd : isGen0 ? 200 : 0;
+  const displayNavUsd =
+    navEth > 0 && ethUsd && ethUsd > 0 ? navEth * ethUsd : isGen0 && navEth === 0 ? 200 : 0;
+  const liveCash =
+    snap && snap.assets > 0n ? Number(snap.buffer) / Number(snap.assets) : null;
+  const sharePxEth = snap && snap.sharePrice > 0n ? Number(formatEtherSafe(snap.sharePrice)) : 0;
+  const userRoi = snap ? pctDelta(snap.userValue, snap.userCost) : null;
+  const vaultRoi = snap ? pctDelta(snap.sharePrice, snap.genesis) : null;
   const book = useMemo(
     () => (sleeves.length ? activeBook(sleeves, displayNavUsd || 200, MIN_SLEEVE_USD, CASH_TARGET) : null),
     [sleeves, displayNavUsd],
   );
+  const policyByTok = useMemo(() => {
+    const m = new Map<string, Sleeve>();
+    for (const s of sleeves) {
+      if (s.token) m.set(s.token.toLowerCase(), s);
+    }
+    return m;
+  }, [sleeves]);
+  const liveRows = useMemo(() => {
+    if (!live || !snap) return null;
+    const nav = snap.assets;
+    const rows = snap.bags.map((b) => {
+      const cash = b.token.toLowerCase() === WETH.toLowerCase();
+      const policy = policyByTok.get(b.token.toLowerCase());
+      const eth = Number(formatEtherSafe(b.wethWei));
+      const usd = ethUsd && ethUsd > 0 ? eth * ethUsd : 0;
+      const liveW = nav > 0n ? Number(b.wethWei) / Number(nav) : 0;
+      const status: "held" | "missed" | "cash" = cash ? "cash" : b.wei > 0n ? "held" : "missed";
+      return {
+        key: b.token,
+        name: b.symbol,
+        status,
+        liveW,
+        listW: policy?.weight ?? 0,
+        usd,
+        targetBps: b.targetBps,
+      };
+    });
+    rows.sort((a, b) => {
+      const rank = (s: string) => (s === "held" ? 0 : s === "missed" ? 1 : 2);
+      const d = rank(a.status) - rank(b.status);
+      if (d) return d;
+      return b.usd - a.usd;
+    });
+    return rows;
+  }, [live, snap, policyByTok, ethUsd]);
+  const heldBags = useMemo(() => {
+    if (!snap) return [];
+    return snap.bags
+      .filter((b) => b.wei > 0n)
+      .slice()
+      .sort((a, b) => {
+        const ac = a.token.toLowerCase() === WETH.toLowerCase() ? 1 : 0;
+        const bc = b.token.toLowerCase() === WETH.toLowerCase() ? 1 : 0;
+        if (ac !== bc) return ac - bc;
+        return Number(b.wethWei - a.wethWei);
+      });
+  }, [snap]);
 
   const joinWei = (() => {
     try {
@@ -147,25 +321,33 @@ export function VaultDesk({
   const token = snap?.symbol || (isGen0 ? "696X" : slug.toUpperCase());
   const onchainSupply = snap?.supply ?? 0n;
   const paused = Boolean(snap?.paused);
-  const minFirst = isGen0 ? MIN_FIRST_ETH : MIN_CREATE_FIRST_ETH;
+  const minFirst = snap?.minFirst ?? (isGen0 ? MIN_FIRST_ETH : MIN_CREATE_FIRST_ETH);
+  const usdHint = ethUsd && ethUsd > 0;
   const localJoin = issueSplit(joinWei, BigInt(feeBps));
-  const joinShares = onchainJoin?.shares ?? localJoin.net;
-  const joinFee = onchainJoin?.fee ?? localJoin.fee;
+  const localShares =
+    snap && snap.sharePrice > 0n ? (localJoin.net * 10n ** 18n) / snap.sharePrice : 0n;
+  const joinShares = onchainJoin?.shares ?? localShares;
 
   useEffect(() => {
     if (!vault || joinWei === 0n) {
       setOnchainJoin(null);
+      setJoinPlan(null);
       return;
     }
     publicClient
       .readContract({ address: vault, abi: vaultAbi, functionName: "previewDeposit", args: [joinWei] })
       .then((out) => setOnchainJoin({ shares: out[0], fee: out[1] }))
       .catch(() => setOnchainJoin(null));
+    publicClient
+      .readContract({ address: vault, abi: vaultAbi, functionName: "previewBuy", args: [joinWei] })
+      .then((out) => setJoinPlan({ spent: out[0], kept: out[1], names: Number(out[2]) }))
+      .catch(() => setJoinPlan(null));
   }, [vault, joinWei]);
 
   useEffect(() => {
     if (!vault || leaveWei === 0n) {
       setLeaveNet(null);
+      setLeaveMin(null);
       setCanLeave(null);
       return;
     }
@@ -179,16 +361,24 @@ export function VaultDesk({
       publicClient.readContract({
         address: vault,
         abi: vaultAbi,
+        functionName: "previewSell",
+        args: [leaveWei],
+      }),
+      publicClient.readContract({
+        address: vault,
+        abi: vaultAbi,
         functionName: "canWithdraw",
         args: [leaveWei],
       }),
     ])
-      .then(([preview, ok]) => {
+      .then(([preview, sell, ok]) => {
         setLeaveNet(preview[0]);
+        setLeaveMin({ minOut: sell[0], names: Number(sell[1]) });
         setCanLeave(ok);
       })
       .catch(() => {
         setLeaveNet(null);
+        setLeaveMin(null);
         setCanLeave(null);
       });
   }, [vault, leaveWei]);
@@ -199,12 +389,57 @@ export function VaultDesk({
     setTxErr(null);
     setConfirmed(false);
     try {
+      const minShares = joinShares > 0n ? (joinShares * 9700n) / 10000n : 1n;
+      const floor = minShares < 1n ? 1n : minShares;
+      const gas = await publicClient.estimateContractGas({
+        account: address,
+        address: vault,
+        abi: vaultAbi,
+        functionName: "deposit",
+        args: [floor],
+        value: joinWei,
+      });
       const hash = await walletClient.writeContract({
         account: address,
         address: vault,
         abi: vaultAbi,
         functionName: "deposit",
+        args: [floor],
         value: joinWei,
+        gas: (gas * 13n) / 10n,
+        chain: robinhood,
+      });
+      setTxHash(hash);
+      await publicClient.waitForTransactionReceipt({ hash });
+      setConfirmed(true);
+      await loadVault();
+    } catch (e) {
+      setTxErr(e instanceof Error ? e.message.slice(0, 280) : "tx failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onRestore() {
+    if (!vault || !walletClient || !address) return;
+    const amt = (() => {
+      try {
+        return parseEther(restoreAmt || "0");
+      } catch {
+        return 0n;
+      }
+    })();
+    if (amt === 0n || !isAddress(restoreToken)) return;
+    setBusy(true);
+    setTxErr(null);
+    setConfirmed(false);
+    try {
+      const hash = await walletClient.writeContract({
+        account: address,
+        address: vault,
+        abi: vaultAbi,
+        functionName: "restoreCash",
+        args: [restoreToken as Address, amt],
         chain: robinhood,
       });
       setTxHash(hash);
@@ -224,12 +459,20 @@ export function VaultDesk({
     setTxErr(null);
     setConfirmed(false);
     try {
+      const gas = await publicClient.estimateContractGas({
+        account: address,
+        address: vault,
+        abi: vaultAbi,
+        functionName: "withdraw",
+        args: [leaveWei, leaveMin?.minOut ?? 0n],
+      });
       const hash = await walletClient.writeContract({
         account: address,
         address: vault,
         abi: vaultAbi,
         functionName: "withdraw",
-        args: [leaveWei],
+        args: [leaveWei, leaveMin?.minOut ?? 0n],
+        gas: (gas * 13n) / 10n,
         chain: robinhood,
       });
       setTxHash(hash);
@@ -256,264 +499,513 @@ export function VaultDesk({
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[11px] text-[var(--dim)]">
-            {isGen0 ? "Mint" : `Mint · /${slug}`}
-          </p>
-          <h1 className="mt-1 hidden font-[family-name:var(--font-display)] text-4xl leading-none sm:block sm:text-5xl">
-            ${token}
-          </h1>
-          <p className="mt-2 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
-            {isGen0
-              ? "ETH in, one token out. Sleeves under $10 stay in ETH so the tail is never dust."
-              : "A shared basket. Send ETH, receive the index. The creator takes a cut on volume."}
-          </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <TokenArt slug={slug} size="md" priority={isGen0} />
+          <div className="min-w-0">
+            <p className="text-[13px] text-[var(--dim)]">{isGen0 ? "Index" : `/${slug}`}</p>
+            <h1 className="mt-0.5 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">${token}</h1>
+          </div>
         </div>
-        <button type="button" onClick={share} className="ghost h-11 shrink-0 rounded-sm px-3 text-xs sm:px-4">
-          {copied ? "Copied" : "Copy link"}
-        </button>
+        <div className="flex shrink-0 gap-2">
+          {live && vault && (
+            <a
+              data-testid="vault-link"
+              href={`${EXPLORER}/address/${vault}`}
+              target="_blank"
+              rel="noreferrer"
+              className="ghost h-10 px-3 text-[12px] sm:px-4"
+            >
+              Vault
+            </a>
+          )}
+          <button type="button" onClick={share} className="ghost h-10 px-3 text-[12px] sm:px-4">
+            {copied ? "Copied" : "Share"}
+          </button>
+        </div>
       </div>
 
-      <section className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
-        <Stat
-          label="NAV"
-          value={displayNavUsd ? fmtUsd(displayNavUsd, 0) : "—"}
-          hint={live && snap && snap.assets > 0n ? fmtEth(snap.assets, 4) : isGen0 ? "plan $200" : "not live"}
-        />
-        <Stat
-          label="Cash buffer"
-          value={book ? `${(book.cashWeight * 100).toFixed(0)}%` : "—"}
-          hint={book ? `${fmtUsd(book.cashUsd, 0)} for ETH exits` : "ETH exits"}
-        />
-        <Stat
-          label="Join fee"
-          value={`${(feeBps / 100).toFixed(2)}%`}
-          hint={`${(creatorBps / 100).toFixed(2)}% creator · ${(protocolBps / 100).toFixed(2)}% protocol`}
-        />
-        <Stat
-          label="Smart floor"
-          value={fmtUsd(MIN_SLEEVE_USD, 0)}
-          hint={book ? `${book.nActive} held · ${book.nSkipped} waiting` : "no dust bags"}
-        />
+      <section data-testid="vault-board" className="holo mt-6 overflow-hidden sm:mt-8">
+        <div className="grid grid-cols-2 gap-px bg-[var(--line)]">
+          <HeroStat
+            label="You"
+            value={
+              !isConnected
+                ? "—"
+                : snap && snap.userShares > 0n && usdHint
+                  ? fmtUsd(Number(formatEtherSafe(snap.userValue)) * ethUsd, 0)
+                  : snap && snap.userShares > 0n
+                    ? fmtEth(snap.userValue, 3)
+                    : "—"
+            }
+            hint={
+              !isConnected
+                ? "Connect to see your bag"
+                : snap && snap.userShares > 0n
+                  ? `${fmtShares(snap.userShares, token, 3)} · in ${fmtEth(snap.userCost, 3)}`
+                  : "No shares yet"
+            }
+            tone="flat"
+            testId="board-you"
+          />
+          <HeroStat
+            label="Your ROI"
+            value={!isConnected ? "—" : userRoi == null ? "—" : fmtPct(userRoi, 2)}
+            hint={
+              !isConnected
+                ? "Connect"
+                : snap && snap.userShares > 0n
+                  ? `${fmtEth(snap.userValue, 4)} now`
+                  : "Join to start a cost basis"
+            }
+            tone={!isConnected || userRoi == null ? "flat" : toneOf(userRoi)}
+            testId="board-roi"
+          />
+          <HeroStat
+            label="Vault"
+            value={
+              !live || !snap || snap.genesis === 0n ? "—" : vaultRoi == null ? "—" : fmtPct(vaultRoi, 2)
+            }
+            hint={
+              snap && snap.genesis > 0n
+                ? usdHint
+                  ? `${fmtUsd(USD_PER_SHARE, 0)} → ${fmtUsd(sharePxEth * ethUsd, 2)} / share`
+                  : `${fmtEth(snap.genesis, 4)} → ${fmtEth(snap.sharePrice, 4)}`
+                : "Genesis not set"
+            }
+            tone={vaultRoi == null ? "flat" : toneOf(vaultRoi)}
+            testId="board-vault"
+          />
+          <HeroStat
+            label="NAV"
+            value={displayNavUsd ? fmtUsd(displayNavUsd, 0) : "—"}
+            hint={live && snap && snap.assets > 0n ? fmtEth(snap.assets, 4) : isGen0 ? "Plan $200" : "Not live"}
+            tone="flat"
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-px bg-[var(--line)]">
+          <Stat
+            label="Share"
+            value={
+              onchainSupply === 0n
+                ? fmtUsd(USD_PER_SHARE, 0)
+                : usdHint
+                  ? fmtUsd(sharePxEth * ethUsd, 2)
+                  : sharePxEth
+                    ? `${sharePxEth.toFixed(4)} ETH`
+                    : "—"
+            }
+            hint={
+              onchainSupply === 0n
+                ? `First mint ${minFirst} ETH`
+                : `${sharePxEth.toFixed(4)} ETH`
+            }
+          />
+          <Stat
+            label="Cash"
+            value={
+              liveCash != null ? `${(liveCash * 100).toFixed(0)}%` : book ? `${(book.cashWeight * 100).toFixed(0)}%` : "—"
+            }
+            hint={live && snap && snap.buffer > 0n ? fmtEth(snap.buffer, 3) : "ETH for exits"}
+          />
+          <Stat
+            label="Fee"
+            value={`${(feeBps / 100).toFixed(2)}%`}
+            hint={`You ${(creatorBps / 100).toFixed(2)}% · HOODX ${(protocolBps / 100).toFixed(2)}%`}
+          />
+        </div>
+        {live && snap && heldBags.length > 0 && (
+          <div className="border-t border-[var(--line)] px-4 py-4 sm:px-6 sm:py-5">
+            <p className="mb-3 text-[13px] text-[var(--dim)]">In the vault</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {heldBags.map((b) => {
+                const cash = b.token.toLowerCase() === WETH.toLowerCase();
+                const eth = Number(formatEtherSafe(b.wethWei));
+                const usd = ethUsd && ethUsd > 0 && eth > 0 ? eth * ethUsd : 0;
+                const pct = snap.assets > 0n ? Number(b.wethWei) / Number(snap.assets) : 0;
+                return (
+                  <div
+                    key={b.token}
+                    className="rounded-[16px] border border-[var(--line)] bg-[var(--lift)] px-3 py-3 sm:px-4 sm:py-3.5"
+                  >
+                    <p className="truncate text-[13px] text-[var(--dim)]">{cash ? "Cash" : b.symbol}</p>
+                    <p className="mt-1 text-[1.35rem] font-semibold leading-none tracking-[-0.04em] tabular sm:text-2xl">
+                      {usd > 0
+                        ? fmtUsd(usd, 0)
+                        : Number(formatEtherSafe(b.wei)).toFixed(cash ? 3 : 2)}
+                    </p>
+                    <p className="mt-1.5 text-[12px] tabular text-[var(--dim)]">
+                      {pct > 0 ? `${(pct * 100).toFixed(1)}%` : cash ? b.symbol : "—"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </section>
 
       {!live && (
-        <p className="holo mt-5 rounded-lg px-4 py-3 text-sm text-[var(--dim)]">
-          {isGen0
-            ? "Factory is not deployed yet. This is the $200 696X book. Mint wires up when the vault address is set."
-            : "Unknown slug, or factory not live. Create a basket from /create."}
+        <p className="holo mt-5 px-4 py-3 text-sm text-[var(--dim)]">
+          {isGen0 ? "Vault address not set." : "Unknown slug. Create one below."}
         </p>
       )}
       {paused && (
-        <p className="mt-5 rounded-lg border border-[var(--gold)]/40 bg-[var(--gold)]/10 px-4 py-3 text-sm text-[var(--gold)]">
-          Vault is paused.
+        <p className="mt-5 rounded-[20px] border border-[var(--gold)]/40 bg-[var(--gold)]/10 px-4 py-3 text-sm text-[var(--gold)]">
+          Joins closed. Redeem stays open.
         </p>
       )}
 
-      <section className="mt-8 grid gap-4 md:grid-cols-2">
-        <div className="holo rounded-2xl p-4 sm:p-5">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">Join</h2>
-          <p className="mt-1 text-[15px] leading-6 text-[var(--dim)]">
-            Send ETH. Wrap, take {(feeBps / 100).toFixed(2)}%, mint ${token}. First mint ≥ {minFirst} ETH.
-            Later ≥ {MIN_DEPOSIT_ETH} ETH.
+      <section className="holo mt-6 overflow-hidden p-1 sm:mt-8">
+        <div className="grid gap-1 lg:grid-cols-2">
+        <div className="rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-[15px] font-medium text-[var(--dim)]">Join</h2>
+            <p className="text-[12px] text-[var(--dim)]">
+              {onchainSupply === 0n ? `First ${minFirst} ETH` : `${(feeBps / 100).toFixed(2)}% fee`}
+            </p>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <input
+              data-testid="vault-join-amt"
+              value={joinAmt}
+              onChange={(e) => setJoinAmt(e.target.value)}
+              inputMode="decimal"
+              placeholder="0"
+              className="swap-amt min-w-0"
+            />
+            <span className="token-pill">ETH</span>
+          </div>
+          <p className="mt-1 text-[13px] tabular text-[var(--dim)]">
+            {usdHint && Number(joinAmt) > 0 ? fmtUsd(Number(joinAmt) * (ethUsd as number), 0) : "\u00a0"}
           </p>
-          <label className="mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
-            ETH
-          </label>
-          <input
-            value={joinAmt}
-            onChange={(e) => setJoinAmt(e.target.value)}
-            inputMode="decimal"
-            className="field mt-1 text-lg tabular"
-          />
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {(isGen0 ? ["0.08", "0.02", "0.05", "0.2"] : ["0.02", "0.05", "0.1", "0.2"]).map((v) => (
               <button
                 key={v}
                 type="button"
+                data-testid={`vault-join-chip-${v}`}
                 onClick={() => setJoinAmt(v)}
-                className="chip rounded-sm px-3 py-1 font-[family-name:var(--font-mono)] text-xs"
+                className={`chip px-3 text-[12px] ${joinAmt === v ? "on" : ""}`}
               >
                 {v}
               </button>
             ))}
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
             <div>
-              <dt className="text-[var(--dim)]">You receive</dt>
-              <dd className="font-[family-name:var(--font-mono)] tabular">
-                {joinWei > 0n ? fmtEth(joinShares) : "—"} {token}
-              </dd>
+              <p className="text-[var(--dim)]">You get</p>
+              <p className="mt-0.5 font-medium tabular">
+                {joinWei > 0n && joinShares > 0n
+                  ? `~${Number(formatEther(joinShares)).toFixed(3)} ${token}`
+                  : "—"}
+                {joinPlan ? ` · ${joinPlan.names} names` : ""}
+              </p>
             </div>
             <div>
-              <dt className="text-[var(--dim)]">Fee (creator + protocol)</dt>
-              <dd className="font-[family-name:var(--font-mono)] tabular">
-                {joinWei > 0n ? fmtEth(joinFee) : "—"}
-              </dd>
+              <p className="text-[var(--dim)]">Share</p>
+              <p className="mt-0.5 font-medium tabular">
+                {onchainSupply === 0n
+                  ? fmtUsd(USD_PER_SHARE, 0)
+                  : usdHint
+                    ? fmtUsd(sharePxEth * ethUsd, 2)
+                    : `${sharePxEth.toFixed(4)} ETH`}
+              </p>
             </div>
-          </dl>
-          {joinTooSmall && (
-            <p className="mt-2 text-sm text-[var(--gold)]">
-              Minimum {onchainSupply === 0n ? "first deposit" : "join"} is {minJoin} ETH.
-            </p>
-          )}
+          </div>
+          {joinTooSmall && <p className="mt-2 text-[13px] text-[var(--gold)]">Min {minJoin} ETH.</p>}
           <button
             type="button"
-            disabled={!live || !isConnected || wrongChain || busy || joinWei === 0n || joinTooSmall || paused}
-            onClick={() => void onJoin()}
-            className="ape mt-5 w-full rounded-sm px-4 py-3 text-sm disabled:opacity-40"
+            data-testid="vault-join"
+            disabled={
+              !live ||
+              busy ||
+              paused ||
+              (isConnected && !wrongChain && (joinWei === 0n || joinTooSmall))
+            }
+            onClick={() => {
+              if (!address) {
+                void connect();
+                return;
+              }
+              if (wrongChain) {
+                void switchToRobinhood();
+                return;
+              }
+              void onJoin();
+            }}
+            className="ape mt-4 w-full text-[15px] disabled:opacity-40"
           >
-            {!live ? "Vault not live" : busy ? "Confirm in wallet…" : `Join ${token}`}
+            {!live
+              ? "Not live"
+              : busy
+                ? "Confirm…"
+                : !isConnected
+                  ? connecting
+                    ? "Connecting…"
+                    : "Connect"
+                  : wrongChain
+                    ? "Switch network"
+                    : `Join ${token}`}
           </button>
         </div>
 
-        <div className="holo rounded-2xl p-4 sm:p-5">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">Leave</h2>
-          <p className="mt-1 text-[15px] leading-6 text-[var(--dim)]">
-            Burn ${token}, receive ETH from the cash buffer. No token airdrop. Redeem fee is 0%.
+        <div className="rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="text-[15px] font-medium text-[var(--dim)]">Leave</h2>
+            <p data-testid="vault-shares" className="truncate text-[12px] tabular text-[var(--dim)]">
+              {!isConnected ? "—" : snap ? fmtShares(snap.userShares, token, 3) : "…"}
+            </p>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <input
+              data-testid="vault-leave-amt"
+              value={leaveAmt}
+              onChange={(e) => setLeaveAmt(e.target.value)}
+              inputMode="decimal"
+              placeholder="0"
+              className="swap-amt min-w-0"
+            />
+            <span className="token-pill">{token}</span>
+          </div>
+          <div className="mt-1 flex items-center justify-end">
+            {snap && snap.userShares > 0n && (
+              <button
+                type="button"
+                data-testid="vault-leave-max"
+                onClick={() => setLeaveAmt(formatEther(snap.userShares))}
+                className="text-[12px] font-medium text-[var(--cyan)]"
+              >
+                Max
+              </button>
+            )}
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-[13px]">
+            <div>
+              <p className="text-[var(--dim)]">Est. ETH</p>
+              <p className="mt-0.5 font-medium tabular">{leaveNet != null ? fmtEth(leaveNet, 4) : "—"}</p>
+            </div>
+            <div>
+              <p className="text-[var(--dim)]">Min after 3%</p>
+              <p className="mt-0.5 font-medium tabular">{leaveMin ? fmtEth(leaveMin.minOut, 4) : "—"}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[12px] leading-5 text-[var(--dim)]">
+            Redeem cannot be paused{isLive696x(vault) ? ". Live 696X exits stay open." : "."}
           </p>
-          <p className="mt-3 font-[family-name:var(--font-mono)] text-sm tabular text-[var(--dim)]">
-            Your {token} {snap ? fmtEth(snap.userShares) : isConnected ? "…" : "connect to see"}
-            {live && snap && snap.buffer > 0n ? ` · buffer ${fmtEth(snap.buffer)}` : ""}
-          </p>
-          <label className="mt-4 block font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
-            {token} to burn
-          </label>
-          <input
-            value={leaveAmt}
-            onChange={(e) => setLeaveAmt(e.target.value)}
-            inputMode="decimal"
-            className="field mt-1 text-lg tabular"
-          />
-          {snap && snap.userShares > 0n && (
-            <button
-              type="button"
-              onClick={() => setLeaveAmt(formatEther(snap.userShares))}
-              className="mt-2 font-[family-name:var(--font-mono)] text-xs underline"
-            >
-              Max
-            </button>
+          {canLeave === false && leaveWei > 0n && (
+            <p className="mt-2 text-[13px] text-[var(--gold)]">Buffer short. Restore cash first.</p>
           )}
-          <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <dt className="text-[var(--dim)]">You receive</dt>
-              <dd className="font-[family-name:var(--font-mono)] tabular">
-                {leaveNet != null ? fmtEth(leaveNet) : "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[var(--dim)]">Buffer</dt>
-              <dd className="font-[family-name:var(--font-mono)] tabular">
-                {leaveWei > 0n && canLeave === false ? "too thin" : "ETH, not dust"}
-              </dd>
-            </div>
-          </dl>
           <button
             type="button"
+            data-testid="vault-leave"
             disabled={
-              !live || !isConnected || wrongChain || busy || leaveWei === 0n || paused || canLeave === false
+              !live ||
+              busy ||
+              (isConnected && !wrongChain && (leaveWei === 0n || canLeave === false))
             }
-            onClick={() => void onLeave()}
-            className="ghost mt-5 w-full rounded-sm px-4 py-3 disabled:opacity-40"
+            onClick={() => {
+              if (!address) {
+                void connect();
+                return;
+              }
+              if (wrongChain) {
+                void switchToRobinhood();
+                return;
+              }
+              void onLeave();
+            }}
+            className="ghost mt-4 w-full disabled:opacity-40"
           >
-            {!live ? "Vault not live" : busy ? "Confirm in wallet…" : "Redeem to ETH"}
+            {!live
+              ? "Not live"
+              : busy
+                ? "Confirm…"
+                : !isConnected
+                  ? connecting
+                    ? "Connecting…"
+                    : "Connect"
+                  : wrongChain
+                    ? "Switch network"
+                    : "Redeem"}
           </button>
+        </div>
         </div>
       </section>
 
+      {live && snap && snap.shortfall > 0n && (
+        <section className="holo mt-4 p-4 sm:p-5">
+          <h2 className="text-lg font-semibold tracking-[-0.03em]">Restore cash</h2>
+          <p className="mt-1 text-[13px] leading-5 text-[var(--dim)]">
+            Short {fmtEth(snap.shortfall, 4)}. Anyone can sell a name to WETH.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="block text-[11px] text-[var(--dim)]">
+              Name
+              <select
+                data-testid="vault-restore-token"
+                value={restoreToken}
+                onChange={(e) => setRestoreToken(e.target.value)}
+                className="field mt-1 text-sm"
+              >
+                {snap.listed.map((t) => (
+                  <option key={t} value={t}>
+                    {shortAddr(t)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-[11px] text-[var(--dim)]">
+              Token amount in
+              <input
+                data-testid="vault-restore-amt"
+                value={restoreAmt}
+                onChange={(e) => setRestoreAmt(e.target.value)}
+                className="field mt-1"
+                placeholder="0.0"
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            data-testid="vault-restore"
+            disabled={!isConnected || wrongChain || busy || !restoreAmt}
+            onClick={() => void onRestore()}
+            className="ghost mt-4 w-full disabled:opacity-40"
+          >
+            {busy ? "Confirm…" : "Restore cash"}
+          </button>
+        </section>
+      )}
+
       {txHash && (
-        <p className="mt-4 font-[family-name:var(--font-mono)] text-sm">
+        <p data-testid="vault-tx" className="mt-4 font-[family-name:var(--font-mono)] text-sm">
           {confirmed ? "Confirmed · " : "Pending · "}
           <a className="underline" href={`${EXPLORER}/tx/${txHash}`} target="_blank" rel="noreferrer">
             {shortAddr(txHash)}
           </a>
         </p>
       )}
-      {txErr && <p className="mt-3 text-sm text-[var(--danger)]">{txErr}</p>}
+      {txErr && (
+        <p data-testid="vault-err" className="mt-3 text-sm text-[var(--danger)]">
+          {txErr}
+        </p>
+      )}
 
-      {book && (
-        <section className="mt-12">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-display)] text-3xl">Holdings</h2>
-            <p className="max-w-md text-sm text-[var(--dim)]">
-              Names under {fmtUsd(MIN_SLEEVE_USD, 0)} park in WETH until NAV grows.
-              {isGen0 && (
-                <>
-                  {" "}
-                  <a className="underline" href={TWEET} target="_blank" rel="noreferrer">
-                    696_eth list
-                  </a>
-                </>
-              )}
-            </p>
-          </div>
-          <div className="holo mt-4 overflow-x-auto rounded-xl">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--dim)]">
+      {(liveRows || book) && (
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-[-0.03em]">
+            {liveRows ? "Holdings" : "Targets"}
+          </h2>
+          <p className="mt-1 max-w-lg text-[13px] leading-5 text-[var(--dim)]">
+            {liveRows ? "Live TWAP bags. Missed names stayed ETH." : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
+            {isGen0 && (
+              <>
+                {" "}
+                <a className="text-[var(--paper)] underline-offset-2 hover:underline" href={TWEET} target="_blank" rel="noreferrer">
+                  696 list
+                </a>
+              </>
+            )}
+          </p>
+          <div className="holo mt-4 overflow-x-auto">
+            <table data-testid="holdings-table" className="w-full text-left text-[13px]">
+              <thead className="text-[12px] text-[var(--dim)]">
                 <tr>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Weight</th>
-                  <th className="px-4 py-3 text-right">Sleeve</th>
+                  <th className="px-3 py-3 sm:px-4">Name</th>
+                  <th className="px-3 py-3 sm:px-4">Status</th>
+                  <th className="px-3 py-3 text-right sm:px-4">{liveRows ? "Live" : "Weight"}</th>
+                  {liveRows ? <th className="hidden px-4 py-3 text-right sm:table-cell">696 list</th> : null}
+                  <th className="px-3 py-3 text-right sm:px-4">Sleeve</th>
                 </tr>
               </thead>
               <tbody>
-                {book.active.map((s) => (
-                  <tr key={s.id} className="border-t border-[var(--line)]">
-                    <td className="px-4 py-2.5 font-medium">{s.symbol || s.id}</td>
-                    <td className="px-4 py-2.5">
-                      <span className="rounded-sm border border-[var(--line)] px-2 py-0.5 text-[12px] text-[var(--paper)]">
-                        Held
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
-                      {(s.weight * 100).toFixed(2)}%
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
-                      {fmtUsd(s.usd)}
-                    </td>
-                  </tr>
-                ))}
-                {book.skipped.map((s) => (
-                  <tr key={s.id} className="border-t border-[var(--line)] bg-[var(--gold)]/5">
-                    <td className="px-4 py-2.5 font-medium">{s.symbol || s.id}</td>
-                    <td className="px-4 py-2.5">
-                      <span className="rounded-sm border border-[var(--gold)]/40 px-2 py-0.5 text-[12px] text-[var(--gold)]">
-                        Floor → ETH
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)]">
-                      {(s.policyWeight * 100).toFixed(2)}%
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)]">
-                      {fmtUsd(s.policyUsd)}
-                    </td>
-                  </tr>
-                ))}
-                {dead.map((s) => (
-                  <tr key={s.id} className="border-t border-[var(--line)] opacity-50">
-                    <td className="px-4 py-2.5">{s.id}</td>
-                    <td className="px-4 py-2.5 text-[12px] uppercase tracking-wide">
-                      {s.reason.replace("_", " ")}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">—</td>
-                    <td className="px-4 py-2.5 text-right">—</td>
-                  </tr>
-                ))}
+                {liveRows
+                  ? liveRows.map((r) => (
+                      <tr
+                        key={r.key}
+                        className={`border-t border-[var(--line)] ${r.status === "missed" ? "bg-[var(--gold)]/5" : ""}`}
+                      >
+                        <td className="px-4 py-2.5 font-medium">{r.name}</td>
+                        <td className="px-4 py-2.5">
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[12px] ${
+                              r.status === "missed"
+                                ? "border-[var(--gold)]/40 text-[var(--gold)]"
+                                : "border-[var(--line)] text-[var(--paper)]"
+                            }`}
+                          >
+                            {r.status === "cash" ? "Cash" : r.status === "missed" ? "Missed" : "Held"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
+                          {(r.liveW * 100).toFixed(2)}%
+                        </td>
+                        <td className="hidden px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)] sm:table-cell">
+                          {r.status === "cash" ? "≥25%" : r.listW ? `${(r.listW * 100).toFixed(2)}%` : "—"}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
+                          {r.usd > 0 ? fmtUsd(r.usd) : "—"}
+                        </td>
+                      </tr>
+                    ))
+                  : book!.active.map((s) => (
+                      <tr key={s.id} className="border-t border-[var(--line)]">
+                        <td className="px-4 py-2.5 font-medium">{s.symbol || s.id}</td>
+                        <td className="px-4 py-2.5">
+                          <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[12px] text-[var(--paper)]">
+                            Held
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
+                          {(s.weight * 100).toFixed(2)}%
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
+                          {fmtUsd(s.usd)}
+                        </td>
+                      </tr>
+                    ))}
+                {!liveRows &&
+                  book!.skipped.map((s) => (
+                    <tr key={s.id} className="border-t border-[var(--line)] bg-[var(--gold)]/5">
+                      <td className="px-4 py-2.5 font-medium">{s.symbol || s.id}</td>
+                      <td className="px-4 py-2.5">
+                        <span className="rounded-full border border-[var(--gold)]/40 px-2 py-0.5 text-[12px] text-[var(--gold)]">
+                          Park in ETH
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)]">
+                        {(s.policyWeight * 100).toFixed(2)}%
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)]">
+                        {fmtUsd(s.policyUsd)}
+                      </td>
+                    </tr>
+                  ))}
+                {!liveRows &&
+                  dead.map((s) => (
+                    <tr key={s.id} className="border-t border-[var(--line)] opacity-50">
+                      <td className="px-4 py-2.5">{s.id}</td>
+                      <td className="px-4 py-2.5 text-[12px] uppercase tracking-wide">
+                        {s.reason.replace("_", " ")}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">—</td>
+                      <td className="px-4 py-2.5 text-right">—</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </section>
       )}
 
-      <p className="mt-16 border-t border-[var(--line)] pt-6 font-[family-name:var(--font-mono)] text-[11px] leading-relaxed text-[var(--dim)]">
-        HOODX · Robinhood Chain 4663. Not HOOD10. Not financial advice. DYOR.
+      <p className="mt-14 border-t border-[var(--line)] pt-5 text-[12px] leading-5 text-[var(--dim)]">
+        HOODX · 4663 · DYOR.
         {live && vault && (
           <>
             {" "}
-            <a className="underline" href={`${EXPLORER}/address/${vault}`} target="_blank" rel="noreferrer">
-              Vault {shortAddr(vault)}
+            <a className="underline-offset-2 hover:underline" href={`${EXPLORER}/address/${vault}`} target="_blank" rel="noreferrer">
+              {shortAddr(vault)}
             </a>
           </>
         )}
@@ -524,10 +1016,35 @@ export function VaultDesk({
 
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="holo rounded-xl px-3 py-3 sm:px-4">
-      <p className="text-[11px] leading-none text-[var(--dim)]">{label}</p>
-      <p className="mt-1.5 font-[family-name:var(--font-display)] text-xl leading-none sm:text-2xl">{value}</p>
-      <p className="mt-1.5 text-xs leading-5 text-[var(--dim)]">{hint}</p>
+    <div className="bg-[var(--hud)] px-2.5 py-4 sm:px-5 sm:py-5">
+      <p className="text-[12px] text-[var(--dim)]">{label}</p>
+      <p className="mt-1.5 text-[1.35rem] font-semibold leading-none tracking-[-0.04em] tabular sm:text-2xl">{value}</p>
+      <p className="mt-1.5 text-[12px] leading-5 text-[var(--dim)]">{hint}</p>
+    </div>
+  );
+}
+
+function HeroStat({
+  label,
+  value,
+  hint,
+  tone,
+  testId,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  tone: "up" | "down" | "flat";
+  testId?: string;
+}) {
+  const color = tone === "up" ? "tone-up" : tone === "down" ? "tone-down" : "tone-flat";
+  return (
+    <div data-testid={testId} className="bg-[var(--hud)] px-4 py-5 sm:px-6 sm:py-6">
+      <p className="text-[12px] text-[var(--dim)]">{label}</p>
+      <p className={`mt-2 text-[1.85rem] font-semibold leading-none tracking-[-0.05em] tabular sm:text-4xl ${color}`}>
+        {value}
+      </p>
+      <p className="mt-2 text-[12px] leading-5 text-[var(--dim)]">{hint}</p>
     </div>
   );
 }
