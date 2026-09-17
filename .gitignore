@@ -7,13 +7,8 @@ __pycache__/
 node_modules/
 .next/
 .vercel/
-web/node_modules/
-web/.next/
-web/.vercel/
-web/out/
-web/.env
-web/.env.local
-web/*.log
-web/test-results/
-web/playwright-report/
+out/
+.env
+.env.local
+*.log
 .DS_Store

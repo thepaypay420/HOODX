@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/public/brand/hoodx-hat.png" width="96" alt="HOODX" />
+  <img src="public/brand/hoodx-hat.png" width="96" alt="HOODX" />
 </p>
 
 <h1 align="center">HOODX</h1>
@@ -122,7 +122,7 @@ The factory is permissionless. `HoodxFactory.create` is for anyone. `create696x`
 
 ## HUD
 
-`web/` — Next.js 15, viem, no private keys. Uniswap-quiet dark UI. Hat mark, teal `#1fd4c6`, gold `#e0b54a`.
+Next.js 15, viem, no private keys. Uniswap-quiet dark UI. Hat mark, teal `#1fd4c6`, gold `#e0b54a`.
 
 Production: **[www.xhoodindex.com](https://www.xhoodindex.com)** (`xhoodindex.com` redirects there).
 
@@ -134,13 +134,12 @@ Production: **[www.xhoodindex.com](https://www.xhoodindex.com)** (`xhoodindex.co
 | `/create` | mint |
 
 ```bash
-cd web
 cp .env.example .env.local
 npm install
 npm run dev     # http://127.0.0.1:3100
 ```
 
-Vercel builds the Next HUD (repo root → `web/` via git symlinks). `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`.
+Vercel builds this Next HUD from the repository root. `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`.
 
 ---
 
