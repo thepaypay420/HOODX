@@ -1,5 +1,7 @@
 /** `NeedBuffer()` — vault still holds the ERC20. Selector from the failed WALLET eject. */
 export const NEED_BUFFER_SEL = "0x1309bbaa";
+/** `Slippage()` — amountOutMin below the live 97% TWAP floor. */
+export const SLIPPAGE_SEL = "0x7dd37f70";
 
 export function isHeldWei(wei: bigint | number | string | null | undefined): boolean {
   try {
@@ -12,6 +14,13 @@ export function isHeldWei(wei: bigint | number | string | null | undefined): boo
 export function ejectBlocked(symbol: string, held: boolean): string | null {
   if (!held) return null;
   return `${symbol} is still in the vault — sell to WETH on Rebalance, then tap ×`;
+}
+
+export function sellBlocked(amountWei: bigint, bagWei: bigint, symbol: string, bagText: string): string | null {
+  if (amountWei <= 0n) return "amount in must be > 0";
+  if (bagWei <= 0n) return `vault holds 0 ${symbol}`;
+  if (amountWei > bagWei) return `vault holds ${bagText} ${symbol} — use Max`;
+  return null;
 }
 
 export function partitionRemovals(
@@ -53,6 +62,12 @@ export function revertHint(err: unknown): string {
   const blob = blobOf(err);
   if (blob.includes("needbuffer") || blob.includes(NEED_BUFFER_SEL)) {
     return "still holding that name — sell to WETH on Rebalance, then tap ×";
+  }
+  if (blob.includes("slippage") || blob.includes(SLIPPAGE_SEL)) {
+    return "min-out went stale vs TWAP — tap Swap again, and sell the vault bag (Max)";
+  }
+  if (blob.includes("swapfailed") || blob.includes("0x81ceff30")) {
+    return "pool could not fill the TWAP floor — wait a block and sell Max";
   }
   if (blob.includes("badlen")) return "pack needs at least 2";
   if (blob.includes("listed")) return "that name is not on the book";

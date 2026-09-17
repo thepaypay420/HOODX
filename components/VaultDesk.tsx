@@ -290,6 +290,7 @@ export function VaultDesk({
         listW: policy?.weight ?? 0,
         usd,
         targetBps: b.targetBps,
+        bag: cash ? `${Number(formatEtherSafe(b.wei)).toFixed(4)} WETH` : `${Number(formatEtherSafe(b.wei)).toFixed(4)}`,
       };
     });
     rows.sort((a, b) => {
@@ -925,7 +926,7 @@ export function VaultDesk({
             {liveRows ? "Holdings" : "Targets"}
           </h2>
           <p className="mt-1 max-w-lg text-[13px] leading-5 text-[var(--dim)]">
-            {liveRows ? "Live TWAP bags. Missed names stayed ETH." : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
+            {liveRows ? "Live is the vault TWAP sleeve. Target is the 696 weight — it does not fall when a name dumps." : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
             {isGen0 && (
               <>
                 {" "}
@@ -941,8 +942,9 @@ export function VaultDesk({
                 <tr>
                   <th className="px-3 py-3 sm:px-4">Name</th>
                   <th className="px-3 py-3 sm:px-4">Status</th>
+                  <th className="hidden px-3 py-3 text-right sm:table-cell sm:px-4">Bag</th>
                   <th className="px-3 py-3 text-right sm:px-4">{liveRows ? "Live" : "Weight"}</th>
-                  {liveRows ? <th className="hidden px-4 py-3 text-right sm:table-cell">696 list</th> : null}
+                  {liveRows ? <th className="hidden px-4 py-3 text-right sm:table-cell">Target</th> : null}
                   <th className="px-3 py-3 text-right sm:px-4">Sleeve</th>
                 </tr>
               </thead>
@@ -964,6 +966,9 @@ export function VaultDesk({
                           >
                             {r.status === "cash" ? "Cash" : r.status === "missed" ? "Missed" : "Held"}
                           </span>
+                        </td>
+                        <td className="hidden px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)] sm:table-cell">
+                          {r.status === "missed" ? "—" : r.bag}
                         </td>
                         <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
                           {(r.liveW * 100).toFixed(2)}%
