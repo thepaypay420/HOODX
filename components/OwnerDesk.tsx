@@ -7,7 +7,7 @@ import { INDEX_CATALOG, byAddress } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
-import { revertHint, sellBlocked } from "@/lib/eject";
+import { revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { listTargetBps, type Sleeve } from "@/lib/weights";
@@ -36,6 +36,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
   const [minOut, setMinOut] = useState("");
   const [quoted, setQuoted] = useState("");
   const [shortfall, setShortfall] = useState(0n);
+  const [assets, setAssets] = useState(0n);
+  const [cashBps, setCashBps] = useState(2500);
   const [blurb, setBlurb] = useState(() => readBlurb(slug, vault));
   const [blurbSaved, setBlurbSaved] = useState("");
 
@@ -50,13 +52,17 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
 
   const loadBags = useCallback(async () => {
     if (!live || !vault) return;
-    const [own, short, list] = await Promise.all([
+    const [own, short, list, nav, cashTarget] = await Promise.all([
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "owner" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "cashShortfall" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "constituents" }),
+      publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "totalAssets" }),
+      publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "cashTargetBps" }),
     ]);
     setOwner(own);
     setShortfall(short);
+    setAssets(nav);
+    setCashBps(Number(cashTarget));
     const addrs = (list as Address[]) || [];
     setListed(addrs);
     const bagAddrs = [WETH as Address, ...addrs];
@@ -130,9 +136,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
     const tokenOut = side === "buy" ? (token as Address) : (WETH as Address);
     void liveQuote(tokenIn, tokenOut, amt)
       .then(({ twapOut, floor }) => {
-        setQuoted(floor.toString());
+        setQuoted(twapOut.toString());
         setMinOut(floor.toString());
-        void twapOut;
       })
       .catch(() => setQuoted(""));
   }, [amount, side, token, live, vault]);
@@ -257,9 +262,16 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
     if (!walletClient || !address || !vault) throw new Error("connect the curator wallet");
     let { twapOut, floor } = await quoteFloor(tokenIn, tokenOut, amt);
     if (floor === 0n) throw new Error("no TWAP quote");
-    setQuoted(floor.toString());
-    setMinOut(twapOut.toString());
+    setQuoted(twapOut.toString());
+    setMinOut(floor.toString());
     const send = async (min: bigint) => {
+      await publicClient.simulateContract({
+        account: address,
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "swapV3",
+        args: [tokenIn, tokenOut, amt, min],
+      });
       const hash = await walletClient.writeContract({
         account: address,
         address: vault as Address,
@@ -273,13 +285,17 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       return rec;
     };
     try {
-      await send(twapOut);
+      await send(floor);
     } catch (e) {
       const hint = revertHint(e);
-      if (!hint.includes("stale vs TWAP") && !hint.includes("could not fill")) throw e;
+      if (!hint.includes("97% TWAP floor") && !hint.includes("could not fill") && !hint.includes("cash floor")) {
+        throw e;
+      }
       ({ twapOut, floor } = await quoteFloor(tokenIn, tokenOut, amt));
       if (floor === 0n) throw e;
-      await send(twapOut);
+      setQuoted(twapOut.toString());
+      setMinOut(floor.toString());
+      await send(floor);
     }
   }
 
@@ -291,7 +307,10 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
     } catch {
       amt = 0n;
     }
-    const blocked = sellBlocked(amt, bagWei, inSym, bagText(bagWei));
+    const blocked =
+      side === "buy"
+        ? buyBlocked(amt, bags[wethKey] || 0n, assets, cashBps)
+        : sellBlocked(amt, bagWei, inSym, bagText(bagWei));
     if (blocked) {
       setMsg(blocked);
       return;
@@ -303,7 +322,11 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       const tokenOut = side === "buy" ? (token as Address) : (WETH as Address);
       await sendSwap(tokenIn, tokenOut, amt);
       await loadBags();
-      setMsg(`swap confirmed — sold ${bagText(amt)} ${inSym} → ${outSym}`);
+      setMsg(
+        side === "buy"
+          ? `swap confirmed — ${bagText(amt)} WETH → ${outSym}`
+          : `swap confirmed — ${bagText(amt)} ${inSym} → WETH`,
+      );
       if (side === "sell") setAmount("");
     } catch (e) {
       setMsg(revertHint(e));
@@ -407,9 +430,14 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
 
   if (!live || !isOwner) return null;
 
-  const minOutWei = (() => {
+  const wethBag = bags[wethKey] || 0n;
+  const maxBuyWei =
+    side === "buy" && assets > 0n && cashBps > 0 && wethBag > (assets * BigInt(cashBps)) / 10_000n
+      ? wethBag - (assets * BigInt(cashBps)) / 10_000n
+      : wethBag;
+  const quoteWei = (() => {
     try {
-      return BigInt(minOut || "0");
+      return BigInt(quoted || "0");
     } catch {
       return 0n;
     }
@@ -420,8 +448,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       <p className="text-[13px] text-[var(--dim)]">Owner · {shortAddr(owner)}</p>
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Rebalance</h2>
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">
-        Amount in is vault tokens, not a guess. Max fills the bag. Sell to WETH, then drop — or Sell & drop in one
-        tap. Min-out re-quotes TWAP at send so a stale 0.01 no longer reverts.
+        Amount in is vault tokens, not a guess. Max fills the bag. Buys send the 97% TWAP floor
+        (V4 pools fill there, not at the headline quote). Sell & drop sells to WETH then removeToken.
         {isLive696x(vault) ? " Redeem stays open. No pause or floor controls here." : ""}
       </p>
       <label className="mt-5 block text-[11px] text-[var(--dim)]">
@@ -558,8 +586,9 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
               data-testid="owner-max"
               className="ghost h-10 px-3 text-[12px]"
               onClick={() => {
-                if (bagWei <= 0n) return;
-                setAmount(formatEther(bagWei));
+                const cap = side === "buy" ? maxBuyWei : bagWei;
+                if (cap <= 0n) return;
+                setAmount(formatEther(cap));
               }}
             >
               Max
@@ -567,22 +596,35 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
           </span>
           <span data-testid="owner-bag" className="mt-1 block text-[12px] text-[var(--paper)]">
             Vault holds {bagText(bagWei)} {inSym}
+            {side === "buy" && maxBuyWei < wethBag ? ` · max buy ${bagText(maxBuyWei)} WETH` : ""}
           </span>
         </label>
         <label className="block text-[11px] text-[var(--dim)]">
+          Quote out ({outSym}
+          {quoteWei > 0n ? " · TWAP" : ""})
+          <input
+            data-testid="owner-quote"
+            readOnly
+            value={quoteWei > 0n ? formatEther(quoteWei) : ""}
+            className="field mt-1 opacity-80"
+            placeholder="quotes on amount"
+          />
+        </label>
+        <label className="block text-[11px] text-[var(--dim)] sm:col-span-2">
           Min out ({outSym}
-          {quoted ? " · 3% under TWAP" : ""})
+          {minOut ? " · 97% floor sent on-chain" : ""})
           <input
             data-testid="owner-minout"
-            value={minOutWei > 0n ? formatEther(minOutWei) : ""}
-            onChange={(e) => {
+            readOnly
+            value={(() => {
               try {
-                setMinOut(parseEther(e.target.value || "0").toString());
+                const v = BigInt(minOut || "0");
+                return v > 0n ? formatEther(v) : "";
               } catch {
-                setMinOut("");
+                return "";
               }
-            }}
-            className="field mt-1"
+            })()}
+            className="field mt-1 opacity-80"
             placeholder="quotes on amount"
           />
         </label>

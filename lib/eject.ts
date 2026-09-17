@@ -23,6 +23,31 @@ export function sellBlocked(amountWei: bigint, bagWei: bigint, symbol: string, b
   return null;
 }
 
+/** WETH buys cannot spend below the vault cash floor (default 25%). */
+export function buyBlocked(
+  amountWei: bigint,
+  wethWei: bigint,
+  assetsWei: bigint,
+  cashBps: number,
+): string | null {
+  if (amountWei <= 0n) return "amount in must be > 0";
+  if (wethWei <= 0n) return "vault holds 0 WETH";
+  if (assetsWei <= 0n || cashBps <= 0) return null;
+  const need = (assetsWei * BigInt(cashBps)) / 10_000n;
+  if (wethWei <= need) return "cash is already at the floor — sell a name first";
+  const max = wethWei - need;
+  if (amountWei > max) {
+    return `max buy ${formatEtherSafe(max)} WETH — must keep ${(cashBps / 100).toFixed(0)}% cash`;
+  }
+  return null;
+}
+
+function formatEtherSafe(wei: bigint) {
+  const whole = wei / 10n ** 18n;
+  const frac = (wei % 10n ** 18n).toString().padStart(18, "0").replace(/0+$/, "") || "0";
+  return `${whole}.${frac}`;
+}
+
 export function partitionRemovals(
   tokens: readonly string[],
   weiByToken: ReadonlyMap<string, bigint>,
@@ -64,7 +89,10 @@ export function revertHint(err: unknown): string {
     return "still holding that name — sell to WETH on Rebalance, then tap ×";
   }
   if (blob.includes("slippage") || blob.includes(SLIPPAGE_SEL)) {
-    return "min-out went stale vs TWAP — tap Swap again, and sell the vault bag (Max)";
+    return "pool filled below the quote — we send the 97% TWAP floor; retry Swap";
+  }
+  if (blob.includes("cashfloor") || blob.includes("0xdc55f981")) {
+    return "that buy would breach the cash floor — use a smaller WETH amount";
   }
   if (blob.includes("swapfailed") || blob.includes("0x81ceff30")) {
     return "pool could not fill the TWAP floor — wait a block and sell Max";
