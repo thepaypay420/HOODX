@@ -32,7 +32,7 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
     <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-4 pb-24 pt-5 sm:space-y-8 sm:px-6 sm:pb-28 sm:pt-8">
       <VaultDesk slug={slug} vault={vault || undefined} isGen0={gen0} />
       <IndexCard slug={slug} vault={vault || undefined} compact />
-      <OwnerDesk vault={vault || undefined} />
+      <OwnerDesk slug={slug} vault={vault || undefined} />
     </div>
   );
 }

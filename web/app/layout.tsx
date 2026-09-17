@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Outfit } from "next/font/google";
 import { Aura } from "@/components/Aura";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SITE_URL } from "@/lib/config";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -18,8 +19,21 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HOODX",
-  description: "Build a meme index. Share the link. Earn a cut. DYOR.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "HOODX",
+    template: "%s · HOODX",
+  },
+  description: "Live on Robinhood Chain. One token. A whole book. DYOR.",
+  applicationName: "HOODX",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "HOODX",
+    description: "Live on Robinhood Chain. One token. A whole book.",
+    url: SITE_URL,
+    siteName: "HOODX",
+    type: "website",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },

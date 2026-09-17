@@ -6,12 +6,13 @@ import { vaultAbi } from "@/lib/abi";
 import { INDEX_CATALOG, byAddress } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
+import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
 import { fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { listTargetBps, type Sleeve } from "@/lib/weights";
 import snapshot from "../public/sleeves.json";
 
-export function OwnerDesk({ vault }: { vault?: string }) {
+export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string }) {
   const live = isAddress(vault || "");
   const { address, chainId, walletClient } = useWallet();
   const [owner, setOwner] = useState("");
@@ -23,6 +24,8 @@ export function OwnerDesk({ vault }: { vault?: string }) {
   const [minOut, setMinOut] = useState("");
   const [quoted, setQuoted] = useState("");
   const [shortfall, setShortfall] = useState(0n);
+  const [blurb, setBlurb] = useState(() => readBlurb(slug, vault));
+  const [blurbSaved, setBlurbSaved] = useState("");
 
   const isOwner = Boolean(address && owner && address.toLowerCase() === owner.toLowerCase());
 
@@ -37,6 +40,13 @@ export function OwnerDesk({ vault }: { vault?: string }) {
       .then((s) => setShortfall(s))
       .catch(() => setShortfall(0n));
   }, [live, vault]);
+
+  useEffect(() => {
+    const sync = () => setBlurb(readBlurb(slug, vault));
+    sync();
+    window.addEventListener(BLURB_EVENT, sync);
+    return () => window.removeEventListener(BLURB_EVENT, sync);
+  }, [slug, vault]);
 
   useEffect(() => {
     let amt = 0n;
@@ -241,6 +251,51 @@ export function OwnerDesk({ vault }: { vault?: string }) {
         First mint used equal sleeves. 696 list is capped sqrt-mcap — apply it, then swap drift.
         {isLive696x(vault) ? " Redeem stays open. No pause or floor controls here." : ""}
       </p>
+      <label className="mt-5 block text-[11px] text-[var(--dim)]">
+        Description
+        <textarea
+          data-testid="owner-blurb"
+          value={blurb}
+          maxLength={BLURB_MAX}
+          onChange={(e) => {
+            setBlurb(e.target.value);
+            setBlurbSaved("");
+          }}
+          className="field mt-1 min-h-[5.5rem] resize-y text-[15px] font-medium leading-6 text-[#e8f3f0]"
+          placeholder="A line beside the name — curator subtext."
+        />
+      </label>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-[12px] tabular text-[var(--dim)]">
+          {blurb.length}/{BLURB_MAX}
+          {blurbSaved ? ` · ${blurbSaved}` : ""}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            data-testid="owner-blurb-reset"
+            className="ghost h-9 px-3 text-[12px]"
+            onClick={() => {
+              writeBlurb(slug, vault, "");
+              setBlurb(defaultBlurb(slug));
+              setBlurbSaved("Reset");
+            }}
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            data-testid="owner-blurb-save"
+            className="ghost h-9 px-3 text-[12px]"
+            onClick={() => {
+              writeBlurb(slug, vault, blurb);
+              setBlurbSaved("Saved");
+            }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"

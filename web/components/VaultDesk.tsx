@@ -24,6 +24,7 @@ import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta
 import { publicClient, useWallet } from "@/lib/wallet";
 import { activeBook, issueSplit, type Sleeve } from "@/lib/weights";
 import { TokenArt } from "@/components/TokenArt";
+import { BLURB_EVENT, readBlurb } from "@/lib/blurbs";
 import snapshot from "../public/sleeves.json";
 
 type Bag = { token: Address; symbol: string; wei: bigint; wethWei: bigint; targetBps: number };
@@ -109,6 +110,7 @@ export function VaultDesk({
   const [copied, setCopied] = useState(false);
   const [restoreToken, setRestoreToken] = useState("");
   const [restoreAmt, setRestoreAmt] = useState("");
+  const [blurb, setBlurb] = useState(() => readBlurb(slug, vaultProp));
 
   const { address, chainId, walletClient, connect, connecting, switchToRobinhood } = useWallet();
   const isConnected = Boolean(address);
@@ -123,6 +125,17 @@ export function VaultDesk({
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const sync = () => setBlurb(readBlurb(slug, vaultProp));
+    sync();
+    window.addEventListener(BLURB_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(BLURB_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [slug, vaultProp]);
 
   const loadVault = useCallback(async () => {
     if (!vault) {
@@ -500,12 +513,17 @@ export function VaultDesk({
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-start gap-3 sm:flex-nowrap sm:gap-5">
           <TokenArt slug={slug} size="md" priority={isGen0} />
-          <div className="min-w-0">
+          <div className="min-w-0 shrink-0">
             <p className="text-[13px] text-[var(--dim)]">{isGen0 ? "Index" : `/${slug}`}</p>
             <h1 className="mt-0.5 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">${token}</h1>
           </div>
+          {blurb ? (
+            <div className="min-w-0 flex-1 pt-0.5 sm:pt-[1.55rem]">
+              <VaultBlurb text={blurb} />
+            </div>
+          ) : null}
         </div>
         <div className="flex shrink-0 gap-2">
           {live && vault && (
@@ -525,8 +543,8 @@ export function VaultDesk({
         </div>
       </div>
 
-      <section data-testid="vault-board" className="holo mt-6 overflow-hidden sm:mt-8">
-        <div className="grid grid-cols-2 gap-px bg-[var(--line)]">
+      <section data-testid="vault-board" className="holo desk mt-6 overflow-hidden sm:mt-8">
+        <div className="desk-line grid grid-cols-2 gap-px">
           <HeroStat
             label="You"
             value={
@@ -583,7 +601,7 @@ export function VaultDesk({
             tone="flat"
           />
         </div>
-        <div className="grid grid-cols-3 gap-px bg-[var(--line)]">
+        <div className="desk-line grid grid-cols-3 gap-px">
           <Stat
             label="Share"
             value={
@@ -615,7 +633,7 @@ export function VaultDesk({
           />
         </div>
         {live && snap && heldBags.length > 0 && (
-          <div className="border-t border-[var(--line)] px-4 py-4 sm:px-6 sm:py-5">
+          <div className="desk-bags px-4 py-4 sm:px-6 sm:py-5">
             <p className="mb-3 text-[13px] text-[var(--dim)]">In the vault</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {heldBags.map((b) => {
@@ -626,7 +644,7 @@ export function VaultDesk({
                 return (
                   <div
                     key={b.token}
-                    className="rounded-[16px] border border-[var(--line)] bg-[var(--lift)] px-3 py-3 sm:px-4 sm:py-3.5"
+                    className="desk-bag px-3 py-3 sm:px-4 sm:py-3.5"
                   >
                     <p className="truncate text-[13px] text-[var(--dim)]">{cash ? "Cash" : b.symbol}</p>
                     <p className="mt-1 text-[1.35rem] font-semibold leading-none tracking-[-0.04em] tabular sm:text-2xl">
@@ -657,8 +675,8 @@ export function VaultDesk({
       )}
 
       <section className="holo mt-6 overflow-hidden p-1 sm:mt-8">
-        <div className="grid gap-1 lg:grid-cols-2">
-        <div className="rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
+        <div className="grid gap-1 lg:grid-cols-2 lg:items-stretch">
+        <div className="flex h-full flex-col rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between">
             <h2 className="text-[15px] font-medium text-[var(--dim)]">Join</h2>
             <p className="text-[12px] text-[var(--dim)]">
@@ -714,6 +732,7 @@ export function VaultDesk({
             </div>
           </div>
           {joinTooSmall && <p className="mt-2 text-[13px] text-[var(--gold)]">Min {minJoin} ETH.</p>}
+          <div className="mt-auto w-full pt-4">
           <button
             type="button"
             data-testid="vault-join"
@@ -734,7 +753,7 @@ export function VaultDesk({
               }
               void onJoin();
             }}
-            className="ape mt-4 w-full text-[15px] disabled:opacity-40"
+            className="ape w-full text-[15px] disabled:opacity-40"
           >
             {!live
               ? "Not live"
@@ -748,9 +767,10 @@ export function VaultDesk({
                     ? "Switch network"
                     : `Join ${token}`}
           </button>
+          </div>
         </div>
 
-        <div className="rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
+        <div className="flex h-full flex-col rounded-[16px] bg-[var(--lift)] p-4 sm:p-5">
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="text-[15px] font-medium text-[var(--dim)]">Leave</h2>
             <p data-testid="vault-shares" className="truncate text-[12px] tabular text-[var(--dim)]">
@@ -768,7 +788,7 @@ export function VaultDesk({
             />
             <span className="token-pill">{token}</span>
           </div>
-          <div className="mt-1 flex items-center justify-end">
+          <div className="mt-1 flex min-h-[1.25rem] items-center justify-end">
             {snap && snap.userShares > 0n && (
               <button
                 type="button"
@@ -796,6 +816,7 @@ export function VaultDesk({
           {canLeave === false && leaveWei > 0n && (
             <p className="mt-2 text-[13px] text-[var(--gold)]">Buffer short. Restore cash first.</p>
           )}
+          <div className="mt-auto w-full pt-4">
           <button
             type="button"
             data-testid="vault-leave"
@@ -815,7 +836,7 @@ export function VaultDesk({
               }
               void onLeave();
             }}
-            className="ghost mt-4 w-full disabled:opacity-40"
+            className="ghost cta w-full disabled:opacity-40"
           >
             {!live
               ? "Not live"
@@ -829,6 +850,7 @@ export function VaultDesk({
                     ? "Switch network"
                     : "Redeem"}
           </button>
+          </div>
         </div>
         </div>
       </section>
@@ -1016,7 +1038,7 @@ export function VaultDesk({
 
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="bg-[var(--hud)] px-2.5 py-4 sm:px-5 sm:py-5">
+    <div className="desk-cell px-2.5 py-4 sm:px-5 sm:py-5">
       <p className="text-[12px] text-[var(--dim)]">{label}</p>
       <p className="mt-1.5 text-[1.35rem] font-semibold leading-none tracking-[-0.04em] tabular sm:text-2xl">{value}</p>
       <p className="mt-1.5 text-[12px] leading-5 text-[var(--dim)]">{hint}</p>
@@ -1039,12 +1061,29 @@ function HeroStat({
 }) {
   const color = tone === "up" ? "tone-up" : tone === "down" ? "tone-down" : "tone-flat";
   return (
-    <div data-testid={testId} className="bg-[var(--hud)] px-4 py-5 sm:px-6 sm:py-6">
+    <div data-testid={testId} className="desk-cell px-4 py-5 sm:px-6 sm:py-6">
       <p className="text-[12px] text-[var(--dim)]">{label}</p>
       <p className={`mt-2 text-[1.85rem] font-semibold leading-none tracking-[-0.05em] tabular sm:text-4xl ${color}`}>
         {value}
       </p>
       <p className="mt-2 text-[12px] leading-5 text-[var(--dim)]">{hint}</p>
     </div>
+  );
+}
+
+function VaultBlurb({ text }: { text: string }) {
+  const parts = text.split(/(@[A-Za-z0-9_]+)/g);
+  return (
+    <p className="vault-blurb" data-testid="vault-blurb">
+      {parts.map((part, i) =>
+        part.startsWith("@") ? (
+          <a key={`${part}-${i}`} href={`https://x.com/${part.slice(1)}`} target="_blank" rel="noreferrer">
+            {part}
+          </a>
+        ) : (
+          <span key={`${part}-${i}`}>{part}</span>
+        ),
+      )}
+    </p>
   );
 }

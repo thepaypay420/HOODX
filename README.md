@@ -17,9 +17,11 @@
 </p>
 
 <p align="center">
+  <a href="https://www.xhoodindex.com">App</a> ·
+  <a href="https://www.xhoodindex.com/i/696x">$696X</a> ·
   <a href="https://t.me/HOODXINDEX">Telegram</a> ·
   <a href="https://x.com/696_eth/status/2100067116594725086">696 list</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24">$696X vault</a> ·
+  <a href="https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24">Vault</a> ·
   <a href="https://robinhoodchain.blockscout.com/address/0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9">Factory</a>
 </p>
 
@@ -122,6 +124,8 @@ The factory is permissionless. `HoodxFactory.create` is for anyone. `create696x`
 
 `web/` — Next.js 15, viem, no private keys. Uniswap-quiet dark UI. Hat mark, teal `#1fd4c6`, gold `#e0b54a`.
 
+Production: **[www.xhoodindex.com](https://www.xhoodindex.com)** (`xhoodindex.com` redirects there).
+
 | Route | |
 |---|---|
 | `/` | HOODX · featured $696X · create |
@@ -136,7 +140,7 @@ npm install
 npm run dev     # http://127.0.0.1:3100
 ```
 
-Vercel root: `web/`. `.env.example` already points at the live factory and $696X vault.
+Vercel builds the Next HUD (repo root → `web/` via git symlinks). `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`.
 
 ---
 

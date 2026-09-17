@@ -5,7 +5,7 @@ export const CURATOR_696 = {
   tweet: "https://x.com/696_eth/status/2100067116594725086",
   avatar: "/curators/696_eth.jpg",
   followers: 12043,
-  blurb: "CTO lead of PrometheusGrok. Health & Wealth.",
+  blurb: "CTO lead of @PrometheusGrok / Health & Wealth",
 };
 
 export const GEN0_SLUG = "696x";

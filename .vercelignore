@@ -1,0 +1,10 @@
+# Uploaded from Git; Next HUD lives in web/ (symlinked at repo root for Vercel).
+*.py
+__pycache__/
+tests
+contracts
+docs
+DESIGN.md
+LICENSE
+*.sqlite
+.secrets

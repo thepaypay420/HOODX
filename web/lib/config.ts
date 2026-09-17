@@ -1,3 +1,7 @@
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.xhoodindex.com").replace(
+  /\/$/,
+  "",
+);
 export const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID || 4663);
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.mainnet.chain.robinhood.com";
