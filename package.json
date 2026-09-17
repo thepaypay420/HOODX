@@ -1,8 +1,13 @@
 {
   "name": "hoodx-web",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "vercel-link": "sh ./scripts/vercel-link.sh",
+    "prebuild": "sh ./scripts/vercel-link.sh",
     "dev": "next dev --turbopack -H 127.0.0.1 -p 3100",
     "build": "next build",
     "start": "next start -H 127.0.0.1 -p 3100"
