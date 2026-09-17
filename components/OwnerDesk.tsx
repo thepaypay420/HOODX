@@ -249,6 +249,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Rebalance</h2>
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">
         First mint used equal sleeves. 696 list is capped sqrt-mcap — apply it, then swap drift.
+        To drop a listed name, sell the bag to WETH here, then tap × on the pack — the vault
+        refuses ejects while it still holds the token.
         {isLive696x(vault) ? " Redeem stays open. No pause or floor controls here." : ""}
       </p>
       <label className="mt-5 block text-[11px] text-[var(--dim)]">

@@ -217,6 +217,11 @@ body {
   border-color: var(--gold);
 }
 
+.chip.held {
+  border-color: rgba(224, 181, 74, 0.7);
+  background: rgba(224, 181, 74, 0.1);
+}
+
 @keyframes pop {
   0% {
     transform: scale(0.94);

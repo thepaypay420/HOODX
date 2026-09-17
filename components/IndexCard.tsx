@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isAddress, zeroAddress, type Address } from "viem";
 import { AddName } from "@/components/AddName";
 import { TokenArt } from "@/components/TokenArt";
-import { vaultAbi } from "@/lib/abi";
+import { erc20Abi, vaultAbi } from "@/lib/abi";
 import { INDEX_CATALOG, byAddress, isIndexPool, poolRef, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, EXPLORER, PROTOCOL_FEE_BPS, WETH, isLive696x } from "@/lib/config";
 import { CURATOR_696, CURATOR_696_CURATOR, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
+import { ejectBlocked, isHeldWei, partitionRemovals, revertHint } from "@/lib/eject";
 import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { canSetTokenImage, fileToTokenImage, saveTokenImage } from "@/lib/tokenImage";
@@ -48,6 +49,7 @@ export function IndexCard({
   const [localDraft, setLocalDraft] = useState(false);
   const [artTick, setArtTick] = useState(0);
   const [extra, setExtra] = useState<Coin[]>([]);
+  const [held, setHeld] = useState<string[]>([]);
   const live = Boolean(vault && isAddress(vault));
   const addQ = useRef<Set<string>>(new Set());
   const remQ = useRef<Set<string>>(new Set());
@@ -89,7 +91,27 @@ export function IndexCard({
     setRecipient(rec);
     setCreatorBps(Number(cBps));
     setProtocolBps(Number(pBps));
-    if (list?.length) setOn(list.map((a) => a.toLowerCase()));
+    const addrs = (list as Address[]) || [];
+    if (addrs.length) setOn(addrs.map((a) => a.toLowerCase()));
+    const bags: string[] = [];
+    if (addrs.length && vault) {
+      const bals = await Promise.all(
+        addrs.map((token) =>
+          publicClient
+            .readContract({
+              address: token,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [vault as Address],
+            })
+            .catch(() => 1n),
+        ),
+      );
+      addrs.forEach((token, i) => {
+        if (isHeldWei(bals[i])) bags.push(token.toLowerCase());
+      });
+    }
+    setHeld(bags);
   }, [live, vault]);
 
   useEffect(() => {
@@ -190,31 +212,64 @@ export function IndexCard({
         });
         await publicClient.waitForTransactionReceipt({ hash });
       }
-      if (rems.length === 1) {
-        const hash = await walletClient.writeContract({
-          account: address,
-          address: vault as Address,
-          abi: vaultAbi,
-          functionName: "removeToken",
-          args: [rems[0]],
-          chain: robinhood,
-        });
-        await publicClient.waitForTransactionReceipt({ hash });
-      } else if (rems.length > 1) {
-        const hash = await walletClient.writeContract({
-          account: address,
-          address: vault as Address,
-          abi: vaultAbi,
-          functionName: "removeTokens",
-          args: [rems],
-          chain: robinhood,
-        });
-        await publicClient.waitForTransactionReceipt({ hash });
+      let empty: string[] = [];
+      let blocked: string[] = [];
+      if (rems.length) {
+        const weiByToken = new Map<string, bigint>();
+        for (const token of rems) {
+          try {
+            const bal = await publicClient.readContract({
+              address: token,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [vault as Address],
+            });
+            weiByToken.set(token.toLowerCase(), bal);
+          } catch {
+            weiByToken.set(token.toLowerCase(), 1n);
+          }
+        }
+        ({ empty, held: blocked } = partitionRemovals(rems, weiByToken));
+        if (blocked.length) {
+          setHeld((p) => [...new Set([...p, ...blocked.map((t) => t.toLowerCase())])]);
+        }
+        if (empty.length === 1) {
+          const hash = await walletClient.writeContract({
+            account: address,
+            address: vault as Address,
+            abi: vaultAbi,
+            functionName: "removeToken",
+            args: [empty[0] as Address],
+            chain: robinhood,
+          });
+          await publicClient.waitForTransactionReceipt({ hash });
+        } else if (empty.length > 1) {
+          const hash = await walletClient.writeContract({
+            account: address,
+            address: vault as Address,
+            abi: vaultAbi,
+            functionName: "removeTokens",
+            args: [empty as Address[]],
+            chain: robinhood,
+          });
+          await publicClient.waitForTransactionReceipt({ hash });
+        } else if (!adds.length) {
+          const names = blocked.map((t) => byAddress(t)?.symbol || shortAddr(t)).join(", ");
+          flash(ejectBlocked(names, true) || "sell to WETH first, then eject");
+          await reloadPack().catch(() => {});
+          return;
+        }
       }
-      const n = adds.length + rems.length;
-      flash(n === 1 ? "pack synced" : `${n} names synced`);
+      const n = adds.length + empty.length;
+      const synced = n === 1 ? "pack synced" : `${n} names synced`;
+      if (blocked.length) {
+        const names = blocked.map((t) => byAddress(t)?.symbol || shortAddr(t)).join(", ");
+        flash(`${synced} · ${ejectBlocked(names, true)}`);
+      } else {
+        flash(synced);
+      }
     } catch (e) {
-      flash(e instanceof Error ? e.message.slice(0, 160) : "sell to WETH first, then eject");
+      flash(revertHint(e));
       await reloadPack().catch(() => {});
     } finally {
       flushing.current = false;
@@ -232,19 +287,41 @@ export function IndexCard({
     flushTimer.current = window.setTimeout(() => void flush(), FLUSH_MS);
   }
 
-  function toggle(coin: Coin) {
+  async function toggle(coin: Coin) {
     if (!canEdit) return;
-    const has = on.includes(coin.token);
+    const token = coin.token.toLowerCase();
+    const has = on.includes(token);
     if (has) {
       if (on.length <= 2) {
         flash("pack needs at least 2");
         return;
       }
-      setOn((p) => p.filter((x) => x !== coin.token));
-      flash(`− ${coin.symbol}`, coin.token);
+      if (live && isOwner && vault) {
+        let bag = held.includes(token);
+        try {
+          const bal = await publicClient.readContract({
+            address: coin.token as Address,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [vault as Address],
+          });
+          bag = isHeldWei(bal);
+        } catch {
+          flash("could not read vault bag — try again");
+          return;
+        }
+        if (bag) {
+          setHeld((p) => (p.includes(token) ? p : [...p, token]));
+          flash(ejectBlocked(coin.symbol, true) || "");
+          return;
+        }
+        setHeld((p) => p.filter((t) => t !== token));
+      }
+      setOn((p) => p.filter((x) => x !== token));
+      flash(`− ${coin.symbol}`, token);
       if (live && isOwner) {
-        if (addQ.current.has(coin.token)) addQ.current.delete(coin.token);
-        else remQ.current.add(coin.token);
+        if (addQ.current.has(token)) addQ.current.delete(token);
+        else remQ.current.add(token);
         scheduleFlush();
       }
       return;
@@ -420,6 +497,7 @@ export function IndexCard({
   const coinsOn = on.map((t) => byAddress(t)).filter(Boolean) as Coin[];
   const title = gen0 ? `$${GEN0_SYMBOL}` : `$${slug.toUpperCase()}`;
   const pendingSet = new Set(pending);
+  const heldSet = useMemo(() => new Set(held.map((t) => t.toLowerCase())), [held]);
   const payoutDirty =
     Boolean(payout) &&
     isAddress(payout) &&
@@ -519,7 +597,13 @@ export function IndexCard({
 
       <div className="mt-6">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--dim)]">
-          <span>{canEdit ? "On the book · tap + to add from this list, × to drop" : "Names"}</span>
+          <span>
+            {canEdit
+              ? live
+                ? "On the book · + adds, × drops an empty name. A bag must be sold to WETH on Rebalance first."
+                : "On the book · tap + to add from this list, × to drop"
+              : "Names"}
+          </span>
           {canEdit && (
             <span data-testid="pack-status" className="text-[var(--cyan)]">
               {syncing ? "Syncing" : pending.length ? `${pending.length} queued` : live ? "Live" : "Draft"}
@@ -536,7 +620,7 @@ export function IndexCard({
                 flash(`${coin.symbol} is already on the book`);
                 return;
               }
-              toggle(coin);
+              await toggle(coin);
             }}
           />
         )}
@@ -559,6 +643,7 @@ export function IndexCard({
             {visible.map((c) => {
               const active = on.includes(c.token);
               const wait = pendingSet.has(c.token);
+              const bag = active && heldSet.has(c.token);
               return (
                 <button
                   key={c.token}
@@ -566,16 +651,18 @@ export function IndexCard({
                   data-testid={`pack-chip-${c.symbol}`}
                   data-symbol={c.symbol}
                   data-on={active ? "1" : "0"}
-                  onClick={() => toggle(c)}
+                  data-held={bag ? "1" : "0"}
+                  title={bag ? `${c.symbol} still in the vault — sell to WETH on Rebalance, then tap ×` : undefined}
+                  onClick={() => void toggle(c)}
                   className={`chip inline-flex items-center gap-2 px-2.5 text-[12px] ${
                     active ? "on" : "off"
-                  } ${pop === c.token ? "pop" : ""} ${wait ? "pending" : ""}`}
+                  } ${pop === c.token ? "pop" : ""} ${wait ? "pending" : ""} ${bag ? "held" : ""}`}
                 >
                   <span className="text-[var(--gold)]">{tier(c.mcapUsd)}</span>
                   {c.symbol}
                   {(c.buyLabels || []).includes("v4") ? <span className="text-[var(--dim)]">v4</span> : null}
-                  <span className={active ? "text-[var(--danger)]" : "text-[var(--lime)]"}>
-                    {wait ? "…" : active ? "×" : "+"}
+                  <span className={bag ? "text-[var(--gold)]" : active ? "text-[var(--danger)]" : "text-[var(--lime)]"}>
+                    {wait ? "…" : bag ? "bag" : active ? "×" : "+"}
                   </span>
                 </button>
               );
