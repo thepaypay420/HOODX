@@ -2,19 +2,15 @@ import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { GEN0_SLUG } from "@/lib/curators";
 
-/** Basket chips to the right of the HOODX coin — x/y are % of the stage (0–100). */
 const FLOAT_TOKENS = [
-  { label: "MEME", x: 66, y: 8, delay: "0.8s" },
-  { label: "PONS", x: 84, y: 18, delay: "0s" },
-  { label: "AI", x: 72, y: 30, delay: "1.4s" },
-  { label: "CASHCAT", x: 90, y: 42, delay: "1.7s" },
-  { label: "STONKBROKER", x: 76, y: 54, delay: "2s" },
-  { label: "696X", x: 88, y: 66, delay: "1s" },
-  { label: "HOOKR", x: 70, y: 78, delay: "1.2s" },
+  { label: "PONS", x: "8%", y: "12%", delay: "0s" },
+  { label: "MEME", x: "72%", y: "8%", delay: "0.8s" },
+  { label: "CASHCAT", x: "76%", y: "22%", delay: "1.1s" },
+  { label: "AI", x: "84%", y: "38%", delay: "1.4s" },
+  { label: "ETH", x: "4%", y: "52%", delay: "0.4s" },
+  { label: "696X", x: "68%", y: "62%", delay: "1s" },
+  { label: "HOOKR", x: "86%", y: "58%", delay: "1.6s" },
 ];
-
-/** Matches --landing-coin-x / --landing-coin-y in globals.css */
-const BASKET_CENTER = { x: 28, y: 46 };
 
 const VALUE_PROPS = [
   {
@@ -77,25 +73,13 @@ export function HomeLanding() {
 
           <div className="landing-stage rise" style={{ animationDelay: "80ms" }}>
             <div className="landing-stage-glow" aria-hidden />
-            <svg className="landing-basket-web" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-              {FLOAT_TOKENS.map((t) => (
-                <line
-                  key={t.label}
-                  x1={BASKET_CENTER.x}
-                  y1={BASKET_CENTER.y}
-                  x2={t.x}
-                  y2={t.y}
-                  className="landing-basket-line"
-                />
-              ))}
-            </svg>
             <div className="landing-orbit landing-orbit-a" aria-hidden />
             <div className="landing-orbit landing-orbit-b" aria-hidden />
             {FLOAT_TOKENS.map((t) => (
               <div
                 key={t.label}
                 className="landing-float-chip"
-                style={{ left: `${t.x}%`, top: `${t.y}%`, animationDelay: t.delay }}
+                style={{ left: t.x, top: t.y, animationDelay: t.delay }}
               >
                 {t.label}
               </div>
