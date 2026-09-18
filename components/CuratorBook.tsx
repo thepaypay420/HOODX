@@ -18,6 +18,8 @@ import {
   resizeSliderTargets,
   trimDriftTargets,
   parkLegacyTargets,
+  vaultMcapTargets,
+  type McapRow,
   type StrategyId,
   type TargetDraft,
 } from "@/lib/curator";
@@ -150,6 +152,22 @@ export function CuratorBook({
   const totals = useMemo(() => draftTotals(draft, cashBps), [draft, cashBps]);
   const navUsd = ethUsd > 0 ? Number(formatEther(navWei)) * ethUsd : 0;
 
+  const mcapRows = useMemo<McapRow[]>(
+    () =>
+      rows.map((r) => {
+        const coin = byAddress(r.token);
+        const meta = coin as { buyTvlUsd?: number; mcapUsd?: number; vol24Usd?: number; hops?: number };
+        return {
+          token: r.token,
+          mcapUsd: meta?.mcapUsd,
+          buyTvlUsd: meta?.buyTvlUsd,
+          vol24Usd: meta?.vol24Usd,
+          hops: meta?.hops,
+        };
+      }),
+    [rows],
+  );
+
   const driftRows = useMemo(
     () =>
       analyzeDrift(
@@ -196,6 +214,8 @@ export function CuratorBook({
       const tokens = rows.map((r) => r.token);
       if (id === "equal") {
         setDraft(equalTargets(tokens, cashBps));
+      } else if (id === "mcap") {
+        setDraft(vaultMcapTargets(mcapRows, cashBps));
       } else if (id === "list696") {
         const sleeves = (snapshot.sleeves || []) as Sleeve[];
         setDraft(list696Targets(sleeves, tokens, navUsd, navWei, minSleeveWei, cashBps));
@@ -234,7 +254,7 @@ export function CuratorBook({
       }
       setStrategy(id);
     },
-    [rows, cashBps, navUsd, navWei, minSleeveWei, legacyIds],
+    [rows, cashBps, navUsd, navWei, minSleeveWei, legacyIds, mcapRows],
   );
 
   async function writeTargets() {
@@ -290,8 +310,8 @@ export function CuratorBook({
       </div>
 
       <p className="mt-2 text-[14px] leading-6 text-[var(--dim)]">
-        Slide each name to the sleeve you want. Cash stays at least {(cashBps / 100).toFixed(0)}% for exits.
-        P/L vs target is mark-to-NAV drift — not your wallet ROI.
+        Targets use capped sqrt-mcap vs the book. Moving one slider reallocates the rest by mcap — rows stay
+        fixed. Cash stays at least {(cashBps / 100).toFixed(0)}% for exits.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -357,7 +377,7 @@ export function CuratorBook({
                         onChange={(e) => {
                           setStrategy("custom");
                           setDraft((cur) =>
-                            resizeSliderTargets(cur, r.token, Math.round(Number(e.target.value) * 100), cashBps),
+                            resizeSliderTargets(cur, r.token, Math.round(Number(e.target.value) * 100), cashBps, mcapRows),
                           );
                         }}
                         className="h-1.5 flex-1 accent-[var(--gold)]"

@@ -9,6 +9,7 @@ export type Coin = {
   token: string;
   mcapUsd?: number;
   vol24Usd?: number;
+  buyTvlUsd?: number;
   hops?: number;
   buyQuote?: string;
   buyQuoteAddr?: string;

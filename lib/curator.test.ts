@@ -9,6 +9,8 @@ import {
   parkLegacyTargets,
   riskCap,
   trimDriftTargets,
+  vaultMcapTargets,
+  mcapScore,
 } from "./curator";
 
 describe("curator targets", () => {
@@ -19,12 +21,50 @@ describe("curator targets", () => {
     expect(draftTotals(d, 2500).cashBps).toBe(2500);
   });
 
-  it("resize keeps risk-on inside the cap", () => {
-    const base = equalTargets(["0xa", "0xb", "0xc"], 2500);
-    const next = resizeSliderTargets(base, "0xa", 5000, 2500);
+  it("resize reallocates others by mcap not proportional draft", () => {
+    const mcapRows = [
+      { token: "0xa", mcapUsd: 400_000_000 },
+      { token: "0xb", mcapUsd: 100_000_000 },
+      { token: "0xc", mcapUsd: 25_000_000 },
+    ];
+    const base = vaultMcapTargets(mcapRows, 2500);
+    const next = resizeSliderTargets(base, "0xa", 5000, 2500, mcapRows);
     expect(next["0xa"]).toBe(5000);
     expect(draftTotals(next, 2500).over).toBe(0);
-    expect(draftTotals(next, 2500).riskOnBps).toBeLessThanOrEqual(riskCap(2500));
+    expect(next["0xb"] || 0).toBeGreaterThan(next["0xc"] || 0);
+  });
+
+  it("drift rows keep input order", () => {
+    const nav = 10n ** 18n;
+    const rows = analyzeDrift(
+      [
+        {
+          token: "0xzzz",
+          symbol: "ZZZ",
+          balanceWei: 1n,
+          wethValueWei: 1n ** 17n,
+          onChainTargetBps: 100,
+          draftBps: 100,
+          lastPxWad: 10n ** 18n,
+          currentPxWad: 10n ** 18n,
+        },
+        {
+          token: "0xaaa",
+          symbol: "AAA",
+          balanceWei: 1n,
+          wethValueWei: 5n * 10n ** 16n,
+          onChainTargetBps: 5000,
+          draftBps: 50,
+          lastPxWad: 10n ** 18n,
+          currentPxWad: 10n ** 18n,
+        },
+      ],
+      nav,
+      2500,
+      200,
+    );
+    expect(rows[0]?.symbol).toBe("ZZZ");
+    expect(rows[1]?.symbol).toBe("AAA");
   });
 
   it("live mix scales overweight books down", () => {

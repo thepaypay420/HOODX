@@ -15,7 +15,7 @@ export function pctToBps(pct: number) {
 
 export type TargetDraft = Record<string, number>;
 
-export type StrategyId = "equal" | "list696" | "live" | "trim" | "parkLegacy";
+export type StrategyId = "mcap" | "equal" | "list696" | "live" | "trim" | "parkLegacy";
 
 export type Strategy = {
   id: StrategyId;
@@ -23,9 +23,27 @@ export type Strategy = {
   hint: string;
 };
 
+export type McapRow = {
+  token: string;
+  mcapUsd?: number;
+  buyTvlUsd?: number;
+  vol24Usd?: number;
+  hops?: number;
+};
+
+const LIQ_REF_USD = 10_000;
+const HOP2_HAIRCUT = 0.5;
+const WEIGHT_CAP = 0.1;
+const WEIGHT_FLOOR = 0.03;
+
 export const CURATOR_STRATEGIES: Strategy[] = [
+  {
+    id: "mcap",
+    label: "Mcap weight",
+    hint: "Capped sqrt-mcap vs the rest of the book — default for targets and slider rebalance.",
+  },
+  { id: "list696", label: "696 list book", hint: "Fixed 696 snapshot weights (skips dead-volume names)." },
   { id: "equal", label: "Equal weight", hint: "Split risk-on evenly across every listed name." },
-  { id: "list696", label: "696 sqrt book", hint: "Capped sqrt-mcap weights with a 25% cash sleeve." },
   { id: "live", label: "Match live mix", hint: "Copy what the vault holds now into targets." },
   { id: "trim", label: "Trim drift", hint: "Snap only out-of-band names to live weights; keep the rest on-chain." },
   {
@@ -105,24 +123,147 @@ export function list696Targets(
   return out;
 }
 
-/** When one slider moves, shrink the rest so risk-on stays within the cash floor cap. */
+/** Sqrt-mcap score with liquidity + hop haircuts (matches weights.py). */
+export function mcapScore(row: McapRow): number {
+  const mc = row.mcapUsd || 0;
+  if (mc <= 0) return 0;
+  const tvl = row.buyTvlUsd || LIQ_REF_USD;
+  const liq = Math.min(1, tvl / LIQ_REF_USD);
+  const hop = (row.hops || 1) >= 2 ? HOP2_HAIRCUT : 1;
+  return Math.sqrt(mc) * liq * hop;
+}
+
+function renormalizeWeights(w: Record<string, number>): Record<string, number> {
+  const keys = Object.keys(w);
+  const sum = keys.reduce((a, k) => a + w[k], 0);
+  if (sum <= 0) {
+    const eq = keys.length ? 1 / keys.length : 0;
+    return Object.fromEntries(keys.map((k) => [k, eq]));
+  }
+  return Object.fromEntries(keys.map((k) => [k, w[k] / sum]));
+}
+
+/** Capped sqrt-mcap weights for whatever is on the vault book. */
+export function capFloorWeights(raw: Record<string, number>, cap = WEIGHT_CAP, floor = WEIGHT_FLOOR) {
+  const names = Object.keys(raw);
+  const n = names.length;
+  if (!n) return {};
+  const capUse = Math.max(cap, 1 / n);
+  let floorUse = Math.min(floor, 0.99 / n);
+  if (floorUse * n > 1 - 1e-9) floorUse = 0;
+  let w = renormalizeWeights({ ...raw });
+  for (let pass = 0; pass < 8; pass++) {
+    let overflow = 0;
+    const flex: string[] = [];
+    for (const k of names) {
+      if (w[k] > capUse + 1e-12) {
+        overflow += w[k] - capUse;
+        w[k] = capUse;
+      } else if (w[k] < capUse - 1e-9) flex.push(k);
+    }
+    if (overflow > 0 && flex.length) {
+      const room = flex.reduce((a, k) => a + Math.max(0, capUse - w[k]), 0);
+      if (room > 0) {
+        for (const k of flex) w[k] += (overflow * Math.max(0, capUse - w[k])) / room;
+      }
+    }
+    w = renormalizeWeights(w);
+    let deficit = 0;
+    const donors: string[] = [];
+    for (const k of names) {
+      if (w[k] + 1e-12 < floorUse) {
+        deficit += floorUse - w[k];
+        w[k] = floorUse;
+      } else if (w[k] > floorUse + 1e-9) donors.push(k);
+    }
+    if (deficit > 0 && donors.length) {
+      const pool = donors.reduce((a, k) => a + Math.max(0, w[k] - floorUse), 0);
+      if (pool > 0) {
+        const take = Math.min(deficit, pool);
+        for (const k of donors) {
+          const share = Math.max(0, w[k] - floorUse) / pool;
+          w[k] -= take * share;
+        }
+      }
+    }
+    w = renormalizeWeights(w);
+    if (names.every((k) => w[k] >= floorUse - 1e-9 && w[k] <= capUse + 1e-12)) break;
+  }
+  return w;
+}
+
+export function vaultMcapTargets(rows: McapRow[], cashTargetBps = 2500): TargetDraft {
+  const tokens = rows.map((r) => r.token.toLowerCase());
+  const scored = rows.filter((r) => mcapScore(r) > 0);
+  if (!scored.length) return equalTargets(tokens, cashTargetBps);
+  const raw: Record<string, number> = {};
+  const sum = scored.reduce((a, r) => a + mcapScore(r), 0);
+  for (const r of scored) raw[r.token.toLowerCase()] = mcapScore(r) / sum;
+  const capped = capFloorWeights(raw);
+  const budget = riskCap(cashTargetBps);
+  const out: TargetDraft = {};
+  for (const t of tokens) out[t] = 0;
+  let used = 0;
+  for (const [t, w] of Object.entries(capped)) {
+    const bps = Math.floor(w * budget);
+    out[t] = bps;
+    used += bps;
+  }
+  if (used > budget && used > 0) {
+    const scale = budget / used;
+    for (const t of tokens) out[t] = Math.floor((out[t] || 0) * scale);
+  }
+  return out;
+}
+
+function distributeBpsByMcap(
+  tokens: string[],
+  totalBps: number,
+  locked: Map<string, number>,
+  mcapRows: McapRow[],
+): TargetDraft {
+  const scores = new Map(mcapRows.map((r) => [r.token.toLowerCase(), mcapScore(r)]));
+  const out: TargetDraft = {};
+  let lockedSum = 0;
+  for (const [k, v] of locked) {
+    out[k] = v;
+    lockedSum += v;
+  }
+  const room = Math.max(0, totalBps - lockedSum);
+  const free = tokens.map((t) => t.toLowerCase()).filter((t) => !locked.has(t));
+  const scored = free.filter((t) => (scores.get(t) || 0) > 0);
+  for (const t of free.filter((t) => !scored.includes(t))) out[t] = 0;
+  const sum = scored.reduce((a, t) => a + (scores.get(t) || 0), 0);
+  if (room <= 0 || sum <= 0) {
+    for (const t of scored) out[t] = 0;
+    return out;
+  }
+  for (const t of scored) out[t] = Math.floor((room * (scores.get(t) || 0)) / sum);
+  let used = Object.values(out).reduce((a, b) => a + (b || 0), 0);
+  const remainder = totalBps - used;
+  if (remainder > 0 && scored.length) {
+    const top = [...scored].sort((a, b) => (scores.get(b) || 0) - (scores.get(a) || 0))[0];
+    out[top] = (out[top] || 0) + remainder;
+  }
+  return out;
+}
+
+/** When one slider moves, reallocate the rest by sqrt-mcap vs the book. */
 export function resizeSliderTargets(
   draft: TargetDraft,
   changedToken: string,
   newBps: number,
   cashTargetBps: number,
+  mcapRows: McapRow[],
 ): TargetDraft {
   const cap = riskCap(cashTargetBps);
   const key = changedToken.toLowerCase();
   const clamped = Math.max(0, Math.min(cap, Math.floor(newBps)));
-  const next: TargetDraft = { ...draft, [key]: clamped };
-  const others = Object.keys(next).filter((k) => k !== key);
-  let otherSum = others.reduce((a, k) => a + (next[k] || 0), 0);
-  const room = cap - clamped;
-  if (otherSum <= room || otherSum === 0) return next;
-  const scale = room / otherSum;
-  for (const k of others) next[k] = Math.floor((next[k] || 0) * scale);
-  return next;
+  const tokens = Object.keys(draft);
+  if (clamped === 0) {
+    return distributeBpsByMcap(tokens, cap, new Map(), mcapRows);
+  }
+  return distributeBpsByMcap(tokens, cap, new Map([[key, clamped]]), mcapRows);
 }
 
 export function draftTotals(draft: TargetDraft, cashTargetBps: number) {
@@ -246,12 +387,6 @@ export function analyzeDrift(
         action,
         swapEth,
       };
-    })
-    .sort((a, b) => {
-      const rank = (x: DriftRow) => (x.action === "sell" || x.action === "park" ? 0 : x.action === "buy" ? 1 : 2);
-      const d = rank(a) - rank(b);
-      if (d) return d;
-      return Math.abs(b.driftBps) - Math.abs(a.driftBps);
     });
 }
 
