@@ -22,8 +22,8 @@
   <a href="https://x.com/XHOODINDEX">X</a> ·
   <a href="https://t.me/HOODXINDEX">Telegram</a> ·
   <a href="https://x.com/696_eth/status/2100067116594725086">696 list</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33">Vault</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71">Factory</a>
+  <a href="https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A">Vault</a> ·
+  <a href="https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b">Factory</a>
 </p>
 
 <p align="center">
@@ -46,12 +46,12 @@ You drop `/i/yourslug`. You keep the book from going thin. You earn a cut on eve
 
 | | On-chain now |
 |---|---|
-| Vault | [`0x6350f9e8e630785ABF09fD1127366998Ad821E33`](https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33) |
+| Vault | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
 | Status | **Live** · joins open · redeem open |
 | Share | ~0.04 ETH · genesis peg **$100** of ETH |
-| Book | 14 listed names · PROMETHEUS on SPCX V4 · Uni V3 TWAP + V4 spot · ~25%+ WETH cash |
+| Book | 10 listed names · no hooked/thin books · Uni V3 TWAP + hookless V4 · 25% WETH cash |
 | Fees | 0.50% in · **0% out** |
-| First mint | Done (0.13 ETH). Later joins copy the live mix. |
+| First mint | Open · **0.08 ETH** (~$200). Later joins copy the live mix. |
 | Token image | On-chain `imageURI` / ERC-7572 `contractURI` · 696 PFP |
 
 Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
@@ -151,9 +151,9 @@ Robinhood Chain **4663**. EIP-1167 clones of `HoodxIndex`.
 
 | | Address |
 |---|---|
-| **Factory** | [`0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71`](https://robinhoodchain.blockscout.com/address/0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71) |
+| **Factory** | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
 | Implementation | [`0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19`](https://robinhoodchain.blockscout.com/address/0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19) |
-| **$696X vault** | [`0x6350f9e8e630785ABF09fD1127366998Ad821E33`](https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33) |
+| **$696X vault** | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
 | TWAP oracle | [`0x815A0D4909460B29c70868e24831f575cA86F3aD`](https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD) |
 | WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
 | Uni V3 SwapRouter02 | [`0xCaf681a66D020601342297493863E78C959E5cb2`](https://robinhoodchain.blockscout.com/address/0xCaf681a66D020601342297493863E78C959E5cb2) |

@@ -492,7 +492,7 @@ class CuratorHandoffTest(unittest.TestCase):
 class LiveFundsTest(unittest.TestCase):
     """Live 696x must stay redeemable. Harnesses cannot lock users or the curator."""
 
-    LIVE = "0x6350f9e8e630785abf09fd1127366998ad821e33"
+    from live_funds import LIVE_696X as LIVE
     OTHER = "0x010cf76ab172ea9db59b4548f9bf56cf9c0db39c"
 
     def test_pause_does_not_trap_exits(self):
@@ -555,9 +555,9 @@ class LiveFundsTest(unittest.TestCase):
 class HudLivePointerTest(unittest.TestCase):
     """xhoodindex.com must resolve 696x through the hook-safe vault."""
 
-    SAFE_VAULT = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE"
+    SAFE_VAULT = "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A"
     BRICKED_VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
-    LIVE_FACTORY = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD"
+    LIVE_FACTORY = "0x56809a2738A23650aF939F73588E72C67CafC19b"
     LEGACY_FACTORY = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71"
     EMPTIED_VAULT = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24"
     EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9"

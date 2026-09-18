@@ -7,6 +7,7 @@ Uses the other-bot launch wallet. Never prints keys or the RPC URL.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -78,9 +79,9 @@ def deploy(w3, acct, abi, bytecode, args, label: str):
     return addr
 
 
-def sim_ok(w3, tx) -> bool:
+def sim_fn(fn, from_addr: str, value: int = 0) -> bool:
     try:
-        w3.eth.call({"from": tx["from"], "to": tx.get("to"), "data": tx["data"], "value": tx.get("value", 0)})
+        fn.call({"from": from_addr, "value": value})
         return True
     except Exception:
         return False
@@ -191,97 +192,105 @@ def main() -> None:
     art = compile_factory()
     tokens, pools, rows = pack_rows(w3)
 
-    swap = deploy(w3, acct, art["swapAbi"], art["swapBytecode"], [_cs(w3, ORACLE)], "swap")
-    impl = deploy(
-        w3,
-        acct,
-        art["indexAbi"],
-        art["indexBytecode"],
-        [_cs(w3, ORACLE), _cs(w3, swap)],
-        "implementation",
-    )
-    factory = deploy(
-        w3,
-        acct,
-        art["factoryAbi"],
-        art["factoryBytecode"],
-        [
-            _cs(w3, WETH),
-            _cs(w3, ROUTER),
-            _cs(w3, CURATOR),
-            _cs(w3, V4_MANAGER),
-            _cs(w3, V4_STATE),
-            _cs(w3, V4_POSM),
-            _cs(w3, impl),
-        ],
-        "factory",
-    )
-    fac = w3.eth.contract(address=_cs(w3, factory), abi=art["factoryAbi"])
-    create_tx = fac.functions.create696x(tokens, pools, _cs(w3, CURATOR), IMAGE).build_transaction(
-        {"from": acct.address}
-    )
-    try:
-        create_tx["gas"] = min(int(w3.eth.estimate_gas(create_tx) * 13 // 10) + 100_000, 12_000_000)
-        send(w3, acct, create_tx, "create696x")
-    except Exception as exc:  # noqa: BLE001
-        print(f"full pack failed ({exc}); seed 2 + addTokens")
-        seed = fac.functions.create696x(tokens[:2], pools[:2], _cs(w3, CURATOR), IMAGE).build_transaction(
+    existing = (os.environ.get("HARDEN_FACTORY") or "").strip()
+    if existing:
+        factory = _cs(w3, existing)
+        fac = w3.eth.contract(address=factory, abi=art["factoryAbi"])
+        vault_addr = fac.functions.bySlug("696x").call()
+        impl = fac.functions.implementation().call()
+        vault = w3.eth.contract(address=_cs(w3, vault_addr), abi=art["indexAbi"])
+        swap = vault.functions.swapLogic().call()
+        print(f"resume factory={factory} vault={vault_addr}")
+        n = int(vault.functions.nTokens().call())
+        tokens = [vault.functions.tokenAt(i).call() for i in range(n)]
+        pools = []
+    else:
+        swap = deploy(w3, acct, art["swapAbi"], art["swapBytecode"], [_cs(w3, ORACLE)], "swap")
+        impl = deploy(
+            w3,
+            acct,
+            art["indexAbi"],
+            art["indexBytecode"],
+            [_cs(w3, ORACLE), _cs(w3, swap)],
+            "implementation",
+        )
+        factory = deploy(
+            w3,
+            acct,
+            art["factoryAbi"],
+            art["factoryBytecode"],
+            [
+                _cs(w3, WETH),
+                _cs(w3, ROUTER),
+                _cs(w3, CURATOR),
+                _cs(w3, V4_MANAGER),
+                _cs(w3, V4_STATE),
+                _cs(w3, V4_POSM),
+                _cs(w3, impl),
+            ],
+            "factory",
+        )
+        fac = w3.eth.contract(address=_cs(w3, factory), abi=art["factoryAbi"])
+        create_tx = fac.functions.create696x(tokens, pools, _cs(w3, CURATOR), IMAGE).build_transaction(
             {"from": acct.address}
         )
-        send(w3, acct, seed, "create696x-seed")
-        vault_addr = fac.functions.bySlug("696x").call()
-        vault = w3.eth.contract(address=_cs(w3, vault_addr), abi=art["indexAbi"])
-        rest_t, rest_p = tokens[2:], pools[2:]
-        for i in range(0, len(rest_t), 2):
-            add_tx = vault.functions.addTokens(rest_t[i : i + 2], rest_p[i : i + 2]).build_transaction(
+        try:
+            create_tx["gas"] = min(int(w3.eth.estimate_gas(create_tx) * 13 // 10) + 100_000, 12_000_000)
+            send(w3, acct, create_tx, "create696x")
+        except Exception as exc:  # noqa: BLE001
+            print(f"full pack failed ({exc}); seed 2 + addTokens")
+            seed = fac.functions.create696x(tokens[:2], pools[:2], _cs(w3, CURATOR), IMAGE).build_transaction(
                 {"from": acct.address}
             )
-            send(w3, acct, add_tx, f"addTokens-{i}")
-        n = int(vault.functions.nTokens().call())
-        each = (10_000 - 2500) // n
-        listed = [vault.functions.tokenAt(i).call() for i in range(n)]
-        send(w3, acct, vault.functions.setTargets(listed, [each] * n).build_transaction({"from": acct.address}), "setTargets")
+            send(w3, acct, seed, "create696x-seed")
+            vault_addr = fac.functions.bySlug("696x").call()
+            vault = w3.eth.contract(address=_cs(w3, vault_addr), abi=art["indexAbi"])
+            rest_t, rest_p = tokens[2:], pools[2:]
+            for i in range(0, len(rest_t), 2):
+                add_tx = vault.functions.addTokens(rest_t[i : i + 2], rest_p[i : i + 2]).build_transaction(
+                    {"from": acct.address}
+                )
+                send(w3, acct, add_tx, f"addTokens-{i}")
+            n = int(vault.functions.nTokens().call())
+            each = (10_000 - 2500) // n
+            listed = [vault.functions.tokenAt(i).call() for i in range(n)]
+            send(w3, acct, vault.functions.setTargets(listed, [each] * n).build_transaction({"from": acct.address}), "setTargets")
 
-    vault_addr = fac.functions.bySlug("696x").call()
-    vault = w3.eth.contract(address=_cs(w3, vault_addr), abi=art["indexAbi"])
+        vault_addr = fac.functions.bySlug("696x").call()
+        vault = w3.eth.contract(address=_cs(w3, vault_addr), abi=art["indexAbi"])
+
     n = int(vault.functions.nTokens().call())
     print(f"vault {vault_addr} names={n}")
 
     # --- attack simulations (must fail) ---
-    rescue_tx = vault.functions.addToken(_cs(w3, RESCUE_TOK), pool_ref(RESCUE_POOL)).build_transaction(
-        {"from": acct.address}
-    )
-    if sim_ok(w3, rescue_tx):
+    if sim_fn(vault.functions.addToken(_cs(w3, RESCUE_TOK), pool_ref(RESCUE_POOL)), acct.address):
         raise SystemExit("FAIL: RescueTok bind should revert ThinPool")
     print("PASS extract bind blocked")
 
-    aria_tx = vault.functions.addToken(_cs(w3, ARIA), pool_ref(ARIA_POOL)).build_transaction({"from": acct.address})
-    if sim_ok(w3, aria_tx):
+    if sim_fn(vault.functions.addToken(_cs(w3, ARIA), pool_ref(ARIA_POOL)), acct.address):
         raise SystemExit("FAIL: hooked Aria bind should revert")
     print("PASS hooked Aria bind blocked")
 
-    floors = vault.functions.setFloors(
-        int(vault.functions.minDeposit().call()),
-        int(vault.functions.minFirstDeposit().call()),
-        int(vault.functions.minSleeveWeth().call()),
-        1000,
-    ).build_transaction({"from": acct.address})
-    if sim_ok(w3, floors):
+    if sim_fn(
+        vault.functions.setFloors(
+            int(vault.functions.minDeposit().call()),
+            int(vault.functions.minFirstDeposit().call()),
+            int(vault.functions.minSleeveWeth().call()),
+            1000,
+        ),
+        acct.address,
+    ):
         raise SystemExit("FAIL: cash floor 10% should revert")
     print("PASS cash floor cannot drop to 10%")
 
     pons = tokens[0]
-    strand_tx = vault.functions.strandToken(pons).build_transaction({"from": acct.address})
-    if sim_ok(w3, strand_tx):
+    if sim_fn(vault.functions.strandToken(pons), acct.address):
         raise SystemExit("FAIL: strand of a liquid name should revert")
     print("PASS liquid strand blocked")
 
-    pause_tx = vault.functions.setPaused(True).build_transaction({"from": acct.address})
-    send(w3, acct, pause_tx, "pause-pre")
-    dep_paused = vault.functions.deposit(1).build_transaction(
-        {"from": acct.address, "value": DEPOSIT_WEI, "gas": 8_000_000}
-    )
-    if sim_ok(w3, dep_paused):
+    if not bool(vault.functions.paused().call()):
+        send(w3, acct, vault.functions.setPaused(True).build_transaction({"from": acct.address}), "pause-pre")
+    if sim_fn(vault.functions.deposit(1), acct.address, DEPOSIT_WEI):
         raise SystemExit("FAIL: join while paused must revert")
     print("PASS pause blocks join")
     send(w3, acct, vault.functions.setPaused(False).build_transaction({"from": acct.address}), "unpause-pre")
@@ -312,10 +321,9 @@ def main() -> None:
         raise SystemExit("FAIL: exit closed after deposit")
 
     send(w3, acct, vault.functions.setPaused(True).build_transaction({"from": acct.address}), "pause")
-    wd = vault.functions.withdraw(held, 0).build_transaction({"from": acct.address, "gas": 8_000_000})
-    if not sim_ok(w3, wd):
+    if not sim_fn(vault.functions.withdraw(held, 0), acct.address):
         raise SystemExit("FAIL: withdraw while paused must work")
-    send(w3, acct, wd, "withdraw-paused")
+    send(w3, acct, vault.functions.withdraw(held, 0).build_transaction({"from": acct.address, "gas": 8_000_000}), "withdraw-paused")
     send(w3, acct, vault.functions.setPaused(False).build_transaction({"from": acct.address}), "unpause")
 
     left = int(vault.functions.balanceOf(acct.address).call())
@@ -323,8 +331,7 @@ def main() -> None:
     if left != 0:
         raise SystemExit("FAIL: curator shares remaining")
 
-    dust = vault.functions.claimDust(_cs(w3, RESCUE_TOK)).build_transaction({"from": acct.address})
-    if sim_ok(w3, dust):
+    if sim_fn(vault.functions.claimDust(_cs(w3, RESCUE_TOK)), acct.address):
         raise SystemExit("FAIL: claimDust on never-stranded token")
     print("PASS claimDust unstranded reverts")
 

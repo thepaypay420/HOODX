@@ -14,11 +14,11 @@ export const USDG = (process.env.NEXT_PUBLIC_USDG ||
 
 /** Hook-bricked clone — stranded hooked V4 bags block redeem. */
 export const BRICKED_696X_ADDR = "0x6350f9e8e630785ABF09fD1127366998Ad821E33";
-/** Canonical Gen-0 vault on the hook-safe factory. */
-export const SAFE_696X_ADDR = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE";
+/** Canonical Gen-0 vault — hardened factory, empty, ready to join. */
+export const SAFE_696X_ADDR = "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A";
 /** @deprecated alias for the bricked clone */
 export const LIVE_696X_ADDR = BRICKED_696X_ADDR;
-export const LIVE_FACTORY_ADDR = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD";
+export const LIVE_FACTORY_ADDR = "0x56809a2738A23650aF939F73588E72C67CafC19b";
 export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
 export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
   "0x58daec3116aae6D93017bAAea7749052E8a04fA7") as `0x${string}`;

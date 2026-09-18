@@ -1,12 +1,12 @@
 {
   "chainId": 4663,
-  "factory": "0xc29a60cc325b35794f4AE65B8bc518639e716FbD",
-  "implementation": "0x73389763AaDb4dbA02CfF4E99CF9e3699f6B570e",
-  "vault696x": "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE",
-  "oracle": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
-  "swapLogic": "0x36cD3CB0F6E3586B431FF8A8E7ac7DB938dFa967",
+  "factory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
+  "implementation": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
+  "vault696x": "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A",
+  "oracle": "0x815A0D4909460B29c70868e24831F575cA86F3aD",
+  "swapLogic": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
   "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
-  "deprecatedFactory": "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71",
+  "deprecatedFactory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
   "deprecatedImplementation": "0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19",
   "deprecatedSwapLogic": "0x41759b22d45a0770618F0D4B9D0ce738E32cC822",
   "deprecatedVault696x": "0x6350f9e8e630785ABF09fD1127366998Ad821E33",
@@ -87,17 +87,6 @@
       "twapOk": true
     },
     {
-      "id": "QUOTRON",
-      "symbol": "QUOTRON",
-      "token": "0x5a86828Efd322bfb16d93cFeD16EE9BC14940D7F",
-      "pool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
-      "fee": 8388608,
-      "tickSpacing": 60,
-      "hooks": "0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc",
-      "v4": true,
-      "tick": -7222
-    },
-    {
       "id": "UP",
       "symbol": "UP",
       "token": "0x57C0E45cB534413D1C20A4240955d6bB250BB4F1",
@@ -125,41 +114,16 @@
       "fee": 10000,
       "v4": false,
       "twapOk": true
-    },
-    {
-      "id": "QUOTIENT",
-      "symbol": "QUOTIENT",
-      "token": "0x013940c3daa5e2Bb12df1Ea94AfE47Ce84c0db4f",
-      "pool": "0x10F49351Db85BFfC0C0d837771A6e4DA2dd2Daa1",
-      "fee": 100,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "HARMONIC",
-      "symbol": "HARMONIC",
-      "token": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
-      "pool": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
-      "fee": 0,
-      "tickSpacing": 200,
-      "hooks": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
-      "v4": true,
-      "tick": 136930
-    },
-    {
-      "id": "PROMETHEUS",
-      "symbol": "PROMETHEUS",
-      "token": "0x20f24b8D2BCaD7cd252fC60EE5f2Db27C2f2f261",
-      "pool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
-      "v4": true
     }
   ],
-  "deprecatedFactory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
   "deprecatedVault": "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24",
   "deprecatedV3Factory": "0x87530eF180dF2CF41D86d5eD0DC08969287745c1",
   "deprecatedV3Vault": "0x24e5A0b5DA2d5791dF4e8D67fB2Ef07128c430b4",
   "deprecatedV2Factory": "0xb542f6b3D1F5f867363700FD1F61b34342d1C4C9",
   "deprecatedV2Vault": "0x2C3E8D24C9E70B5fCB0bE8b071b36Fffa1A2Fc58",
   "emptyRelaunchAttemptFactory": "0xC7366b7d957294C6b2a9A76De64E190e4fB244bB",
-  "emptyRelaunchAttemptVault": "0xad3F32285605211bd6304D54B0c95F5579b6368d"
+  "emptyRelaunchAttemptVault": "0xad3F32285605211bd6304D54B0c95F5579b6368d",
+  "hookSafeFactory": "0xc29a60cc325b35794f4AE65B8bc518639e716FbD",
+  "hookSafeVault": "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE",
+  "hardened": true
 }
