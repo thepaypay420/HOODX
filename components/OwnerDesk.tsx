@@ -7,11 +7,10 @@ import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
+import { CuratorBook } from "@/components/CuratorBook";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
-import { listTargetBps, type Sleeve } from "@/lib/weights";
-import snapshot from "../public/sleeves.json";
 
 function bagText(wei: bigint) {
   const n = Number(formatEtherSafe(wei));
@@ -144,80 +143,6 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       .catch(() => setQuoted(""));
   }, [amount, side, token, live, vault]);
 
-  const equalTargets = useCallback(async () => {
-    if (!live || !vault || !walletClient || !address) return;
-    setBusy(true);
-    setMsg("");
-    try {
-      const names = listed.length
-        ? listed
-        : ((await publicClient.readContract({
-            address: vault as Address,
-            abi: vaultAbi,
-            functionName: "constituents",
-          })) as Address[]);
-      const n = names.length;
-      if (n < 2) throw new Error("need 2 names");
-      const each = Math.floor(7500 / n);
-      const bps = names.map(() => each);
-      const hash = await walletClient.writeContract({
-        account: address,
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "setTargets",
-        args: [names, bps],
-        chain: robinhood,
-      });
-      const rec = await publicClient.waitForTransactionReceipt({ hash });
-      if (rec.status !== "success") throw new Error("targets tx reverted");
-      setMsg(`targets ${each} bps × ${n} (25% cash floor)`);
-    } catch (e) {
-      setMsg(revertHint(e));
-    } finally {
-      setBusy(false);
-    }
-  }, [live, vault, walletClient, address, listed]);
-
-  const listTargets = useCallback(async () => {
-    if (!live || !vault || !walletClient || !address) return;
-    setBusy(true);
-    setMsg("");
-    try {
-      const names = (await publicClient.readContract({
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "constituents",
-      })) as Address[];
-      const [nav, minSleeve, cashBps] = await Promise.all([
-        publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "totalAssets" }),
-        publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "minSleeveWeth" }),
-        publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "cashTargetBps" }),
-      ]);
-      const rows = (await fetch(
-        "https://api.dexscreener.com/tokens/v1/robinhood/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
-      ).then((r) => r.json())) as { priceUsd?: string }[];
-      const px = Number(rows?.[0]?.priceUsd);
-      const navUsd = px > 0 ? Number(formatEther(nav)) * px : 0;
-      const sleeves = (snapshot.sleeves || []) as Sleeve[];
-      const { who, bps } = listTargetBps(sleeves, names, navUsd, nav, minSleeve, Number(cashBps));
-      if (who.length < 2) throw new Error("need 2 names above the sleeve floor");
-      const hash = await walletClient.writeContract({
-        account: address,
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "setTargets",
-        args: [who, bps],
-        chain: robinhood,
-      });
-      const rec = await publicClient.waitForTransactionReceipt({ hash });
-      if (rec.status !== "success") throw new Error("targets tx reverted");
-      setMsg(`696 list targets · ${who.length} names · ${(bps.reduce((a, b) => a + b, 0) / 100).toFixed(1)}% risk-on`);
-    } catch (e) {
-      setMsg(revertHint(e));
-    } finally {
-      setBusy(false);
-    }
-  }, [live, vault, walletClient, address]);
 
   async function pegHundred() {
     if (!live || !vault || !walletClient || !address) return;
@@ -506,24 +431,6 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          data-testid="owner-list-weights"
-          disabled={busy || chainId !== robinhood.id}
-          onClick={() => void listTargets()}
-          className="ghost px-4"
-        >
-          696 list weights
-        </button>
-        <button
-          type="button"
-          data-testid="owner-equal"
-          disabled={busy || chainId !== robinhood.id}
-          onClick={() => void equalTargets()}
-          className="ghost px-4"
-        >
-          Equal weights
-        </button>
-        <button
-          type="button"
           data-testid="owner-peg"
           disabled={busy || chainId !== robinhood.id}
           onClick={() => void pegHundred()}
@@ -543,6 +450,16 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
           </button>
         )}
       </div>
+      <CuratorBook
+        vault={vault!}
+        onStatus={setMsg}
+        onFocusSwap={(tok, side, amt) => {
+          setToken(tok);
+          setSide(side);
+          setAmount(amt || "");
+          setMsg(side === "buy" ? `Prefilled WETH → ${byAddress(tok)?.symbol || "name"} swap` : `Prefilled sell ${byAddress(tok)?.symbol || "name"}`);
+        }}
+      />
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <label className="block text-[11px] text-[var(--dim)]">
           Name

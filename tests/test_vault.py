@@ -574,6 +574,16 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn("isEmptied696x", client)
         self.assertIn("if (gen0 && isEmptied696x(addr)) return;", client)
 
+    def test_curator_book_panel_shipped(self):
+        here = Path(__file__).resolve().parents[1]
+        owner = (here / "components" / "OwnerDesk.tsx").read_text()
+        book = (here / "components" / "CuratorBook.tsx").read_text()
+        math = (here / "lib" / "curator.ts").read_text()
+        self.assertIn("CuratorBook", owner)
+        self.assertIn("data-testid=\"curator-book\"", book)
+        self.assertIn("resizeSliderTargets", math)
+        self.assertIn("analyzeDrift", math)
+
 
 class VaultPerfTest(unittest.TestCase):
     def test_genesis_is_flat(self):
