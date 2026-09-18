@@ -5,7 +5,7 @@ import { isAddress, zeroAddress, type Address } from "viem";
 import { AddName } from "@/components/AddName";
 import { TokenArt } from "@/components/TokenArt";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
-import { INDEX_CATALOG, byAddress, isIndexPool, poolRef, tier, type Coin } from "@/lib/catalog";
+import { INDEX_CATALOG, byAddress, coinForBind, isIndexPool, poolRef, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, EXPLORER, PROTOCOL_FEE_BPS, WETH, isLive696x } from "@/lib/config";
 import { CURATOR_696, CURATOR_696_CURATOR, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
@@ -185,8 +185,12 @@ export function IndexCard({
     setSyncing(true);
     try {
       if (adds.length === 1) {
-        const coin = byAddress(adds[0]);
-        if (!coin || !isIndexPool(coin)) throw new Error("need a Uni V3 WETH or V4 ETH/WETH pool");
+        const coin = coinForBind(adds[0]);
+        if (!coin || !isIndexPool(coin)) {
+          throw new Error(
+            "need a Uni V3 WETH or V4 ETH/WETH pool — paste the token 0x if Dexscreener only shows a stock/synthetic quote",
+          );
+        }
         const hash = await walletClient.writeContract({
           account: address,
           address: vault as Address,
@@ -198,8 +202,12 @@ export function IndexCard({
         await publicClient.waitForTransactionReceipt({ hash });
       } else if (adds.length > 1) {
         const pools = adds.map((t) => {
-          const coin = byAddress(t);
-          if (!coin || !isIndexPool(coin)) throw new Error("need a Uni V3 WETH or V4 ETH/WETH pool");
+          const coin = coinForBind(t);
+          if (!coin || !isIndexPool(coin)) {
+            throw new Error(
+              "need a Uni V3 WETH or V4 ETH/WETH pool — paste the token 0x if Dexscreener only shows a stock/synthetic quote",
+            );
+          }
           return poolRef(coin);
         });
         const hash = await walletClient.writeContract({

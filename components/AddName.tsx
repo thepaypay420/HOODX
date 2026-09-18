@@ -59,7 +59,8 @@ export function AddName({
         </button>
       </div>
       <p className="mt-1.5 text-[12px] leading-5 text-[var(--dim)]">
-        {hint || "Looks up a Uni V3 WETH or V4 ETH pool. 18 decimals. Max 24 names."}
+        {hint ||
+          "Looks up a Uni V3 WETH or V4 ETH/WETH bind pool. Dexscreener may show a deeper stock quote — vault NAV uses ETH/WETH only. 18 decimals. Max 24 names."}
       </p>
     </div>
   );

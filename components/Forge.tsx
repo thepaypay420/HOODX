@@ -6,7 +6,7 @@ import { zeroAddress, type Address } from "viem";
 import { TokenArt } from "@/components/TokenArt";
 import { AddName } from "@/components/AddName";
 import { factoryAbi } from "@/lib/abi";
-import { INDEX_CATALOG, isIndexPool, byAddress, poolRef, tier, type Coin } from "@/lib/catalog";
+import { INDEX_CATALOG, isIndexPool, byAddress, coinForBind, poolRef, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, FACTORY, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
@@ -65,7 +65,7 @@ export function Forge() {
     try {
       const tokens = picked as Address[];
       const pools = tokens.map((t) => {
-        const coin = byAddress(t);
+        const coin = coinForBind(t);
         if (!coin || !isIndexPool(coin) || !coin.buyPool) {
           throw new Error("every name needs a Uni V3 WETH or V4 ETH/WETH pool");
         }

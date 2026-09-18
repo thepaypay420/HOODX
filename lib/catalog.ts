@@ -66,11 +66,36 @@ export const V3_CATALOG: Coin[] = CATALOG.filter(isV3WethPool);
 export const INDEX_CATALOG: Coin[] = CATALOG.filter(isIndexPool);
 
 const EXTRA: Coin[] = [];
+const BIND = new Map<string, Coin>();
+
+function normCoin(c: Coin): Coin {
+  return { ...c, token: c.token.toLowerCase(), buyPool: c.buyPool?.toLowerCase() };
+}
+
+/** Vault bind pool from Dexscreener lookup — overrides catalog display pools (e.g. PROMETHEUS/SPCX). */
+export function rememberBindCoin(c: Coin) {
+  const coin = normCoin(c);
+  if (!isIndexPool(coin)) return;
+  BIND.set(coin.token, coin);
+}
 
 export function rememberCoin(c: Coin) {
-  const token = c.token.toLowerCase();
-  if (CATALOG.some((x) => x.token === token) || EXTRA.some((x) => x.token === token)) return;
-  EXTRA.push({ ...c, token, buyPool: c.buyPool?.toLowerCase() });
+  const coin = normCoin(c);
+  rememberBindCoin(coin);
+  if (CATALOG.some((x) => x.token === coin.token) || EXTRA.some((x) => x.token === coin.token)) return;
+  EXTRA.push(coin);
+}
+
+/** Pool ref for addToken / mint — prefers resolved ETH/WETH bind over catalog display pool. */
+export function coinForBind(addr: string): Coin | undefined {
+  const k = addr.toLowerCase();
+  const bound = BIND.get(k);
+  if (bound) return bound;
+  const cat = CATALOG.find((c) => c.token === k);
+  if (cat && isIndexPool(cat)) return cat;
+  const extra = EXTRA.find((c) => c.token === k);
+  if (extra && isIndexPool(extra)) return extra;
+  return undefined;
 }
 
 export function bookCatalog(): Coin[] {
@@ -86,5 +111,12 @@ export function tier(mcap = 0) {
 
 export function byAddress(addr: string) {
   const k = addr.toLowerCase();
-  return CATALOG.find((c) => c.token === k) || EXTRA.find((c) => c.token === k);
+  const cat = CATALOG.find((c) => c.token === k);
+  const extra = EXTRA.find((c) => c.token === k);
+  const bound = BIND.get(k);
+  const base = cat || extra;
+  if (bound && base) {
+    return { ...base, buyPool: bound.buyPool, buyQuote: bound.buyQuote, buyLabels: bound.buyLabels };
+  }
+  return bound || base;
 }
