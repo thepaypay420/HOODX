@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, type Address } from "viem";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
-import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
+import { INDEX_CATALOG, byAddress, CATALOG, poolRef } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
+import { lookupIndexCoin } from "@/lib/lookup";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 function bagText(wei: bigint) {
@@ -55,6 +56,7 @@ export function OwnerDesk({
   const wethKey = WETH.toLowerCase();
   const tokenKey = token.toLowerCase();
   const bagWei = side === "sell" ? bags[tokenKey] || 0n : bags[wethKey] || 0n;
+  const tokenBag = bags[tokenKey] || 0n;
   const coin = byAddress(token);
   const catalogCoin = CATALOG.find((c) => c.token === tokenKey);
   const listedQuote = catalogCoin?.buyQuote || coin?.buyQuote;
@@ -241,6 +243,36 @@ export function OwnerDesk({
       setQuoted(twapOut.toString());
       setMinOut(floor.toString());
       await send(floor);
+    }
+  }
+
+  async function rebindToBestPool() {
+    if (!live || !vault || !walletClient || !address || !isAddress(token)) return;
+    if (tokenBag > 0n) {
+      setMsg(`vault still holds ${bagText(tokenBag)} ${symbol} — sell to WETH first`);
+      return;
+    }
+    setBusy(true);
+    setMsg("");
+    try {
+      const coin = await lookupIndexCoin(token);
+      const ref = poolRef(coin);
+      const hash = await walletClient.writeContract({
+        account: address,
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "rebindToken",
+        args: [token as Address, ref],
+        chain: robinhood,
+      });
+      const rec = await publicClient.waitForTransactionReceipt({ hash });
+      if (rec.status !== "success") throw new Error("rebind reverted");
+      setMsg(`rebound ${symbol} → ${coin.buyQuote}/${coin.buyPool.slice(0, 10)}… — retry buy`);
+      await loadBags();
+    } catch (e) {
+      setMsg(revertHint(e));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -562,8 +594,10 @@ export function OwnerDesk({
       </div>
       {listedQuote && !["ETH", "WETH"].includes(listedQuote.toUpperCase()) && (
         <p className="mt-3 text-[13px] leading-5 text-[var(--dim)]">
-          DexScreener book: {symbol}/{listedQuote.toUpperCase()}. Rebalance routes WETH → {listedQuote.toUpperCase()} →{" "}
-          {symbol} once the vault runs quote-bind bytecode.
+          Bound book: {symbol}/{listedQuote.toUpperCase()} (WETH → {listedQuote.toUpperCase()} → {symbol}). If
+          buys fail the TWAP floor, the USDG stub may be too thin —{" "}
+          <strong className="font-medium text-[var(--paper)]">Rebind to ETH book</strong> uses the deeper
+          direct pool.
         </p>
       )}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -576,15 +610,27 @@ export function OwnerDesk({
         >
           {busy ? "Confirm…" : "Swap in the vault"}
         </button>
-        <button
-          type="button"
-          data-testid="owner-eject"
-          disabled={busy || chainId !== robinhood.id || side === "buy"}
-          onClick={() => void ejectBag()}
-          className="ghost w-full"
-        >
-          Sell & drop
-        </button>
+        {side === "buy" && tokenBag === 0n && listedQuote?.toUpperCase() === "USDG" ? (
+          <button
+            type="button"
+            data-testid="owner-rebind"
+            disabled={busy || chainId !== robinhood.id}
+            onClick={() => void rebindToBestPool()}
+            className="ghost w-full"
+          >
+            Rebind to ETH book
+          </button>
+        ) : (
+          <button
+            type="button"
+            data-testid="owner-eject"
+            disabled={busy || chainId !== robinhood.id || side === "buy"}
+            onClick={() => void ejectBag()}
+            className="ghost w-full"
+          >
+            Sell & drop
+          </button>
+        )}
       </div>
       {msg && (
         <p data-testid="owner-msg" className="mt-3 text-sm text-[var(--gold)]">

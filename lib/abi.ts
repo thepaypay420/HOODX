@@ -252,6 +252,16 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "rebindToken",
+    stateMutability: "nonpayable",
+    inputs: [
+      { type: "address", name: "token" },
+      { type: "bytes32", name: "poolRef" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "setQuoteBridge",
     stateMutability: "nonpayable",
     inputs: [

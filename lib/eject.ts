@@ -82,6 +82,9 @@ export function buySlippageHint(symbol: string, listedQuote?: string): string {
   if (q && q !== "ETH" && q !== "WETH" && q !== "USDG") {
     return `${symbol} trades on the ${q} pool — bind that book (V4 ${q} or USDG V3) instead of a thin ETH stub`;
   }
+  if (q === "USDG") {
+    return `${symbol} USDG bind is too thin for that WETH size at the 97% TWAP floor — try less WETH or Rebind to the deeper ETH book`;
+  }
   return `${symbol} bind pool is too thin to fill at the 97% TWAP floor — seed the book or wait for depth`;
 }
 

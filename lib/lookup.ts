@@ -109,12 +109,16 @@ function pickPool(pairs: DexPair[], token: string): DexPair | null {
     if (bindable.length) return bindable[0];
   }
 
-  // Meme on RH stock or USDG quote: bind the deepest quoted V4 pool.
+  // Meme: pick the deepest bindable book — ETH/WETH often beats a thin USDG stub.
   const quotedV4 = scored.filter((p) => (rhStockQuote(p) || usdgQuote(p)) && kind(p) === "v4");
-  if (quotedV4.length) return quotedV4[0];
-
-  const eth = scored.filter((p) => ethQuote(p));
-  return eth[0] || null;
+  const ethBook = scored.filter((p) => ethQuote(p) && (kind(p) === "v3" || kind(p) === "v4"));
+  const bestQuoted = quotedV4[0] || null;
+  const bestEth = ethBook[0] || null;
+  if (bestQuoted && bestEth) {
+    return num(bestEth.liquidity?.usd) >= num(bestQuoted.liquidity?.usd) ? bestEth : bestQuoted;
+  }
+  if (bestQuoted) return bestQuoted;
+  return bestEth || null;
 }
 
 /** Deepest Uni V3 WETH bridge for a canonical RH stock quote token. */
