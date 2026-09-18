@@ -60,7 +60,7 @@ export function AddName({
       </div>
       <p className="mt-1.5 text-[12px] leading-5 text-[var(--dim)]">
         {hint ||
-          "Looks up the deepest Uni pool — V4 SPCX/SPY names bind the stock quote and swap WETH→quote→token. 18 decimals. Max 24 names."}
+          "Looks up the deepest Uni pool — memes on any RH stock quote (SPY, NVDA, SPCX, …) or naked stock stokens via WETH V3. 18 decimals. Max 24 names."}
       </p>
     </div>
   );

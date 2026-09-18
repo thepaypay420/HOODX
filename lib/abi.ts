@@ -252,6 +252,30 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "setQuoteBridge",
+    stateMutability: "nonpayable",
+    inputs: [
+      { type: "address", name: "quote" },
+      { type: "address", name: "v3Bridge" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "quoteBridgeV3",
+    stateMutability: "view",
+    inputs: [{ type: "address", name: "" }],
+    outputs: [{ type: "address" }],
+  },
+  {
+    type: "function",
+    name: "allowedQuote",
+    stateMutability: "view",
+    inputs: [{ type: "address", name: "" }],
+    outputs: [{ type: "bool" }],
+  },
+  {
+    type: "function",
     name: "removeToken",
     stateMutability: "nonpayable",
     inputs: [{ type: "address", name: "token" }],

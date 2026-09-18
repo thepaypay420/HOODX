@@ -1,16 +1,28 @@
-# Synthetic quote bind (SPCX / SPY)
+# Synthetic quote bind (RH stock tokens)
 
-PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/SPCX on DexScreener), not thin ETH stubs.
+PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/SPCX, BOW/SPY, SHROOM/MU), not thin ETH stubs. **Naked RH stock stokens** (SPY, NVDA, GME, …) bind directly on their WETH V3 pool when pasted by address.
 
 ## Contract (HoodxIndex)
 
-- Whitelisted quotes: **SPCX**, **SPY**
-- V3 TWAP bridges: SPCX/WETH, SPY/WETH
-- Bind: `addToken(token, spcxPoolId)` on the name/SPCX V4 pool
-- Buy: `WETH → SPCX (V3) → token (V4)`
-- Sell: `token → SPCX (V4) → WETH (V3)`
+- Whitelisted quotes: any **canonical RH stock/ETF** (18 decimals) via `allowedQuote` + `quoteBridgeV3`
+- Bootstrap: 21 stock WETH V3 bridges seeded at init (see `public/rh_bridges.json`)
+- Runtime: owner `setQuoteBridge(quote, v3Bridge)` for new stocks or refreshed bridges
+- Bind meme: `addToken(token, stockPoolId)` on the name/stock V4 pool
+- Bind naked stock: `addToken(spy, wethV3PoolRef)` on SPY/WETH V3
+- Buy meme: `WETH → stock (V3) → token (V4)`
+- Sell meme: `token → stock (V4) → WETH (V3)`
 - NAV: spot on name/quote pool × TWAP on quote/WETH
 - `rebindToken(token, poolRef)` when vault bag is zero (fix a bad bind without remove/add)
+
+## Registry
+
+| File | Purpose |
+|------|---------|
+| `public/rh_stocks.json` | Canonical RH stock + ETF addresses (Investors Center catalog) |
+| `public/rh_bridges.json` | Known WETH V3 bridges per stock (refresh via `scripts/refresh_rh_bridges.py`) |
+| `lib/rhStocks.ts` | HUD helpers: `isRhStockToken`, `catalogBridge` |
+
+**Not yet supported:** USDG-quoted pools (6 decimals) — most naked stocks have a WETH V3 book; use that path.
 
 ## Live 696X (`0xeBFA…5C24`) — important
 

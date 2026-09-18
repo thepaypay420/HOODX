@@ -67,7 +67,7 @@ export function Forge() {
       const pools = tokens.map((t) => {
         const coin = coinForBind(t);
         if (!coin || !isIndexPool(coin) || !coin.buyPool) {
-          throw new Error("every name needs a Uni V3 WETH or V4 ETH/WETH pool");
+          throw new Error("every name needs a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool");
         }
         return poolRef(coin);
       });

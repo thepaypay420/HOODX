@@ -7,7 +7,7 @@ import {HoodxIndex} from "./HoodxIndex.sol";
 /// @notice Isolated side project. Not the LP desk.
 ///
 /// create() clones HoodxIndex. Each constituent must ship a Uni V3 WETH pool,
-/// a Uni V4 ETH/WETH pool, or a Uni V4 SPCX/SPY pool (WETH bridged on-chain).
+/// a Uni V4 ETH/WETH pool, or a Uni V4 RH stock-quote pool (WETH bridged on-chain).
 /// Slug `696x` is reserved (create696x, owner-only). Friends join via /i/{slug}.
 
 contract HoodxFactory {

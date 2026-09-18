@@ -12,6 +12,7 @@ import { CURATOR_696, CURATOR_696_CURATOR, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_S
 import { ejectBlocked, isHeldWei, partitionRemovals, revertHint } from "@/lib/eject";
 import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
+import { ensureQuoteBridge } from "@/lib/quoteBridge";
 import { canSetTokenImage, fileToTokenImage, saveTokenImage } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
 
@@ -188,9 +189,10 @@ export function IndexCard({
         const coin = coinForBind(adds[0]);
         if (!coin || !isIndexPool(coin)) {
           throw new Error(
-            "need a Uni V3 WETH or V4 ETH/WETH pool — paste the token 0x if Dexscreener only shows a stock/synthetic quote",
+            "need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool — paste the token 0x",
           );
         }
+        await ensureQuoteBridge(vault as Address, coin, walletClient, address);
         const hash = await walletClient.writeContract({
           account: address,
           address: vault as Address,
@@ -201,15 +203,19 @@ export function IndexCard({
         });
         await publicClient.waitForTransactionReceipt({ hash });
       } else if (adds.length > 1) {
-        const pools = adds.map((t) => {
+        const coins = adds.map((t) => {
           const coin = coinForBind(t);
           if (!coin || !isIndexPool(coin)) {
             throw new Error(
-              "need a Uni V3 WETH or V4 ETH/WETH pool — paste the token 0x if Dexscreener only shows a stock/synthetic quote",
+              "need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool — paste the token 0x",
             );
           }
-          return poolRef(coin);
+          return coin;
         });
+        for (const coin of coins) {
+          await ensureQuoteBridge(vault as Address, coin, walletClient, address);
+        }
+        const pools = coins.map((coin) => poolRef(coin));
         const hash = await walletClient.writeContract({
           account: address,
           address: vault as Address,

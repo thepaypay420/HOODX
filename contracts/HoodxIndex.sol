@@ -88,7 +88,7 @@ contract HoodxIndex {
     mapping(address => bool) public isV4;
     mapping(address => PoolKey) public v4Key;
     mapping(address => uint256) public lastPxWad;
-    /// @dev Synthetic RH quote (SPCX/SPY/USDG). weth = direct ETH/WETH bind.
+    /// @dev RH stock-token quote on a V4 bind. weth = direct ETH/WETH bind.
     mapping(address => address) public quoteOf;
     mapping(address => bool) public allowedQuote;
     /// @dev V3 TWAP bridge pool: quote ↔ WETH.
@@ -150,6 +150,7 @@ contract HoodxIndex {
     event OwnerSet(address indexed owner);
     event OwnershipTransferStarted(address indexed from, address indexed to);
     event OwnershipTransferCanceled(address indexed owner, address indexed pending);
+    event QuoteBridgeSet(address indexed quote, address indexed v3Bridge);
 
     struct InitParams {
         address creator;
@@ -656,6 +657,21 @@ contract HoodxIndex {
         emit CreatorRecipient(who);
     }
 
+    /// @dev Register a canonical RH stock token as a V4 quote with its WETH V3 bridge.
+    ///      Required before binding meme/name pools quoted in that stock (e.g. BOW/SPY).
+    ///      Quote must be 18-decimal ERC-8056 stock; bridge must be quote ↔ WETH V3.
+    function setQuoteBridge(address quote, address v3Bridge) external onlyOwner {
+        if (quote == address(0) || v3Bridge == address(0) || quote == weth) revert Zero();
+        if (IERC20(quote).decimals() != 18) revert BadPool();
+        address t0 = IUniV3Pool(v3Bridge).token0();
+        address t1 = IUniV3Pool(v3Bridge).token1();
+        if (!((quote == t0 && weth == t1) || (quote == t1 && weth == t0))) revert BadPool();
+        IUniV3Pool(v3Bridge).fee();
+        allowedQuote[quote] = true;
+        quoteBridgeV3[quote] = v3Bridge;
+        emit QuoteBridgeSet(quote, v3Bridge);
+    }
+
     /// @dev WETH ↔ listed name on the bound V3 or V4 pool. Fee comes from the pool.
     ///      minOut must be ≥ 97% of the on-chain quote so the curator cannot sandwich the vault.
     function swapV3(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin)
@@ -1046,13 +1062,34 @@ contract HoodxIndex {
         if (wethBuffer() * BPS_DENOM < assets * uint256(cashTargetBps)) revert CashFloor();
     }
 
+    function _seedQuoteBridge(address quote, address bridge) internal {
+        allowedQuote[quote] = true;
+        quoteBridgeV3[quote] = bridge;
+    }
+
+    /// @dev Seed WETH V3 bridges for canonical RH stock quotes (see public/rh_bridges.json).
     function _initRhQuotes() internal {
-        address spcx = 0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa;
-        address spy = 0x117cc2133c37b721f49de2a7a74833232b3b4c0c;
-        allowedQuote[spcx] = true;
-        quoteBridgeV3[spcx] = 0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e;
-        allowedQuote[spy] = true;
-        quoteBridgeV3[spy] = 0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e;
+        _seedQuoteBridge(0x117cc2133c37B721F49dE2A7a74833232B3B4C0C, 0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e); // SPY
+        _seedQuoteBridge(0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xc6BCC95043DC48C204bB2D57fb264a10Efe0a607); // GME
+        _seedQuoteBridge(0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3, 0x8c2B4303fA0B99d07A5D3E9411497A277e65b673); // GOOGL
+        _seedQuoteBridge(0x322F0929c4625eD5bAd873c95208D54E1c003b2d, 0xA953CA88ff430e9487c60cA34d757414f4efdA07); // TSLA
+        _seedQuoteBridge(0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f, 0xCA2734c70E3c348edcda36a6478c9275a0ff0c90); // SLV
+        _seedQuoteBridge(0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa, 0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e); // SPCX
+        _seedQuoteBridge(0x58FfE4a942d3885bAa22D7520691F611EF09e7AA, 0x91280db3392ea92c08d8134b5760fb4798b69547); // TSM
+        _seedQuoteBridge(0x6330D8C3178a418788dF01a47479c0ce7CCF450b, 0x6707aeAc7D0e519B083219d27BB427364363183A); // COIN
+        _seedQuoteBridge(0x86923f96303D656E4aa86D9d42D1e57ad2023fdC, 0x5ca1B5e6Cb510b3bf53E7cd8f7d9B5a71b4a4dc0); // AMD
+        _seedQuoteBridge(0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A, 0x61be5bfbaf17ae28bf68006103b2e78fe6112638); // PLTR
+        _seedQuoteBridge(0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5, 0x7f310e3d05e575bd449e4484ef5da15863ea43b1); // SGOV
+        _seedQuoteBridge(0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd, 0x61346cd249a6453fba2ada35f210376ac0b4957c); // DELL
+        _seedQuoteBridge(0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9, 0x8bb3514e2204E1cDF3Ac149EFEe7Ff04D91B719f); // AAPL
+        _seedQuoteBridge(0xB90A19fF0Af67f7779afF50A882A9CfF42446400, 0x995c1ad5eb998b1bdd89f515c4bb64760c411b62); // SNDK
+        _seedQuoteBridge(0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35, 0xa4BdB396a69617eb7F70E2cc1EF526f7340b1B0d); // META
+        _seedQuoteBridge(0xc72b96e0E48ecd4DC75E1e45396e26300BC39681, 0x1b375a9c30ac43391aefae1bcf3a988d92458725); // INTC
+        _seedQuoteBridge(0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC, 0x62AB521f71431f78ac374CdbadC6cda3c8916b6C); // NVDA
+        _seedQuoteBridge(0xD5f3879160bc7c32ebb4dC785F8a4F505888de68, 0xA40D00a55d43bA2d188039DCF88bD68f4F133E78); // QQQ
+        _seedQuoteBridge(0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5, 0x754ddd4bf8e8635b4301a7f4af2ea7a82ab6cea7); // CRCL
+        _seedQuoteBridge(0xec262a75e413fAfD0dF80480274532C79D42da09, 0x70504a6fafdbfb75fe971faa4dd716e79ac5624c); // MSTR
+        _seedQuoteBridge(0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD, 0x301F48EC369BB3bfA0bC04d44A79037aa0EE2340); // MU
     }
 
     function _clearBind(address token) internal {

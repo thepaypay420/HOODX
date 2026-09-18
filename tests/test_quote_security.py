@@ -43,8 +43,10 @@ class QuoteBindSecurityTest(unittest.TestCase):
             "function _swapQuotedSell(",
             "amountOutMinimum: quoteFloor",
             "if (wethFloor < minWethOut) revert Slippage()",
-            "allowedQuote[spcx] = true",
-            "quoteBridgeV3[spcx] = 0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e",
+            "function setQuoteBridge(address quote, address v3Bridge)",
+            "_seedQuoteBridge(",
+            "// SPCX",
+            "// NVDA",
         ):
             self.assertIn(needle, SOL, msg=f"missing quote bind: {needle}")
 

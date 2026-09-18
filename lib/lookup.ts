@@ -1,8 +1,9 @@
 "use client";
 
-import { type Coin, isBytes32, isIndexPool, rememberCoin } from "@/lib/catalog";
+import { type Coin, isIndexPool, rememberCoin } from "@/lib/catalog";
 import { WETH } from "@/lib/config";
 import { isAddress } from "@/lib/format";
+import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { publicClient } from "@/lib/wallet";
 
 const DEX_TOKENS = "https://api.dexscreener.com/tokens/v1/robinhood/";
@@ -34,10 +35,23 @@ function num(v: unknown) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function isBytes32(id: string) {
+  return /^0x[a-fA-F0-9]{64}$/.test(id);
+}
+
 function ethQuote(p: DexPair) {
   const qaddr = (p.quoteToken?.address || "").toLowerCase();
   const qsym = (p.quoteToken?.symbol || "").toUpperCase();
-  return qaddr === WETH.toLowerCase() || qaddr === NATIVE || ETH_SYM.has(qsym);
+  const baddr = (p.baseToken?.address || "").toLowerCase();
+  const bsym = (p.baseToken?.symbol || "").toUpperCase();
+  return (
+    qaddr === WETH.toLowerCase() ||
+    qaddr === NATIVE ||
+    ETH_SYM.has(qsym) ||
+    baddr === WETH.toLowerCase() ||
+    baddr === NATIVE ||
+    ETH_SYM.has(bsym)
+  );
 }
 
 function kind(p: DexPair): "v3" | "v4" | null {
@@ -67,11 +81,9 @@ async function pairsFor(token: string): Promise<DexPair[]> {
   return [...seen.values()];
 }
 
-const SYN_QUOTE = new Set(["SPCX", "SPY"]);
-
-function synthQuote(p: DexPair) {
-  const qsym = (p.quoteToken?.symbol || "").toUpperCase();
-  return SYN_QUOTE.has(qsym);
+function rhStockQuote(p: DexPair) {
+  const qaddr = (p.quoteToken?.address || "").toLowerCase();
+  return isRhStockToken(qaddr);
 }
 
 function pickPool(pairs: DexPair[], token: string): DexPair | null {
@@ -80,21 +92,63 @@ function pickPool(pairs: DexPair[], token: string): DexPair | null {
     .filter((p) => (p.baseToken?.address || "").toLowerCase() === token)
     .filter((p) => kind(p) && num(p.liquidity?.usd) > 0)
     .sort((a, b) => num(b.liquidity?.usd) - num(a.liquidity?.usd));
-  const synth = scored.filter((p) => synthQuote(p));
+
+  // Naked RH stock stoken: bind the deepest WETH/ETH book directly.
+  if (isRhStockToken(token)) {
+    const wethV3 = scored.filter((p) => ethQuote(p) && kind(p) === "v3");
+    if (wethV3.length) return wethV3[0];
+    const wethV4 = scored.filter((p) => ethQuote(p) && kind(p) === "v4");
+    if (wethV4.length) return wethV4[0];
+  }
+
+  // Meme on RH stock quote: bind the deepest stock-quoted V4 pool.
+  const synth = scored.filter((p) => rhStockQuote(p) && kind(p) === "v4");
   if (synth.length) return synth[0];
+
   const eth = scored.filter((p) => ethQuote(p));
   return eth[0] || null;
 }
 
-/** Resolve a Robinhood token to a vault-bindable Uni V3 WETH or V4 ETH/WETH pool. */
+/** Deepest Uni V3 WETH bridge for a canonical RH stock quote token. */
+export async function findWethBridge(quoteAddr: string): Promise<string | null> {
+  const quote = quoteAddr.toLowerCase();
+  if (!isRhStockToken(quote)) return null;
+  const pairs = await pairsFor(quote);
+  let best: string | null = catalogBridge(quote) || null;
+  let bestTvl = 0;
+  for (const p of pairs) {
+    if (String(p.chainId || "").toLowerCase() !== "robinhood") continue;
+    const pool = (p.pairAddress || "").toLowerCase();
+    const labels = (p.labels || []).map((x) => String(x).toLowerCase());
+    if (pool.length !== 42 || !labels.includes("v3")) continue;
+    const base = (p.baseToken?.address || "").toLowerCase();
+    const q = (p.quoteToken?.address || "").toLowerCase();
+    if (!ethQuote(p)) continue;
+    const tvl = num(p.liquidity?.usd);
+    const ok =
+      (base === quote && (q === WETH.toLowerCase() || q === NATIVE)) ||
+      (q === quote && (base === WETH.toLowerCase() || base === NATIVE));
+    if (ok && tvl > bestTvl) {
+      best = pool;
+      bestTvl = tvl;
+    }
+  }
+  return best;
+}
+
+/** Resolve a Robinhood token to a vault-bindable pool (WETH V3, V4 ETH, or V4 RH-stock quote). */
 export async function lookupIndexCoin(addr: string): Promise<Coin> {
   if (!isAddress(addr)) throw new Error("paste a token 0x");
   const token = addr.toLowerCase();
   if (token === WETH.toLowerCase()) throw new Error("WETH is cash, not a name");
   const buy = pickPool(await pairsFor(token), token);
-  if (!buy?.pairAddress) throw new Error("No Uni V3 WETH or V4 ETH pool on Dexscreener.");
+  if (!buy?.pairAddress) {
+    throw new Error("No bindable Uni pool — need WETH V3, V4 ETH, or V4 RH-stock quote on Dexscreener.");
+  }
   const labels = kind(buy) === "v4" ? ["v4"] : ["v3"];
-  const quote = (buy.quoteToken?.symbol || "WETH").toUpperCase();
+  const quoteTok = buy.quoteToken || {};
+  const quote = (quoteTok.symbol || "WETH").toUpperCase();
+  const quoteAddr = (quoteTok.address || "").toLowerCase();
   let symbol = (buy.baseToken?.symbol || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 12);
   let name = buy.baseToken?.name || symbol;
   let decimals = 0;
@@ -135,10 +189,13 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
     vol24Usd: num(buy.volume?.h24),
     hops: 1,
     buyQuote: quote,
+    buyQuoteAddr: quoteAddr || undefined,
     buyPool: buy.pairAddress.toLowerCase(),
     buyLabels: labels,
   };
-  if (!isIndexPool(coin)) throw new Error("Pool must be Uni V3 WETH, V4 ETH/WETH, or V4 SPCX/SPY.");
+  if (!isIndexPool(coin)) {
+    throw new Error("Pool must be Uni V3 WETH, V4 ETH/WETH, or V4 RH stock quote.");
+  }
   rememberCoin(coin);
   return coin;
 }

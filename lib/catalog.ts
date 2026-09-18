@@ -1,4 +1,5 @@
 import universe from "../public/universe.json";
+import { isRhStockSymbol, isRhStockToken } from "./rhStocks";
 import { isAddress } from "./format";
 
 export type Coin = {
@@ -10,6 +11,7 @@ export type Coin = {
   vol24Usd?: number;
   hops?: number;
   buyQuote?: string;
+  buyQuoteAddr?: string;
   buyPool?: string;
   buyLabels?: string[];
 };
@@ -46,23 +48,27 @@ export function isV4EthWethPool(c: Coin) {
   );
 }
 
-/** Uni V4 pool quoted in RH synthetics (SPCX, SPY). WETH bridge is on-chain. */
-export function isV4QuotePool(c: Coin) {
+/** Uni V4 pool quoted in a canonical RH stock token. WETH bridge is on-chain. */
+export function isV4RhQuotePool(c: Coin) {
   const quote = (c.buyQuote || "").toUpperCase();
+  const quoteAddr = (c.buyQuoteAddr || "").toLowerCase();
   const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
   return (
     Boolean(c.buyPool && isBytes32(c.buyPool)) &&
-    (quote === "SPCX" || quote === "SPY") &&
-    labels.includes("v4")
+    labels.includes("v4") &&
+    (isRhStockToken(quoteAddr) || isRhStockSymbol(quote))
   );
 }
+
+/** @deprecated use isV4RhQuotePool */
+export const isV4QuotePool = isV4RhQuotePool;
 
 /** Vault NAV is 1e18-wad. NET is 9 decimals; bind reverts. */
 const NON_WAD = new Set(["0xca9c78dd337a67f6e0077f65f5e9218719d30edf"]);
 
 export function isIndexPool(c: Coin) {
   if (NON_WAD.has(c.token.toLowerCase())) return false;
-  return isV3WethPool(c) || isV4EthWethPool(c) || isV4QuotePool(c);
+  return isV3WethPool(c) || isV4EthWethPool(c) || isV4RhQuotePool(c);
 }
 
 /** Pad a V3 pool address to bytes32; pass a V4 pool id through. */
@@ -70,7 +76,7 @@ export function poolRef(c: Coin): `0x${string}` {
   const p = c.buyPool || "";
   if (isBytes32(p)) return p as `0x${string}`;
   if (isAddress(p)) return `0x${p.slice(2).toLowerCase().padStart(64, "0")}` as `0x${string}`;
-  throw new Error("need a Uni V3 WETH or V4 ETH/WETH pool");
+  throw new Error("need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool");
 }
 
 export const V3_CATALOG: Coin[] = CATALOG.filter(isV3WethPool);
