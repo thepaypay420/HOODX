@@ -114,9 +114,22 @@ export function targetPct(onChainBps: number, policyWeight = 0) {
   return 0;
 }
 
-export function formatTargetPct(onChainBps: number, policyWeight = 0, cash = false) {
-  if (cash) return "≥25%";
+export type TargetDisplayOpts = {
+  cash?: boolean;
+  /** Held sleeve with no on-chain / policy target — show live NAV weight. */
+  liveWeight?: number;
+  held?: boolean;
+  /** Name is skipped from the 696 book (e.g. dead volume). */
+  legacy?: boolean;
+};
+
+export function formatTargetPct(onChainBps: number, policyWeight = 0, opts: TargetDisplayOpts = {}) {
+  if (opts.cash) return "≥25%";
   const pct = targetPct(onChainBps, policyWeight);
   if (pct > 0) return `${pct.toFixed(2)}%`;
+  if (opts.held && opts.liveWeight != null && opts.liveWeight > 0.0001) {
+    const live = (opts.liveWeight * 100).toFixed(2);
+    return opts.legacy ? `${live}% · park` : `${live}% live`;
+  }
   return "unset";
 }

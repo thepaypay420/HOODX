@@ -17,6 +17,7 @@ import {
   normalizeDraft,
   resizeSliderTargets,
   trimDriftTargets,
+  parkLegacyTargets,
   type StrategyId,
   type TargetDraft,
 } from "@/lib/curator";
@@ -180,6 +181,16 @@ export function CuratorBook({
     [draft, rows, navWei, minSleeveWei, cashBps],
   );
 
+  const legacyIds = useMemo(
+    () =>
+      new Set(
+        ((snapshot.skipped || []) as { id: string }[])
+          .concat((snapshot.dropped || []) as { id: string }[])
+          .map((d) => d.id.toUpperCase()),
+      ),
+    [],
+  );
+
   const applyStrategy = useCallback(
     (id: StrategyId) => {
       const tokens = rows.map((r) => r.token);
@@ -201,10 +212,29 @@ export function CuratorBook({
           onChainTargetBps: r.onChainTargetBps,
         }));
         setDraft(trimDriftTargets(live, cashBps));
+      } else if (id === "parkLegacy") {
+        setDraft(
+          parkLegacyTargets(
+            rows.map((r) => {
+              const coin = byAddress(r.token);
+              const legacy = Boolean(
+                coin &&
+                  (legacyIds.has(coin.id.toUpperCase()) || legacyIds.has((coin.symbol || "").toUpperCase())),
+              );
+              return {
+                token: r.token,
+                balanceWei: r.balanceWei,
+                onChainTargetBps: r.onChainTargetBps,
+                legacy,
+              };
+            }),
+            cashBps,
+          ),
+        );
       }
       setStrategy(id);
     },
-    [rows, cashBps, navUsd, navWei, minSleeveWei],
+    [rows, cashBps, navUsd, navWei, minSleeveWei, legacyIds],
   );
 
   async function writeTargets() {

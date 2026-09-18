@@ -15,7 +15,7 @@ export function pctToBps(pct: number) {
 
 export type TargetDraft = Record<string, number>;
 
-export type StrategyId = "equal" | "list696" | "live" | "trim";
+export type StrategyId = "equal" | "list696" | "live" | "trim" | "parkLegacy";
 
 export type Strategy = {
   id: StrategyId;
@@ -28,6 +28,11 @@ export const CURATOR_STRATEGIES: Strategy[] = [
   { id: "list696", label: "696 sqrt book", hint: "Capped sqrt-mcap weights with a 25% cash sleeve." },
   { id: "live", label: "Match live mix", hint: "Copy what the vault holds now into targets." },
   { id: "trim", label: "Trim drift", hint: "Snap only out-of-band names to live weights; keep the rest on-chain." },
+  {
+    id: "parkLegacy",
+    label: "Park legacy",
+    hint: "Zero targets for 696-skipped bags (e.g. QUOTIENT) so you can sell to cash.",
+  },
 ];
 
 export function equalTargetBps(n: number, cashTargetBps = 2500) {
@@ -63,6 +68,19 @@ export function trimDriftTargets(
     return { token: r.token, liveBps: Math.max(0, bps) };
   });
   return liveMixTargets(mixed, cashTargetBps);
+}
+
+/** Zero draft targets for legacy/skipped names that still have a bag; keep on-chain for the rest. */
+export function parkLegacyTargets(
+  rows: { token: string; balanceWei: bigint; onChainTargetBps: number; legacy?: boolean }[],
+  cashTargetBps = 2500,
+): TargetDraft {
+  const out: TargetDraft = {};
+  for (const r of rows) {
+    if (r.legacy && r.balanceWei > 0n) out[r.token.toLowerCase()] = 0;
+    else out[r.token.toLowerCase()] = r.onChainTargetBps;
+  }
+  return out;
 }
 
 export function draftFromOnChain(tokens: string[], targetBps: Map<string, number>): TargetDraft {

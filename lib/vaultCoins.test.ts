@@ -10,8 +10,8 @@ describe("vault target display", () => {
     expect(targetPct(0, 0.077)).toBeCloseTo(7.7, 4);
   });
 
-  it("shows unset for custom names without targets", () => {
-    expect(formatTargetPct(0, 0)).toBe("unset");
-    expect(formatTargetPct(500, 0)).toBe("5.00%");
+  it("shows live weight for held legacy bags", () => {
+    expect(formatTargetPct(0, 0, { held: true, liveWeight: 0.0537, legacy: true })).toBe("5.37% · park");
+    expect(formatTargetPct(0, 0, { held: true, liveWeight: 0.04 })).toBe("4.00% live");
   });
 });

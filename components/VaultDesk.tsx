@@ -240,6 +240,7 @@ export function VaultDesk({
     () => (sleeves.length ? activeBook(sleeves, displayNavUsd || 200, MIN_SLEEVE_USD, CASH_TARGET) : null),
     [sleeves, displayNavUsd],
   );
+  const legacyIds = useMemo(() => new Set(dead.map((d) => d.id.toUpperCase())), [dead]);
   const policyByTok = useMemo(() => {
     const m = new Map<string, Sleeve>();
     for (const s of sleeves) {
@@ -257,6 +258,13 @@ export function VaultDesk({
       const usd = ethUsd && ethUsd > 0 ? eth * ethUsd : 0;
       const liveW = nav > 0n ? Number(b.wethWei) / Number(nav) : 0;
       const status: "held" | "missed" | "cash" = cash ? "cash" : b.wei > 0n ? "held" : "missed";
+      const coin = byAddress(b.token);
+      const legacy =
+        !cash &&
+        Boolean(
+          coin &&
+            (legacyIds.has(coin.id.toUpperCase()) || legacyIds.has((coin.symbol || "").toUpperCase())),
+        );
       return {
         key: b.token,
         name: b.symbol,
@@ -264,6 +272,13 @@ export function VaultDesk({
         liveW,
         listW: policy?.weight ?? 0,
         targetBps: b.targetBps,
+        legacy,
+        targetLabel: formatTargetPct(b.targetBps, policy?.weight ?? 0, {
+          cash,
+          held: status === "held",
+          liveWeight: liveW,
+          legacy,
+        }),
         usd,
         bag: cash ? `${Number(formatEtherSafe(b.wei)).toFixed(4)} WETH` : `${Number(formatEtherSafe(b.wei)).toFixed(4)}`,
       };
@@ -275,7 +290,7 @@ export function VaultDesk({
       return b.usd - a.usd;
     });
     return rows;
-  }, [live, snap, policyByTok, ethUsd]);
+  }, [live, snap, policyByTok, ethUsd, legacyIds]);
   const heldBags = useMemo(() => {
     if (!snap) return [];
     return snap.bags
@@ -901,7 +916,9 @@ export function VaultDesk({
             {liveRows ? "Holdings" : "Targets"}
           </h2>
           <p className="mt-1 max-w-lg text-[13px] leading-5 text-[var(--dim)]">
-            {liveRows ? "Live is the vault TWAP sleeve. Target is the 696 weight — it does not fall when a name dumps." : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
+            {liveRows
+              ? "Live is the vault TWAP sleeve. Target is on-chain, then the 696 book — legacy bags with no target show live weight and · park."
+              : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
             {isGen0 && (
               <>
                 {" "}
@@ -949,8 +966,12 @@ export function VaultDesk({
                           {(r.liveW * 100).toFixed(2)}%
                         </td>
                         <td className="hidden px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)] sm:table-cell">
-                          <span className={formatTargetPct(r.targetBps, r.listW, r.status === "cash") === "unset" ? "text-[var(--gold)]" : ""}>
-                            {formatTargetPct(r.targetBps, r.listW, r.status === "cash")}
+                          <span
+                            className={
+                              r.targetLabel.includes("park") || r.targetLabel === "unset" ? "text-[var(--gold)]" : ""
+                            }
+                          >
+                            {r.targetLabel}
                           </span>
                         </td>
                         <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">

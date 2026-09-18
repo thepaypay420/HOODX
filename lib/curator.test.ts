@@ -6,6 +6,7 @@ import {
   liveMixTargets,
   normalizeDraft,
   resizeSliderTargets,
+  parkLegacyTargets,
   riskCap,
   trimDriftTargets,
 } from "./curator";
@@ -36,6 +37,18 @@ describe("curator targets", () => {
     );
     expect(draftTotals(d, 2500).riskOnBps).toBeLessThanOrEqual(7500);
     expect(d["0xa"]).toBeGreaterThan(d["0xb"] || 0);
+  });
+
+  it("park legacy zeros skipped bags only", () => {
+    const d = parkLegacyTargets(
+      [
+        { token: "0xquotient", balanceWei: 1n, onChainTargetBps: 500, legacy: true },
+        { token: "0xpons", balanceWei: 1n, onChainTargetBps: 770, legacy: false },
+      ],
+      2500,
+    );
+    expect(d["0xquotient"]).toBe(0);
+    expect(d["0xpons"]).toBe(770);
   });
 
   it("trim keeps in-band on-chain targets and snaps drifted names", () => {
