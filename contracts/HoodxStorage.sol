@@ -120,6 +120,7 @@ contract HoodxStorage {
     error BadPair();
     error Slippage();
     error BadPool();
+    error HookedPool();
     error NotManager();
     error OnlySelf();
     error Started();
@@ -138,6 +139,7 @@ contract HoodxStorage {
     event TokenAdded(address indexed token, bytes32 poolRef, bool v4);
     event TokenRebound(address indexed token, bytes32 poolRef, bool v4);
     event TokenRemoved(address indexed token);
+    event TokenStranded(address indexed token, uint256 balance);
     event Floors(uint256 minDeposit, uint256 minFirst, uint256 minSleeve, uint16 cashBps);
     event Genesis(uint256 ethPerShare);
     event PausedSet(bool paused);

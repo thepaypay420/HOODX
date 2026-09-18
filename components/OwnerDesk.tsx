@@ -10,7 +10,6 @@ import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/l
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { ensureVaultBind, isUsdgQuote } from "@/lib/ensureBind";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
-import { capV4BuyWei } from "@/lib/v4SwapCap";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 function bagText(wei: bigint) {
@@ -191,27 +190,13 @@ export function OwnerDesk({
           setSwapSimOk(false);
           return;
         }
-        const v4 = await publicClient.readContract({
-          address: vault as Address,
-          abi: vaultAbi,
-          functionName: "isV4",
-          args: [token as Address],
-        });
-        const simAmt =
-          side === "buy" && v4
-            ? await capV4BuyWei(vault as Address, token as Address, address as Address, amt)
-            : amt;
-        if (side === "buy" && v4 && simAmt <= 0n) {
-          setSwapSimOk(false);
-          return;
-        }
         try {
           await publicClient.simulateContract({
             account: address as Address,
             address: vault as Address,
             abi: vaultAbi,
             functionName: "swapV3",
-            args: [tokenIn, tokenOut, simAmt, floor],
+            args: [tokenIn, tokenOut, amt, floor],
           });
           setSwapSimOk(true);
         } catch {
@@ -268,23 +253,7 @@ export function OwnerDesk({
 
   async function sendSwap(tokenIn: Address, tokenOut: Address, amt: bigint) {
     if (!walletClient || !address || !vault) throw new Error("connect the curator wallet");
-    let spend = amt;
-    if (tokenIn === WETH && isAddress(tokenOut)) {
-      const v4 = await publicClient.readContract({
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: "isV4",
-        args: [tokenOut],
-      });
-      if (v4) {
-        const capped = await capV4BuyWei(vault as Address, tokenOut, address, spend);
-        if (capped <= 0n) throw new Error("V4 pool cannot fill at the TWAP floor for this size — try less WETH");
-        if (capped < spend) {
-          spend = capped;
-          setAmount(formatEther(spend));
-        }
-      }
-    }
+    const spend = amt;
     let { twapOut, floor } = await quoteFloor(tokenIn, tokenOut, spend);
     if (floor === 0n) throw new Error("no TWAP quote");
     setQuoted(twapOut.toString());
@@ -401,7 +370,11 @@ export function OwnerDesk({
       if (liveBag > 0n) {
         setSide("sell");
         setAmount(formatEther(liveBag));
-        await sendSwap(token as Address, WETH as Address, liveBag);
+        try {
+          await sendSwap(token as Address, WETH as Address, liveBag);
+        } catch {
+          /* hooked / broken pool — strand dust instead of blocking redemptions */
+        }
       }
       const left = await publicClient.readContract({
         address: token as Address,
@@ -409,20 +382,23 @@ export function OwnerDesk({
         functionName: "balanceOf",
         args: [vault as Address],
       });
-      if (left !== 0n) throw new Error(`${symbol} bag still in the vault`);
       const hash = await walletClient.writeContract({
         account: address,
         address: vault as Address,
         abi: vaultAbi,
-        functionName: "removeToken",
+        functionName: left === 0n ? "removeToken" : "strandToken",
         args: [token as Address],
         chain: robinhood,
       });
       const rec = await publicClient.waitForTransactionReceipt({ hash });
-      if (rec.status !== "success") throw new Error("removeToken reverted");
+      if (rec.status !== "success") throw new Error(left === 0n ? "removeToken reverted" : "strandToken reverted");
       await loadBags();
       setAmount("");
-      setMsg(`${symbol} sold to WETH and dropped from the book`);
+      setMsg(
+        left === 0n
+          ? `${symbol} sold to WETH and dropped from the book`
+          : `${symbol} stranded in vault (unredeemable dust) and removed from the index`,
+      );
     } catch (e) {
       setMsg(revertHint(e));
       await loadBags().catch(() => {});

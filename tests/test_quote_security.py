@@ -69,6 +69,18 @@ class QuoteBindSecurityTest(unittest.TestCase):
         self.assertIn("_clearBind(token)", rebind)
         self.assertIn("_clearBind(token)", remove)
 
+    def test_hooked_v4_blocked_and_redemptions_skip(self):
+        for needle in (
+            "function strandToken(address token)",
+            "function _canLiquidate(address token)",
+            "if (!_canLiquidate(t)) continue",
+            "if (!_swapOrSkip(t, weth, amt, floor)) continue",
+            "if (hooks != address(0)) revert HookedPool()",
+            "event TokenStranded(address indexed token, uint256 balance)",
+            "function clearBindRaw(address token)",
+        ):
+            self.assertIn(needle, SOL, msg=f"missing hook guard: {needle}")
+
 
 if __name__ == "__main__":
     unittest.main()

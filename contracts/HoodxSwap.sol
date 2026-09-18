@@ -21,6 +21,9 @@ contract HoodxSwap is HoodxStorage {
 
     function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) external payable {
         address listedTok = tokenIn == weth ? tokenOut : tokenIn;
+        if (isV4[listedTok] && v4Key[listedTok].hooks != address(0) && tokenOut == weth) {
+            return;
+        }
         address quote = quoteOf[listedTok];
         if (quote != address(0) && quote != weth) {
             if (tokenIn == weth && tokenOut == listedTok) {
@@ -106,6 +109,16 @@ contract HoodxSwap is HoodxStorage {
         _removeToken(token);
     }
 
+    function clearBindRaw(address token) external payable {
+        if (!listed[token]) revert Listed();
+        _clearBind(token);
+    }
+
+    /// @dev Drop a name from the index but leave its bag in the vault (unredeemable dust).
+    function strandTokenRaw(address token) external payable {
+        _strandToken(token);
+    }
+
     function rebindTokenRaw(address token, bytes32 poolRef) external payable {
         if (!listed[token]) revert Listed();
         if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
@@ -187,6 +200,7 @@ contract HoodxSwap is HoodxStorage {
     function _bindV4(address token, bytes32 poolId) internal {
         (address c0, address c1, uint24 fee, int24 spacing, address hooks) = IPosm(v4Posm).poolKeys(bytes25(poolId));
         if (c1 == address(0)) revert BadPool();
+        if (hooks != address(0)) revert HookedPool();
         PoolKey memory key = PoolKey({
             currency0: c0,
             currency1: c1,
@@ -217,6 +231,17 @@ contract HoodxSwap is HoodxStorage {
     function _removeToken(address token) internal {
         if (!listed[token]) revert Listed();
         if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
+        _dropToken(token);
+        emit TokenRemoved(token);
+    }
+
+    function _strandToken(address token) internal {
+        if (!listed[token]) revert Listed();
+        _dropToken(token);
+        emit TokenStranded(token, IERC20(token).balanceOf(address(this)));
+    }
+
+    function _dropToken(address token) internal {
         uint256 n = tokens.length;
         if (n <= 2) revert BadLen();
         listed[token] = false;
@@ -229,7 +254,6 @@ contract HoodxSwap is HoodxStorage {
                 break;
             }
         }
-        emit TokenRemoved(token);
     }
 
     function _clearBind(address token) internal {

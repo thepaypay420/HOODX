@@ -1,7 +1,7 @@
 "use client";
 
 import { type Coin, isIndexPool, rememberCoin } from "@/lib/catalog";
-import { USDG, WETH } from "@/lib/config";
+import { USDG, V4_POSM, WETH } from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { publicClient } from "@/lib/wallet";
@@ -16,6 +16,48 @@ const metaAbi = [
   { type: "function", name: "decimals", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
   { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
 ] as const;
+
+const posmAbi = [
+  {
+    type: "function",
+    name: "poolKeys",
+    stateMutability: "view",
+    inputs: [{ type: "bytes25", name: "poolId" }],
+    outputs: [
+      { type: "address", name: "currency0" },
+      { type: "address", name: "currency1" },
+      { type: "uint24", name: "fee" },
+      { type: "int24", name: "tickSpacing" },
+      { type: "address", name: "hooks" },
+    ],
+  },
+] as const;
+
+const ZERO = "0x0000000000000000000000000000000000000000";
+
+async function v4Hooks(poolId: string): Promise<string | null> {
+  if (!isBytes32(poolId)) return null;
+  try {
+    const rows = await publicClient.readContract({
+      address: V4_POSM,
+      abi: posmAbi,
+      functionName: "poolKeys",
+      args: [poolId as `0x${string}`],
+    });
+    return String(rows[4] || ZERO).toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+async function rejectHookedV4(p: DexPair | null) {
+  if (!p || kind(p) !== "v4" || !p.pairAddress) return p;
+  const hooks = await v4Hooks(p.pairAddress);
+  if (hooks && hooks !== ZERO) {
+    throw new Error("Hooked Uni V4 pools cannot be bound — pick a hooks=0 pool.");
+  }
+  return p;
+}
 
 type DexPair = {
   chainId?: string;
@@ -153,7 +195,7 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
   if (!isAddress(addr)) throw new Error("paste a token 0x");
   const token = addr.toLowerCase();
   if (token === WETH.toLowerCase()) throw new Error("WETH is cash, not a name");
-  const buy = pickPool(await pairsFor(token), token);
+  const buy = await rejectHookedV4(pickPool(await pairsFor(token), token));
   if (!buy?.pairAddress) {
     throw new Error("No bindable Uni pool — need WETH V3, USDG V3, V4 ETH, or V4 quote on Dexscreener.");
   }

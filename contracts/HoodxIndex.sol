@@ -288,8 +288,9 @@ contract HoodxIndex is HoodxStorage {
             uint256 bal = IERC20(t).balanceOf(address(this));
             uint256 amt = sweep ? bal : (bal * shares) / supply;
             if (amt == 0) continue;
+            if (!_canLiquidate(t)) continue;
             uint256 floor = _minOutOrZero(t, weth, amt);
-            if (floor == 0) return (0, 0);
+            if (floor == 0) continue;
             minEthOut += floor;
             names++;
         }
@@ -415,6 +416,24 @@ contract HoodxIndex is HoodxStorage {
         for (uint256 i; i < who.length; i++) {
             _dlg(abi.encodeWithSelector(HoodxSwap.removeTokenRaw.selector, who[i]));
         }
+    }
+
+    /// @dev Drop a hooked or broken name from the index. Bag stays in the vault as dust.
+    function strandToken(address token) external onlyOwner {
+        if (!listed[token]) revert Listed();
+        uint256 n = tokens.length;
+        if (n <= 2) revert BadLen();
+        listed[token] = false;
+        targetBps[token] = 0;
+        _dlg(abi.encodeWithSelector(HoodxSwap.clearBindRaw.selector, token));
+        for (uint256 i; i < n; i++) {
+            if (tokens[i] == token) {
+                tokens[i] = tokens[n - 1];
+                tokens.pop();
+                break;
+            }
+        }
+        emit TokenStranded(token, IERC20(token).balanceOf(address(this)));
     }
 
     /// @dev Rebind a zero-balance name to a new pool (e.g. PROMETHEUS/SPCX). Does not touch balances.
@@ -639,9 +658,10 @@ contract HoodxIndex is HoodxStorage {
             uint256 bal = IERC20(t).balanceOf(address(this));
             uint256 amt = sweep ? bal : (bal * shares) / supply;
             if (amt == 0) continue;
+            if (!_canLiquidate(t)) continue;
             uint256 floor = _minOutOrZero(t, weth, amt);
-            if (floor == 0) revert Unpriced();
-            _swap(t, weth, amt, floor);
+            if (floor == 0) continue;
+            if (!_swapOrSkip(t, weth, amt, floor)) continue;
             names++;
         }
         emit Liquidated(shares, names);
@@ -678,6 +698,13 @@ contract HoodxIndex is HoodxStorage {
         } catch {
             return 0;
         }
+    }
+
+    /// @dev Hooked V4 pools cannot be sold with empty hookData — skip on redeem rather than brick exits.
+    function _canLiquidate(address token) internal view returns (bool) {
+        if (!isV4[token]) return poolOf[token] != address(0);
+        PoolKey memory key = v4Key[token];
+        return key.hooks == address(0);
     }
 
     function execSwap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) external {

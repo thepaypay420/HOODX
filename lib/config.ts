@@ -13,7 +13,12 @@ export const USDG = (process.env.NEXT_PUBLIC_USDG ||
   "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168") as `0x${string}`;
 
 export const LIVE_696X_ADDR = "0x6350f9e8e630785ABF09fD1127366998Ad821E33";
-export const LIVE_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
+export const BRICKED_696X_ADDR = LIVE_696X_ADDR;
+export const SAFE_696X_ADDR = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE";
+export const LIVE_FACTORY_ADDR = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD";
+export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
+export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
+  "0x58daec3116aae6D93017bAAea7749052E8a04fA7") as `0x${string}`;
 export const EMPTIED_696X = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24";
 export const EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9";
 
@@ -31,6 +36,12 @@ export const VAULT = liveOr(
 export const LIVE_696X = LIVE_696X_ADDR.toLowerCase();
 export function isLive696x(addr?: string | null) {
   return (addr || "").toLowerCase() === LIVE_696X;
+}
+export function isBricked696x(addr?: string | null) {
+  return (addr || "").toLowerCase() === BRICKED_696X_ADDR.toLowerCase();
+}
+export function isSafe696x(addr?: string | null) {
+  return (addr || "").toLowerCase() === SAFE_696X_ADDR.toLowerCase();
 }
 export function isEmptied696x(addr?: string | null) {
   return (addr || "").toLowerCase() === EMPTIED_696X.toLowerCase();

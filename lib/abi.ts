@@ -321,6 +321,13 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "strandToken",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "address", name: "token" }],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "setCreatorRecipient",
     stateMutability: "nonpayable",
     inputs: [{ type: "address", name: "who" }],
