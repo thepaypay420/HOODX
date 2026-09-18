@@ -24,6 +24,13 @@ def is_v4_eth_weth(row: dict) -> bool:
     return is_bytes32(pool) and quote in ("ETH", "WETH") and "v4" in labels
 
 
+def is_v4_quote_pool(row: dict) -> bool:
+    pool = str(row.get("buyPool") or "")
+    quote = str(row.get("buyQuote") or "").upper()
+    labels = [str(x).lower() for x in (row.get("buyLabels") or [])]
+    return is_bytes32(pool) and quote in ("SPCX", "SPY") and "v4" in labels
+
+
 class BindPoolTest(unittest.TestCase):
     def test_prometheus_catalog_is_display_only(self):
         raw = json.loads((ROOT / "universe.json").read_text())
@@ -32,16 +39,13 @@ class BindPoolTest(unittest.TestCase):
         self.assertEqual(row["buyPool"], SPCX_POOL)
         self.assertFalse(is_v4_eth_weth(row))
 
-    def test_prometheus_eth_bind_pool_is_bytes32(self):
-        """Vault binds the thin V4 ETH pool, not the deep SPCX display book."""
-        self.assertTrue(is_bytes32(ETH_POOL))
-        self.assertTrue(is_bytes32(SPCX_POOL))
+    def test_prometheus_spcx_is_bindable(self):
         bind = {
-            "buyPool": ETH_POOL,
-            "buyQuote": "ETH",
+            "buyPool": SPCX_POOL,
+            "buyQuote": "SPCX",
             "buyLabels": ["v4"],
         }
-        self.assertTrue(is_v4_eth_weth(bind))
+        self.assertTrue(is_v4_quote_pool(bind))
 
 
 if __name__ == "__main__":

@@ -637,8 +637,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       </div>
       {listedQuote && !["ETH", "WETH"].includes(listedQuote.toUpperCase()) && (
         <p className="mt-3 text-[13px] leading-5 text-[var(--dim)]">
-          DexScreener book: {symbol}/{listedQuote.toUpperCase()}. Live vault swaps still bind ETH/WETH only — V4{" "}
-          {listedQuote.toUpperCase()} support is required for in-vault buys.
+          DexScreener book: {symbol}/{listedQuote.toUpperCase()}. Rebalance routes WETH → {listedQuote.toUpperCase()} →{" "}
+          {symbol} once the vault runs quote-bind bytecode.
         </p>
       )}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">

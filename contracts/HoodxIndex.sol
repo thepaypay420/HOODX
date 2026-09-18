@@ -88,6 +88,11 @@ contract HoodxIndex {
     mapping(address => bool) public isV4;
     mapping(address => PoolKey) public v4Key;
     mapping(address => uint256) public lastPxWad;
+    /// @dev Synthetic RH quote (SPCX/SPY/USDG). weth = direct ETH/WETH bind.
+    mapping(address => address) public quoteOf;
+    mapping(address => bool) public allowedQuote;
+    /// @dev V3 TWAP bridge pool: quote ↔ WETH.
+    mapping(address => address) public quoteBridgeV3;
 
     uint256 public totalSupply;
     uint16 public protocolFeeBps;
@@ -137,6 +142,7 @@ contract HoodxIndex {
     event CreatorFee(uint16 bps);
     event CreatorRecipient(address indexed who);
     event TokenAdded(address indexed token, bytes32 poolRef, bool v4);
+    event TokenRebound(address indexed token, bytes32 poolRef, bool v4);
     event TokenRemoved(address indexed token);
     event Floors(uint256 minDeposit, uint256 minFirst, uint256 minSleeve, uint16 cashBps);
     event Genesis(uint256 ethPerShare);
@@ -210,6 +216,7 @@ contract HoodxIndex {
         minFirstDeposit = p.minFirstDeposit;
         minSleeveWeth = 0.004 ether;
         genesisEthPerShare = 0.04 ether; // $100 at $2500 ETH; owner can peg before first mint
+        _initRhQuotes();
         for (uint256 i; i < constituents.length; i++) {
             _addToken(constituents[i], pools[i]);
         }
@@ -246,10 +253,21 @@ contract HoodxIndex {
     }
 
     /// @dev WETH per 1e18 token. V3 uses the pool TWAP; V4 uses StateView spot tick.
+    ///      Synthetic-quote names price through a whitelisted quote + V3 quote/WETH bridge.
     function priceWethWad(address token) public view returns (uint256) {
+        if (token == weth) return 1e18;
+        if (allowedQuote[token] && quoteBridgeV3[token] != address(0)) {
+            return UniTwap.priceWethWad(quoteBridgeV3[token], token, weth, TWAP_SECS);
+        }
+        address quote = quoteOf[token];
         if (isV4[token]) {
-            PoolKey memory key = v4Key[token];
-            return UniTwap.priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth);
+            if (quote == address(0) || quote == weth) {
+                PoolKey memory key = v4Key[token];
+                return UniTwap.priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth);
+            }
+            uint256 quotePerToken = _spotQuotePerToken(token);
+            uint256 wethPerQuote = priceWethWad(quote);
+            return (quotePerToken * wethPerQuote) / 1e18;
         }
         address pool = poolOf[token];
         if (pool == address(0)) revert Listed();
@@ -536,6 +554,22 @@ contract HoodxIndex {
         for (uint256 i; i < who.length; i++) _removeToken(who[i]);
     }
 
+    /// @dev Rebind a zero-balance name to a new pool (e.g. PROMETHEUS/SPCX). Does not touch balances.
+    function rebindToken(address token, bytes32 poolRef) external onlyOwner {
+        if (!listed[token]) revert Listed();
+        if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
+        _clearBind(token);
+        if (uint256(poolRef) >> 160 == 0) {
+            address pool = address(uint160(uint256(poolRef)));
+            _bindPool(token, pool);
+            poolOf[token] = pool;
+            emit TokenRebound(token, poolRef, false);
+        } else {
+            _bindV4(token, poolRef);
+            emit TokenRebound(token, poolRef, true);
+        }
+    }
+
     function _addToken(address token, bytes32 poolRef) internal {
         if (token == address(0) || token == weth || listed[token]) revert Listed();
         if (tokens.length >= 24) revert BadLen();
@@ -559,6 +593,7 @@ contract HoodxIndex {
         if (!((token == t0 && weth == t1) || (token == t1 && weth == t0))) revert BadPool();
         if (IERC20(token).decimals() != 18) revert BadPool();
         IUniV3Pool(pool).fee();
+        quoteOf[token] = weth;
     }
 
     function _bindV4(address token, bytes32 poolId) internal {
@@ -578,7 +613,11 @@ contract HoodxIndex {
         if (hashed != poolId) revert BadPool();
         if (token != c0 && token != c1) revert BadPool();
         address other = token == c0 ? c1 : c0;
-        if (other != weth && other != address(0)) revert BadPool();
+        if (other == weth || other == address(0)) {
+            quoteOf[token] = weth;
+        } else if (allowedQuote[other] && quoteBridgeV3[other] != address(0)) {
+            quoteOf[token] = other;
+        } else revert BadPool();
         if (IERC20(token).decimals() != 18) revert BadPool();
         (uint160 sqrtP, , , ) = IStateView(v4StateView).getSlot0(poolId);
         if (sqrtP == 0) revert BadPool();
@@ -598,6 +637,7 @@ contract HoodxIndex {
         delete poolIdOf[token];
         delete isV4[token];
         delete v4Key[token];
+        delete quoteOf[token];
         for (uint256 i; i < n; i++) {
             if (tokens[i] == token) {
                 tokens[i] = tokens[n - 1];
@@ -864,6 +904,18 @@ contract HoodxIndex {
 
     function _swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) internal {
         address listedTok = tokenIn == weth ? tokenOut : tokenIn;
+        address quote = quoteOf[listedTok];
+        if (quote != address(0) && quote != weth) {
+            if (tokenIn == weth && tokenOut == listedTok) {
+                _swapQuotedBuy(listedTok, quote, amountIn, amountOutMin);
+                return;
+            }
+            if (tokenOut == weth && tokenIn == listedTok) {
+                _swapQuotedSell(listedTok, quote, amountIn, amountOutMin);
+                return;
+            }
+            revert BadPair();
+        }
         if (isV4[listedTok]) {
             if (amountIn > uint256(uint128(type(int128).max))) revert Zero();
             IPoolManager(v4Manager).unlock(abi.encode(tokenIn, tokenOut, amountIn, amountOutMin));
@@ -893,7 +945,11 @@ contract HoodxIndex {
         if (msg.sender != v4Manager) revert NotManager();
         (address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) =
             abi.decode(data, (address, address, uint256, uint256));
-        address listedTok = tokenIn == weth ? tokenOut : tokenIn;
+        address listedTok;
+        if (tokenIn == weth) listedTok = tokenOut;
+        else if (tokenOut == weth) listedTok = tokenIn;
+        else if (listed[tokenOut]) listedTok = tokenOut;
+        else listedTok = tokenIn;
         if (!isV4[listedTok]) revert BadPair();
         PoolKey memory key = v4Key[listedTok];
         bool native = key.currency0 == address(0) || key.currency1 == address(0);
@@ -987,5 +1043,84 @@ contract HoodxIndex {
         uint256 assets = totalAssets();
         if (assets == 0) return;
         if (wethBuffer() * BPS_DENOM < assets * uint256(cashTargetBps)) revert CashFloor();
+    }
+
+    function _initRhQuotes() internal {
+        address spcx = 0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa;
+        address spy = 0x117cc2133c37b721f49de2a7a74833232b3b4c0c;
+        allowedQuote[spcx] = true;
+        quoteBridgeV3[spcx] = 0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e;
+        allowedQuote[spy] = true;
+        quoteBridgeV3[spy] = 0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e;
+    }
+
+    function _clearBind(address token) internal {
+        delete poolOf[token];
+        delete poolIdOf[token];
+        delete isV4[token];
+        delete v4Key[token];
+        delete quoteOf[token];
+    }
+
+    function _spotQuotePerToken(address token) internal view returns (uint256) {
+        PoolKey memory key = v4Key[token];
+        (, int24 tick, , ) = IStateView(v4StateView).getSlot0(poolIdOf[token]);
+        return UniTwap.quoteAtTick(tick, 1e18, token == key.currency0);
+    }
+
+    function _swapV4Exact(address tokenIn, address tokenOut, uint256 amountIn, uint256 minOut)
+        internal
+        returns (uint256 got)
+    {
+        bytes memory ret = IPoolManager(v4Manager).unlock(abi.encode(tokenIn, tokenOut, amountIn, minOut));
+        got = abi.decode(ret, (uint256));
+    }
+
+    function _swapQuotedBuy(address token, address quote, uint256 wethIn, uint256 minTokenOut) internal {
+        address bridge = quoteBridgeV3[quote];
+        if (bridge == address(0)) revert BadPool();
+        uint256 pxQuote = priceWethWad(quote);
+        uint256 quotedQuote = (wethIn * 1e18) / pxQuote;
+        uint256 quoteFloor = minOutFloor(quotedQuote);
+        IERC20(weth).approve(swapRouter, wethIn);
+        uint256 quoteGot = ISwapRouter02(swapRouter).exactInputSingle(
+            ISwapRouter02.ExactInputSingleParams({
+                tokenIn: weth,
+                tokenOut: quote,
+                fee: IUniV3Pool(bridge).fee(),
+                recipient: address(this),
+                amountIn: wethIn,
+                amountOutMinimum: quoteFloor,
+                sqrtPriceLimitX96: 0
+            })
+        );
+        IERC20(weth).approve(swapRouter, 0);
+        _swapV4Exact(quote, token, quoteGot, minTokenOut);
+    }
+
+    function _swapQuotedSell(address token, address quote, uint256 tokenIn, uint256 minWethOut) internal {
+        address bridge = quoteBridgeV3[quote];
+        if (bridge == address(0)) revert BadPool();
+        uint256 quotedQuote = _spotQuotePerToken(token);
+        quotedQuote = (tokenIn * quotedQuote) / 1e18;
+        uint256 quoteFloor = minOutFloor(quotedQuote);
+        uint256 quoteGot = _swapV4Exact(token, quote, tokenIn, quoteFloor);
+        uint256 pxQuote = priceWethWad(quote);
+        uint256 quotedWeth = (quoteGot * pxQuote) / 1e18;
+        uint256 wethFloor = minOutFloor(quotedWeth);
+        if (wethFloor < minWethOut) revert Slippage();
+        IERC20(quote).approve(swapRouter, quoteGot);
+        ISwapRouter02(swapRouter).exactInputSingle(
+            ISwapRouter02.ExactInputSingleParams({
+                tokenIn: quote,
+                tokenOut: weth,
+                fee: IUniV3Pool(bridge).fee(),
+                recipient: address(this),
+                amountIn: quoteGot,
+                amountOutMinimum: minWethOut,
+                sqrtPriceLimitX96: 0
+            })
+        );
+        IERC20(quote).approve(swapRouter, 0);
     }
 }

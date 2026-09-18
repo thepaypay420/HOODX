@@ -35,7 +35,7 @@ export function isV3WethPool(c: Coin) {
   );
 }
 
-/** Uni V4 pool quoted in native ETH or WETH. Skip USDG / SPY / SPCX. */
+/** Uni V4 pool quoted in native ETH or WETH. */
 export function isV4EthWethPool(c: Coin) {
   const quote = (c.buyQuote || "").toUpperCase();
   const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
@@ -46,12 +46,23 @@ export function isV4EthWethPool(c: Coin) {
   );
 }
 
+/** Uni V4 pool quoted in RH synthetics (SPCX, SPY). WETH bridge is on-chain. */
+export function isV4QuotePool(c: Coin) {
+  const quote = (c.buyQuote || "").toUpperCase();
+  const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
+  return (
+    Boolean(c.buyPool && isBytes32(c.buyPool)) &&
+    (quote === "SPCX" || quote === "SPY") &&
+    labels.includes("v4")
+  );
+}
+
 /** Vault NAV is 1e18-wad. NET is 9 decimals; bind reverts. */
 const NON_WAD = new Set(["0xca9c78dd337a67f6e0077f65f5e9218719d30edf"]);
 
 export function isIndexPool(c: Coin) {
   if (NON_WAD.has(c.token.toLowerCase())) return false;
-  return isV3WethPool(c) || isV4EthWethPool(c);
+  return isV3WethPool(c) || isV4EthWethPool(c) || isV4QuotePool(c);
 }
 
 /** Pad a V3 pool address to bytes32; pass a V4 pool id through. */

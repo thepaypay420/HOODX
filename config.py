@@ -43,3 +43,8 @@ RPC_URL = "https://rpc.mainnet.chain.robinhood.com"
 EXPLORER = "https://robinhoodchain.blockscout.com"
 
 QUOTE_ETH = {"WETH", "ETH"}
+SPCX = "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa"
+SPY = "0x117cc2133c37b721f49de2a7a74833232b3b4c0c"
+SPCX_WETH_V3 = "0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e"
+SPY_WETH_V3 = "0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e"
+PROMETHEUS_SPCX_V4 = "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8"

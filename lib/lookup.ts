@@ -67,13 +67,23 @@ async function pairsFor(token: string): Promise<DexPair[]> {
   return [...seen.values()];
 }
 
+const SYN_QUOTE = new Set(["SPCX", "SPY"]);
+
+function synthQuote(p: DexPair) {
+  const qsym = (p.quoteToken?.symbol || "").toUpperCase();
+  return SYN_QUOTE.has(qsym);
+}
+
 function pickPool(pairs: DexPair[], token: string): DexPair | null {
   const scored = pairs
     .filter((p) => String(p.chainId || "").toLowerCase() === "robinhood")
     .filter((p) => (p.baseToken?.address || "").toLowerCase() === token)
-    .filter((p) => ethQuote(p) && kind(p) && num(p.liquidity?.usd) > 0)
+    .filter((p) => kind(p) && num(p.liquidity?.usd) > 0)
     .sort((a, b) => num(b.liquidity?.usd) - num(a.liquidity?.usd));
-  return scored[0] || null;
+  const synth = scored.filter((p) => synthQuote(p));
+  if (synth.length) return synth[0];
+  const eth = scored.filter((p) => ethQuote(p));
+  return eth[0] || null;
 }
 
 /** Resolve a Robinhood token to a vault-bindable Uni V3 WETH or V4 ETH/WETH pool. */
@@ -128,7 +138,7 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
     buyPool: buy.pairAddress.toLowerCase(),
     buyLabels: labels,
   };
-  if (!isIndexPool(coin)) throw new Error("Pool must be Uni V3 WETH or V4 ETH/WETH.");
+  if (!isIndexPool(coin)) throw new Error("Pool must be Uni V3 WETH, V4 ETH/WETH, or V4 SPCX/SPY.");
   rememberCoin(coin);
   return coin;
 }
