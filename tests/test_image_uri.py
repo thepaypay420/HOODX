@@ -42,4 +42,4 @@ class ImageUriTest(unittest.TestCase):
         self.assertIn("address public immutable swapLogic", INDEX)
         self.assertIn("address public immutable implementation", FACTORY)
         self.assertIn("implementation_", FACTORY)
-        self.assertNotIn("new HoodxIndex()", FACTORY)
+        self.assertIn("function warmOracleRaw(address token) external payable", SWAP)

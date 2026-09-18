@@ -19,7 +19,7 @@ contract HoodxSwap is HoodxStorage {
         implLock = true;
     }
 
-    function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) external {
+    function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) external payable {
         address listedTok = tokenIn == weth ? tokenOut : tokenIn;
         address quote = quoteOf[listedTok];
         if (quote != address(0) && quote != weth) {
@@ -43,7 +43,7 @@ contract HoodxSwap is HoodxStorage {
         _swapV3Exact(tokenIn, tokenOut, pool, amountIn, amountOutMin);
     }
 
-    function unlockCallback(bytes calldata data) external returns (bytes memory) {
+    function unlockCallback(bytes calldata data) external payable returns (bytes memory) {
         if (msg.sender != v4Manager) revert NotManager();
         (address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) =
             abi.decode(data, (address, address, uint256, uint256));
@@ -98,15 +98,15 @@ contract HoodxSwap is HoodxStorage {
         return abi.encode(got);
     }
 
-    function addTokenRaw(address token, bytes32 poolRef) external {
+    function addTokenRaw(address token, bytes32 poolRef) external payable {
         _addToken(token, poolRef);
     }
 
-    function removeTokenRaw(address token) external {
+    function removeTokenRaw(address token) external payable {
         _removeToken(token);
     }
 
-    function rebindTokenRaw(address token, bytes32 poolRef) external {
+    function rebindTokenRaw(address token, bytes32 poolRef) external payable {
         if (!listed[token]) revert Listed();
         if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
         _clearBind(token);
@@ -121,11 +121,11 @@ contract HoodxSwap is HoodxStorage {
         }
     }
 
-    function initQuotes() external {
+    function initQuotes() external payable {
         _initRhQuotes();
     }
 
-    function setQuoteBridgeRaw(address quote, address v3Bridge) external {
+    function setQuoteBridgeRaw(address quote, address v3Bridge) external payable {
         if (quote == address(0) || v3Bridge == address(0) || quote == weth) revert Zero();
         uint8 dec = IERC20(quote).decimals();
         if (quote == USDG) {
@@ -142,11 +142,12 @@ contract HoodxSwap is HoodxStorage {
         emit QuoteBridgeSet(quote, v3Bridge);
     }
 
-    function setImageURIRaw(string calldata uri) external {
+    function setImageURIRaw(string calldata uri) external payable {
         _setImageURI(uri);
     }
 
-    function warmOracleRaw(address token) external {
+    /// @dev Payable: Index deposit is payable and delegatecall preserves msg.value.
+    function warmOracleRaw(address token) external payable {
         if (isV4[token]) return;
         address pool = poolOf[token];
         if (pool == address(0)) revert Listed();

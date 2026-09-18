@@ -190,7 +190,7 @@ def main() -> None:
     floor = min_shares_floor(shares, 300)
     print(f"deposit 0.13 ETH previewShares={shares / 1e18:.6f} minShares={floor / 1e18:.6f}")
     dep = vault.functions.deposit(floor).build_transaction(
-        {"from": acct.address, "value": DEPOSIT_WEI}
+        {"from": acct.address, "value": DEPOSIT_WEI, "gas": 8_000_000}
     )
     send(w3, acct, dep, "deposit")
     held = int(vault.functions.balanceOf(acct.address).call())
