@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from weights import allocate, usd_sleeves
+from weights import allocate, list_target_bps, usd_sleeves
 
 
 def _uni(*rows):
@@ -72,6 +72,17 @@ class WeightTest(unittest.TestCase):
         self.assertAlmostEqual(plan["weightSum"], 1.0, places=4)
         pons = next(s for s in plan["sleeves"] if s["id"] == "PONS")
         self.assertLessEqual(pons["weight"], 0.10 + 1e-9)
+
+    def test_list_target_bps_keeps_cash_and_caps_pons(self):
+        plan = allocate()
+        listed = [s["token"] for s in plan["sleeves"] if s.get("token")]
+        who, bps = list_target_bps(listed, 400.0, 16 * 10**16, 4 * 10**15, 2500, plan)
+        by = {t.lower(): b for t, b in zip(who, bps)}
+        pons = next(s for s in plan["sleeves"] if s["id"] == "PONS")
+        self.assertIn(pons["token"], by)
+        self.assertLessEqual(by[pons["token"]], 1000)
+        self.assertLessEqual(sum(bps), 7500)
+        self.assertGreaterEqual(len(who), 2)
 
 
 if __name__ == "__main__":

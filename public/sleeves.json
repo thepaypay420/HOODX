@@ -258,20 +258,20 @@
     }
   ],
   "book": {
-    "navUsd": 200.0,
+    "navUsd": 322.0,
     "minSleeveUsd": 10.0,
     "cashTarget": 0.25,
-    "cashWeight": 0.263251,
-    "cashUsd": 52.65,
-    "nActive": 10,
-    "nSkipped": 7,
-    "scaledForCash": false,
+    "cashWeight": 0.363561,
+    "cashUsd": 117.07,
+    "nActive": 12,
+    "nSkipped": 5,
+    "scaledForCash": true,
     "active": [
       {
         "id": "PONS",
         "symbol": "PONS",
         "token": "0x39dbed3a2bd333467115de45665cc57f813c4571",
-        "weight": 0.099847,
+        "weight": 0.077201,
         "rawSqrt": 0.229427,
         "mcapUsd": 387045669.0,
         "buyTvlUsd": 5874974.0,
@@ -281,14 +281,14 @@
         "buyPool": "0xed50bdeea8adc232f159486192a4157281d722ff",
         "buyQuote": "WETH",
         "policyWeight": 0.099847,
-        "policyUsd": 19.97,
-        "usd": 19.97
+        "policyUsd": 32.15,
+        "usd": 24.86
       },
       {
         "id": "AI",
         "symbol": "AI",
         "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
-        "weight": 0.099847,
+        "weight": 0.077201,
         "rawSqrt": 0.190198,
         "mcapUsd": 266001490.0,
         "buyTvlUsd": 4374086.0,
@@ -298,14 +298,14 @@
         "buyPool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
         "buyQuote": "WETH",
         "policyWeight": 0.099847,
-        "policyUsd": 19.97,
-        "usd": 19.97
+        "policyUsd": 32.15,
+        "usd": 24.86
       },
       {
         "id": "CASHCAT",
         "symbol": "CASHCAT",
         "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
-        "weight": 0.099847,
+        "weight": 0.077201,
         "rawSqrt": 0.151563,
         "mcapUsd": 168911905.0,
         "buyTvlUsd": 4965109.0,
@@ -315,14 +315,14 @@
         "buyPool": "0xa70fc67c9f69da90b63a0e4c05d229954574e313",
         "buyQuote": "WETH",
         "policyWeight": 0.099847,
-        "policyUsd": 19.97,
-        "usd": 19.97
+        "policyUsd": 32.15,
+        "usd": 24.86
       },
       {
         "id": "WALLET",
         "symbol": "WALLET",
         "token": "0x0339f5459fc690ac85f1782e15782a151b4a9e1b",
-        "weight": 0.087772,
+        "weight": 0.067865,
         "rawSqrt": 0.08321,
         "mcapUsd": 50912514.0,
         "buyTvlUsd": 3463417.0,
@@ -332,14 +332,14 @@
         "buyPool": "0x9501a20bedb8bea0798fe5d4c411f5e270965d49",
         "buyQuote": "WETH",
         "policyWeight": 0.087772,
-        "policyUsd": 17.55,
-        "usd": 17.55
+        "policyUsd": 28.26,
+        "usd": 21.85
       },
       {
         "id": "STONKBROKER",
         "symbol": "STONKBROKER",
         "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
-        "weight": 0.069162,
+        "weight": 0.053476,
         "rawSqrt": 0.057333,
         "mcapUsd": 24170597.0,
         "buyTvlUsd": 2570367.0,
@@ -349,14 +349,14 @@
         "buyPool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
         "buyQuote": "ETH",
         "policyWeight": 0.069162,
-        "policyUsd": 13.83,
-        "usd": 13.83
+        "policyUsd": 22.27,
+        "usd": 17.22
       },
       {
         "id": "Index",
         "symbol": "Index",
         "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
-        "weight": 0.068805,
+        "weight": 0.0532,
         "rawSqrt": 0.056837,
         "mcapUsd": 23754248.0,
         "buyTvlUsd": 780927.0,
@@ -366,14 +366,14 @@
         "buyPool": "0xd29893ffac8b29ec4db2cfe0cdb3fe1377c028ff",
         "buyQuote": "WETH",
         "policyWeight": 0.068805,
-        "policyUsd": 13.76,
-        "usd": 13.76
+        "policyUsd": 22.16,
+        "usd": 17.13
       },
       {
         "id": "DELTA",
         "symbol": "DELTA",
         "token": "0xe8ffd7e24187f72afb08d75b1bb13088a989a791",
-        "weight": 0.05827,
+        "weight": 0.045054,
         "rawSqrt": 0.042189,
         "mcapUsd": 13087698.0,
         "buyTvlUsd": 895445.0,
@@ -383,14 +383,14 @@
         "buyPool": "0xd64fbda67e1015df43fa5e49f02ca844729e5f94",
         "buyQuote": "WETH",
         "policyWeight": 0.05827,
-        "policyUsd": 11.65,
-        "usd": 11.65
+        "policyUsd": 18.76,
+        "usd": 14.51
       },
       {
         "id": "HOOKR",
         "symbol": "HOOKR",
         "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
-        "weight": 0.051139,
+        "weight": 0.03954,
         "rawSqrt": 0.032273,
         "mcapUsd": 7658776.0,
         "buyTvlUsd": 623674.0,
@@ -400,14 +400,14 @@
         "buyPool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
         "buyQuote": "ETH",
         "policyWeight": 0.051139,
-        "policyUsd": 10.23,
-        "usd": 10.23
+        "policyUsd": 16.47,
+        "usd": 12.73
       },
       {
         "id": "MEME",
         "symbol": "MEME",
         "token": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
-        "weight": 0.051124,
+        "weight": 0.039529,
         "rawSqrt": 0.032253,
         "mcapUsd": 26982917.0,
         "buyTvlUsd": 133107.0,
@@ -417,14 +417,14 @@
         "buyPool": "0xe2c12a7379706a291cadaaec1d22458be2f7239d",
         "buyQuote": "WETH",
         "policyWeight": 0.051124,
-        "policyUsd": 10.22,
-        "usd": 10.22
+        "policyUsd": 16.46,
+        "usd": 12.73
       },
       {
         "id": "QUOTRON",
         "symbol": "QUOTRON",
         "token": "0x5a86828efd322bfb16d93cfed16ee9bc14940d7f",
-        "weight": 0.050936,
+        "weight": 0.039384,
         "rawSqrt": 0.031991,
         "mcapUsd": 7525423.0,
         "buyTvlUsd": 396848.0,
@@ -434,16 +434,14 @@
         "buyPool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
         "buyQuote": "WETH",
         "policyWeight": 0.050936,
-        "policyUsd": 10.19,
-        "usd": 10.19
-      }
-    ],
-    "skipped": [
+        "policyUsd": 16.4,
+        "usd": 12.68
+      },
       {
         "id": "website",
         "symbol": "website",
         "token": "0x0762c1708f0d23f86b29d6b857121ff7df357506",
-        "weight": 0.0,
+        "weight": 0.035564,
         "rawSqrt": 0.025122,
         "mcapUsd": 4640730.0,
         "buyTvlUsd": 262549.0,
@@ -453,15 +451,14 @@
         "buyPool": "0x6d489e07d7fe2b4bc5749f75d56337888b68a34a",
         "buyQuote": "WETH",
         "policyWeight": 0.045996,
-        "policyUsd": 9.2,
-        "usd": 0.0,
-        "reason": "below_floor"
+        "policyUsd": 14.81,
+        "usd": 11.45
       },
       {
         "id": "SHROOM",
         "symbol": "SHROOM",
         "token": "0xab093def657f15df31b33922a95e047add645b29",
-        "weight": 0.0,
+        "weight": 0.031224,
         "rawSqrt": 0.017319,
         "mcapUsd": 7290721.0,
         "buyTvlUsd": 250557.0,
@@ -471,7 +468,26 @@
         "buyPool": "0x778a632fdd85577efe9cfce4a2c9ac91b9decdb24c351f9b56e25d38fbe587b4",
         "buyQuote": "USDG",
         "policyWeight": 0.040383,
-        "policyUsd": 8.08,
+        "policyUsd": 13.0,
+        "usd": 10.05
+      }
+    ],
+    "skipped": [
+      {
+        "id": "PROMETHEUS",
+        "symbol": "PROMETHEUS",
+        "token": "0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261",
+        "weight": 0.0,
+        "rawSqrt": 0.001395,
+        "mcapUsd": 534901.0,
+        "buyTvlUsd": 74356.0,
+        "vol24Usd": 37201.0,
+        "hops": 2,
+        "buyDex": "uniswap",
+        "buyPool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
+        "buyQuote": "SPCX",
+        "policyWeight": 0.03,
+        "policyUsd": 9.66,
         "usd": 0.0,
         "reason": "below_floor"
       },
@@ -489,9 +505,9 @@
         "buyPool": "0xd1ac85b1912b8ef1288a7ce001029ebcffce7516dbf25182c4f3ba3e50f58e15",
         "buyQuote": "ETH",
         "policyWeight": 0.040039,
-        "policyUsd": 8.01,
+        "policyUsd": 12.89,
         "usd": 0.0,
-        "reason": "below_floor"
+        "reason": "below_floor_after_cash"
       },
       {
         "id": "UP",
@@ -507,9 +523,9 @@
         "buyPool": "0x4ef94cd1ab45ebbb50f9e73cd6e45c5027caa3f7",
         "buyQuote": "WETH",
         "policyWeight": 0.036564,
-        "policyUsd": 7.31,
+        "policyUsd": 11.77,
         "usd": 0.0,
-        "reason": "below_floor"
+        "reason": "below_floor_after_cash"
       },
       {
         "id": "BOW",
@@ -525,9 +541,9 @@
         "buyPool": "0xdba909ac1600a59685928cf317fb953d518d405b4748371889e3cb2932adf4c2",
         "buyQuote": "SPY",
         "policyWeight": 0.03625,
-        "policyUsd": 7.25,
+        "policyUsd": 11.67,
         "usd": 0.0,
-        "reason": "below_floor"
+        "reason": "below_floor_after_cash"
       },
       {
         "id": "HARMONIC",
@@ -543,30 +559,12 @@
         "buyPool": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
         "buyQuote": "ETH",
         "policyWeight": 0.034019,
-        "policyUsd": 6.8,
+        "policyUsd": 10.95,
         "usd": 0.0,
-        "reason": "below_floor"
-      },
-      {
-        "id": "PROMETHEUS",
-        "symbol": "PROMETHEUS",
-        "token": "0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261",
-        "weight": 0.0,
-        "rawSqrt": 0.001395,
-        "mcapUsd": 534901.0,
-        "buyTvlUsd": 74356.0,
-        "vol24Usd": 37201.0,
-        "hops": 2,
-        "buyDex": "uniswap",
-        "buyPool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
-        "buyQuote": "SPCX",
-        "policyWeight": 0.03,
-        "policyUsd": 6.0,
-        "usd": 0.0,
-        "reason": "below_floor"
+        "reason": "below_floor_after_cash"
       }
     ],
-    "activeWeightSum": 0.736749,
+    "activeWeightSum": 0.636439,
     "issueFeeBps": 50,
     "redeemFeeBps": 0
   },
@@ -584,7 +582,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xed50bdeea8adc232f159486192a4157281d722ff",
       "buyQuote": "WETH",
-      "usd": 19.97
+      "usd": 32.15
     },
     {
       "id": "AI",
@@ -599,7 +597,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
       "buyQuote": "WETH",
-      "usd": 19.97
+      "usd": 32.15
     },
     {
       "id": "CASHCAT",
@@ -614,7 +612,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xa70fc67c9f69da90b63a0e4c05d229954574e313",
       "buyQuote": "WETH",
-      "usd": 19.97
+      "usd": 32.15
     },
     {
       "id": "WALLET",
@@ -629,7 +627,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x9501a20bedb8bea0798fe5d4c411f5e270965d49",
       "buyQuote": "WETH",
-      "usd": 17.55
+      "usd": 28.26
     },
     {
       "id": "STONKBROKER",
@@ -644,7 +642,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
       "buyQuote": "ETH",
-      "usd": 13.83
+      "usd": 22.27
     },
     {
       "id": "Index",
@@ -659,7 +657,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xd29893ffac8b29ec4db2cfe0cdb3fe1377c028ff",
       "buyQuote": "WETH",
-      "usd": 13.76
+      "usd": 22.16
     },
     {
       "id": "DELTA",
@@ -674,7 +672,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xd64fbda67e1015df43fa5e49f02ca844729e5f94",
       "buyQuote": "WETH",
-      "usd": 11.65
+      "usd": 18.76
     },
     {
       "id": "HOOKR",
@@ -689,7 +687,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
       "buyQuote": "ETH",
-      "usd": 10.23
+      "usd": 16.47
     },
     {
       "id": "MEME",
@@ -704,7 +702,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xe2c12a7379706a291cadaaec1d22458be2f7239d",
       "buyQuote": "WETH",
-      "usd": 10.22
+      "usd": 16.46
     },
     {
       "id": "QUOTRON",
@@ -719,7 +717,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
       "buyQuote": "WETH",
-      "usd": 10.19
+      "usd": 16.4
     },
     {
       "id": "website",
@@ -734,7 +732,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x6d489e07d7fe2b4bc5749f75d56337888b68a34a",
       "buyQuote": "WETH",
-      "usd": 9.2
+      "usd": 14.81
     },
     {
       "id": "SHROOM",
@@ -749,7 +747,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x778a632fdd85577efe9cfce4a2c9ac91b9decdb24c351f9b56e25d38fbe587b4",
       "buyQuote": "USDG",
-      "usd": 8.08
+      "usd": 13.0
     },
     {
       "id": "NET",
@@ -764,7 +762,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xd1ac85b1912b8ef1288a7ce001029ebcffce7516dbf25182c4f3ba3e50f58e15",
       "buyQuote": "ETH",
-      "usd": 8.01
+      "usd": 12.89
     },
     {
       "id": "UP",
@@ -779,7 +777,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x4ef94cd1ab45ebbb50f9e73cd6e45c5027caa3f7",
       "buyQuote": "WETH",
-      "usd": 7.31
+      "usd": 11.77
     },
     {
       "id": "BOW",
@@ -794,7 +792,7 @@
       "buyDex": "uniswap",
       "buyPool": "0xdba909ac1600a59685928cf317fb953d518d405b4748371889e3cb2932adf4c2",
       "buyQuote": "SPY",
-      "usd": 7.25
+      "usd": 11.67
     },
     {
       "id": "HARMONIC",
@@ -809,7 +807,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
       "buyQuote": "ETH",
-      "usd": 6.8
+      "usd": 10.95
     },
     {
       "id": "PROMETHEUS",
@@ -824,7 +822,7 @@
       "buyDex": "uniswap",
       "buyPool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
       "buyQuote": "SPCX",
-      "usd": 6.0
+      "usd": 9.66
     }
   ]
 }

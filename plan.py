@@ -24,13 +24,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--write-web",
         action="store_true",
-        help="Write rh-index/web/public/sleeves.json for the Vercel app",
+        help="Write public/sleeves.json for the HUD 696-list column",
     )
     args = parser.parse_args(argv)
     plan = allocate()
     book = active_book(args.nav, min_sleeve_usd=args.min_sleeve, plan=plan)
     if args.write_web:
-        out = _ROOT / "web" / "public" / "sleeves.json"
+        out = _ROOT / "public" / "sleeves.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             **plan,

@@ -274,3 +274,50 @@ def active_book(
         "issueFeeBps": ISSUE_FEE_BPS,
         "redeemFeeBps": REDEEM_FEE_BPS,
     }
+
+
+def list_target_bps(
+    listed: list[str],
+    nav_usd: float,
+    nav_wei: int,
+    min_sleeve_wei: int,
+    cash_target_bps: int = 2500,
+    plan: dict[str, Any] | None = None,
+) -> tuple[list[str], list[int]]:
+    """On-chain setTargets bps from the 696 capped-sqrt book. Same as lib/weights.ts."""
+    book = active_book(
+        max(float(nav_usd), 1.0),
+        min_sleeve_usd=MIN_SLEEVE_USD,
+        cash_target=int(cash_target_bps) / 10_000,
+        plan=plan,
+    )
+    want = {(s.get("token") or "").lower(): s for s in book["active"]}
+    who: list[str] = []
+    bps: list[int] = []
+    used = 0
+    nav_w = int(nav_wei)
+    min_w = int(min_sleeve_wei)
+    for t in listed:
+        row = want.get(str(t).lower())
+        b = int(float(row["weight"]) * 10_000) if row else 0
+        if b > 0 and nav_w > 0 and (nav_w * b) // 10_000 < min_w:
+            b = 0
+        if b <= 0:
+            continue
+        who.append(t)
+        bps.append(b)
+        used += b
+    cap = 10_000 - int(cash_target_bps)
+    if used > cap and used > 0:
+        scale = cap / used
+        bps = [max(0, int(b * scale)) for b in bps]
+    kept_who: list[str] = []
+    kept_bps: list[int] = []
+    for t, b in zip(who, bps):
+        if b <= 0:
+            continue
+        if nav_w > 0 and (nav_w * b) // 10_000 < min_w:
+            continue
+        kept_who.append(t)
+        kept_bps.append(b)
+    return kept_who, kept_bps
