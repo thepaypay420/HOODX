@@ -632,29 +632,30 @@ body {
 }
 
 .landing-stage {
+  --landing-coin-x: 28%;
+  --landing-coin-y: 46%;
   position: relative;
-  min-height: min(72vw, 420px);
+  min-height: 340px;
   margin-inline: auto;
-  max-width: min(100%, 480px);
+  max-width: 420px;
   width: 100%;
-}
-
-@media (min-width: 480px) {
-  .landing-stage {
-    min-height: 400px;
-  }
 }
 
 @media (min-width: 1024px) {
   .landing-stage {
-    min-height: 480px;
+    --landing-coin-x: 30%;
+    min-height: 420px;
     max-width: none;
   }
 }
 
 .landing-stage-glow {
   position: absolute;
-  inset: 8% 0 12%;
+  left: var(--landing-coin-x);
+  top: var(--landing-coin-y);
+  width: min(58vw, 220px);
+  height: min(58vw, 220px);
+  translate: -50% -50%;
   background: radial-gradient(circle at 50% 50%, rgba(31, 212, 198, 0.28), transparent 62%);
   filter: blur(24px);
   animation: landing-pulse 6s ease-in-out infinite;
@@ -662,8 +663,8 @@ body {
 
 .landing-orbit {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: var(--landing-coin-x);
+  top: var(--landing-coin-y);
   border: 1px solid rgba(31, 212, 198, 0.12);
   border-radius: 50%;
   translate: -50% -50%;
@@ -680,13 +681,6 @@ body {
   height: 68%;
   border-color: rgba(31, 212, 198, 0.08);
   animation: landing-spin 32s linear infinite reverse;
-}
-
-.landing-orbit-c {
-  width: 96%;
-  height: 96%;
-  border-color: rgba(31, 212, 198, 0.05);
-  animation: landing-spin 64s linear infinite;
 }
 
 .landing-basket-web {
@@ -707,8 +701,8 @@ body {
 
 .landing-coin {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: var(--landing-coin-x);
+  top: var(--landing-coin-y);
   z-index: 2;
   display: grid;
   place-items: center;
@@ -742,12 +736,12 @@ body {
 .landing-float-chip {
   position: absolute;
   z-index: 3;
-  padding: 0.38rem 0.62rem;
+  padding: 0.45rem 0.75rem;
   border-radius: 999px;
   border: 1px solid rgba(238, 248, 246, 0.12);
   background: rgba(16, 24, 26, 0.82);
   backdrop-filter: blur(10px);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--paper);
@@ -755,13 +749,6 @@ body {
   white-space: nowrap;
   transform: translate(-50%, -50%);
   animation: landing-float-chip 4.5s ease-in-out infinite;
-}
-
-@media (min-width: 480px) {
-  .landing-float-chip {
-    padding: 0.45rem 0.75rem;
-    font-size: 11px;
-  }
 }
 
 .landing-script {

@@ -2,25 +2,19 @@ import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { GEN0_SLUG } from "@/lib/curators";
 
-/** Basket chips around the HOODX coin — x/y are % of the stage (0–100). */
+/** Basket chips to the right of the HOODX coin — x/y are % of the stage (0–100). */
 const FLOAT_TOKENS = [
-  { label: "PONS", x: 4, y: 8, delay: "0s" },
-  { label: "UP", x: 22, y: 4, delay: "0.5s" },
-  { label: "website", x: 46, y: 2, delay: "1.1s" },
-  { label: "MEME", x: 68, y: 6, delay: "0.8s" },
-  { label: "AI", x: 88, y: 14, delay: "1.4s" },
-  { label: "CASHCAT", x: 94, y: 32, delay: "1.7s" },
-  { label: "STONKBROKER", x: 90, y: 50, delay: "2s" },
-  { label: "HOOKR", x: 84, y: 68, delay: "1.2s" },
-  { label: "696X", x: 72, y: 84, delay: "1s" },
-  { label: "DELTA", x: 48, y: 92, delay: "0.6s" },
-  { label: "WALLET", x: 24, y: 88, delay: "1.9s" },
-  { label: "ETH", x: 2, y: 70, delay: "0.4s" },
-  { label: "Index", x: 0, y: 46, delay: "1.5s" },
-  { label: "SHROOM", x: 8, y: 24, delay: "2.2s" },
+  { label: "MEME", x: 66, y: 8, delay: "0.8s" },
+  { label: "PONS", x: 84, y: 18, delay: "0s" },
+  { label: "AI", x: 72, y: 30, delay: "1.4s" },
+  { label: "CASHCAT", x: 90, y: 42, delay: "1.7s" },
+  { label: "STONKBROKER", x: 76, y: 54, delay: "2s" },
+  { label: "696X", x: 88, y: 66, delay: "1s" },
+  { label: "HOOKR", x: 70, y: 78, delay: "1.2s" },
 ];
 
-const BASKET_CENTER = { x: 50, y: 46 };
+/** Matches --landing-coin-x / --landing-coin-y in globals.css */
+const BASKET_CENTER = { x: 28, y: 46 };
 
 const VALUE_PROPS = [
   {
@@ -97,7 +91,6 @@ export function HomeLanding() {
             </svg>
             <div className="landing-orbit landing-orbit-a" aria-hidden />
             <div className="landing-orbit landing-orbit-b" aria-hidden />
-            <div className="landing-orbit landing-orbit-c" aria-hidden />
             {FLOAT_TOKENS.map((t) => (
               <div
                 key={t.label}
