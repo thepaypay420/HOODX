@@ -12,6 +12,22 @@ export function pctDelta(now: bigint, then: bigint): number | null {
   return (n - t) / t;
 }
 
+/** Vault tile ROI. When ETH/USD is live, match the $100 → $X / share hint; else ETH vs genesis peg. */
+export function vaultRoiPct(
+  sharePriceWei: bigint,
+  genesisWei: bigint,
+  ethUsd?: number | null,
+  usdPerShare = 100,
+): number | null {
+  if (sharePriceWei <= 0n || genesisWei <= 0n) return null;
+  if (ethUsd && ethUsd > 0) {
+    const shareUsd = Number(formatEtherSafe(sharePriceWei)) * ethUsd;
+    if (!Number.isFinite(shareUsd) || usdPerShare <= 0) return null;
+    return (shareUsd - usdPerShare) / usdPerShare;
+  }
+  return pctDelta(sharePriceWei, genesisWei);
+}
+
 export function toneOf(pct: number | null): "up" | "down" | "flat" {
   if (pct == null) return "flat";
   if (pct > 0.0005) return "up";

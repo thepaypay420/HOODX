@@ -19,7 +19,18 @@ import {
   USD_PER_SHARE,
   WETH,
 } from "@/lib/config";
-import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta, shortAddr, toneOf } from "@/lib/format";
+import {
+  fmtEth,
+  fmtPct,
+  fmtShares,
+  fmtUsd,
+  formatEtherSafe,
+  isAddress,
+  pctDelta,
+  shortAddr,
+  toneOf,
+  vaultRoiPct,
+} from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { activeBook, issueSplit, type Sleeve } from "@/lib/weights";
 import { hydrateVaultCoins, formatTargetPct } from "@/lib/vaultCoins";
@@ -244,7 +255,7 @@ export function VaultDesk({
     snap && snap.assets > 0n ? Number(snap.buffer) / Number(snap.assets) : null;
   const sharePxEth = snap && snap.sharePrice > 0n ? Number(formatEtherSafe(snap.sharePrice)) : 0;
   const userRoi = snap ? pctDelta(snap.userValue, snap.userCost) : null;
-  const vaultRoi = snap ? pctDelta(snap.sharePrice, snap.genesis) : null;
+  const vaultRoi = snap ? vaultRoiPct(snap.sharePrice, snap.genesis, ethUsd, USD_PER_SHARE) : null;
   const book = useMemo(
     () => (sleeves.length ? activeBook(sleeves, displayNavUsd || 200, MIN_SLEEVE_USD, CASH_TARGET) : null),
     [sleeves, displayNavUsd],
