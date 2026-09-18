@@ -22,6 +22,7 @@ import {
 } from "@/lib/curator";
 import { fmtPct, fmtUsdSleeve, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
 import { sleeveWethWei } from "@/lib/sleeveValue";
+import { hydrateVaultCoins } from "@/lib/vaultCoins";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { type Sleeve } from "@/lib/weights";
 import snapshot from "../public/sleeves.json";
@@ -69,6 +70,7 @@ export function CuratorBook({
       publicClient.readContract({ address: v, abi: vaultAbi, functionName: "cashTargetBps" }),
     ]);
     const addrs = (list as Address[]) || [];
+    await hydrateVaultCoins(v, addrs.map((a) => a.toLowerCase()));
     setNavWei(nav);
     setMinSleeveWei(minSleeve);
     setCashBps(Number(cashTarget));

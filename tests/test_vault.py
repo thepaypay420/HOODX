@@ -574,6 +574,17 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn("isEmptied696x", client)
         self.assertIn("if (gen0 && isEmptied696x(addr)) return;", client)
 
+    def test_vault_coin_hydration_shipped(self):
+        here = Path(__file__).resolve().parents[1]
+        src = (here / "lib" / "vaultCoins.ts").read_text()
+        self.assertIn("hydrateVaultCoins", src)
+        self.assertIn("resolveVaultCoin", src)
+        self.assertIn("formatTargetPct", src)
+        desk = (here / "components" / "VaultDesk.tsx").read_text()
+        self.assertIn("hydrateVaultCoins", desk)
+        card = (here / "components" / "IndexCard.tsx").read_text()
+        self.assertIn("stashVaultCoin", card)
+
     def test_curator_book_panel_shipped(self):
         here = Path(__file__).resolve().parents[1]
         owner = (here / "components" / "OwnerDesk.tsx").read_text()

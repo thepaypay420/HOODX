@@ -23,6 +23,7 @@ import {
 import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta, shortAddr, toneOf } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { activeBook, issueSplit, type Sleeve } from "@/lib/weights";
+import { hydrateVaultCoins, formatTargetPct } from "@/lib/vaultCoins";
 import { sleeveWethWei } from "@/lib/sleeveValue";
 import { TokenArt } from "@/components/TokenArt";
 import { BLURB_EVENT, readBlurb } from "@/lib/blurbs";
@@ -161,6 +162,7 @@ export function VaultDesk({
       }
     }
     const listedAddrs = listed as Address[];
+    await hydrateVaultCoins(vault, listedAddrs.map((a) => a.toLowerCase()));
     const bagAddrs = [WETH as Address, ...listedAddrs];
     const bags: Bag[] = [];
     try {
@@ -261,8 +263,8 @@ export function VaultDesk({
         status,
         liveW,
         listW: policy?.weight ?? 0,
-        usd,
         targetBps: b.targetBps,
+        usd,
         bag: cash ? `${Number(formatEtherSafe(b.wei)).toFixed(4)} WETH` : `${Number(formatEtherSafe(b.wei)).toFixed(4)}`,
       };
     });
@@ -947,7 +949,9 @@ export function VaultDesk({
                           {(r.liveW * 100).toFixed(2)}%
                         </td>
                         <td className="hidden px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular text-[var(--dim)] sm:table-cell">
-                          {r.status === "cash" ? "≥25%" : r.listW ? `${(r.listW * 100).toFixed(2)}%` : "—"}
+                          <span className={formatTargetPct(r.targetBps, r.listW, r.status === "cash") === "unset" ? "text-[var(--gold)]" : ""}>
+                            {formatTargetPct(r.targetBps, r.listW, r.status === "cash")}
+                          </span>
                         </td>
                         <td className="px-4 py-2.5 text-right font-[family-name:var(--font-mono)] tabular">
                           {r.usd > 0 ? fmtUsd(r.usd) : "—"}

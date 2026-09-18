@@ -5,7 +5,7 @@ import { isAddress, zeroAddress, type Address } from "viem";
 import { AddName } from "@/components/AddName";
 import { TokenArt } from "@/components/TokenArt";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
-import { INDEX_CATALOG, byAddress, coinForBind, isIndexPool, poolRef, tier, type Coin } from "@/lib/catalog";
+import { INDEX_CATALOG, byAddress, coinForBind, isIndexPool, poolRef, rememberCoin, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, EXPLORER, PROTOCOL_FEE_BPS, WETH, isLive696x } from "@/lib/config";
 import { CURATOR_696, CURATOR_696_CURATOR, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
@@ -14,6 +14,7 @@ import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { ensureQuoteBridge } from "@/lib/quoteBridge";
 import { canSetTokenImage, fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
+import { hydrateVaultCoins, stashVaultCoin } from "@/lib/vaultCoins";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 const FLUSH_MS = 380;
@@ -100,7 +101,15 @@ export function IndexCard({
     setProtocolBps(Number(pBps));
     setImageUri(typeof img === "string" ? img : "");
     const addrs = (list as Address[]) || [];
-    if (addrs.length) setOn(addrs.map((a) => a.toLowerCase()));
+    if (addrs.length) {
+      const tokens = addrs.map((a) => a.toLowerCase());
+      setOn(tokens);
+      const hydrated = await hydrateVaultCoins(vault, tokens);
+      setExtra(hydrated.filter((c) => !INDEX_CATALOG.some((x) => x.token === c.token)));
+    } else {
+      setOn([]);
+      setExtra([]);
+    }
     const bags: string[] = [];
     if (addrs.length && vault) {
       const bals = await Promise.all(
@@ -159,9 +168,31 @@ export function IndexCard({
 
   const query = q.trim().toLowerCase();
   const catalog = useMemo(() => {
-    const seen = new Set(INDEX_CATALOG.map((c) => c.token));
-    return [...INDEX_CATALOG, ...extra.filter((c) => !seen.has(c.token))];
-  }, [extra]);
+    const seen = new Set<string>();
+    const out: Coin[] = [];
+    for (const c of INDEX_CATALOG) {
+      seen.add(c.token);
+      out.push(c);
+    }
+    for (const c of extra) {
+      if (seen.has(c.token)) continue;
+      seen.add(c.token);
+      out.push(c);
+    }
+    for (const t of on) {
+      if (seen.has(t)) continue;
+      const c = byAddress(t);
+      seen.add(t);
+      out.push(
+        c || {
+          token: t,
+          id: t.slice(2, 8).toUpperCase(),
+          symbol: shortAddr(t),
+        },
+      );
+    }
+    return out;
+  }, [extra, on]);
   const visible = useMemo(() => {
     if (!query) return catalog;
     return catalog.filter(
@@ -688,6 +719,8 @@ export function IndexCard({
             testId="pack-add"
             disabled={on.length >= 24 || (live && chainId !== robinhood.id)}
             onResolved={async (coin) => {
+              rememberCoin(coin);
+              if (vault) stashVaultCoin(vault, coin);
               setExtra((p) => (p.some((x) => x.token === coin.token) ? p : [...p, coin]));
               if (on.includes(coin.token)) {
                 flash(`${coin.symbol} is already on the book`);
