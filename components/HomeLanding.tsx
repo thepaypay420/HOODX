@@ -4,13 +4,13 @@ import { GEN0_SLUG } from "@/lib/curators";
 
 /** Right-side chips zigzag on x (in/out) so labels don’t stack on one column. */
 const FLOAT_TOKENS = [
-  { label: "PONS", x: "8%", y: "12%", delay: "0s" },
-  { label: "MEME", x: "56%", y: "8%", delay: "0.8s" },
+  { label: "PONS", x: "0%", y: "4%", delay: "0s" },
+  { label: "MEME", x: "83%", y: "8%", delay: "0.8s" },
   { label: "CASHCAT", x: "96%", y: "20%", far: true, delay: "1.1s" },
-  { label: "AI", x: "58%", y: "36%", delay: "1.4s" },
-  { label: "ETH", x: "4%", y: "52%", delay: "0.4s" },
+  { label: "AI", x: "82%", y: "36%", delay: "1.4s" },
+  { label: "ETH", x: "0%", y: "88%", delay: "0.4s" },
   { label: "HOOKR", x: "98%", y: "50%", far: true, delay: "1.6s" },
-  { label: "696X", x: "62%", y: "62%", delay: "1s" },
+  { label: "696X", x: "84%", y: "62%", delay: "1s" },
 ];
 
 const VALUE_PROPS = [
