@@ -61,22 +61,36 @@ def eth_usd() -> float:
     return px
 
 
-def wait(w3, txh, label: str):
+def wait(w3, txh, label: str, *, fatal: bool = True):
     print(f"{label} {tx_hash_hex(txh)}")
     rcpt = w3.eth.wait_for_transaction_receipt(txh, timeout=180)
     if int(rcpt.status) != 1:
-        raise SystemExit(f"{label} reverted")
+        msg = f"{label} reverted"
+        if fatal:
+            raise SystemExit(msg)
+        print(msg)
+        return None
     return rcpt
 
 
-def send(w3, acct, fn, label: str, gas: int | None = None):
+def send(w3, acct, fn, label: str, gas: int | None = None, *, fatal: bool = True):
     refuse_fn(fn)
     tx = fn.build_transaction({"from": acct.address, "chainId": 4663})
     if gas:
         tx["gas"] = gas
     else:
-        tx["gas"] = int(w3.eth.estimate_gas(tx) * 13 // 10) + 80_000
-    return wait(w3, send_eoa_tx(w3, acct, tx), label)
+        last = None
+        for attempt in range(4):
+            try:
+                tx["gas"] = int(w3.eth.estimate_gas(tx) * 13 // 10) + 80_000
+                last = None
+                break
+            except Exception as exc:
+                last = exc
+                time.sleep(0.6 * (attempt + 1))
+        if last is not None:
+            raise last
+    return wait(w3, send_eoa_tx(w3, acct, tx), label, fatal=fatal)
 
 
 def px_weth(vault, token: str) -> int:
@@ -166,20 +180,36 @@ def print_plan(snap, who, bps, px: float, plan) -> list[dict]:
     return rows
 
 
+def revert_label(exc: BaseException) -> str:
+    data = getattr(exc, "data", None)
+    if isinstance(data, dict):
+        data = data.get("data") or data.get("message") or data
+    raw = str(data or exc)
+    return raw[:120]
+
+
 def swap_one(w3, acct, vault, token_in: str, token_out: str, amount_in: int, label: str) -> bool:
-    if amount_in <= 0:
-        return False
-    floor = quote_floor(vault, token_in, token_out, amount_in)
-    if floor <= 0:
-        print(f"skip {label} — no TWAP")
-        return False
-    fn = vault.functions.swapV3(token_in, token_out, amount_in, floor)
-    try:
-        send(w3, acct, fn, label)
-        return True
-    except Exception as exc:
-        print(f"skip {label}: {type(exc).__name__}")
-        return False
+    amt = int(amount_in)
+    for clip in (amt, amt // 2, amt // 4):
+        if clip <= 0:
+            continue
+        for attempt in range(6):
+            floor = quote_floor(vault, token_in, token_out, clip)
+            if floor <= 0:
+                print(f"skip {label} clip={clip / 1e18:.6f} — no TWAP")
+                break
+            fn = vault.functions.swapV3(token_in, token_out, clip, floor)
+            try:
+                rcpt = send(w3, acct, fn, f"{label}:{clip / 1e18:.5f}", fatal=False)
+                if rcpt is not None:
+                    return True
+            except Exception as exc:
+                hint = revert_label(exc)
+                print(f"retry {label} clip={clip / 1e18:.6f} #{attempt + 1}: {hint}")
+                if "0x7dd37f70" not in hint and "Slippage" not in hint and "execution reverted" not in hint:
+                    break
+                time.sleep(0.45)
+    return False
 
 
 def main() -> int:
@@ -211,6 +241,10 @@ def main() -> int:
     if acct.address.lower() != CURATOR.lower():
         raise SystemExit("wallet is not the curator EOA")
     refuse_lockout(LIVE_696X, "setTargets")
+    try:
+        send(w3, acct, vault.functions.warmOracles(), "warmOracles", gas=2_000_000)
+    except Exception as exc:
+        print(f"warmOracles skipped: {revert_label(exc)}")
     tgt = vault.functions.setTargets(who, bps)
     send(w3, acct, tgt, "setTargets")
 
@@ -218,6 +252,13 @@ def main() -> int:
     weth = _cs(w3, WETH)
     for bag in sorted(rows, key=lambda r: r["delta"]):
         if bag["action"] not in {"SELL", "SELL→cash"}:
+            continue
+        quote = vault.functions.quoteOf(bag["token"]).call()
+        if vault.functions.isV4(bag["token"]).call() and str(quote).lower() not in {
+            "0x0000000000000000000000000000000000000000",
+            WETH.lower(),
+        }:
+            print(f"skip {bag['name']} — quoted V4 sell cannot clear 97% TWAP after the hop")
             continue
         if bag["px"] <= 0 or bag["bal"] <= 0:
             continue
