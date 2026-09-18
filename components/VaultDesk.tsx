@@ -18,7 +18,6 @@ import {
   TWEET,
   USD_PER_SHARE,
   WETH,
-  isLive696x,
 } from "@/lib/config";
 import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta, shortAddr, toneOf } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
@@ -131,6 +130,16 @@ export function VaultDesk({
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "constituents" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "genesisEthPerShare" }),
     ]);
+    let redeemable = assets;
+    try {
+      redeemable = await publicClient.readContract({
+        address: vault,
+        abi: vaultAbi,
+        functionName: "redeemableAssets",
+      });
+    } catch {
+      /* pre-hardening impl */
+    }
     let price = supply > 0n && assets > 0n ? (assets * 10n ** 18n) / supply : 0n;
     try {
       price = await publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "sharePrice" });
@@ -158,7 +167,7 @@ export function VaultDesk({
           functionName: "balanceOf",
           args: [address],
         });
-        userValue = supply === 0n || userShares === 0n ? 0n : (userShares * assets) / supply;
+        userValue = supply === 0n || userShares === 0n ? 0n : (userShares * redeemable) / supply;
       }
     }
     const listedAddrs = listed as Address[];
@@ -203,7 +212,7 @@ export function VaultDesk({
       /* explorer link still works if a sleeve balance fails */
     }
     setSnap({
-      assets,
+      assets: redeemable,
       supply,
       buffer,
       paused,
@@ -463,19 +472,20 @@ export function VaultDesk({
     setTxErr(null);
     setConfirmed(false);
     try {
+      const cashMin = snap && snap.supply > 0n ? (snap.buffer * leaveWei) / snap.supply : 0n;
       const gas = await publicClient.estimateContractGas({
         account: address,
         address: vault,
         abi: vaultAbi,
         functionName: "withdraw",
-        args: [leaveWei, leaveMin?.minOut ?? 0n],
+        args: [leaveWei, cashMin],
       });
       const hash = await walletClient.writeContract({
         account: address,
         address: vault,
         abi: vaultAbi,
         functionName: "withdraw",
-        args: [leaveWei, leaveMin?.minOut ?? 0n],
+        args: [leaveWei, cashMin],
         gas: (gas * 13n) / 10n,
         chain: robinhood,
       });
@@ -807,7 +817,7 @@ export function VaultDesk({
             </div>
           </div>
           <p className="mt-3 text-[12px] leading-5 text-[var(--dim)]">
-            Redeem cannot be paused{isLive696x(vault) ? ". Live 696X exits stay open." : "."}
+            You can always leave. Joins can pause; exits cannot.
           </p>
           {canLeave === false && leaveWei > 0n && (
             <p className="mt-2 text-[13px] text-[var(--gold)]">Buffer short. Restore cash first.</p>

@@ -49,6 +49,13 @@ contract HoodxStorage {
     uint256 public constant MAX_FEE_BPS = 100;
     uint32 public constant TWAP_SECS = 60;
     uint16 public constant MAX_SLIP_BPS = 300;
+    uint16 public constant MIN_CASH_BPS = 2000;
+    uint16 public constant MAX_POOL_TAKE_BPS = 2000;
+    uint16 public constant MAX_NEW_BUY_BPS = 500;
+    uint64 public constant BUY_UNLOCK_DELAY = 1 hours;
+    uint64 public constant NEW_NAME_GUARD = 1 days;
+    uint256 public constant MIN_POOL_WETH = 0.02 ether;
+    uint256 public constant MIN_POOL_USDG = 50 * 1e6;
     uint16 public constant ORACLE_CARDINALITY = 16;
     uint160 internal constant MIN_SQRT_RATIO = 4295128739;
     uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
@@ -100,6 +107,10 @@ contract HoodxStorage {
     string public imageURI;
     uint256 internal locked;
     bool internal implLock;
+    mapping(address => uint64) public listedAt;
+    mapping(address => uint256) public strandedBag;
+    mapping(address => uint256) public strandedSupply;
+    mapping(address => mapping(address => bool)) public strandedClaimed;
 
     error NotOwner();
     error NotCreator();
@@ -121,6 +132,9 @@ contract HoodxStorage {
     error Slippage();
     error BadPool();
     error HookedPool();
+    error ThinPool();
+    error TooSoon();
+    error AlreadyClaimed();
     error NotManager();
     error OnlySelf();
     error Started();
@@ -140,6 +154,7 @@ contract HoodxStorage {
     event TokenRebound(address indexed token, bytes32 poolRef, bool v4);
     event TokenRemoved(address indexed token);
     event TokenStranded(address indexed token, uint256 balance);
+    event DustClaimed(address indexed user, address indexed token, uint256 amount);
     event Floors(uint256 minDeposit, uint256 minFirst, uint256 minSleeve, uint16 cashBps);
     event Genesis(uint256 ethPerShare);
     event PausedSet(bool paused);

@@ -5,7 +5,7 @@ import { formatEther, parseEther, type Address } from "viem";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
 import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
-import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
+import { USD_PER_SHARE, WETH } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { ensureVaultBind, isUsdgQuote } from "@/lib/ensureBind";
@@ -382,23 +382,39 @@ export function OwnerDesk({
         functionName: "balanceOf",
         args: [vault as Address],
       });
-      const hash = await walletClient.writeContract({
-        account: address,
-        address: vault as Address,
-        abi: vaultAbi,
-        functionName: left === 0n ? "removeToken" : "strandToken",
-        args: [token as Address],
-        chain: robinhood,
-      });
-      const rec = await publicClient.waitForTransactionReceipt({ hash });
-      if (rec.status !== "success") throw new Error(left === 0n ? "removeToken reverted" : "strandToken reverted");
-      await loadBags();
-      setAmount("");
-      setMsg(
-        left === 0n
-          ? `${symbol} sold to WETH and dropped from the book`
-          : `${symbol} stranded in vault (unredeemable dust) and removed from the index`,
-      );
+      if (left === 0n) {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "removeToken",
+          args: [token as Address],
+          chain: robinhood,
+        });
+        const rec = await publicClient.waitForTransactionReceipt({ hash });
+        if (rec.status !== "success") throw new Error("removeToken reverted");
+        await loadBags();
+        setAmount("");
+        setMsg(`${symbol} sold to WETH and dropped from the book`);
+        return;
+      }
+      try {
+        const hash = await walletClient.writeContract({
+          account: address,
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "strandToken",
+          args: [token as Address],
+          chain: robinhood,
+        });
+        const rec = await publicClient.waitForTransactionReceipt({ hash });
+        if (rec.status !== "success") throw new Error("strandToken reverted");
+        await loadBags();
+        setAmount("");
+        setMsg(`${symbol} was stuck on a broken pool and left as leftover for share holders`);
+      } catch {
+        setMsg(`${symbol} still has a working pool — sell it to ETH, then drop`);
+      }
     } catch (e) {
       setMsg(revertHint(e));
       await loadBags().catch(() => {});
@@ -509,7 +525,7 @@ export function OwnerDesk({
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">
         Amount in is vault tokens, not a guess. Max fills the bag. Buys send the 97% TWAP floor
         (V4 pools fill there, not at the headline quote). Sell & drop sells to WETH then removeToken.
-        {isLive696x(vault) ? " Redeem stays open. No pause or floor controls here." : ""}
+        A name with a working pool cannot be pulled out as leftover.
       </p>
       <label className="mt-5 block text-[11px] text-[var(--dim)]">
         Description

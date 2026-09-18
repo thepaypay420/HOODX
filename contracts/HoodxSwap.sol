@@ -21,8 +21,17 @@ contract HoodxSwap is HoodxStorage {
 
     function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) external payable {
         address listedTok = tokenIn == weth ? tokenOut : tokenIn;
-        if (isV4[listedTok] && v4Key[listedTok].hooks != address(0) && tokenOut == weth) {
-            return;
+        if (tokenOut == weth && listed[listedTok]) {
+            if (isV4[listedTok]) {
+                if (v4Key[listedTok].hooks != address(0)) return;
+                if (IStateView(v4StateView).getLiquidity(poolIdOf[listedTok]) == 0) return;
+            } else {
+                address sellPool = poolOf[listedTok];
+                if (sellPool == address(0) || IUniV3Pool(sellPool).liquidity() == 0) return;
+            }
+        }
+        if (tokenIn == weth && listed[tokenOut]) {
+            _guardBuy(tokenOut, amountIn);
         }
         address quote = quoteOf[listedTok];
         if (quote != address(0) && quote != weth) {
@@ -119,6 +128,23 @@ contract HoodxSwap is HoodxStorage {
         _strandToken(token);
     }
 
+    function claimDustRaw(address token) external payable {
+        if (listed[token]) revert Listed();
+        uint256 supply = strandedSupply[token];
+        uint256 bag = strandedBag[token];
+        if (supply == 0 || bag == 0) revert Zero();
+        if (strandedClaimed[token][msg.sender]) revert AlreadyClaimed();
+        uint256 shares = balanceOf[msg.sender];
+        if (shares == 0) revert Zero();
+        strandedClaimed[token][msg.sender] = true;
+        uint256 amt = (bag * shares) / supply;
+        uint256 have = IERC20(token).balanceOf(address(this));
+        if (amt > have) amt = have;
+        if (amt == 0) revert Zero();
+        if (!IERC20(token).transfer(msg.sender, amt)) revert TransferFailed();
+        emit DustClaimed(msg.sender, token, amt);
+    }
+
     function rebindTokenRaw(address token, bytes32 poolRef) external payable {
         if (!listed[token]) revert Listed();
         if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
@@ -181,6 +207,8 @@ contract HoodxSwap is HoodxStorage {
         }
         listed[token] = true;
         tokens.push(token);
+        uint256 live = totalSupply > balanceOf[DEAD] ? totalSupply - balanceOf[DEAD] : 0;
+        listedAt[token] = live == 0 ? uint64(1) : uint64(block.timestamp);
     }
 
     function _bindPool(address token, address pool) internal {
@@ -195,6 +223,38 @@ contract HoodxSwap is HoodxStorage {
         } else revert BadPool();
         if (IERC20(token).decimals() != 18) revert BadPool();
         IUniV3Pool(pool).fee();
+        _assertV3Depth(pool, quoteOf[token]);
+    }
+
+    function _assertV3Depth(address pool, address quote) internal view {
+        if (IUniV3Pool(pool).liquidity() == 0) revert ThinPool();
+        if (quote == weth) {
+            if (IERC20(weth).balanceOf(pool) < MIN_POOL_WETH) revert ThinPool();
+        } else if (quote == USDG) {
+            if (IERC20(USDG).balanceOf(pool) < MIN_POOL_USDG) revert ThinPool();
+        }
+    }
+
+    function _guardBuy(address token, uint256 amountIn) internal view {
+        uint64 added = listedAt[token];
+        if (added > 1 && block.timestamp < uint256(added) + BUY_UNLOCK_DELAY) revert TooSoon();
+        uint256 assets = IERC20(weth).balanceOf(address(this)) + address(this).balance;
+        uint256 cap = (assets * uint256(MAX_POOL_TAKE_BPS)) / BPS_DENOM;
+        if (!isV4[token]) {
+            address pool = poolOf[token];
+            if (pool != address(0)) {
+                if (IUniV3Pool(pool).liquidity() == 0) revert ThinPool();
+                uint256 poolCap = (IERC20(weth).balanceOf(pool) * uint256(MAX_POOL_TAKE_BPS)) / BPS_DENOM;
+                if (poolCap < cap) cap = poolCap;
+            }
+        } else if (IStateView(v4StateView).getLiquidity(poolIdOf[token]) == 0) {
+            revert ThinPool();
+        }
+        if (added > 1 && block.timestamp < uint256(added) + NEW_NAME_GUARD) {
+            uint256 fresh = (assets * uint256(MAX_NEW_BUY_BPS)) / BPS_DENOM;
+            if (fresh < cap) cap = fresh;
+        }
+        if (cap == 0 || amountIn > cap) revert ThinPool();
     }
 
     function _bindV4(address token, bytes32 poolId) internal {
@@ -223,6 +283,7 @@ contract HoodxSwap is HoodxStorage {
         if (IERC20(token).decimals() != 18) revert BadPool();
         (uint160 sqrtP, , , ) = IStateView(v4StateView).getSlot0(poolId);
         if (sqrtP == 0) revert BadPool();
+        if (IStateView(v4StateView).getLiquidity(poolId) == 0) revert ThinPool();
         isV4[token] = true;
         poolIdOf[token] = poolId;
         v4Key[token] = key;
@@ -237,8 +298,16 @@ contract HoodxSwap is HoodxStorage {
 
     function _strandToken(address token) internal {
         if (!listed[token]) revert Listed();
+        // Liquid names must be sold. Stranding is only for hooked V4 bags that cannot exit.
+        if (!isV4[token] || v4Key[token].hooks == address(0)) revert BadPool();
+        uint256 bag = IERC20(token).balanceOf(address(this));
+        uint256 live = totalSupply > balanceOf[DEAD] ? totalSupply - balanceOf[DEAD] : 0;
+        if (bag > 0 && live > 0) {
+            strandedBag[token] = bag;
+            strandedSupply[token] = live;
+        }
         _dropToken(token);
-        emit TokenStranded(token, IERC20(token).balanceOf(address(this)));
+        emit TokenStranded(token, bag);
     }
 
     function _dropToken(address token) internal {
@@ -246,6 +315,7 @@ contract HoodxSwap is HoodxStorage {
         if (n <= 2) revert BadLen();
         listed[token] = false;
         targetBps[token] = 0;
+        delete listedAt[token];
         _clearBind(token);
         for (uint256 i; i < n; i++) {
             if (tokens[i] == token) {

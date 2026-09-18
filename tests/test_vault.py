@@ -570,6 +570,8 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn("BRICKED_696X_ADDR", src)
         self.assertIn("EMPTIED_696X", src)
         self.assertIn("EMPTIED_FACTORY", src)
+        self.assertIn("HOOK_SAFE_696X_ADDR", src)
+        self.assertIn("HOOK_SAFE_FACTORY_ADDR", src)
         self.assertIn(self.SAFE_VAULT, src)
         self.assertIn(self.BRICKED_VAULT, src)
         self.assertIn(self.LIVE_FACTORY, src)

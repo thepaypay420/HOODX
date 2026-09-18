@@ -59,8 +59,7 @@ export function AddName({
         </button>
       </div>
       <p className="mt-1.5 text-[12px] leading-5 text-[var(--dim)]">
-        {hint ||
-          "Looks up the deepest Uni pool — memes on any RH stock quote (SPY, NVDA, SPCX, …) or naked stock stokens via WETH V3. 18 decimals. Max 24 names."}
+        {hint || "Paste a token. We only add names with a deep, regular ETH pool."}
       </p>
     </div>
   );

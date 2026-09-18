@@ -328,6 +328,27 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "claimDust",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "address", name: "token" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "redeemableAssets",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "listedAt",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint64" }],
+  },
+  {
+    type: "function",
     name: "setCreatorRecipient",
     stateMutability: "nonpayable",
     inputs: [{ type: "address", name: "who" }],

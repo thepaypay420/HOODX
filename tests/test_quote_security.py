@@ -76,8 +76,16 @@ class QuoteBindSecurityTest(unittest.TestCase):
             "if (!_canLiquidate(t)) continue",
             "if (!_swapOrSkip(t, weth, amt, floor)) continue",
             "if (hooks != address(0)) revert HookedPool()",
+            "if (IUniV3Pool(pool).liquidity() == 0) revert ThinPool()",
+            "MIN_POOL_WETH",
+            "BUY_UNLOCK_DELAY",
+            "function redeemableAssets()",
+            "function claimDust(address token)",
+            "MIN_CASH_BPS",
             "event TokenStranded(address indexed token, uint256 balance)",
             "function clearBindRaw(address token)",
+            "strandedBag[token] = bag",
+            "function _guardBuy(address token, uint256 amountIn)",
         ):
             self.assertIn(needle, SOL, msg=f"missing hook guard: {needle}")
 

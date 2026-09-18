@@ -172,6 +172,18 @@ contract HoodxIndex is HoodxStorage {
         assets = _nav(false);
     }
 
+    function redeemableAssets() public view returns (uint256 assets) {
+        assets = IERC20(weth).balanceOf(address(this)) + address(this).balance;
+        for (uint256 i; i < tokens.length; i++) {
+            address t = tokens[i];
+            uint256 bal = IERC20(t).balanceOf(address(this));
+            if (bal == 0 || !_canLiquidate(t)) continue;
+            try this.priceWethWad(t) returns (uint256 px) {
+                if (px != 0) assets += (bal * px) / 1e18;
+            } catch {}
+        }
+    }
+
     /// @dev Mint pricing. V4 uses max(spot, lastPx) so a same-block dump cannot cheapen shares
     ///      (Indexed Finance: understate one name, mint the basket). V3 already TWAPs.
     function mintAssets() public view returns (uint256) {
@@ -237,7 +249,7 @@ contract HoodxIndex is HoodxStorage {
         cost = costBasis[who];
         uint256 supply = totalSupply;
         if (supply == 0 || shares == 0) return (shares, 0, cost, price);
-        value = (shares * totalAssets()) / supply;
+        value = (shares * redeemableAssets()) / supply;
     }
 
     /// @dev Best-case shares (no slip). Fill drag can mint less; never more than this.
@@ -258,7 +270,7 @@ contract HoodxIndex is HoodxStorage {
     function previewWithdraw(uint256 shares) public view returns (uint256 net, uint256 fee) {
         uint256 supply = totalSupply;
         if (supply == 0 || shares == 0) return (0, 0);
-        uint256 value = (shares * totalAssets()) / supply;
+        uint256 value = (shares * redeemableAssets()) / supply;
         fee = (value * redeemFeeBps) / BPS_DENOM;
         net = value - fee;
     }
@@ -351,16 +363,14 @@ contract HoodxIndex is HoodxStorage {
         _assertPriced();
         uint256 supply = totalSupply;
         uint256 price = (totalAssets() * 1e18) / supply;
-        (uint256 minOut, ) = previewSell(shares);
-        if (minOut == 0) revert NeedBuffer();
-        if (minEthOut > minOut) minOut = minEthOut;
         uint256 wethBefore = IERC20(weth).balanceOf(address(this));
         bool sweep = shares == supply || shares == _liveSupply();
         uint256 cashTake = sweep ? wethBefore : (wethBefore * shares) / supply;
         _liquidate(shares, supply, sweep);
         uint256 proceeds = IERC20(weth).balanceOf(address(this)) - wethBefore;
         net = cashTake + proceeds;
-        if (net < minOut) revert Slippage();
+        if (net == 0) revert NeedBuffer();
+        if (net < minEthOut) revert Slippage();
         uint256 fee = (net * redeemFeeBps) / BPS_DENOM;
         net = net - fee;
         _shiftCost(msg.sender, address(0), shares);
@@ -418,22 +428,12 @@ contract HoodxIndex is HoodxStorage {
         }
     }
 
-    /// @dev Drop a hooked or broken name from the index. Bag stays in the vault as dust.
     function strandToken(address token) external onlyOwner {
-        if (!listed[token]) revert Listed();
-        uint256 n = tokens.length;
-        if (n <= 2) revert BadLen();
-        listed[token] = false;
-        targetBps[token] = 0;
-        _dlg(abi.encodeWithSelector(HoodxSwap.clearBindRaw.selector, token));
-        for (uint256 i; i < n; i++) {
-            if (tokens[i] == token) {
-                tokens[i] = tokens[n - 1];
-                tokens.pop();
-                break;
-            }
-        }
-        emit TokenStranded(token, IERC20(token).balanceOf(address(this)));
+        _dlg(abi.encodeWithSelector(HoodxSwap.strandTokenRaw.selector, token));
+    }
+
+    function claimDust(address token) external nonReentrant {
+        _dlg(abi.encodeWithSelector(HoodxSwap.claimDustRaw.selector, token));
     }
 
     /// @dev Rebind a zero-balance name to a new pool (e.g. PROMETHEUS/SPCX). Does not touch balances.
@@ -537,7 +537,7 @@ contract HoodxIndex is HoodxStorage {
     function setFloors(uint256 minDep, uint256 minFirst, uint256 minSleeve, uint16 cashBps_) external onlyOwner {
         if (minDep < 0.001 ether || minFirst < minDep) revert TooSmall();
         if (minSleeve < 0.001 ether) revert TooSmall();
-        if (cashBps_ < 1000 || cashBps_ > 5000) revert CashFloor();
+        if (cashBps_ < MIN_CASH_BPS || cashBps_ > 5000) revert CashFloor();
         minDeposit = minDep;
         minFirstDeposit = minFirst;
         minSleeveWeth = minSleeve;
@@ -772,6 +772,7 @@ contract HoodxIndex is HoodxStorage {
         for (uint256 i; i < tokens.length; i++) {
             address t = tokens[i];
             if (IERC20(t).balanceOf(address(this)) == 0) continue;
+            if (!_canLiquidate(t)) continue;
             if (priceWethWad(t) == 0) revert Unpriced();
         }
     }

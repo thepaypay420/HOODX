@@ -5,7 +5,7 @@ import { isAddress, zeroAddress, type Address } from "viem";
 import { AddName } from "@/components/AddName";
 import { TokenArt } from "@/components/TokenArt";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
-import { INDEX_CATALOG, byAddress, coinForBind, isIndexPool, poolRef, rememberCoin, tier, type Coin } from "@/lib/catalog";
+import { INDEX_CATALOG, byAddress, isIndexPool, poolRef, rememberCoin, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, EXPLORER, PROTOCOL_FEE_BPS, WETH, isLive696x } from "@/lib/config";
 import { CURATOR_696, CURATOR_696_CURATOR, CURATOR_696_PAYOUT, GEN0_SLUG, GEN0_SYMBOL } from "@/lib/curators";
@@ -13,6 +13,7 @@ import { ejectBlocked, isHeldWei, partitionRemovals, revertHint } from "@/lib/ej
 import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { ensureQuoteBridge } from "@/lib/quoteBridge";
+import { lookupIndexCoin } from "@/lib/lookup";
 import { canSetTokenImage, fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { hydrateVaultCoins, stashVaultCoin } from "@/lib/vaultCoins";
 import { publicClient, useWallet } from "@/lib/wallet";
@@ -254,11 +255,11 @@ export function IndexCard({
     setSyncing(true);
     try {
       if (adds.length === 1) {
-        const coin = coinForBind(adds[0]);
-        if (!coin || !isIndexPool(coin)) {
-          throw new Error(
-            "need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool — paste the token 0x",
-          );
+        const coin = await lookupIndexCoin(adds[0]);
+        rememberCoin(coin);
+        if (vault) stashVaultCoin(vault, coin);
+        if (!isIndexPool(coin)) {
+          throw new Error("This token needs a deeper regular ETH pool.");
         }
         await ensureQuoteBridge(vault as Address, coin, walletClient, address);
         const hash = await walletClient.writeContract({
@@ -271,15 +272,16 @@ export function IndexCard({
         });
         await publicClient.waitForTransactionReceipt({ hash });
       } else if (adds.length > 1) {
-        const coins = adds.map((t) => {
-          const coin = coinForBind(t);
-          if (!coin || !isIndexPool(coin)) {
-            throw new Error(
-              "need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool — paste the token 0x",
-            );
+        const coins = [];
+        for (const t of adds) {
+          const coin = await lookupIndexCoin(t);
+          rememberCoin(coin);
+          if (vault) stashVaultCoin(vault, coin);
+          if (!isIndexPool(coin)) {
+            throw new Error("This token needs a deeper regular ETH pool.");
           }
-          return coin;
-        });
+          coins.push(coin);
+        }
         for (const coin of coins) {
           await ensureQuoteBridge(vault as Address, coin, walletClient, address);
         }
@@ -704,7 +706,7 @@ export function IndexCard({
           <span>
             {canEdit
               ? live
-                ? "On the book · + adds, × drops an empty name. A bag must be sold to WETH on Rebalance first."
+                ? "On the book · new names are checked before they go on. Sell to ETH before dropping a bag."
                 : "On the book · tap + to add from this list, × to drop"
               : "Names"}
           </span>

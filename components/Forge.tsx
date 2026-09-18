@@ -6,10 +6,11 @@ import { zeroAddress, type Address } from "viem";
 import { TokenArt } from "@/components/TokenArt";
 import { AddName } from "@/components/AddName";
 import { factoryAbi } from "@/lib/abi";
-import { INDEX_CATALOG, isIndexPool, byAddress, coinForBind, poolRef, tier, type Coin } from "@/lib/catalog";
+import { INDEX_CATALOG, poolRef, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, FACTORY, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
+import { lookupIndexCoin } from "@/lib/lookup";
 import { saveDraft, savePayout } from "@/lib/packs";
 import { fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
@@ -64,14 +65,12 @@ export function Forge() {
     setBusy(true);
     setErr(null);
     try {
-      const tokens = picked as Address[];
-      const pools = tokens.map((t) => {
-        const coin = coinForBind(t);
-        if (!coin || !isIndexPool(coin) || !coin.buyPool) {
-          throw new Error("every name needs a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool");
-        }
-        return poolRef(coin);
-      });
+      const coins = [];
+      for (const t of picked) {
+        coins.push(await lookupIndexCoin(t));
+      }
+      const tokens = coins.map((c) => c.token as Address);
+      const pools = coins.map((c) => poolRef(c));
       const recipient = payout && isAddress(payout) ? (payout as Address) : zeroAddress;
       const onChainImage = walletImageUri(imageUrl) || "";
       const hash = await walletClient.writeContract({
@@ -109,7 +108,8 @@ export function Forge() {
         </h2>
         <p className="mt-3 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
           Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on each join;
-          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%.
+          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Thin or hooked pools are skipped
+          automatically — you just launch.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -303,7 +303,7 @@ export function Forge() {
             }}
             className="ape py-3 text-sm disabled:opacity-40"
           >
-            {!address ? (connecting ? "Connecting…" : "Connect to mint") : busy ? "Confirm…" : "Mint"}
+            {!address ? (connecting ? "Connecting…" : "Connect to launch") : busy ? "Checking pools…" : "Launch index"}
           </button>
         </div>
       </div>

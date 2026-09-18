@@ -22,6 +22,11 @@ export const LIVE_FACTORY_ADDR = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD";
 export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
 export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
   "0x58daec3116aae6D93017bAAea7749052E8a04fA7") as `0x${string}`;
+export const V4_STATE_VIEW = (process.env.NEXT_PUBLIC_V4_STATE_VIEW ||
+  "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b") as `0x${string}`;
+/** Empty hook-safe vault — no anti-rug caps. HUD ignores this pin. */
+export const HOOK_SAFE_696X_ADDR = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE";
+export const HOOK_SAFE_FACTORY_ADDR = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD";
 export const EMPTIED_696X = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24";
 export const EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9";
 
@@ -35,7 +40,7 @@ function liveOr(env: string | undefined, canonical: string, legacy: string[]): `
 export const VAULT = liveOr(
   process.env.NEXT_PUBLIC_VAULT_ADDRESS,
   SAFE_696X_ADDR,
-  [EMPTIED_696X, BRICKED_696X_ADDR],
+  [EMPTIED_696X, BRICKED_696X_ADDR, HOOK_SAFE_696X_ADDR],
 ) as `0x${string}` | "";
 export const LIVE_696X = SAFE_696X_ADDR.toLowerCase();
 export function isLive696x(addr?: string | null) {
@@ -53,7 +58,7 @@ export function isEmptied696x(addr?: string | null) {
 export const FACTORY = liveOr(
   process.env.NEXT_PUBLIC_FACTORY_ADDRESS,
   LIVE_FACTORY_ADDR,
-  [EMPTIED_FACTORY, LEGACY_FACTORY_ADDR],
+  [EMPTIED_FACTORY, LEGACY_FACTORY_ADDR, HOOK_SAFE_FACTORY_ADDR],
 ) as `0x${string}` | "";
 export const QUOTER = (process.env.NEXT_PUBLIC_QUOTER ||
   "0x33e885eD0Ec9bF04EcfB19341582AADCb4c8A9E7") as `0x${string}`;
