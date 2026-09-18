@@ -726,10 +726,6 @@ body {
   animation: landing-float-chip 4.5s ease-in-out infinite;
 }
 
-.landing-float-chip-far {
-  animation-name: landing-float-chip-far;
-}
-
 @media (max-width: 639px) {
   .landing-float-chip {
     padding: 0.38rem 0.62rem;
@@ -1045,16 +1041,6 @@ body {
   }
   50% {
     transform: translateY(-8px);
-  }
-}
-
-@keyframes landing-float-chip-far {
-  0%,
-  100% {
-    transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(-100%) translateY(-8px);
   }
 }
 
