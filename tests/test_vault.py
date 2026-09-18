@@ -492,7 +492,7 @@ class CuratorHandoffTest(unittest.TestCase):
 class LiveFundsTest(unittest.TestCase):
     """Live 696x must stay redeemable. Harnesses cannot lock users or the curator."""
 
-    LIVE = "0xebfa7c94d6d708a242f84c98a048c84b59e95c24"
+    LIVE = "0x6350f9e8e630785abf09fd1127366998ad821e33"
     OTHER = "0x010cf76ab172ea9db59b4548f9bf56cf9c0db39c"
 
     def test_pause_does_not_trap_exits(self):

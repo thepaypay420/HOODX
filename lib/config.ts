@@ -12,13 +12,13 @@ export const WETH = (process.env.NEXT_PUBLIC_WETH ||
 export const USDG = (process.env.NEXT_PUBLIC_USDG ||
   "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168") as `0x${string}`;
 export const VAULT = (process.env.NEXT_PUBLIC_VAULT_ADDRESS ||
-  "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24") as `0x${string}` | "";
-export const LIVE_696X = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24".toLowerCase();
+  "0x6350f9e8e630785ABF09fD1127366998Ad821E33") as `0x${string}` | "";
+export const LIVE_696X = "0x6350f9e8e630785ABF09fD1127366998Ad821E33".toLowerCase();
 export function isLive696x(addr?: string | null) {
   return (addr || "").toLowerCase() === LIVE_696X;
 }
 export const FACTORY = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS ||
-  "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9") as `0x${string}` | "";
+  "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71") as `0x${string}` | "";
 export const QUOTER = (process.env.NEXT_PUBLIC_QUOTER ||
   "0x33e885eD0Ec9bF04EcfB19341582AADCb4c8A9E7") as `0x${string}`;
 

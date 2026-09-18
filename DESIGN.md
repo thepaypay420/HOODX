@@ -88,8 +88,10 @@ names. Connect the curator (owner) wallet to edit a live book.
 
 | | |
 |---|---|
-| `HoodxIndex.sol` | Cloneable ERC20 vault. `initialize` once. `deposit` / `withdraw`. Two-step `owner`. Creator-only `setCreatorRecipient`. |
-| `HoodxFactory.sol` | EIP-1167 clones. `create696x` (owner). `create` (anyone). `bySlug`. |
+| `HoodxIndex.sol` | Cloneable ERC20 vault. `initialize` once. `deposit` / `withdraw`. Two-step `owner`. Creator-only `setCreatorRecipient`. `imageURI` / `contractURI`. |
+| `HoodxSwap.sol` | Delegatecall swap / bind / RH quote seeds. Payable (deposit preserves msg.value). |
+| `HoodxFactory.sol` | EIP-1167 clones of a deployed implementation. `create696x` (owner). `create` (anyone). `bySlug`. `imageURI`. |
+| `UniTwap.sol` | `UniTwapOracle` V3 TWAP + V4 spot. |
 
 Share URL: `/i/{slug}`. Slugs `696x` and `hoodx` are reserved.
 
@@ -152,16 +154,13 @@ Vercel project root: `web/`.
 ## Token image
 
 HUD `$696X` uses [@696_eth](https://x.com/696_eth)’s current X profile picture
-(`web/public/curators/696_eth.jpg`). That is the token art on the home card, nav,
+(`public/curators/696_eth.jpg`). That is the token art on the home card, nav,
 `/i/696x`, and the live-index list.
 
-The live clone has **no** `tokenURI` / `imageURI`. Wallets and Blockscout keep the
-identicon until a **new** factory ships `setImageURI`. Do not redeploy 696x to add
-this — that would strand the first mint.
-
-Forge: optional image upload (jpg / png / webp / gif), cropped to 400² and stored
-in the browser for HUD drafts and `/i/{slug}`. Next impl can persist an https or
-IPFS URI on-chain. 696X stays locked to the X PFP on this HUD.
+Create paths pass `imageURI` (https or ipfs, ≤256 chars) on-chain. Wallets and
+Blockscout read ERC-7572 `contractURI`. Curators can `setImageURI` from the index
+card. HUD file uploads stay local. Live 696X ships
+`https://www.xhoodindex.com/curators/696_eth.jpg`.
 
 ## Live holdings
 
@@ -176,7 +175,7 @@ drift (sell the tail, buy PONS/AI/CASHCAT). Later joins copy the live mix.
 
 ## Live funds (do not trap)
 
-696X is live. User ETH sits in `0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`.
+696X is live. User ETH sits in `0x6350f9e8e630785ABF09fD1127366998Ad821E33`.
 Do not pause, set floors, hand the book to a dead key, unwind, or redeploy
 that clone. Operator scripts that could trap funds are refused.
 

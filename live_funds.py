@@ -7,7 +7,7 @@ named that exact call. Later joins copy the live mix — do not redeploy.
 
 from __future__ import annotations
 
-LIVE_696X = "0xebfa7c94d6d708a242f84c98a048c84b59e95c24"
+LIVE_696X = "0x6350f9e8e630785abf09fd1127366998ad821e33"
 DEAD = "0x000000000000000000000000000000000000dEaD"
 
 # Owner calls that can cut off users or the curator on the live clone.

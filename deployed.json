@@ -1,14 +1,17 @@
 {
   "chainId": 4663,
-  "factory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
-  "implementation": "0x7057904c24c1BD1252415033370a252427c262cc",
-  "vault696x": "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24",
+  "factory": "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71",
+  "implementation": "0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19",
+  "vault696x": "0x6350f9e8e630785ABF09fD1127366998Ad821E33",
+  "oracle": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
+  "swapLogic": "0x41759b22d45a0770618F0D4B9D0ce738E32cC822",
   "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
   "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
   "swapRouter": "0xCaf681a66D020601342297493863E78C959E5cb2",
   "v4Manager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
   "v4StateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
   "v4Posm": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
+  "imageURI": "https://www.xhoodindex.com/curators/696_eth.jpg",
   "explorer": "https://robinhoodchain.blockscout.com",
   "zapJoin": true,
   "maxSlipBps": 300,
@@ -36,15 +39,6 @@
       "symbol": "CASHCAT",
       "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
       "pool": "0xA70fc67C9F69da90B63a0e4C05D229954574E313",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "WALLET",
-      "symbol": "WALLET",
-      "token": "0x0339f5459FC690aC85F1782e15782A151b4A9E1b",
-      "pool": "0x9501A20Bedb8beA0798FE5D4c411f5e270965D49",
       "fee": 10000,
       "v4": false,
       "twapOk": true
@@ -146,13 +140,21 @@
       "hooks": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
       "v4": true,
       "tick": 136930
+    },
+    {
+      "id": "PROMETHEUS",
+      "symbol": "PROMETHEUS",
+      "token": "0x20f24b8D2BCaD7cd252fC60EE5f2Db27C2f2f261",
+      "pool": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
+      "v4": true
     }
   ],
-  "probeSlug": "zap221602",
-  "deprecatedFactory": "0xCeC65e26c593cfC94f3e6A803268A1a9585Eb7e7",
-  "deprecatedVault": "0x010cf76AB172EA9dB59b4548f9BF56CF9C0Db39c",
+  "deprecatedFactory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
+  "deprecatedVault": "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24",
   "deprecatedV3Factory": "0x87530eF180dF2CF41D86d5eD0DC08969287745c1",
   "deprecatedV3Vault": "0x24e5A0b5DA2d5791dF4e8D67fB2Ef07128c430b4",
   "deprecatedV2Factory": "0xb542f6b3D1F5f867363700FD1F61b34342d1C4C9",
-  "deprecatedV2Vault": "0x2C3E8D24C9E70B5fCB0bE8b071b36Fffa1A2Fc58"
+  "deprecatedV2Vault": "0x2C3E8D24C9E70B5fCB0bE8b071b36Fffa1A2Fc58",
+  "emptyRelaunchAttemptFactory": "0xC7366b7d957294C6b2a9A76De64E190e4fB244bB",
+  "emptyRelaunchAttemptVault": "0xad3F32285605211bd6304D54B0c95F5579b6368d"
 }

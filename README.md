@@ -22,8 +22,8 @@
   <a href="https://x.com/XHOODINDEX">X</a> ·
   <a href="https://t.me/HOODXINDEX">Telegram</a> ·
   <a href="https://x.com/696_eth/status/2100067116594725086">696 list</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24">Vault</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9">Factory</a>
+  <a href="https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33">Vault</a> ·
+  <a href="https://robinhoodchain.blockscout.com/address/0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71">Factory</a>
 </p>
 
 <p align="center">
@@ -46,12 +46,13 @@ You drop `/i/yourslug`. You keep the book from going thin. You earn a cut on eve
 
 | | On-chain now |
 |---|---|
-| Vault | [`0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`](https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24) |
+| Vault | [`0x6350f9e8e630785ABF09fD1127366998Ad821E33`](https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33) |
 | Status | **Live** · joins open · redeem open |
-| Share | ~0.041 ETH · genesis peg **$100** of ETH |
-| Book | 14 listed names · Uni V3 TWAP + V4 spot · ~25%+ WETH cash |
+| Share | ~0.04 ETH · genesis peg **$100** of ETH |
+| Book | 14 listed names · PROMETHEUS on SPCX V4 · Uni V3 TWAP + V4 spot · ~25%+ WETH cash |
 | Fees | 0.50% in · **0% out** |
-| First mint | Done (0.08 ETH). Later joins copy the live mix. |
+| First mint | Done (0.13 ETH). Later joins copy the live mix. |
+| Token image | On-chain `imageURI` / ERC-7572 `contractURI` · 696 PFP |
 
 Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
 
@@ -150,23 +151,27 @@ Robinhood Chain **4663**. EIP-1167 clones of `HoodxIndex`.
 
 | | Address |
 |---|---|
-| **Factory** | [`0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9`](https://robinhoodchain.blockscout.com/address/0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9) |
-| Implementation | [`0x7057904c24c1BD1252415033370a252427c262cc`](https://robinhoodchain.blockscout.com/address/0x7057904c24c1BD1252415033370a252427c262cc) |
-| **$696X vault** | [`0xeBFA7c94D6d708a242f84c98a048C84b59e95C24`](https://robinhoodchain.blockscout.com/address/0xeBFA7c94D6d708a242f84c98a048C84b59e95C24) |
+| **Factory** | [`0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71`](https://robinhoodchain.blockscout.com/address/0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71) |
+| Implementation | [`0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19`](https://robinhoodchain.blockscout.com/address/0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19) |
+| **$696X vault** | [`0x6350f9e8e630785ABF09fD1127366998Ad821E33`](https://robinhoodchain.blockscout.com/address/0x6350f9e8e630785ABF09fD1127366998Ad821E33) |
+| TWAP oracle | [`0x815A0D4909460B29c70868e24831f575cA86F3aD`](https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD) |
 | WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
 | Uni V3 SwapRouter02 | [`0xCaf681a66D020601342297493863E78C959E5cb2`](https://robinhoodchain.blockscout.com/address/0xCaf681a66D020601342297493863E78C959E5cb2) |
 | Uni V4 PoolManager | [`0x8366a39CC670B4001A1121B8F6A443A643e40951`](https://robinhoodchain.blockscout.com/address/0x8366a39CC670B4001A1121B8F6A443A643e40951) |
 
 ```
-contracts/HoodxFactory.sol   permissionless clones · create / create696x
+contracts/HoodxFactory.sol   permissionless clones · create / create696x · imageURI
 contracts/HoodxIndex.sol     ETH in / ETH out vault · deposit · withdraw
-contracts/UniTwap.sol        V3 TWAP + V4 spot
+contracts/HoodxSwap.sol      swap / bind / quote seeds (delegatecall)
+contracts/UniTwap.sol        V3 TWAP + V4 spot oracle
 ```
 
 - `deposit(minShares)` — 97% of preview. Joins can close; **withdraw ignores pause**.
 - `withdraw(shares, minEthOut)` — sells the slice, 3% per swap.
 - Two-step `owner` (nominate → Accept). Creator-only fee recipient and bps.
 - V3 TWAP + V4 spot (mint uses `max(spot, lastPx)`). `restoreCash` is V3-only.
+- Quote bind: V3 WETH, V3 USDG, V4 ETH/WETH, V4 stock quote (PROMETHEUS/SPCX), V4 USDG.
+- `imageURI` + ERC-7572 `contractURI` at create; curator can `setImageURI`.
 
 ```bash
 python3 -m unittest tests.test_weights tests.test_vault

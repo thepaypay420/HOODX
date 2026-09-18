@@ -27,24 +27,15 @@ PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/
 
 Refresh bridges + bind pools: `python3 scripts/refresh_rh_bridges.py`
 
-## Live 696X (`0xeBFA…5C24`) — important
+## Live 696X (`0x6350…1E33`)
 
-The canonical vault is an **EIP-1167 minimal clone**. Its logic is fixed at deploy time (`implementation` `0x7057904c…` baked into clone bytecode). **You cannot patch quote-bind or USDG onto that address in place.**
+Canonical vault is an EIP-1167 clone of implementation `0x21B0…4f19` with
+`HoodxSwap` + `UniTwapOracle`. PROMETHEUS is bound to PROMETHEUS/SPCX V4
+`0x627c…de2e8` (not the thin ETH stub). USDG V3/V4 and RH-stock quote binds
+work on this bytecode. Curator `setQuoteBridge` / `addToken` for new names
+without another relaunch.
 
-| Action | Safe? |
-|--------|--------|
-| Deploy **new** HoodxIndex + **new** factory | Yes — new indexes get quote bind + USDG |
-| Leave live 696X unchanged | Yes — existing names keep working |
-| `rebindToken` / SPCX bind on **live** clone | **No** — not in deployed bytecode |
-| Redeploy 696X slug on new factory | Strands first vault — do not without migration plan |
-
-### Safe path for live PROMETHEUS
-
-1. Deploy and fork-test new HoodxIndex + factory (do **not** touch live factory `0x46eaB4De…`).
-2. On a **test clone**, bind PROMETHEUS to `0x627c…de2e8` (SPCX pool) and simulate Rebalance.
-3. For production 696X: schedule an explicit **migration** (withdraw → deposit new vault) **only** after fork proofs and user comms — never auto-migrate.
-
-Until new bytecode is live at the vault address, in-vault PROMETHEUS buys on the old clone will keep failing on the ETH stub.
+Old emptied clone `0xeBFA…5C24` (factory `0x46ea…d2b9`) cannot be patched.
 
 ## Security (carried from live / funds-safe)
 
@@ -63,4 +54,4 @@ Quote-bind was added on top of the hardened `HoodxIndex` (991-line funds-safe ba
 | `restoreCash` | V3-only (quoted V4 names — owner rebalances via `swapV3`; USDG V3 naked stocks work) |
 | `rebindToken` | Zero bag only; clears bind + stale `lastPxWad` |
 
-`tests/test_quote_security.py` and `tests/test_usdg.py` assert these patterns stay in `contracts/HoodxIndex.sol`.
+`tests/test_quote_security.py` and `tests/test_usdg.py` assert these patterns stay in the vault contracts.
