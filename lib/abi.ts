@@ -495,6 +495,13 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "quoteOf",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "address" }],
+  },
+  {
+    type: "function",
     name: "targetBps",
     stateMutability: "view",
     inputs: [{ type: "address" }],

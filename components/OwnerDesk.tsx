@@ -5,7 +5,7 @@ import { formatEther, parseEther, type Address } from "viem";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
 import { INDEX_CATALOG, byAddress, CATALOG, poolRef } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
-import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
+import { USD_PER_SHARE, WETH, USDG, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
@@ -49,6 +49,8 @@ export function OwnerDesk({
   const [shortfall, setShortfall] = useState(0n);
   const [assets, setAssets] = useState(0n);
   const [cashBps, setCashBps] = useState(2500);
+  const [chainQuote, setChainQuote] = useState("");
+  const [swapSimOk, setSwapSimOk] = useState<boolean | null>(null);
   const [blurb, setBlurb] = useState(() => readBlurb(slug, vault));
   const [blurbSaved, setBlurbSaved] = useState("");
 
@@ -61,6 +63,9 @@ export function OwnerDesk({
   const catalogCoin = CATALOG.find((c) => c.token === tokenKey);
   const listedQuote = catalogCoin?.buyQuote || coin?.buyQuote;
   const symbol = coin?.symbol || shortAddr(token);
+  const usdgKey = USDG.toLowerCase();
+  const chainUsdgBound = chainQuote === usdgKey;
+  const needsRebind = side === "buy" && chainUsdgBound && tokenBag === 0n;
   const inSym = side === "sell" ? symbol : "WETH";
   const outSym = side === "sell" ? "WETH" : symbol;
 
@@ -99,9 +104,28 @@ export function OwnerDesk({
     });
   }, [live, vault]);
 
+  const loadChainQuote = useCallback(async () => {
+    if (!live || !vault || !isAddress(token)) return;
+    try {
+      const q = await publicClient.readContract({
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "quoteOf",
+        args: [token as Address],
+      });
+      setChainQuote(String(q).toLowerCase());
+    } catch {
+      setChainQuote("");
+    }
+  }, [live, vault, token]);
+
   useEffect(() => {
     void loadBags().catch(() => {});
   }, [loadBags]);
+
+  useEffect(() => {
+    void loadChainQuote().catch(() => {});
+  }, [loadChainQuote]);
 
   useEffect(() => {
     if (!prefilledToken) return;
@@ -151,17 +175,40 @@ export function OwnerDesk({
     }
     if (!live || !vault || amt === 0n || !isAddress(token)) {
       setQuoted("");
+      setSwapSimOk(null);
       return;
+    }
+    if (needsRebind) {
+      setSwapSimOk(false);
     }
     const tokenIn = side === "buy" ? (WETH as Address) : (token as Address);
     const tokenOut = side === "buy" ? (token as Address) : (WETH as Address);
     void liveQuote(tokenIn, tokenOut, amt)
-      .then(({ twapOut, floor }) => {
+      .then(async ({ twapOut, floor }) => {
         setQuoted(twapOut.toString());
         setMinOut(floor.toString());
+        if (needsRebind || !address) {
+          setSwapSimOk(false);
+          return;
+        }
+        try {
+          await publicClient.simulateContract({
+            account: address as Address,
+            address: vault as Address,
+            abi: vaultAbi,
+            functionName: "swapV3",
+            args: [tokenIn, tokenOut, amt, floor],
+          });
+          setSwapSimOk(true);
+        } catch {
+          setSwapSimOk(false);
+        }
       })
-      .catch(() => setQuoted(""));
-  }, [amount, side, token, live, vault]);
+      .catch(() => {
+        setQuoted("");
+        setSwapSimOk(false);
+      });
+  }, [amount, side, token, live, vault, needsRebind, address]);
 
 
   async function pegHundred() {
@@ -267,7 +314,8 @@ export function OwnerDesk({
       });
       const rec = await publicClient.waitForTransactionReceipt({ hash });
       if (rec.status !== "success") throw new Error("rebind reverted");
-      setMsg(`rebound ${symbol} → ${coin.buyQuote}/${coin.buyPool.slice(0, 10)}… — retry buy`);
+      await loadChainQuote();
+      setMsg(`rebound ${symbol} to the deeper ETH book — retry buy`);
       await loadBags();
     } catch (e) {
       setMsg(revertHint(e));
@@ -290,6 +338,14 @@ export function OwnerDesk({
         : sellBlocked(amt, bagWei, inSym, bagText(bagWei));
     if (blocked) {
       setMsg(blocked);
+      return;
+    }
+    if (needsRebind) {
+      setMsg(`${symbol} is still USDG-bound on-chain — tap Rebind to ETH book first (required once)`);
+      return;
+    }
+    if (swapSimOk === false) {
+      setMsg(buySlippageHint(symbol, chainUsdgBound ? "USDG" : listedQuote));
       return;
     }
     setBusy(true);
@@ -428,6 +484,37 @@ export function OwnerDesk({
     <section id="vault-swaps" data-testid="owner-desk" className="holo p-4 sm:p-5">
       <p className="text-[13px] text-[var(--dim)]">Owner · {shortAddr(owner)}</p>
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Vault swaps</h2>
+
+      {needsRebind && (
+        <div
+          data-testid="owner-rebind-banner"
+          className="mt-3 rounded-xl border border-[var(--gold)]/50 bg-[var(--gold)]/10 p-4"
+        >
+          <p className="text-[15px] font-medium text-[var(--paper)]">
+            {symbol} is bound to a thin USDG pool — buys will fail until you rebind once.
+          </p>
+          <p className="mt-2 text-[13px] leading-5 text-[var(--dim)]">
+            On-chain bind is still WETH → USDG → {symbol}. The deeper {symbol}/ETH book (~$100k) needs a
+            one-time owner rebind. Vault holds 0 {symbol} — safe to rebind now.
+          </p>
+          <button
+            type="button"
+            data-testid="owner-rebind-primary"
+            disabled={busy || chainId !== robinhood.id}
+            onClick={() => void rebindToBestPool()}
+            className="ape mt-3 px-4"
+          >
+            {busy ? "Confirm…" : `Rebind ${symbol} to ETH book`}
+          </button>
+        </div>
+      )}
+
+      {side === "buy" && swapSimOk === false && !needsRebind && amount && (
+        <p data-testid="owner-sim-warn" className="mt-3 text-[13px] text-[var(--gold)]">
+          Swap simulation failed at the 97% TWAP floor — try less WETH or rebind to a deeper book.
+        </p>
+      )}
+
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">
         Amount in is vault tokens, not a guess. Max fills the bag. Buys send the 97% TWAP floor
         (V4 pools fill there, not at the headline quote). Sell & drop sells to WETH then removeToken.
@@ -592,25 +679,22 @@ export function OwnerDesk({
           />
         </label>
       </div>
-      {listedQuote && !["ETH", "WETH"].includes(listedQuote.toUpperCase()) && (
+      {listedQuote && !["ETH", "WETH"].includes(listedQuote.toUpperCase()) && !needsRebind && (
         <p className="mt-3 text-[13px] leading-5 text-[var(--dim)]">
-          Bound book: {symbol}/{listedQuote.toUpperCase()} (WETH → {listedQuote.toUpperCase()} → {symbol}). If
-          buys fail the TWAP floor, the USDG stub may be too thin —{" "}
-          <strong className="font-medium text-[var(--paper)]">Rebind to ETH book</strong> uses the deeper
-          direct pool.
+          Bound book: {symbol}/{listedQuote.toUpperCase()} (WETH → {listedQuote.toUpperCase()} → {symbol}).
         </p>
       )}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <button
           type="button"
           data-testid="owner-swap"
-          disabled={busy || chainId !== robinhood.id}
+          disabled={busy || chainId !== robinhood.id || needsRebind || swapSimOk === false}
           onClick={() => void swap()}
           className="ape w-full"
         >
-          {busy ? "Confirm…" : "Swap in the vault"}
+          {busy ? "Confirm…" : needsRebind ? "Rebind first ↑" : "Swap in the vault"}
         </button>
-        {side === "buy" && tokenBag === 0n && listedQuote?.toUpperCase() === "USDG" ? (
+        {needsRebind ? (
           <button
             type="button"
             data-testid="owner-rebind"
