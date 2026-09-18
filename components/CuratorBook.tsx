@@ -9,16 +9,19 @@ import { WETH } from "@/lib/config";
 import {
   CURATOR_STRATEGIES,
   analyzeDrift,
+  bpsToPct,
   draftFromOnChain,
   draftTotals,
   equalTargets,
   list696Targets,
   liveMixTargets,
+  balanceDraftToCap,
   normalizeDraft,
-  resizeSliderTargets,
+  setSliderTarget,
   suggestBuyEth,
   trimDriftTargets,
   parkLegacyTargets,
+  riskCap,
   vaultMcapTargets,
   curatorWorkflow,
   type McapRow,
@@ -67,6 +70,7 @@ export function CuratorBook({
   const [ethUsd, setEthUsd] = useState(0);
   const [strategy, setStrategy] = useState<StrategyId | "custom">("custom");
   const [actionsOnly, setActionsOnly] = useState(true);
+  const [baselineDraft, setBaselineDraft] = useState<TargetDraft>({});
 
   const focusSwap = useCallback(
     (token: string, side: "buy" | "sell", amountEth?: string) => {
@@ -150,12 +154,14 @@ export function CuratorBook({
           if (typeof parsed[r.token] === "number") merged[r.token] = parsed[r.token];
         }
         setDraft(merged);
+        setBaselineDraft(merged);
         return;
       }
     } catch {
       /* ignore corrupt draft */
     }
     setDraft(onChain);
+    setBaselineDraft(onChain);
   }, [vault]);
 
   useEffect(() => {
@@ -233,10 +239,16 @@ export function CuratorBook({
     [rows, draft, driftRows, deployableWei, validation.errors],
   );
 
-  const visibleRows = useMemo(
-    () => (actionsOnly ? driftRows.filter((r) => r.action !== "hold") : driftRows),
-    [actionsOnly, driftRows],
+  const hasBaseline = Object.keys(baselineDraft).length > 0;
+  const draftEdited = useMemo(
+    () => hasBaseline && rows.some((r) => (draft[r.token] ?? 0) !== (baselineDraft[r.token] ?? 0)),
+    [draft, baselineDraft, hasBaseline, rows],
   );
+
+  const visibleRows = useMemo(() => {
+    if (draftEdited || !actionsOnly) return driftRows;
+    return driftRows.filter((r) => r.action !== "hold");
+  }, [actionsOnly, draftEdited, driftRows]);
 
   const legacyIds = useMemo(
     () =>
@@ -248,52 +260,57 @@ export function CuratorBook({
     [],
   );
 
-  const applyStrategy = useCallback(
-    (id: StrategyId) => {
+  const buildStrategyDraft = useCallback(
+    (id: StrategyId): TargetDraft => {
       const tokens = rows.map((r) => r.token);
-      if (id === "equal") {
-        setDraft(equalTargets(tokens, cashBps));
-      } else if (id === "mcap") {
-        setDraft(vaultMcapTargets(mcapRows, cashBps));
-      } else if (id === "list696") {
+      if (id === "equal") return equalTargets(tokens, cashBps);
+      if (id === "mcap") return vaultMcapTargets(mcapRows, cashBps);
+      if (id === "list696") {
         const sleeves = (snapshot.sleeves || []) as Sleeve[];
-        setDraft(list696Targets(sleeves, tokens, navUsd, navWei, minSleeveWei, cashBps));
-      } else if (id === "live") {
+        return list696Targets(sleeves, tokens, navUsd, navWei, minSleeveWei, cashBps);
+      }
+      if (id === "live") {
         const live = rows.map((r) => ({
           token: r.token,
           liveBps: navWei > 0n ? Number((r.wethValueWei * 10_000n) / navWei) : 0,
         }));
-        setDraft(liveMixTargets(live, cashBps));
-      } else if (id === "trim") {
+        return liveMixTargets(live, cashBps);
+      }
+      if (id === "trim") {
         const live = rows.map((r) => ({
           token: r.token,
           liveBps: navWei > 0n ? Number((r.wethValueWei * 10_000n) / navWei) : 0,
           onChainTargetBps: r.onChainTargetBps,
         }));
-        setDraft(trimDriftTargets(live, cashBps));
-      } else if (id === "parkLegacy") {
-        setDraft(
-          parkLegacyTargets(
-            rows.map((r) => {
-              const coin = byAddress(r.token);
-              const legacy = Boolean(
-                coin &&
-                  (legacyIds.has(coin.id.toUpperCase()) || legacyIds.has((coin.symbol || "").toUpperCase())),
-              );
-              return {
-                token: r.token,
-                balanceWei: r.balanceWei,
-                onChainTargetBps: r.onChainTargetBps,
-                legacy,
-              };
-            }),
-            cashBps,
-          ),
-        );
+        return trimDriftTargets(live, cashBps);
       }
-      setStrategy(id);
+      return parkLegacyTargets(
+        rows.map((r) => {
+          const coin = byAddress(r.token);
+          const legacy = Boolean(
+            coin && (legacyIds.has(coin.id.toUpperCase()) || legacyIds.has((coin.symbol || "").toUpperCase())),
+          );
+          return {
+            token: r.token,
+            balanceWei: r.balanceWei,
+            onChainTargetBps: r.onChainTargetBps,
+            legacy,
+          };
+        }),
+        cashBps,
+      );
     },
     [rows, cashBps, navUsd, navWei, minSleeveWei, legacyIds, mcapRows],
+  );
+
+  const applyStrategy = useCallback(
+    (id: StrategyId) => {
+      const next = buildStrategyDraft(id);
+      setDraft(next);
+      setBaselineDraft(next);
+      setStrategy(id);
+    },
+    [buildStrategyDraft],
   );
 
   async function writeTargets() {
@@ -315,6 +332,11 @@ export function CuratorBook({
       const rec = await publicClient.waitForTransactionReceipt({ hash });
       if (rec.status !== "success") throw new Error("setTargets reverted");
       onStatus?.(`Targets saved · ${validation.who.length} names · ${totals.riskOnPct.toFixed(1)}% risk-on`);
+      try {
+        localStorage.removeItem(draftStorageKey(vault));
+      } catch {
+        /* private mode */
+      }
       await load();
       setStrategy("custom");
     } catch (e) {
@@ -324,11 +346,27 @@ export function CuratorBook({
     }
   }
 
-  function resetDraft() {
-    const targetMap = new Map(rows.map((r) => [r.token, r.onChainTargetBps]));
-    setDraft(draftFromOnChain(rows.map((r) => r.token), targetMap));
+  function undoDraftEdits() {
+    if (!hasBaseline) return;
+    setDraft({ ...baselineDraft });
     setStrategy("custom");
-    onStatus?.("Draft reset to on-chain targets");
+    onStatus?.("Sliders restored to your last saved plan");
+  }
+
+  function loadOnChainTargets() {
+    const targetMap = new Map(rows.map((r) => [r.token, r.onChainTargetBps]));
+    const onChain = draftFromOnChain(rows.map((r) => r.token), targetMap);
+    setDraft(onChain);
+    setBaselineDraft(onChain);
+    setStrategy("custom");
+    onStatus?.("Loaded on-chain targets");
+  }
+
+  function balanceDraft() {
+    const next = balanceDraftToCap(draft, cashBps);
+    setDraft(next);
+    setStrategy("custom");
+    onStatus?.(`Balanced to ${(riskCap(cashBps) / 100).toFixed(0)}% risk-on`);
   }
 
   const maxSliderPct = totals.cap / 100;
@@ -380,7 +418,14 @@ export function CuratorBook({
             <span className="text-[var(--paper)]">deployable</span> {formatEtherSafe(deployableWei)} ETH
           </p>
           <p className="mt-0.5">
-            Draft targets {totals.riskOnPct.toFixed(1)}% in tokens · {(cashBps / 100).toFixed(0)}% cash floor kept
+            Draft targets {totals.riskOnPct.toFixed(1)}% in tokens
+            {totals.over > 0
+              ? ` · ${bpsToPct(totals.over).toFixed(1)}% over the ${bpsToPct(totals.cap).toFixed(0)}% cap`
+              : totals.room > 0
+                ? ` · ${bpsToPct(totals.room).toFixed(1)}% headroom (extra WETH)`
+                : ""}
+            {" · "}
+            {(cashBps / 100).toFixed(0)}% cash floor
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -430,8 +475,37 @@ export function CuratorBook({
             {s.label}
           </button>
         ))}
-        <button type="button" data-testid="strategy-reset" disabled={busy} onClick={resetDraft} className="ghost px-3 py-2 text-[12px]">
-          Reset draft
+        <button
+          type="button"
+          data-testid="strategy-undo"
+          disabled={busy || !draftEdited}
+          title="Put sliders back to your last plan (strategy preset or page load)"
+          onClick={undoDraftEdits}
+          className="ghost px-3 py-2 text-[12px]"
+        >
+          Undo edits
+        </button>
+        {totals.over > 0 && (
+          <button
+            type="button"
+            data-testid="strategy-balance"
+            disabled={busy}
+            title="Scale all targets down proportionally to fit the 75% risk cap"
+            onClick={balanceDraft}
+            className="ghost px-3 py-2 text-[12px]"
+          >
+            Balance to {(totals.cap / 100).toFixed(0)}%
+          </button>
+        )}
+        <button
+          type="button"
+          data-testid="strategy-load-onchain"
+          disabled={busy || !rows.length}
+          title="Replace draft with targets saved on-chain"
+          onClick={loadOnChainTargets}
+          className="ghost px-3 py-2 text-[12px]"
+        >
+          Load on-chain
         </button>
       </div>
 
@@ -460,7 +534,7 @@ export function CuratorBook({
             {visibleRows.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-3 py-6 text-center text-[var(--dim)]">
-                  All names on target — toggle Show all names to edit sliders.
+                  All names on target — use Show all names to edit sliders, or move a preset first.
                 </td>
               </tr>
             ) : null}
@@ -484,7 +558,7 @@ export function CuratorBook({
                         onChange={(e) => {
                           setStrategy("custom");
                           setDraft((cur) =>
-                            resizeSliderTargets(cur, r.token, Math.round(Number(e.target.value) * 100), cashBps, mcapRows),
+                            setSliderTarget(cur, r.token, Math.round(Number(e.target.value) * 100), cashBps),
                           );
                         }}
                         className="h-1.5 flex-1 accent-[var(--gold)]"

@@ -6,7 +6,9 @@ import {
   equalTargets,
   liveMixTargets,
   normalizeDraft,
+  balanceDraftToCap,
   resizeSliderTargets,
+  setSliderTarget,
   parkLegacyTargets,
   riskCap,
   suggestBuyEth,
@@ -23,17 +25,28 @@ describe("curator targets", () => {
     expect(draftTotals(d, 2500).cashBps).toBe(2500);
   });
 
-  it("resize reallocates others by mcap not proportional draft", () => {
-    const mcapRows = [
-      { token: "0xa", mcapUsd: 400_000_000 },
-      { token: "0xb", mcapUsd: 100_000_000 },
-      { token: "0xc", mcapUsd: 25_000_000 },
-    ];
-    const base = vaultMcapTargets(mcapRows, 2500);
-    const next = resizeSliderTargets(base, "0xa", 5000, 2500, mcapRows);
+  it("setSliderTarget only moves the edited name", () => {
+    const base = { "0xa": 2500, "0xb": 2500, "0xc": 2500 };
+    const next = setSliderTarget(base, "0xa", 5000, 2500);
     expect(next["0xa"]).toBe(5000);
+    expect(next["0xb"]).toBe(2500);
+    expect(next["0xc"]).toBe(2500);
+    expect(draftTotals(next, 2500).over).toBe(2500);
+  });
+
+  it("balanceDraftToCap scales overweight books proportionally", () => {
+    const draft = { "0xa": 5000, "0xb": 2500, "0xc": 2500 };
+    const next = balanceDraftToCap(draft, 2500);
     expect(draftTotals(next, 2500).over).toBe(0);
-    expect(next["0xb"] || 0).toBeGreaterThan(next["0xc"] || 0);
+    expect(next["0xa"]).toBeGreaterThan(next["0xb"] || 0);
+    expect(next["0xb"]).toBe(next["0xc"]);
+  });
+
+  it("resizeSliderTargets delegates to setSliderTarget", () => {
+    const base = { "0xa": 1000, "0xb": 2000 };
+    const next = resizeSliderTargets(base, "0xa", 3000, 2500, []);
+    expect(next["0xa"]).toBe(3000);
+    expect(next["0xb"]).toBe(2000);
   });
 
   it("drift rows keep input order", () => {

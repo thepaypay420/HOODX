@@ -43,7 +43,7 @@ export function CuratorBalanceSection({
       <p className="text-[13px] text-[var(--dim)]">Curator · Balance</p>
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Rebalance the book</h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[var(--dim)]">
-        Three steps: plan targets → save on-chain → swap. Sliders do not spend ETH by themselves.
+        Three steps: plan targets → save on-chain → swap. Each slider moves one name — others stay put until you balance or save.
       </p>
 
       <CuratorBook
