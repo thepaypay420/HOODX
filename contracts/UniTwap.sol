@@ -10,6 +10,7 @@ interface IUniV3Pool {
     function token0() external view returns (address);
     function token1() external view returns (address);
     function fee() external view returns (uint24);
+    function liquidity() external view returns (uint128);
     function increaseObservationCardinalityNext(uint16 observationCardinalityNext) external;
 }
 
@@ -18,6 +19,8 @@ interface IStateView {
         external
         view
         returns (uint160 sqrtPriceX96, int24 tick, uint24 protocolFee, uint24 lpFee);
+
+    function getLiquidity(bytes32 poolId) external view returns (uint128 liquidity);
 }
 
 interface IPosm {

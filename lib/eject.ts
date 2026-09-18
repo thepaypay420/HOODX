@@ -111,6 +111,21 @@ function blobOf(err: unknown): string {
 
 export function revertHint(err: unknown): string {
   const blob = blobOf(err);
+  if (blob.includes("hookedpool")) {
+    return "that pool can’t be added — pick a regular ETH book";
+  }
+  if (blob.includes("badpool")) {
+    return "that pool isn’t a regular ETH book we can use";
+  }
+  if (blob.includes("thinpool")) {
+    return "that pool is too small to add or buy safely";
+  }
+  if (blob.includes("toosoon")) {
+    return "new names need an hour on the book before the vault can buy them";
+  }
+  if (blob.includes("alreadyclaimed") || blob.includes("dustclaimed")) {
+    return "you already claimed that leftover";
+  }
   if (blob.includes("needbuffer") || blob.includes(NEED_BUFFER_SEL)) {
     return "still holding that name — sell to WETH on Rebalance, then tap ×";
   }

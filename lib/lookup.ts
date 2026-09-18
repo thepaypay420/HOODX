@@ -1,7 +1,7 @@
 "use client";
 
 import { type Coin, isIndexPool, rememberCoin } from "@/lib/catalog";
-import { USDG, V4_POSM, WETH } from "@/lib/config";
+import { USDG, V4_POSM, V4_STATE_VIEW, WETH } from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { publicClient } from "@/lib/wallet";
@@ -34,6 +34,35 @@ const posmAbi = [
 ] as const;
 
 const ZERO = "0x0000000000000000000000000000000000000000";
+export const MIN_LIQ_USD = 2_000;
+/** Matches on-chain MIN_POOL_WETH. */
+export const MIN_V3_WETH = 20_000_000_000_000_000n;
+/** Matches on-chain MIN_POOL_USDG. */
+export const MIN_V3_USDG = 50_000_000n;
+
+const erc20BalAbi = [
+  {
+    type: "function",
+    name: "balanceOf",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+] as const;
+
+const v3LiqAbi = [
+  { type: "function", name: "liquidity", stateMutability: "view", inputs: [], outputs: [{ type: "uint128" }] },
+] as const;
+
+const stateViewLiqAbi = [
+  {
+    type: "function",
+    name: "getLiquidity",
+    stateMutability: "view",
+    inputs: [{ type: "bytes32", name: "poolId" }],
+    outputs: [{ type: "uint128" }],
+  },
+] as const;
 
 async function v4Hooks(poolId: string): Promise<string | null> {
   if (!isBytes32(poolId)) return null;
@@ -50,13 +79,52 @@ async function v4Hooks(poolId: string): Promise<string | null> {
   }
 }
 
-async function rejectHookedV4(p: DexPair | null) {
-  if (!p || kind(p) !== "v4" || !p.pairAddress) return p;
-  const hooks = await v4Hooks(p.pairAddress);
-  if (hooks && hooks !== ZERO) {
-    throw new Error("Hooked Uni V4 pools cannot be bound — pick a hooks=0 pool.");
+async function v4Liquidity(poolId: string): Promise<bigint | null> {
+  if (!isBytes32(poolId)) return null;
+  try {
+    return (await publicClient.readContract({
+      address: V4_STATE_VIEW,
+      abi: stateViewLiqAbi,
+      functionName: "getLiquidity",
+      args: [poolId as `0x${string}`],
+    })) as bigint;
+  } catch {
+    return null;
   }
-  return p;
+}
+
+async function v3DeepEnough(pool: string, quoteIsUsdg: boolean): Promise<boolean> {
+  try {
+    const [bal, liq] = await Promise.all([
+      publicClient.readContract({
+        address: quoteIsUsdg ? USDG : WETH,
+        abi: erc20BalAbi,
+        functionName: "balanceOf",
+        args: [pool as `0x${string}`],
+      }),
+      publicClient.readContract({ address: pool as `0x${string}`, abi: v3LiqAbi, functionName: "liquidity" }),
+    ]);
+    if (liq === 0n) return false;
+    return quoteIsUsdg ? bal >= MIN_V3_USDG : bal >= MIN_V3_WETH;
+  } catch {
+    return false;
+  }
+}
+
+async function poolIsSafe(p: DexPair): Promise<boolean> {
+  const k = kind(p);
+  const pool = p.pairAddress || "";
+  if (!pool || !k) return false;
+  if (k === "v4") {
+    const hooks = await v4Hooks(pool);
+    if (hooks && hooks !== ZERO) return false;
+    const liq = await v4Liquidity(pool);
+    return liq != null && liq > 0n;
+  }
+  if (k === "v3") {
+    return v3DeepEnough(pool, usdgQuote(p));
+  }
+  return false;
 }
 
 type DexPair = {
@@ -134,33 +202,35 @@ function rhStockQuote(p: DexPair) {
   return isRhStockToken(qaddr);
 }
 
-function pickPool(pairs: DexPair[], token: string): DexPair | null {
+function pickPool(pairs: DexPair[], token: string): DexPair[] {
   const scored = pairs
     .filter((p) => String(p.chainId || "").toLowerCase() === "robinhood")
     .filter((p) => (p.baseToken?.address || "").toLowerCase() === token)
-    .filter((p) => kind(p) && num(p.liquidity?.usd) > 0)
+    .filter((p) => kind(p) && num(p.liquidity?.usd) >= MIN_LIQ_USD)
     .sort((a, b) => num(b.liquidity?.usd) - num(a.liquidity?.usd));
 
   // Naked RH stock stoken: bind the deepest WETH V3, USDG V3, or V4 ETH book.
   if (isRhStockToken(token)) {
-    const bindable = scored.filter(
+    return scored.filter(
       (p) =>
         (ethQuote(p) && (kind(p) === "v3" || kind(p) === "v4")) ||
         (usdgQuote(p) && kind(p) === "v3"),
     );
-    if (bindable.length) return bindable[0];
   }
 
   // Meme: pick the deepest bindable book — ETH/WETH often beats a thin USDG stub.
   const quotedV4 = scored.filter((p) => (rhStockQuote(p) || usdgQuote(p)) && kind(p) === "v4");
   const ethBook = scored.filter((p) => ethQuote(p) && (kind(p) === "v3" || kind(p) === "v4"));
-  const bestQuoted = quotedV4[0] || null;
-  const bestEth = ethBook[0] || null;
-  if (bestQuoted && bestEth) {
-    return num(bestEth.liquidity?.usd) >= num(bestQuoted.liquidity?.usd) ? bestEth : bestQuoted;
+  const ranked = [...ethBook, ...quotedV4.filter((p) => !ethBook.includes(p))];
+  ranked.sort((a, b) => num(b.liquidity?.usd) - num(a.liquidity?.usd));
+  return ranked;
+}
+
+async function firstSafeFromRanked(ranked: DexPair[]): Promise<DexPair | null> {
+  for (const p of ranked) {
+    if (await poolIsSafe(p)) return p;
   }
-  if (bestQuoted) return bestQuoted;
-  return bestEth || null;
+  return null;
 }
 
 /** Deepest Uni V3 WETH bridge for a canonical RH stock quote token. */
@@ -195,9 +265,20 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
   if (!isAddress(addr)) throw new Error("paste a token 0x");
   const token = addr.toLowerCase();
   if (token === WETH.toLowerCase()) throw new Error("WETH is cash, not a name");
-  const buy = await rejectHookedV4(pickPool(await pairsFor(token), token));
+  const ranked = pickPool(await pairsFor(token), token);
+  if (!ranked.length) {
+    throw new Error("No safe ETH pool for this token yet — it needs a deeper regular book.");
+  }
+  const buy = await firstSafeFromRanked(ranked);
   if (!buy?.pairAddress) {
-    throw new Error("No bindable Uni pool — need WETH V3, USDG V3, V4 ETH, or V4 quote on Dexscreener.");
+    const top = ranked[0];
+    if (kind(top) === "v4" && top.pairAddress) {
+      const hooks = await v4Hooks(top.pairAddress);
+      if (hooks && hooks !== ZERO) {
+        throw new Error("This coin’s pool can’t be added safely — pick another token.");
+      }
+    }
+    throw new Error("This pool is too small to add safely.");
   }
   const labels = kind(buy) === "v4" ? ["v4"] : ["v3"];
   const quoteTok = buy.quoteToken || {};
