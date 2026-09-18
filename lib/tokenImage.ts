@@ -12,6 +12,17 @@ export function canSetTokenImage(slug: string): boolean {
   return Boolean(slug) && slug !== GEN0_SLUG;
 }
 
+/** On-chain imageURI: https or ipfs, no quotes, ≤256 chars. Data URLs stay HUD-only. */
+export function walletImageUri(raw: string): string | null {
+  const uri = raw.trim();
+  if (!uri || uri.length > 256) return null;
+  if (/[\u0000-\u001f"]/.test(uri)) return null;
+  if (/^https:\/\//i.test(uri) || /^ipfs:\/\//i.test(uri)) return uri;
+  return null;
+}
+
+export const GEN0_WALLET_IMAGE = "https://www.xhoodindex.com/curators/696_eth.jpg";
+
 export function loadTokenImage(slug: string): string {
   const stock = stockTokenImage(slug);
   if (stock) return stock;

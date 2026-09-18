@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {UniTwap, IUniV3Pool, IStateView, IPosm, PoolKey} from "./UniTwap.sol";
+import {IUniTwapOracle, IStateView, PoolKey} from "./UniTwap.sol";
+import {HoodxStorage, IERC20, IWETH} from "./HoodxStorage.sol";
+import {HoodxSwap} from "./HoodxSwap.sol";
 
 /// @title HoodxIndex — trustless ETH in / ETH out meme basket
 /// @notice Cloneable vault. One share starts at $100 of ETH. Join mints at live
@@ -9,181 +11,27 @@ import {UniTwap, IUniV3Pool, IStateView, IPosm, PoolKey} from "./UniTwap.sol";
 ///         inflation / sandwich). Dead shares capture donations. V4 mint NAV uses
 ///         max(spot, last tick) so a flash dump cannot cheapen the basket.
 ///         `owner` is the curator (two-step transfer). `creator` keeps the fee cut.
+///         Swap/bind live in HoodxSwap via delegatecall so this clone stays under 24kb.
 
-interface IERC20 {
-    function balanceOf(address) external view returns (uint256);
-    function transfer(address, uint256) external returns (bool);
-    function approve(address, uint256) external returns (bool);
-    function decimals() external view returns (uint8);
-}
+contract HoodxIndex is HoodxStorage {
+    address public immutable twapOracle;
+    address public immutable swapLogic;
 
-interface IWETH is IERC20 {
-    function deposit() external payable;
-    function withdraw(uint256) external;
-}
-
-interface ISwapRouter02 {
-    struct ExactInputSingleParams {
-        address tokenIn;
-        address tokenOut;
-        uint24 fee;
-        address recipient;
-        uint256 amountIn;
-        uint256 amountOutMinimum;
-        uint160 sqrtPriceLimitX96;
-    }
-
-    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256);
-}
-
-interface IPoolManager {
-    struct SwapParams {
-        bool zeroForOne;
-        int256 amountSpecified;
-        uint160 sqrtPriceLimitX96;
-    }
-
-    function unlock(bytes calldata data) external returns (bytes memory);
-    function swap(PoolKey memory key, SwapParams memory params, bytes calldata hookData) external returns (int256);
-    function sync(address currency) external;
-    function settle() external payable returns (uint256);
-    function take(address currency, address to, uint256 amount) external;
-}
-
-contract HoodxIndex {
-    uint256 public constant BPS_DENOM = 10_000;
-    uint256 public constant MAX_FEE_BPS = 100;
-    uint32 public constant TWAP_SECS = 60;
-    uint16 public constant MAX_SLIP_BPS = 300; // 3% vs on-chain quote — not owner-set
-    uint16 public constant ORACLE_CARDINALITY = 16;
-    uint160 internal constant MIN_SQRT_RATIO = 4295128739;
-    uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
-    uint8 public constant decimals = 18;
-    address internal constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
-    address internal constant WETH_USDG_V3 = 0x52e65B17fB6E5BA00Ed806f37Afcd2DaA50271Ca;
-    /// @dev Uniswap-V2 dead LP. ~$0.002 at genesis; captures pre-mint donations.
-    uint256 public constant VIRTUAL_ASSETS = 1e12;
-    address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
-
-    string public name;
-    string public symbol;
-    address public factory;
-    address public owner;
-    address public pendingOwner;
-    address public creator;
-    address public creatorRecipient;
-    address public protocol;
-    address public weth;
-    address public swapRouter;
-    address public v4Manager;
-    address public v4StateView;
-    address public v4Posm;
-    address[] public tokens;
-
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
-    mapping(address => uint16) public targetBps;
-    mapping(address => uint256) public costBasis;
-    mapping(address => bool) public listed;
-    mapping(address => address) public poolOf;
-    mapping(address => bytes32) public poolIdOf;
-    mapping(address => bool) public isV4;
-    mapping(address => PoolKey) public v4Key;
-    mapping(address => uint256) public lastPxWad;
-    /// @dev RH stock-token quote on a V4 bind. weth = direct ETH/WETH bind.
-    mapping(address => address) public quoteOf;
-    mapping(address => bool) public allowedQuote;
-    /// @dev V3 TWAP bridge pool: quote ↔ WETH.
-    mapping(address => address) public quoteBridgeV3;
-
-    uint256 public totalSupply;
-    uint16 public protocolFeeBps;
-    uint16 public creatorFeeBps;
-    uint16 public redeemFeeBps;
-    uint16 public cashTargetBps;
-    uint256 public minDeposit;
-    uint256 public minFirstDeposit;
-    uint256 public minSleeveWeth;
-    uint256 public genesisEthPerShare;
-    bool public paused;
-    uint256 private locked;
-    bool private implLock;
-
-    error NotOwner();
-    error NotCreator();
-    error BadOwner();
-    error Zero();
-    error BadLen();
-    error TooSmall();
-    error DustSleeve();
-    error NeedBuffer();
-    error Paused();
-    error TransferFailed();
-    error Listed();
-    error CashFloor();
-    error MaxFee();
-    error SwapFailed();
-    error Unpriced();
-    error AlreadyInit();
-    error BadPair();
-    error Slippage();
-    error BadPool();
-    error NotManager();
-    error OnlySelf();
-    error Started();
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-    event Deposit(address indexed user, uint256 ethIn, uint256 shares, uint256 protocolFee, uint256 creatorFee, uint256 sharePrice);
-    event Withdraw(address indexed user, uint256 shares, uint256 ethOut, uint256 fee, uint256 sharePrice);
-    event Deployed(uint256 wethSpent, uint256 names);
-    event Liquidated(uint256 shares, uint256 names);
-    event Targets(address[] tokens, uint16[] bps);
-    event Rebalanced(address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 minOut);
-    event Restored(address indexed token, uint256 amountIn, uint256 minOut);
-    event CreatorFee(uint16 bps);
-    event CreatorRecipient(address indexed who);
-    event TokenAdded(address indexed token, bytes32 poolRef, bool v4);
-    event TokenRebound(address indexed token, bytes32 poolRef, bool v4);
-    event TokenRemoved(address indexed token);
-    event Floors(uint256 minDeposit, uint256 minFirst, uint256 minSleeve, uint16 cashBps);
-    event Genesis(uint256 ethPerShare);
-    event PausedSet(bool paused);
-    event OwnerSet(address indexed owner);
-    event OwnershipTransferStarted(address indexed from, address indexed to);
-    event OwnershipTransferCanceled(address indexed owner, address indexed pending);
-    event QuoteBridgeSet(address indexed quote, address indexed v3Bridge);
-
-    struct InitParams {
-        address creator;
-        address protocol;
-        address weth;
-        address router;
-        address v4Manager;
-        address v4StateView;
-        address v4Posm;
-        string name;
-        string symbol;
-        uint16 protocolFeeBps;
-        uint16 creatorFeeBps;
-        uint256 minFirstDeposit;
-        address recipient;
-    }
-
-    modifier onlyOwner() {
-        if (msg.sender != owner) revert NotOwner();
-        _;
-    }
-
-    modifier nonReentrant() {
-        if (locked != 0) revert SwapFailed();
-        locked = 1;
-        _;
-        locked = 0;
-    }
-
-    constructor() {
+    constructor(address twapOracle_, address swapLogic_) {
+        if (twapOracle_ == address(0) || swapLogic_ == address(0) || swapLogic_.code.length == 0) revert Zero();
+        twapOracle = twapOracle_;
+        swapLogic = swapLogic_;
         implLock = true;
+    }
+
+    function _dlg(bytes memory data) internal returns (bytes memory ret) {
+        bool ok;
+        (ok, ret) = swapLogic.delegatecall(data);
+        if (!ok) {
+            assembly {
+                revert(add(ret, 32), mload(ret))
+            }
+        }
     }
 
     function initialize(
@@ -219,9 +67,12 @@ contract HoodxIndex {
         minFirstDeposit = p.minFirstDeposit;
         minSleeveWeth = 0.004 ether;
         genesisEthPerShare = 0.04 ether; // $100 at $2500 ETH; owner can peg before first mint
-        _initRhQuotes();
+        if (bytes(p.imageURI).length != 0) {
+            _dlg(abi.encodeWithSelector(HoodxSwap.setImageURIRaw.selector, p.imageURI));
+        }
+        _dlg(abi.encodeWithSelector(HoodxSwap.initQuotes.selector));
         for (uint256 i; i < constituents.length; i++) {
-            _addToken(constituents[i], pools[i]);
+            _dlg(abi.encodeWithSelector(HoodxSwap.addTokenRaw.selector, constituents[i], pools[i]));
         }
         uint16 each = uint16((BPS_DENOM - cashTargetBps) / constituents.length);
         for (uint256 i; i < constituents.length; i++) {
@@ -260,13 +111,13 @@ contract HoodxIndex {
         if (token == weth) return 1e18;
         uint256 unit = _quoteUnit(token);
         if (allowedQuote[token] && quoteBridgeV3[token] != address(0)) {
-            return UniTwap.priceWethWad(quoteBridgeV3[token], token, weth, unit, TWAP_SECS);
+            return IUniTwapOracle(twapOracle).priceWethWad(quoteBridgeV3[token], token, weth, unit, TWAP_SECS);
         }
         address quote = quoteOf[token];
         if (isV4[token]) {
             if (quote == address(0) || quote == weth) {
                 PoolKey memory key = v4Key[token];
-                return UniTwap.priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth, unit);
+                return IUniTwapOracle(twapOracle).priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth, unit);
             }
             uint256 quotePerToken = _spotQuotePerToken(token);
             uint256 wethPerQuote = priceWethWad(quote);
@@ -275,11 +126,11 @@ contract HoodxIndex {
         address pool = poolOf[token];
         if (pool == address(0)) revert Listed();
         if (quote != address(0) && quote != weth) {
-            uint256 quotePerToken = UniTwap.quotePerBase(pool, token, quote, unit, TWAP_SECS);
+            uint256 quotePerToken = IUniTwapOracle(twapOracle).quotePerBase(pool, token, quote, unit, TWAP_SECS);
             uint256 wethPerQuote = priceWethWad(quote);
             return (quotePerToken * wethPerQuote) / _quoteUnit(quote);
         }
-        return UniTwap.priceWethWad(pool, token, weth, unit, TWAP_SECS);
+        return IUniTwapOracle(twapOracle).priceWethWad(pool, token, weth, unit, TWAP_SECS);
     }
 
     function oracleReady(address token) external view returns (bool) {
@@ -546,119 +397,29 @@ contract HoodxIndex {
     }
 
     function addToken(address token, bytes32 poolRef) external onlyOwner {
-        _addToken(token, poolRef);
+        _dlg(abi.encodeWithSelector(HoodxSwap.addTokenRaw.selector, token, poolRef));
     }
 
     function addTokens(address[] calldata who, bytes32[] calldata pools) external onlyOwner {
         if (who.length != pools.length) revert BadLen();
-        for (uint256 i; i < who.length; i++) _addToken(who[i], pools[i]);
+        for (uint256 i; i < who.length; i++) {
+            _dlg(abi.encodeWithSelector(HoodxSwap.addTokenRaw.selector, who[i], pools[i]));
+        }
     }
 
     function removeToken(address token) external onlyOwner {
-        _removeToken(token);
+        _dlg(abi.encodeWithSelector(HoodxSwap.removeTokenRaw.selector, token));
     }
 
     function removeTokens(address[] calldata who) external onlyOwner {
-        for (uint256 i; i < who.length; i++) _removeToken(who[i]);
+        for (uint256 i; i < who.length; i++) {
+            _dlg(abi.encodeWithSelector(HoodxSwap.removeTokenRaw.selector, who[i]));
+        }
     }
 
     /// @dev Rebind a zero-balance name to a new pool (e.g. PROMETHEUS/SPCX). Does not touch balances.
     function rebindToken(address token, bytes32 poolRef) external onlyOwner {
-        if (!listed[token]) revert Listed();
-        if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
-        _clearBind(token);
-        if (uint256(poolRef) >> 160 == 0) {
-            address pool = address(uint160(uint256(poolRef)));
-            _bindPool(token, pool);
-            poolOf[token] = pool;
-            emit TokenRebound(token, poolRef, false);
-        } else {
-            _bindV4(token, poolRef);
-            emit TokenRebound(token, poolRef, true);
-        }
-    }
-
-    function _addToken(address token, bytes32 poolRef) internal {
-        if (token == address(0) || token == weth || listed[token]) revert Listed();
-        if (tokens.length >= 24) revert BadLen();
-        if (uint256(poolRef) >> 160 == 0) {
-            address pool = address(uint160(uint256(poolRef)));
-            _bindPool(token, pool);
-            poolOf[token] = pool;
-            emit TokenAdded(token, poolRef, false);
-        } else {
-            _bindV4(token, poolRef);
-            emit TokenAdded(token, poolRef, true);
-        }
-        listed[token] = true;
-        tokens.push(token);
-    }
-
-    function _bindPool(address token, address pool) internal view {
-        if (pool == address(0) || pool.code.length == 0) revert BadPool();
-        address t0 = IUniV3Pool(pool).token0();
-        address t1 = IUniV3Pool(pool).token1();
-        if ((token == t0 && weth == t1) || (token == t1 && weth == t0)) {
-            quoteOf[token] = weth;
-        } else if ((token == t0 && USDG == t1) || (token == t1 && USDG == t0)) {
-            if (!allowedQuote[USDG] || quoteBridgeV3[USDG] == address(0)) revert BadPool();
-            quoteOf[token] = USDG;
-        } else revert BadPool();
-        if (IERC20(token).decimals() != 18) revert BadPool();
-        IUniV3Pool(pool).fee();
-    }
-
-    function _bindV4(address token, bytes32 poolId) internal {
-        (address c0, address c1, uint24 fee, int24 spacing, address hooks) = IPosm(v4Posm).poolKeys(bytes25(poolId));
-        if (c1 == address(0)) revert BadPool();
-        PoolKey memory key = PoolKey({
-            currency0: c0,
-            currency1: c1,
-            fee: fee,
-            tickSpacing: spacing,
-            hooks: hooks
-        });
-        bytes32 hashed;
-        assembly {
-            hashed := keccak256(key, 0xa0)
-        }
-        if (hashed != poolId) revert BadPool();
-        if (token != c0 && token != c1) revert BadPool();
-        address other = token == c0 ? c1 : c0;
-        if (other == weth || other == address(0)) {
-            quoteOf[token] = weth;
-        } else if (other == USDG || (allowedQuote[other] && quoteBridgeV3[other] != address(0))) {
-            quoteOf[token] = other;
-        } else revert BadPool();
-        if (IERC20(token).decimals() != 18) revert BadPool();
-        (uint160 sqrtP, , , ) = IStateView(v4StateView).getSlot0(poolId);
-        if (sqrtP == 0) revert BadPool();
-        isV4[token] = true;
-        poolIdOf[token] = poolId;
-        v4Key[token] = key;
-    }
-
-    function _removeToken(address token) internal {
-        if (!listed[token]) revert Listed();
-        if (IERC20(token).balanceOf(address(this)) != 0) revert NeedBuffer();
-        uint256 n = tokens.length;
-        if (n <= 2) revert BadLen();
-        listed[token] = false;
-        targetBps[token] = 0;
-        delete poolOf[token];
-        delete poolIdOf[token];
-        delete isV4[token];
-        delete v4Key[token];
-        delete quoteOf[token];
-        delete lastPxWad[token];
-        for (uint256 i; i < n; i++) {
-            if (tokens[i] == token) {
-                tokens[i] = tokens[n - 1];
-                tokens.pop();
-                break;
-            }
-        }
-        emit TokenRemoved(token);
+        _dlg(abi.encodeWithSelector(HoodxSwap.rebindTokenRaw.selector, token, poolRef));
     }
 
     function setCreatorRecipient(address who) external {
@@ -668,22 +429,27 @@ contract HoodxIndex {
         emit CreatorRecipient(who);
     }
 
+    /// @dev Wallet/Blockscout token image. HTTPS or IPFS, max 256 chars, no quotes.
+    function setImageURI(string calldata uri) external onlyOwner {
+        _dlg(abi.encodeWithSelector(HoodxSwap.setImageURIRaw.selector, uri));
+    }
+
+    /// @dev ERC-7572 metadata. Explorers read `image` from this JSON.
+    function contractURI() external view returns (string memory) {
+        return string.concat(
+            "data:application/json;utf8,{\"name\":\"",
+            _jsonSafe(name),
+            "\",\"symbol\":\"",
+            _jsonSafe(symbol),
+            "\",\"description\":\"HOODX index on Robinhood Chain\",\"image\":\"",
+            imageURI,
+            "\",\"external_url\":\"https://www.xhoodindex.com\"}"
+        );
+    }
+
     /// @dev Register a quote token (RH stock 18-dec, or USDG 6-dec) with its WETH V3 bridge.
     function setQuoteBridge(address quote, address v3Bridge) external onlyOwner {
-        if (quote == address(0) || v3Bridge == address(0) || quote == weth) revert Zero();
-        uint8 dec = IERC20(quote).decimals();
-        if (quote == USDG) {
-            if (dec != 6) revert BadPool();
-        } else if (dec != 18) {
-            revert BadPool();
-        }
-        address t0 = IUniV3Pool(v3Bridge).token0();
-        address t1 = IUniV3Pool(v3Bridge).token1();
-        if (!((quote == t0 && weth == t1) || (quote == t1 && weth == t0))) revert BadPool();
-        IUniV3Pool(v3Bridge).fee();
-        allowedQuote[quote] = true;
-        quoteBridgeV3[quote] = v3Bridge;
-        emit QuoteBridgeSet(quote, v3Bridge);
+        _dlg(abi.encodeWithSelector(HoodxSwap.setQuoteBridgeRaw.selector, quote, v3Bridge));
     }
 
     /// @dev WETH ↔ listed name on the bound V3 or V4 pool. Fee comes from the pool.
@@ -728,10 +494,7 @@ contract HoodxIndex {
     }
 
     function warmOracle(address token) public {
-        if (isV4[token]) return;
-        address pool = poolOf[token];
-        if (pool == address(0)) revert Listed();
-        IUniV3Pool(pool).increaseObservationCardinalityNext(ORACLE_CARDINALITY);
+        _dlg(abi.encodeWithSelector(HoodxSwap.warmOracleRaw.selector, token));
     }
 
     function warmOracles() external {
@@ -934,97 +697,13 @@ contract HoodxIndex {
     }
 
     function _swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) internal {
-        address listedTok = tokenIn == weth ? tokenOut : tokenIn;
-        address quote = quoteOf[listedTok];
-        if (quote != address(0) && quote != weth) {
-            if (tokenIn == weth && tokenOut == listedTok) {
-                _swapQuotedBuy(listedTok, quote, amountIn, amountOutMin);
-                return;
-            }
-            if (tokenOut == weth && tokenIn == listedTok) {
-                _swapQuotedSell(listedTok, quote, amountIn, amountOutMin);
-                return;
-            }
-            revert BadPair();
-        }
-        if (isV4[listedTok]) {
-            if (amountIn > uint256(uint128(type(int128).max))) revert Zero();
-            IPoolManager(v4Manager).unlock(abi.encode(tokenIn, tokenOut, amountIn, amountOutMin));
-            return;
-        }
-        address pool = poolOf[listedTok];
-        if (pool == address(0)) revert BadPair();
-        uint24 fee = IUniV3Pool(pool).fee();
-        IERC20(tokenIn).approve(swapRouter, amountIn);
-        ISwapRouter02(swapRouter).exactInputSingle(
-            ISwapRouter02.ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                fee: fee,
-                recipient: address(this),
-                amountIn: amountIn,
-                amountOutMinimum: amountOutMin,
-                sqrtPriceLimitX96: 0
-            })
-        );
-        IERC20(tokenIn).approve(swapRouter, 0);
+        _dlg(abi.encodeWithSelector(HoodxSwap.swap.selector, tokenIn, tokenOut, amountIn, amountOutMin));
     }
 
     /// @dev PoolManager callback. Settles the vault as the locker so V4 swaps
     ///      do not need Permit2 / Universal Router.
     function unlockCallback(bytes calldata data) external returns (bytes memory) {
-        if (msg.sender != v4Manager) revert NotManager();
-        (address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) =
-            abi.decode(data, (address, address, uint256, uint256));
-        address listedTok;
-        if (tokenIn == weth) listedTok = tokenOut;
-        else if (tokenOut == weth) listedTok = tokenIn;
-        else if (listed[tokenOut]) listedTok = tokenOut;
-        else listedTok = tokenIn;
-        if (!isV4[listedTok]) revert BadPair();
-        PoolKey memory key = v4Key[listedTok];
-        bool native = key.currency0 == address(0) || key.currency1 == address(0);
-        address currencyIn = tokenIn == weth && native ? address(0) : tokenIn;
-        address currencyOut = tokenOut == weth && native ? address(0) : tokenOut;
-        bool zeroForOne = currencyIn == key.currency0;
-        if ((zeroForOne && currencyOut != key.currency1) || (!zeroForOne && currencyIn != key.currency1)) {
-            revert BadPool();
-        }
-        IPoolManager pm = IPoolManager(v4Manager);
-        int256 raw = pm.swap(
-            key,
-            IPoolManager.SwapParams({
-                zeroForOne: zeroForOne,
-                amountSpecified: -int256(amountIn),
-                sqrtPriceLimitX96: zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1
-            }),
-            ""
-        );
-        int128 d0;
-        int128 d1;
-        assembly {
-            d0 := sar(128, raw)
-            d1 := signextend(15, raw)
-        }
-        int128 dIn = zeroForOne ? d0 : d1;
-        int128 dOut = zeroForOne ? d1 : d0;
-        if (dIn >= 0 || dOut <= 0) revert SwapFailed();
-        uint256 paid = uint256(uint128(-dIn));
-        uint256 got = uint256(uint128(dOut));
-        if (got < amountOutMin) revert Slippage();
-        if (currencyIn == address(0)) {
-            IWETH(weth).withdraw(paid);
-            pm.settle{value: paid}();
-        } else {
-            pm.sync(currencyIn);
-            if (!IERC20(currencyIn).transfer(address(pm), paid)) revert TransferFailed();
-            pm.settle();
-        }
-        pm.take(currencyOut, address(this), got);
-        if (currencyOut == address(0)) {
-            IWETH(weth).deposit{value: got}();
-        }
-        return abi.encode(got);
+        return _dlg(msg.data);
     }
 
     function _fees(uint256 weiIn) internal view returns (uint256 proto, uint256 creat) {
@@ -1076,44 +755,19 @@ contract HoodxIndex {
         if (wethBuffer() * BPS_DENOM < assets * uint256(cashTargetBps)) revert CashFloor();
     }
 
-    function _seedQuoteBridge(address quote, address bridge) internal {
-        allowedQuote[quote] = true;
-        quoteBridgeV3[quote] = bridge;
-    }
-
-    /// @dev Seed WETH V3 bridges for canonical RH stock quotes + USDG (see public/rh_bridges.json).
-    function _initRhQuotes() internal {
-        _seedQuoteBridge(USDG, WETH_USDG_V3);
-        _seedQuoteBridge(0x117cc2133c37B721F49dE2A7a74833232B3B4C0C, 0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e); // SPY
-        _seedQuoteBridge(0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xc6BCC95043DC48C204bB2D57fb264a10Efe0a607); // GME
-        _seedQuoteBridge(0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3, 0x8c2B4303fA0B99d07A5D3E9411497A277e65b673); // GOOGL
-        _seedQuoteBridge(0x322F0929c4625eD5bAd873c95208D54E1c003b2d, 0xA953CA88ff430e9487c60cA34d757414f4efdA07); // TSLA
-        _seedQuoteBridge(0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f, 0xCA2734c70E3c348edcda36a6478c9275a0ff0c90); // SLV
-        _seedQuoteBridge(0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa, 0xC3c9F0171490Ef0F4536fe493F3b0EbB5ee0CB5e); // SPCX
-        _seedQuoteBridge(0x58FfE4a942d3885bAa22D7520691F611EF09e7AA, 0x91280db3392ea92c08d8134b5760fb4798b69547); // TSM
-        _seedQuoteBridge(0x6330D8C3178a418788dF01a47479c0ce7CCF450b, 0x6707aeAc7D0e519B083219d27BB427364363183A); // COIN
-        _seedQuoteBridge(0x86923f96303D656E4aa86D9d42D1e57ad2023fdC, 0x5ca1B5e6Cb510b3bf53E7cd8f7d9B5a71b4a4dc0); // AMD
-        _seedQuoteBridge(0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A, 0x61be5bfbaf17ae28bf68006103b2e78fe6112638); // PLTR
-        _seedQuoteBridge(0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5, 0x7f310e3d05e575bd449e4484ef5da15863ea43b1); // SGOV
-        _seedQuoteBridge(0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd, 0x61346cd249a6453fba2ada35f210376ac0b4957c); // DELL
-        _seedQuoteBridge(0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9, 0x8bb3514e2204E1cDF3Ac149EFEe7Ff04D91B719f); // AAPL
-        _seedQuoteBridge(0xB90A19fF0Af67f7779afF50A882A9CfF42446400, 0x995c1ad5eb998b1bdd89f515c4bb64760c411b62); // SNDK
-        _seedQuoteBridge(0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35, 0xa4BdB396a69617eb7F70E2cc1EF526f7340b1B0d); // META
-        _seedQuoteBridge(0xc72b96e0E48ecd4DC75E1e45396e26300BC39681, 0x1b375a9c30ac43391aefae1bcf3a988d92458725); // INTC
-        _seedQuoteBridge(0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC, 0x62AB521f71431f78ac374CdbadC6cda3c8916b6C); // NVDA
-        _seedQuoteBridge(0xD5f3879160bc7c32ebb4dC785F8a4F505888de68, 0xA40D00a55d43bA2d188039DCF88bD68f4F133E78); // QQQ
-        _seedQuoteBridge(0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5, 0x754ddd4bf8e8635b4301a7f4af2ea7a82ab6cea7); // CRCL
-        _seedQuoteBridge(0xec262a75e413fAfD0dF80480274532C79D42da09, 0x70504a6fafdbfb75fe971faa4dd716e79ac5624c); // MSTR
-        _seedQuoteBridge(0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD, 0x301F48EC369BB3bfA0bC04d44A79037aa0EE2340); // MU
-    }
-
-    function _clearBind(address token) internal {
-        delete poolOf[token];
-        delete poolIdOf[token];
-        delete isV4[token];
-        delete v4Key[token];
-        delete quoteOf[token];
-        delete lastPxWad[token];
+    function _jsonSafe(string memory s) internal pure returns (string memory) {
+        bytes memory b = bytes(s);
+        bytes memory out = new bytes(b.length);
+        uint256 n;
+        for (uint256 i; i < b.length; i++) {
+            bytes1 c = b[i];
+            if (c == 0x22 || c == 0x5c || c < 0x20) continue;
+            out[n] = c;
+            n++;
+        }
+        bytes memory trimmed = new bytes(n);
+        for (uint256 j; j < n; j++) trimmed[j] = out[j];
+        return string(trimmed);
     }
 
     function _quoteUnit(address token) internal pure returns (uint256) {
@@ -1124,72 +778,6 @@ contract HoodxIndex {
     function _spotQuotePerToken(address token) internal view returns (uint256) {
         PoolKey memory key = v4Key[token];
         (, int24 tick, , ) = IStateView(v4StateView).getSlot0(poolIdOf[token]);
-        return UniTwap.quoteAtTick(tick, 1e18, token == key.currency0);
-    }
-
-    function _swapV3Exact(address tokenIn, address tokenOut, address pool, uint256 amountIn, uint256 minOut)
-        internal
-        returns (uint256 got)
-    {
-        uint24 fee = IUniV3Pool(pool).fee();
-        IERC20(tokenIn).approve(swapRouter, amountIn);
-        got = ISwapRouter02(swapRouter).exactInputSingle(
-            ISwapRouter02.ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                fee: fee,
-                recipient: address(this),
-                amountIn: amountIn,
-                amountOutMinimum: minOut,
-                sqrtPriceLimitX96: 0
-            })
-        );
-        IERC20(tokenIn).approve(swapRouter, 0);
-    }
-
-    function _swapV4Exact(address tokenIn, address tokenOut, uint256 amountIn, uint256 minOut)
-        internal
-        returns (uint256 got)
-    {
-        bytes memory ret = IPoolManager(v4Manager).unlock(abi.encode(tokenIn, tokenOut, amountIn, minOut));
-        got = abi.decode(ret, (uint256));
-    }
-
-    function _swapQuotedBuy(address token, address quote, uint256 wethIn, uint256 minTokenOut) internal {
-        address bridge = quoteBridgeV3[quote];
-        if (bridge == address(0)) revert BadPool();
-        uint256 pxQuote = priceWethWad(quote);
-        uint256 quotedQuote = (wethIn * _quoteUnit(quote)) / pxQuote;
-        uint256 quoteFloor = minOutFloor(quotedQuote);
-        uint256 quoteGot = _swapV3Exact(weth, quote, bridge, wethIn, quoteFloor);
-        if (isV4[token]) {
-            _swapV4Exact(quote, token, quoteGot, minTokenOut);
-        } else {
-            _swapV3Exact(quote, token, poolOf[token], quoteGot, minTokenOut);
-        }
-    }
-
-    function _swapQuotedSell(address token, address quote, uint256 tokenIn, uint256 minWethOut) internal {
-        address bridge = quoteBridgeV3[quote];
-        if (bridge == address(0)) revert BadPool();
-        uint256 quotedQuote;
-        uint256 quoteGot;
-        if (isV4[token]) {
-            quotedQuote = _spotQuotePerToken(token);
-            quotedQuote = (tokenIn * quotedQuote) / 1e18;
-            uint256 quoteFloor = minOutFloor(quotedQuote);
-            quoteGot = _swapV4Exact(token, quote, tokenIn, quoteFloor);
-        } else {
-            address pool = poolOf[token];
-            quotedQuote = UniTwap.quotePerBase(pool, token, quote, 1e18, TWAP_SECS);
-            quotedQuote = (tokenIn * quotedQuote) / 1e18;
-            uint256 quoteFloor = minOutFloor(quotedQuote);
-            quoteGot = _swapV3Exact(token, quote, pool, tokenIn, quoteFloor);
-        }
-        uint256 pxQuote = priceWethWad(quote);
-        uint256 quotedWeth = (quoteGot * pxQuote) / _quoteUnit(quote);
-        uint256 wethFloor = minOutFloor(quotedWeth);
-        if (wethFloor < minWethOut) revert Slippage();
-        _swapV3Exact(quote, weth, bridge, quoteGot, minWethOut);
+        return IUniTwapOracle(twapOracle).quoteAtTick(tick, 1e18, token == key.currency0);
     }
 }

@@ -5,7 +5,11 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOL = (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+SOL = (
+    (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+    + (ROOT / "contracts" / "HoodxSwap.sol").read_text()
+    + (ROOT / "contracts" / "HoodxStorage.sol").read_text()
+)
 AMZN = "0x12f190a9f9d7d37a250758b26824b97cef1bf54"
 AMZN_USDG_V3 = "0x8ac92da74ab5f3b1d024dc1943ad7e15dc4179ef"
 USDG = "0x5fc5360d0400a0fd4f2af552add042d716f1d168"
@@ -45,7 +49,7 @@ class UsdgContractTest(unittest.TestCase):
         sell = SOL.split("function _swapQuotedSell")[1]
         self.assertIn("_quoteUnit(quote)", buy)
         self.assertIn("_swapV3Exact(quote, token, poolOf[token]", buy)
-        self.assertIn("UniTwap.quotePerBase(pool, token, quote", sell)
+        self.assertIn("IUniTwapOracle(twapOracle).quotePerBase(pool, token, quote", sell)
         self.assertIn("_swapV3Exact(token, quote, pool", sell)
         self.assertIn("_quoteUnit(quote)", sell)
 

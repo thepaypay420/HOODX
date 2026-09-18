@@ -195,3 +195,62 @@ library UniTwap {
         }
     }
 }
+
+interface IUniTwapOracle {
+    function priceWethWad(address pool, address token, address weth, uint256 tokenUnit, uint32 secondsAgo)
+        external
+        view
+        returns (uint256);
+
+    function quotePerBase(address pool, address base, address quote, uint256 baseUnit, uint32 secondsAgo)
+        external
+        view
+        returns (uint256);
+
+    function priceWethWadV4(
+        address stateView,
+        bytes32 poolId,
+        address token,
+        address c0,
+        address c1,
+        address weth,
+        uint256 tokenUnit
+    ) external view returns (uint256);
+
+    function quoteAtTick(int24 tick, uint256 baseAmount, bool token0In) external pure returns (uint256);
+}
+
+/// @dev Deployed helper so HoodxIndex stays under the 24kb clone limit.
+contract UniTwapOracle {
+    function priceWethWad(address pool, address token, address weth, uint256 tokenUnit, uint32 secondsAgo)
+        external
+        view
+        returns (uint256)
+    {
+        return UniTwap.priceWethWad(pool, token, weth, tokenUnit, secondsAgo);
+    }
+
+    function quotePerBase(address pool, address base, address quote, uint256 baseUnit, uint32 secondsAgo)
+        external
+        view
+        returns (uint256)
+    {
+        return UniTwap.quotePerBase(pool, base, quote, baseUnit, secondsAgo);
+    }
+
+    function priceWethWadV4(
+        address stateView,
+        bytes32 poolId,
+        address token,
+        address c0,
+        address c1,
+        address weth,
+        uint256 tokenUnit
+    ) external view returns (uint256) {
+        return UniTwap.priceWethWadV4(stateView, poolId, token, c0, c1, weth, tokenUnit);
+    }
+
+    function quoteAtTick(int24 tick, uint256 baseAmount, bool token0In) external pure returns (uint256) {
+        return UniTwap.quoteAtTick(tick, baseAmount, token0In);
+    }
+}

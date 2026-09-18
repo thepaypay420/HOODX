@@ -13,7 +13,7 @@ import { ejectBlocked, isHeldWei, partitionRemovals, revertHint } from "@/lib/ej
 import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { ensureQuoteBridge } from "@/lib/quoteBridge";
-import { canSetTokenImage, fileToTokenImage, saveTokenImage } from "@/lib/tokenImage";
+import { canSetTokenImage, fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 const FLUSH_MS = 380;
@@ -49,6 +49,7 @@ export function IndexCard({
   const [pop, setPop] = useState("");
   const [localDraft, setLocalDraft] = useState(false);
   const [artTick, setArtTick] = useState(0);
+  const [imageUri, setImageUri] = useState("");
   const [extra, setExtra] = useState<Coin[]>([]);
   const [held, setHeld] = useState<string[]>([]);
   const live = Boolean(vault && isAddress(vault));
@@ -61,7 +62,7 @@ export function IndexCard({
 
   const reloadPack = useCallback(async () => {
     if (!live || !vault) return;
-    const [own, pending, creat, rec, list, cBps, pBps] = await Promise.all([
+    const [own, pending, creat, rec, list, cBps, pBps, img] = await Promise.all([
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "owner" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "pendingOwner" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "creator" }),
@@ -85,6 +86,11 @@ export function IndexCard({
         abi: vaultAbi,
         functionName: "protocolFeeBps",
       }),
+      publicClient.readContract({
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "imageURI",
+      }).catch(() => ""),
     ]);
     setOwner(own);
     setPendingOwner(pending && pending.toLowerCase() !== zeroAddress ? pending : "");
@@ -92,6 +98,7 @@ export function IndexCard({
     setRecipient(rec);
     setCreatorBps(Number(cBps));
     setProtocolBps(Number(pBps));
+    setImageUri(typeof img === "string" ? img : "");
     const addrs = (list as Address[]) || [];
     if (addrs.length) setOn(addrs.map((a) => a.toLowerCase()));
     const bags: string[] = [];
@@ -170,6 +177,36 @@ export function IndexCard({
     if (token) {
       setPop(token);
       window.setTimeout(() => setPop(""), 280);
+    }
+  }
+
+  async function pushWalletImage() {
+    if (!live || !vault || !walletClient || !address || !isOwner) {
+      flash("connect the curator wallet");
+      return;
+    }
+    const uri = walletImageUri(imageUri);
+    if (!uri) {
+      flash("need an https or ipfs image URL (≤256 chars)");
+      return;
+    }
+    setBookBusy(true);
+    try {
+      const hash = await walletClient.writeContract({
+        account: address,
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "setImageURI",
+        args: [uri],
+        chain: robinhood,
+      });
+      await publicClient.waitForTransactionReceipt({ hash });
+      setImageUri(uri);
+      flash("wallet image URI on-chain");
+    } catch (e) {
+      flash(e instanceof Error ? e.message.slice(0, 160) : "failed");
+    } finally {
+      setBookBusy(false);
     }
   }
 
@@ -586,10 +623,32 @@ export function IndexCard({
           <p className="mt-4 text-[15px] leading-6 text-[var(--dim)]">
             Tap names to add or remove.
             {canSetTokenImage(slug)
-              ? " Tap the glyph to set a token image — shown on HOODX now; wallets wait on a later factory."
+              ? " Tap the glyph to set a HUD image. Paste an https URL below so wallets and Blockscout show it too."
               : ""}
           </p>
         )
+      )}
+
+      {live && canEdit && (
+        <div className="mt-3">
+          <p className="text-[12px] text-[var(--dim)]">Wallet image URL · https or ipfs</p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <input
+              value={imageUri}
+              onChange={(e) => setImageUri(e.target.value)}
+              placeholder="https://…/token.jpg"
+              className="field min-w-0 flex-1 text-xs"
+            />
+            <button
+              type="button"
+              className="ghost px-3 text-[13px] text-[var(--cyan)]"
+              disabled={bookBusy}
+              onClick={() => void pushWalletImage()}
+            >
+              Push to wallets
+            </button>
+          </div>
+        </div>
       )}
 
       <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-[var(--line)] pt-4">

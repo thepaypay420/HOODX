@@ -476,7 +476,11 @@ class CuratorHandoffTest(unittest.TestCase):
         self.assertFalse(can_set_creator_cut(ZERO, self.CREATOR))
 
     def test_sol_locks_two_step_and_creator_cut(self):
-        src = (Path(__file__).resolve().parents[1] / "contracts" / "HoodxIndex.sol").read_text()
+        here = Path(__file__).resolve().parents[1]
+        src = (
+            (here / "contracts" / "HoodxIndex.sol").read_text()
+            + (here / "contracts" / "HoodxStorage.sol").read_text()
+        )
         self.assertIn("address public pendingOwner", src)
         self.assertIn("function acceptOwnership()", src)
         self.assertIn("function cancelOwnershipTransfer()", src)

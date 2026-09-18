@@ -2,13 +2,17 @@
 pragma solidity ^0.8.24;
 
 import {HoodxIndex} from "./HoodxIndex.sol";
+import {HoodxStorage} from "./HoodxStorage.sol";
+
+/// @title HoodxFactory — mint a meme index, drop the link, earn a cut
 
 /// @title HoodxFactory — mint a meme index, drop the link, earn a cut
 /// @notice Isolated side project. Not the LP desk.
 ///
-/// create() clones HoodxIndex. Each constituent must ship a Uni V3 WETH pool,
-/// a Uni V4 ETH/WETH pool, or a Uni V4 RH stock-quote pool (WETH bridged on-chain).
+/// create() clones HoodxIndex. Each constituent must ship a Uni V3 WETH or USDG
+/// pool, a Uni V4 ETH/WETH pool, or a Uni V4 RH stock/USDG quote pool.
 /// Slug `696x` is reserved (create696x, owner-only). Friends join via /i/{slug}.
+/// Token image URI is set at create (ERC-7572 contractURI) and can be updated by the curator.
 
 contract HoodxFactory {
     address public owner;
@@ -54,10 +58,12 @@ contract HoodxFactory {
         address treasury_,
         address v4Manager_,
         address v4StateView_,
-        address v4Posm_
+        address v4Posm_,
+        address implementation_
     ) {
         if (weth_ == address(0) || router_ == address(0) || treasury_ == address(0)) revert Zero();
         if (v4Manager_ == address(0) || v4StateView_ == address(0) || v4Posm_ == address(0)) revert Zero();
+        if (implementation_ == address(0) || implementation_.code.length == 0) revert Zero();
         owner = msg.sender;
         weth = weth_;
         swapRouter = router_;
@@ -65,7 +71,7 @@ contract HoodxFactory {
         v4Manager = v4Manager_;
         v4StateView = v4StateView_;
         v4Posm = v4Posm_;
-        implementation = address(new HoodxIndex());
+        implementation = implementation_;
     }
 
     function indexCount() external view returns (uint256) {
@@ -80,12 +86,13 @@ contract HoodxFactory {
     function create696x(
         address[] calldata tokens,
         bytes32[] calldata pools,
-        address recipient_
+        address recipient_,
+        string calldata imageURI_
     ) external onlyOwner returns (address) {
-        return _create(msg.sender, "696x", "696X", "696x", tokens, pools, 40, 0.08 ether, recipient_);
+        return _create(msg.sender, "696x", "696X", "696x", tokens, pools, 40, 0.08 ether, recipient_, imageURI_);
     }
 
-    /// @dev Anyone. Min 2 Uni V3 WETH or V4 ETH/WETH names. First mint 0.02 ETH.
+    /// @dev Anyone. Min 2 Uni V3 WETH/USDG or V4 ETH/quote names. First mint 0.02 ETH.
     function create(
         string calldata name_,
         string calldata symbol_,
@@ -93,10 +100,11 @@ contract HoodxFactory {
         address[] calldata tokens,
         bytes32[] calldata pools,
         uint16 creatorFeeBps,
-        address recipient_
+        address recipient_,
+        string calldata imageURI_
     ) external returns (address) {
         if (_eq(slug, "696x") || _eq(slug, "hoodx")) revert Taken();
-        return _create(msg.sender, name_, symbol_, slug, tokens, pools, creatorFeeBps, 0.02 ether, recipient_);
+        return _create(msg.sender, name_, symbol_, slug, tokens, pools, creatorFeeBps, 0.02 ether, recipient_, imageURI_);
     }
 
     function setTreasury(address who) external onlyOwner {
@@ -123,7 +131,8 @@ contract HoodxFactory {
         bytes32[] calldata pools,
         uint16 creatorFeeBps,
         uint256 minFirst,
-        address recipient_
+        address recipient_,
+        string memory imageURI_
     ) internal returns (address vault) {
         if (!_okSlug(slug)) revert BadSlug();
         if (bySlug[slug] != address(0)) revert Taken();
@@ -133,7 +142,7 @@ contract HoodxFactory {
         if (creatorFeeBps > MAX_CREATOR_FEE_BPS) revert MaxFee();
         vault = _clone(implementation);
         HoodxIndex(payable(vault)).initialize(
-            HoodxIndex.InitParams({
+            HoodxStorage.InitParams({
                 creator: creator,
                 protocol: treasury,
                 weth: weth,
@@ -146,7 +155,8 @@ contract HoodxFactory {
                 protocolFeeBps: protocolFeeBps,
                 creatorFeeBps: creatorFeeBps,
                 minFirstDeposit: minFirst,
-                recipient: recipient_
+                recipient: recipient_,
+                imageURI: imageURI_
             }),
             tokens,
             pools

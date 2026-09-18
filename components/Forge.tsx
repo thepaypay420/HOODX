@@ -11,7 +11,7 @@ import { robinhood } from "@/lib/chain";
 import { CREATOR_FEE_BPS, FACTORY, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
 import { saveDraft, savePayout } from "@/lib/packs";
-import { fileToTokenImage, saveTokenImage } from "@/lib/tokenImage";
+import { fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 export function Forge() {
@@ -28,6 +28,7 @@ export function Forge() {
   const [err, setErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [extra, setExtra] = useState<Coin[]>([]);
   const live = isAddress(FACTORY);
   const slugOk = okUserSlug(slug);
@@ -72,12 +73,13 @@ export function Forge() {
         return poolRef(coin);
       });
       const recipient = payout && isAddress(payout) ? (payout as Address) : zeroAddress;
+      const onChainImage = walletImageUri(imageUrl) || "";
       const hash = await walletClient.writeContract({
         account: address,
         address: FACTORY as Address,
         abi: factoryAbi,
         functionName: "create",
-        args: [name.trim(), symbol, slug, tokens, pools, feeBps, recipient],
+        args: [name.trim(), symbol, slug, tokens, pools, feeBps, recipient, onChainImage],
         chain: robinhood,
       });
       await publicClient.waitForTransactionReceipt({ hash });
@@ -167,7 +169,7 @@ export function Forge() {
           <div className="min-w-0 flex-1">
             <p className="text-[12px] text-[var(--dim)]">Token image · optional</p>
             <p className="mt-1 text-[13px] leading-6 text-[var(--dim)]">
-              Optional. Shown on HOODX. Wallets wait for a later factory image URI.
+              Optional. HUD shows the upload. Paste an https URL so wallets and Blockscout pick it up at mint.
             </p>
             <label className="ghost mt-2 inline-flex cursor-pointer px-3 text-[13px] text-[var(--cyan)]">
               {imageSrc ? "Replace image" : "Upload image"}
@@ -199,6 +201,12 @@ export function Forge() {
                 Clear
               </button>
             )}
+            <input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value.trim())}
+              placeholder="https://… wallet image URL (optional)"
+              className="field mt-2 w-full text-xs"
+            />
           </div>
         </div>
 

@@ -4,7 +4,10 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOL = (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+INDEX = (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+SWAP = (ROOT / "contracts" / "HoodxSwap.sol").read_text()
+STORAGE = (ROOT / "contracts" / "HoodxStorage.sol").read_text()
+SOL = INDEX + SWAP + STORAGE
 
 
 class QuoteBindSecurityTest(unittest.TestCase):
@@ -47,6 +50,8 @@ class QuoteBindSecurityTest(unittest.TestCase):
             "if (wethFloor < minWethOut) revert Slippage()",
             "function setQuoteBridge(address quote, address v3Bridge)",
             "_seedQuoteBridge(USDG, WETH_USDG_V3)",
+            "function setImageURI(string calldata uri)",
+            "function contractURI() external view returns (string memory)",
             "// SPCX",
             "// NVDA",
         ):
@@ -59,10 +64,10 @@ class QuoteBindSecurityTest(unittest.TestCase):
 
     def test_rebind_and_remove_clear_stale_marks(self):
         self.assertIn("delete lastPxWad[token]", SOL)
-        rebind = SOL.split("function rebindToken")[1].split("function _addToken")[0]
-        remove = SOL.split("function _removeToken")[1].split("function setCreatorRecipient")[0]
+        rebind = SOL.split("function rebindTokenRaw")[1].split("function initQuotes")[0]
+        remove = SOL.split("function _removeToken")[1].split("function _clearBind")[0]
         self.assertIn("_clearBind(token)", rebind)
-        self.assertIn("delete lastPxWad[token]", remove)
+        self.assertIn("_clearBind(token)", remove)
 
 
 if __name__ == "__main__":

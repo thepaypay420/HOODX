@@ -7,7 +7,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS = json.loads((ROOT / "public" / "rh_stocks.json").read_text())
 BRIDGES = json.loads((ROOT / "public" / "rh_bridges.json").read_text())
-SOL = (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+SOL = (
+    (ROOT / "contracts" / "HoodxIndex.sol").read_text()
+    + (ROOT / "contracts" / "HoodxSwap.sol").read_text()
+    + (ROOT / "contracts" / "HoodxStorage.sol").read_text()
+)
 
 
 class RhStockRegistryTest(unittest.TestCase):

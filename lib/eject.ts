@@ -70,10 +70,10 @@ export function isSlippageError(err: unknown): boolean {
 /** Names like PROMETHEUS trade on SPCX/SPY books; the live vault may still be bound to a thin ETH stub. */
 export function buySlippageHint(symbol: string, listedQuote?: string): string {
   const q = (listedQuote || "").toUpperCase();
-  if (q && q !== "ETH" && q !== "WETH") {
-    return `${symbol} trades on the ${q} pool (see DexScreener) — this vault is still bound to a thin ETH/WETH stub until V4 ${q} bind ships`;
+  if (q && q !== "ETH" && q !== "WETH" && q !== "USDG") {
+    return `${symbol} trades on the ${q} pool — bind that book (V4 ${q} or USDG V3) instead of a thin ETH stub`;
   }
-  return `${symbol} bind pool is too thin to fill at the 97% TWAP floor — seed the ETH/WETH book or wait for depth`;
+  return `${symbol} bind pool is too thin to fill at the 97% TWAP floor — seed the book or wait for depth`;
 }
 
 function blobOf(err: unknown): string {
