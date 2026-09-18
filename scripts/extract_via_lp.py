@@ -3,14 +3,14 @@
 
 Vault still can buy. Pons/hooked V4 cannot be used.
 
-Smart path (not a 99%-mint + EOA dump):
-  Dumping into the pool pays the 0.05% swap fee and can leave residual ETH
-  in the range. One-sided V3 LP is strictly better:
-  1. Keep ~100% of RSC as token-side liquidity near the upper tick.
-  2. Lower cash floor to 10% (on-chain minimum) so the vault can spend more.
-  3. Rebind the listed RSC from the cheap 3000 pool to the 500 pool.
-  4. vault swapV3 idle WETH → RSC (97% TWAP floor, no extra seed ETH).
-  5. Burn the LP — that returns seed WETH + the vault's WETH + fees.
+V1 leftover RSC made exitLp revert (internal transfer uses EOA as msg.sender).
+This path:
+  0. Sell any listed RescueTok bag back to WETH (undo a stuck V1 buy).
+  1. Deploy a fresh RescueTok. Mint the whole supply as one-sided token LP
+     (price at/above tickUpper → 0 extra seed ETH).
+  2. skim leftover so contract token balance is 0 (exitLp cannot trip the old bug).
+  3. Cash floor 10% (on-chain min). addToken. vault swapV3 idle WETH → token.
+  4. Burn LP — seed (if any) + vault WETH + fees to the curator.
 
 Never prints keys or the RPC URL.
 """
@@ -39,13 +39,13 @@ VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
 WETH = "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
 FACTORY = "0x1f7d7550b1b028f7571e69a784071f0205fd2efa"
 CURATOR = "0x134D468B0bcaeA6DF127916f951F7938c06A37C6"
-FEE = 500
-SPACING = 10
+V1_RSC = "0xAaF2abfFff2caf2aB0bD4b6A5C749fFa0f1EE8fd"
+FEE = 100
+SPACING = 1
 Q96 = 2**96
-# 1 WETH = 1e9 RSC so 1e9 supply ≈ 1 ETH of token inventory
 TOKENS_PER_WETH = 10**9
-CASH_BUFFER_WEI = 10**14  # 0.0001 dust above the 10% floor
-CASH_BPS = 1000  # on-chain minimum
+CASH_BUFFER_WEI = 10**14
+CASH_BPS = 1000
 
 VAULT_ABI = json.loads(
     """[
@@ -133,11 +133,6 @@ def encode_sqrt_price(amount1: int, amount0: int) -> int:
     return int(math.isqrt((amount1 << 192) // amount0))
 
 
-def tick_from_sqrt(sqrt_p: int) -> int:
-    price = (sqrt_p / Q96) ** 2
-    return int(round(math.log(price) / math.log(1.0001)))
-
-
 def align_tick(tick: int, spacing: int, round_down: bool) -> int:
     compressed = tick // spacing
     if tick < 0 and tick % spacing != 0:
@@ -189,6 +184,22 @@ def search_buy(vault, w3, acct, token: str, spend: int) -> tuple[int, int]:
     return best, best_floor
 
 
+def search_sell(vault, w3, acct, token: str, bal: int) -> tuple[int, int]:
+    lo_b, hi_b, best, best_floor = 10**12, bal, 0, 0
+    weth = cs(w3, WETH)
+    while lo_b <= hi_b:
+        mid = (lo_b + hi_b) // 2
+        try:
+            q = int(vault.functions.quoteOut(token, weth, mid).call())
+            floor = int(vault.functions.minOutFloor(q).call())
+            vault.functions.swapV3(token, weth, mid, floor).call({"from": acct.address})
+            best, best_floor = mid, floor
+            lo_b = mid + 1
+        except Exception:
+            hi_b = mid - 1
+    return best, best_floor
+
+
 def wait_oracle(vault, token: str) -> bool:
     ready = bool(vault.functions.oracleReady(token).call())
     print(f"oracleReady={ready}")
@@ -207,11 +218,33 @@ def wait_oracle(vault, token: str) -> bool:
     return ready
 
 
+def sell_bag(w3, acct, vault, token: str) -> None:
+    erc = w3.eth.contract(address=token, abi=ERC20)
+    bal = int(erc.functions.balanceOf(cs(w3, VAULT)).call())
+    if bal <= 0:
+        print(f"no bag {token}")
+        return
+    print(f"sell bag {token} bal={bal / 1e18:.4f}")
+    best, floor = search_sell(vault, w3, acct, token, bal)
+    print(f"max sell {best / 1e18:.4f} minOut {floor / 1e18:.6f} WETH")
+    if best <= 0:
+        raise SystemExit("cannot sell listed rescue bag")
+    send(
+        w3,
+        acct,
+        vault.functions.swapV3(token, cs(w3, WETH), best, floor).build_transaction(
+            {"from": acct.address, "gas": 1_500_000}
+        ),
+        "vault-sell-v1",
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--execute", action="store_true")
-    ap.add_argument("--token", default="", help="reuse already-deployed RescueTok")
+    ap.add_argument("--token", default="", help="reuse already-deployed V2 RescueTok")
     ap.add_argument("--pool", default="", help="reuse already-created V3 pool")
+    ap.add_argument("--skip-sell", action="store_true")
     args = ap.parse_args()
 
     if not launch_v2.wallet_ready():
@@ -223,11 +256,10 @@ def main() -> None:
 
     vault = w3.eth.contract(address=cs(w3, VAULT), abi=VAULT_ABI)
     weth = w3.eth.contract(address=cs(w3, WETH), abi=WETH_ABI)
-    spend = spendable_weth(vault)
     eoa_eth = w3.eth.get_balance(acct.address)
     print(
         f"eoa eth={eoa_eth / 1e18:.6f} vaultWETH={int(vault.functions.wethBuffer().call()) / 1e18:.6f} "
-        f"spendable={spend / 1e18:.6f} cashBps={int(vault.functions.cashTargetBps().call())}"
+        f"cashBps={int(vault.functions.cashTargetBps().call())}"
     )
     if eoa_eth < 2 * 10**15:
         raise SystemExit("need ~0.002 ETH on EOA for gas")
@@ -236,8 +268,24 @@ def main() -> None:
     print("compiled RescueTok")
 
     if not args.execute:
-        print("dry-run — pass --execute to mint LP and vault-buy")
+        print("dry-run — pass --execute to sell V1, deploy V2, vault-buy, exit LP")
         return
+
+    if not args.skip_sell and vault.functions.listed(cs(w3, V1_RSC)).call():
+        sell_bag(w3, acct, vault, cs(w3, V1_RSC))
+        print(f"vault WETH after V1 sell {int(vault.functions.wethBuffer().call()) / 1e18:.6f}")
+
+    cash_now = int(vault.functions.cashTargetBps().call())
+    if cash_now > CASH_BPS:
+        md = int(vault.functions.minDeposit().call())
+        mf = int(vault.functions.minFirstDeposit().call())
+        ms = int(vault.functions.minSleeveWeth().call())
+        send(
+            w3,
+            acct,
+            vault.functions.setFloors(md, mf, ms, CASH_BPS).build_transaction({"from": acct.address, "gas": 200_000}),
+            "setFloors-10pct",
+        )
 
     if args.token:
         token = cs(w3, args.token)
@@ -262,7 +310,6 @@ def main() -> None:
         pool_addr = cs(w3, existing)
     print(f"pool {pool_addr}")
     pool = w3.eth.contract(address=pool_addr, abi=POOL_ABI)
-    t0 = cs(w3, pool.functions.token0().call())
     t1 = cs(w3, pool.functions.token1().call())
     token_is_1 = t1.lower() == token.lower()
     if token_is_1:
@@ -286,60 +333,36 @@ def main() -> None:
 
     already_l = int(tok.functions.liq().call())
     if already_l == 0:
+        # One-sided token inventory: current tick at/above tickUpper so mint
+        # pays only RSC. Vault WETH→token buy then walks down into the range.
         if token_is_1:
-            hi = align_tick(tick, SPACING, False)
-            lo = align_tick(tick - 200, SPACING, True)
+            hi = align_tick(tick, SPACING, True)
+            lo = hi - 200 * SPACING
         else:
-            lo = align_tick(tick, SPACING, True)
-            hi = align_tick(tick + 200, SPACING, False)
+            lo = align_tick(tick, SPACING, False)
+            hi = lo + 200 * SPACING
         if hi <= lo:
             hi = lo + SPACING
-        cur_pool = cs(w3, tok.functions.pool().call()) if int(tok.functions.pool().call(), 16) else None
-        cur_lo = int(tok.functions.tickLower().call())
-        cur_hi = int(tok.functions.tickUpper().call())
-        if cur_pool != pool_addr or cur_lo != lo or cur_hi != hi:
-            print(f"lp ticks {lo}..{hi}")
-            send(w3, acct, tok.functions.setPool(pool_addr, lo, hi).build_transaction({"from": acct.address}), "setPool")
-        else:
-            print(f"reuse lp ticks {cur_lo}..{cur_hi}")
-
-        eoa_tok = int(tok.functions.balanceOf(acct.address).call())
-        if eoa_tok > 10**18:
-            send(
-                w3,
-                acct,
-                tok.functions.transfer(token, eoa_tok).build_transaction({"from": acct.address, "gas": 200_000}),
-                "fund-tokens",
-            )
+        print(f"lp ticks {lo}..{hi} (one-sided)")
+        send(w3, acct, tok.functions.setPool(pool_addr, lo, hi).build_transaction({"from": acct.address}), "setPool")
 
         tok_bal = int(tok.functions.balanceOf(token).call())
-        weth_bal = int(weth.functions.balanceOf(token).call())
-        print(f"inventory tok={tok_bal / 1e18:.4f} weth={weth_bal / 1e18:.6f}")
+        print(f"inventory tok={tok_bal / 1e18:.4f} weth={int(weth.functions.balanceOf(token).call()) / 1e18:.6f}")
         if tok_bal <= 0:
             raise SystemExit("RescueTok has no token inventory")
 
         L = search_mint_l(tok, acct, 2**96)
         if L <= 0:
-            raise SystemExit(f"mintLp cannot simulate tok={tok_bal} weth={weth_bal}")
+            raise SystemExit("mintLp cannot simulate one-sided L")
         print(f"mint L={L}")
         send(w3, acct, tok.functions.mintLp(L).build_transaction({"from": acct.address, "gas": 1_200_000}), "mintLp")
+        send(w3, acct, tok.functions.skim().build_transaction({"from": acct.address, "gas": 200_000}), "skim")
+        print(f"leftover tok {int(tok.functions.balanceOf(token).call()) / 1e18:.6f}")
     else:
-        print(f"reuse existing LP L={already_l} poolLiq={int(pool.functions.liquidity().call())}")
+        print(f"reuse existing LP L={already_l}")
 
-    cash_now = int(vault.functions.cashTargetBps().call())
-    if cash_now > CASH_BPS:
-        md = int(vault.functions.minDeposit().call())
-        mf = int(vault.functions.minFirstDeposit().call())
-        ms = int(vault.functions.minSleeveWeth().call())
-        send(
-            w3,
-            acct,
-            vault.functions.setFloors(md, mf, ms, CASH_BPS).build_transaction({"from": acct.address, "gas": 200_000}),
-            "setFloors-10pct",
-        )
-
-    bound = cs(w3, vault.functions.poolOf(token).call()) if vault.functions.listed(token).call() else None
     if vault.functions.listed(token).call():
+        bound = cs(w3, vault.functions.poolOf(token).call())
         if bound.lower() != pool_addr.lower():
             send(
                 w3,

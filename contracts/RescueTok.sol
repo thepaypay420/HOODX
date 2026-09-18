@@ -43,10 +43,7 @@ contract RescueTok {
     }
 
     function transfer(address to, uint256 value) public returns (bool) {
-        if (balanceOf[msg.sender] < value) revert NotOwner();
-        balanceOf[msg.sender] -= value;
-        balanceOf[to] += value;
-        emit Transfer(msg.sender, to, value);
+        _move(msg.sender, to, value);
         return true;
     }
 
@@ -56,10 +53,7 @@ contract RescueTok {
             if (a < value) revert NotOwner();
             allowance[from][msg.sender] = a - value;
         }
-        if (balanceOf[from] < value) revert NotOwner();
-        balanceOf[from] -= value;
-        balanceOf[to] += value;
-        emit Transfer(from, to, value);
+        _move(from, to, value);
         return true;
     }
 
@@ -82,20 +76,21 @@ contract RescueTok {
         if (amount1 > 0) _pay(t1, amount1);
     }
 
+    /// @dev Pull leftover inventory to the curator. Does not touch the LP.
+    function skim() external onlyOwner {
+        _skim();
+    }
+
     function exitLp() external onlyOwner {
         uint128 L = liq;
         if (L > 0) {
             liq = 0;
             IUniV3Pool(pool).burn(tickLower, tickUpper, L);
-            IUniV3Pool(pool).collect(owner, tickLower, tickUpper, type(uint128).max, type(uint128).max);
+            // Collect to this contract, then sweep actual balances so a
+            // leftover `transfer(owner, t)` cannot use the EOA as msg.sender.
+            IUniV3Pool(pool).collect(address(this), tickLower, tickUpper, type(uint128).max, type(uint128).max);
         }
-        uint256 t = balanceOf[address(this)];
-        if (t > 0) transfer(owner, t);
-        address weth = IUniV3Pool(pool).token0() == address(this)
-            ? IUniV3Pool(pool).token1()
-            : IUniV3Pool(pool).token0();
-        uint256 w = IERC20(weth).balanceOf(address(this));
-        if (w > 0) IERC20(weth).transfer(owner, w);
+        _skim();
         uint256 eth = address(this).balance;
         if (eth > 0) {
             (bool ok, ) = owner.call{value: eth}("");
@@ -103,11 +98,27 @@ contract RescueTok {
         }
     }
 
+    function _skim() internal {
+        uint256 t = balanceOf[address(this)];
+        if (t > 0) _move(address(this), owner, t);
+        if (pool == address(0)) return;
+        address weth = IUniV3Pool(pool).token0() == address(this)
+            ? IUniV3Pool(pool).token1()
+            : IUniV3Pool(pool).token0();
+        uint256 w = IERC20(weth).balanceOf(address(this));
+        if (w > 0) IERC20(weth).transfer(owner, w);
+    }
+
+    function _move(address from, address to, uint256 value) internal {
+        if (balanceOf[from] < value) revert NotOwner();
+        balanceOf[from] -= value;
+        balanceOf[to] += value;
+        emit Transfer(from, to, value);
+    }
+
     function _pay(address token, uint256 amt) internal {
         if (token == address(this)) {
-            balanceOf[address(this)] -= amt;
-            balanceOf[msg.sender] += amt;
-            emit Transfer(address(this), msg.sender, amt);
+            _move(address(this), msg.sender, amt);
         } else if (!IERC20(token).transfer(msg.sender, amt)) {
             revert NotOwner();
         }
