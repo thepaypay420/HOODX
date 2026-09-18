@@ -41,7 +41,7 @@ export const CURATOR_STRATEGIES: Strategy[] = [
   {
     id: "mcap",
     label: "Mcap weight",
-    hint: "Capped sqrt-mcap vs the rest of the book — default for targets and slider rebalance.",
+    hint: "Capped sqrt-mcap vs the rest of the book — good default starting point.",
   },
   { id: "list696", label: "696 list book", hint: "Fixed 696 snapshot weights (skips dead-volume names)." },
   { id: "equal", label: "Equal weight", hint: "Split risk-on evenly across every listed name." },
@@ -249,22 +249,47 @@ function distributeBpsByMcap(
   return out;
 }
 
-/** When one slider moves, reallocate the rest by sqrt-mcap vs the book. */
+/** Move one slider without touching the rest of the book. */
+export function setSliderTarget(
+  draft: TargetDraft,
+  changedToken: string,
+  newBps: number,
+  cashTargetBps: number,
+): TargetDraft {
+  const cap = riskCap(cashTargetBps);
+  const key = changedToken.toLowerCase();
+  const clamped = Math.max(0, Math.min(cap, Math.floor(newBps)));
+  return { ...draft, [key]: clamped };
+}
+
+/** Scale every target proportionally so risk-on fits the cap (keeps relative mix). */
+export function balanceDraftToCap(draft: TargetDraft, cashTargetBps: number): TargetDraft {
+  const cap = riskCap(cashTargetBps);
+  const keys = Object.keys(draft);
+  const sum = keys.reduce((a, k) => a + (draft[k] || 0), 0);
+  if (sum <= 0 || sum <= cap) return { ...draft };
+  const scale = cap / sum;
+  const scaled = keys.map((k) => ({ k, bps: Math.floor((draft[k] || 0) * scale) }));
+  let used = scaled.reduce((a, e) => a + e.bps, 0);
+  const remainder = cap - used;
+  if (remainder > 0 && scaled.length) {
+    const top = [...scaled].sort((a, b) => b.bps - a.bps)[0]!;
+    top.bps += remainder;
+  }
+  const out: TargetDraft = { ...draft };
+  for (const { k, bps } of scaled) out[k] = bps;
+  return out;
+}
+
+/** @deprecated Use setSliderTarget — sliders no longer auto-rebalance siblings. */
 export function resizeSliderTargets(
   draft: TargetDraft,
   changedToken: string,
   newBps: number,
   cashTargetBps: number,
-  mcapRows: McapRow[],
+  _mcapRows: McapRow[],
 ): TargetDraft {
-  const cap = riskCap(cashTargetBps);
-  const key = changedToken.toLowerCase();
-  const clamped = Math.max(0, Math.min(cap, Math.floor(newBps)));
-  const tokens = Object.keys(draft);
-  if (clamped === 0) {
-    return distributeBpsByMcap(tokens, cap, new Map(), mcapRows);
-  }
-  return distributeBpsByMcap(tokens, cap, new Map([[key, clamped]]), mcapRows);
+  return setSliderTarget(draft, changedToken, newBps, cashTargetBps);
 }
 
 export function draftTotals(draft: TargetDraft, cashTargetBps: number) {
@@ -449,7 +474,7 @@ export function curatorWorkflow(
     {
       n: 1,
       title: "Plan",
-      body: "Sliders = where you want weight. Mcap weight is a good start.",
+      body: "Drag one slider at a time — other names stay put. Use Balance to fit the 75% cap.",
       active: !planDone || draftDirty,
       done: planDone,
     },
