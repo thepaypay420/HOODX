@@ -393,7 +393,7 @@ export function OwnerDesk({
   })();
 
   return (
-    <section data-testid="owner-desk" className="holo p-4 sm:p-5">
+    <section id="vault-swaps" data-testid="owner-desk" className="holo p-4 sm:p-5">
       <p className="text-[13px] text-[var(--dim)]">Owner · {shortAddr(owner)}</p>
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Vault swaps</h2>
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">

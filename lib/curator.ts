@@ -408,3 +408,71 @@ export function suggestBuyEth(row: DriftRow, navWei: bigint, wethBagWei: bigint,
   const wei = deployable < gapWei ? deployable : gapWei;
   return Number(wei) / 1e18;
 }
+
+export type CuratorWorkflow = {
+  draftDirty: boolean;
+  parkRows: DriftRow[];
+  buyRows: DriftRow[];
+  sellRows: DriftRow[];
+  headline: string;
+  steps: { n: number; title: string; body: string; active: boolean; done: boolean }[];
+};
+
+/** Plain-language next steps for the curator panel. */
+export function curatorWorkflow(
+  rows: { token: string; onChainTargetBps: number }[],
+  draft: TargetDraft,
+  driftRows: DriftRow[],
+  deployableWei: bigint,
+  validationErrors: string[],
+): CuratorWorkflow {
+  const draftDirty = rows.some((r) => (draft[r.token.toLowerCase()] ?? 0) !== r.onChainTargetBps);
+  const parkRows = driftRows.filter((r) => r.action === "park");
+  const buyRows = driftRows.filter((r) => r.action === "buy");
+  const sellRows = driftRows.filter((r) => r.action === "sell");
+  const hasDrift = parkRows.length + buyRows.length + sellRows.length > 0;
+
+  let headline = "Book matches your targets.";
+  if (validationErrors.length) headline = validationErrors[0]!;
+  else if (parkRows.length) headline = `Exit ${parkRows.map((r) => r.symbol).join(", ")} to WETH first.`;
+  else if (draftDirty) headline = "Save your slider changes on-chain before swapping.";
+  else if (buyRows.length && deployableWei > 0n)
+    headline = `${buyRows.length} names need WETH — tap Buy, confirm swap below.`;
+  else if (buyRows.length) headline = "No deployable WETH — sell overweight names or add ETH.";
+  else if (sellRows.length) headline = `${sellRows.length} names are overweight — trim or hold.`;
+
+  const planDone = validationErrors.length === 0;
+  const writeDone = !draftDirty;
+  const swapDone = !hasDrift || (writeDone && buyRows.length === 0 && parkRows.length === 0 && sellRows.length === 0);
+
+  const steps = [
+    {
+      n: 1,
+      title: "Plan",
+      body: "Sliders = where you want weight. Mcap weight is a good start.",
+      active: !planDone || draftDirty,
+      done: planDone,
+    },
+    {
+      n: 2,
+      title: "Save",
+      body: draftDirty ? "Write targets on-chain — sliders are still a draft." : "Targets saved on-chain.",
+      active: planDone && draftDirty,
+      done: writeDone,
+    },
+    {
+      n: 3,
+      title: "Swap",
+      body:
+        deployableWei > 0n && buyRows.length
+          ? "Buy underweight names with idle WETH (keeps 25% cash floor)."
+          : parkRows.length
+            ? "Sell legacy bags to WETH, then buy the book."
+            : "Use Fix buttons — swaps run in Vault swaps below.",
+      active: writeDone && hasDrift,
+      done: swapDone && writeDone,
+    },
+  ];
+
+  return { draftDirty, parkRows, buyRows, sellRows, headline, steps };
+}

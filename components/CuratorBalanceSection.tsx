@@ -41,10 +41,9 @@ export function CuratorBalanceSection({
   return (
     <section id="curator-balance" data-testid="curator-balance-section" className="holo p-4 sm:p-5">
       <p className="text-[13px] text-[var(--dim)]">Curator · Balance</p>
-      <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Targets, drift & rebalance</h2>
+      <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Rebalance the book</h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[var(--dim)]">
-        Slide each name to the weight you want, write targets on-chain, then Fix → Buy to spend idle WETH
-        (above the cash floor). Sliders plan allocation — swaps run separately in vault swaps below.
+        Three steps: plan targets → save on-chain → swap. Sliders do not spend ETH by themselves.
       </p>
 
       <CuratorBook

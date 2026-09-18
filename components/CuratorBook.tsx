@@ -20,11 +20,12 @@ import {
   trimDriftTargets,
   parkLegacyTargets,
   vaultMcapTargets,
+  curatorWorkflow,
   type McapRow,
   type StrategyId,
   type TargetDraft,
 } from "@/lib/curator";
-import { fmtPct, fmtUsdSleeve, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
+import { fmtUsdSleeve, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
 import { deployableWethWei } from "@/lib/eject";
 import { sleeveWethWei } from "@/lib/sleeveValue";
 import { hydrateVaultCoins } from "@/lib/vaultCoins";
@@ -65,6 +66,17 @@ export function CuratorBook({
   const [cashBps, setCashBps] = useState(2500);
   const [ethUsd, setEthUsd] = useState(0);
   const [strategy, setStrategy] = useState<StrategyId | "custom">("custom");
+  const [actionsOnly, setActionsOnly] = useState(true);
+
+  const focusSwap = useCallback(
+    (token: string, side: "buy" | "sell", amountEth?: string) => {
+      onFocusSwap?.(token, side, amountEth);
+      requestAnimationFrame(() => {
+        document.getElementById("vault-swaps")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    },
+    [onFocusSwap],
+  );
 
   const load = useCallback(async () => {
     if (!isAddress(vault)) return;
@@ -213,6 +225,19 @@ export function CuratorBook({
     [draft, rows, navWei, minSleeveWei, cashBps],
   );
 
+  const liveWethPct = navWei > 0n ? Number((wethBagWei * 10_000n) / navWei) / 100 : 0;
+  const liveWethUsd = ethUsd > 0 ? Number(formatEtherSafe(wethBagWei)) * ethUsd : 0;
+
+  const workflow = useMemo(
+    () => curatorWorkflow(rows, draft, driftRows, deployableWei, validation.errors),
+    [rows, draft, driftRows, deployableWei, validation.errors],
+  );
+
+  const visibleRows = useMemo(
+    () => (actionsOnly ? driftRows.filter((r) => r.action !== "hold") : driftRows),
+    [actionsOnly, driftRows],
+  );
+
   const legacyIds = useMemo(
     () =>
       new Set(
@@ -308,34 +333,91 @@ export function CuratorBook({
 
   const maxSliderPct = totals.cap / 100;
 
+  function deployNextBuy() {
+    const ranked = [...workflow.buyRows].sort((a, b) => Math.abs(b.plVsTargetUsd) - Math.abs(a.plVsTargetUsd));
+    const top = ranked[0];
+    if (!top) return;
+    const eth = suggestBuyEth(top, navWei, wethBagWei, cashBps);
+    focusSwap(top.token, "buy", eth > 0 ? formatEther(BigInt(Math.floor(eth * 1e18))) : undefined);
+    onStatus?.(`Prefilled ${top.symbol} buy · scroll to Vault swaps`);
+  }
+
   return (
     <div data-testid="curator-book" className="mt-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-right text-[12px] tabular text-[var(--dim)] sm:ml-auto">
+      <div
+        data-testid="curator-workflow"
+        className="rounded-xl border border-[var(--line)] bg-[var(--line)]/20 p-4"
+      >
+        <p className="text-[15px] font-medium text-[var(--paper)]">{workflow.headline}</p>
+        <ol className="mt-3 grid gap-2 sm:grid-cols-3">
+          {workflow.steps.map((s) => (
+            <li
+              key={s.n}
+              className={`rounded-lg border px-3 py-2 text-[12px] leading-5 ${
+                s.done
+                  ? "border-[var(--mint)]/40 text-[var(--dim)]"
+                  : s.active
+                    ? "border-[var(--gold)]/50 bg-[var(--gold)]/5 text-[var(--paper)]"
+                    : "border-[var(--line)] text-[var(--dim)]"
+              }`}
+            >
+              <span className="font-medium">
+                {s.n}. {s.title}
+                {s.done ? " ✓" : ""}
+              </span>
+              <span className="mt-0.5 block">{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+        <div className="text-[12px] leading-5 tabular text-[var(--dim)]">
           <p>
-            Risk-on{" "}
-            <span className={totals.over > 0 ? "text-[var(--gold)]" : "text-[var(--paper)]"}>
-              {totals.riskOnPct.toFixed(1)}%
-            </span>{" "}
-            · Cash {totals.cashPct.toFixed(1)}%
+            <span className="text-[var(--paper)]">Live WETH</span> {liveWethPct.toFixed(1)}%
+            {ethUsd > 0 ? ` (${fmtUsdSleeve(liveWethUsd)})` : ""}
+            {" · "}
+            <span className="text-[var(--paper)]">deployable</span> {formatEtherSafe(deployableWei)} ETH
           </p>
-          <p className="mt-0.5">Cap {maxSliderPct.toFixed(0)}% · room {totals.room / 100}%</p>
-          {wethBagWei > 0n && (
-            <p className="mt-0.5">
-              Idle WETH {formatEtherSafe(wethBagWei)} · deployable {formatEtherSafe(deployableWei)}
-            </p>
+          <p className="mt-0.5">
+            Draft targets {totals.riskOnPct.toFixed(1)}% in tokens · {(cashBps / 100).toFixed(0)}% cash floor kept
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {workflow.buyRows.length > 0 && deployableWei > 0n && !workflow.draftDirty && (
+            <button
+              type="button"
+              data-testid="curator-deploy-next"
+              disabled={busy || workflow.draftDirty}
+              onClick={deployNextBuy}
+              className="ape px-3 py-2 text-[12px]"
+            >
+              Deploy next buy
+            </button>
           )}
+          <button
+            type="button"
+            data-testid="curator-actions-toggle"
+            onClick={() => setActionsOnly((v) => !v)}
+            className="ghost px-3 py-2 text-[12px]"
+          >
+            {actionsOnly ? "Show all names" : "Needs action only"}
+          </button>
         </div>
       </div>
 
-      <p className="mt-2 text-[14px] leading-6 text-[var(--dim)]">
-        Sliders set draft targets only — they do not swap. Raising a name means you want to deploy idle WETH
-        (above the {(cashBps / 100).toFixed(0)}% cash floor). Write targets on-chain, then Fix → Buy prefills
-        vault swaps up to deployable WETH.
-      </p>
-
       <div className="mt-4 flex flex-wrap gap-2">
-        {CURATOR_STRATEGIES.map((s) => (
+        <button
+          type="button"
+          data-testid="strategy-mcap-primary"
+          disabled={busy || !rows.length}
+          title="Capped sqrt-mcap — good default"
+          onClick={() => applyStrategy("mcap")}
+          className={`ape px-3 py-2 text-[12px] ${strategy === "mcap" ? "ring-1 ring-[var(--gold)]" : ""}`}
+        >
+          Mcap weight
+        </button>
+        {CURATOR_STRATEGIES.filter((s) => s.id !== "mcap").map((s) => (
           <button
             key={s.id}
             type="button"
@@ -367,17 +449,22 @@ export function CuratorBook({
           <thead className="bg-[var(--line)]/30 text-[var(--dim)]">
             <tr>
               <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2 text-right">Live</th>
+              <th className="px-3 py-2 text-right">Now</th>
               <th className="px-3 py-2">Target</th>
-              <th className="px-3 py-2 text-right">Drift</th>
-              <th className="px-3 py-2 text-right">Value</th>
-              <th className="px-3 py-2 text-right">Mark Δ</th>
-              <th className="px-3 py-2 text-right">vs target</th>
-              <th className="px-3 py-2 text-right">Fix</th>
+              <th className="px-3 py-2 text-right">Gap</th>
+              <th className="px-3 py-2 text-right">Need</th>
+              <th className="px-3 py-2 text-right">Do</th>
             </tr>
           </thead>
           <tbody>
-            {driftRows.map((r) => {
+            {visibleRows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-3 py-6 text-center text-[var(--dim)]">
+                  All names on target — toggle Show all names to edit sliders.
+                </td>
+              </tr>
+            ) : null}
+            {visibleRows.map((r) => {
               const pct = (draft[r.token] || 0) / 100;
               const plTone =
                 r.plVsTargetEth > 0.00005 ? "text-[var(--gold)]" : r.plVsTargetEth < -0.00005 ? "text-[var(--mint)]" : "";
@@ -413,12 +500,9 @@ export function CuratorBook({
                     {r.driftBps >= 0 ? "+" : ""}
                     {(r.driftBps / 100).toFixed(2)}%
                   </td>
-                  <td className="px-3 py-3 text-right tabular">{ethUsd > 0 ? fmtUsdSleeve(r.valueUsd) : `${r.valueEth.toFixed(6)} ETH`}</td>
-                  <td className="px-3 py-3 text-right tabular">
-                    {r.markDelta == null ? "—" : fmtPct(r.markDelta, 1)}
-                  </td>
                   <td className={`px-3 py-3 text-right tabular ${plTone}`}>
-                    {ethUsd > 0 ? fmtUsdSleeve(r.plVsTargetUsd) : `${r.plVsTargetEth.toFixed(6)} ETH`}
+                    {r.action === "buy" ? "buy " : r.action === "sell" || r.action === "park" ? "sell " : ""}
+                    {ethUsd > 0 ? fmtUsdSleeve(Math.abs(r.plVsTargetUsd)) : `${Math.abs(r.plVsTargetEth).toFixed(6)} ETH`}
                   </td>
                   <td className="px-3 py-3 text-right">
                     {r.action === "hold" ? (
@@ -431,9 +515,13 @@ export function CuratorBook({
                         onClick={() => {
                           if (r.action === "buy") {
                             const eth = suggestBuyEth(r, navWei, wethBagWei, cashBps);
-                            onFocusSwap?.(r.token, "buy", eth > 0 ? formatEther(BigInt(Math.floor(eth * 1e18))) : undefined);
+                            focusSwap(
+                              r.token,
+                              "buy",
+                              eth > 0 ? formatEther(BigInt(Math.floor(eth * 1e18))) : undefined,
+                            );
                           } else {
-                            onFocusSwap?.(r.token, "sell");
+                            focusSwap(r.token, "sell");
                           }
                         }}
                       >
@@ -458,11 +546,11 @@ export function CuratorBook({
         <button
           type="button"
           data-testid="curator-write-targets"
-          disabled={busy || chainId !== robinhood.id || validation.errors.length > 0}
+          disabled={busy || chainId !== robinhood.id || validation.errors.length > 0 || !workflow.draftDirty}
           onClick={() => void writeTargets()}
           className="ape px-4"
         >
-          {busy ? "Confirm…" : "Write targets on-chain"}
+          {busy ? "Confirm…" : workflow.draftDirty ? "1. Write targets on-chain" : "Targets saved ✓"}
         </button>
       </div>
     </div>

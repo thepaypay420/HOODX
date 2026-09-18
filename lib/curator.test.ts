@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeDrift,
+  curatorWorkflow,
   draftTotals,
   equalTargets,
   liveMixTargets,
@@ -176,5 +177,50 @@ describe("drift analysis", () => {
     expect(row.action).toBe("buy");
     // floor = 25% of 1 ETH = 0.25; deployable = 0.15
     expect(suggestBuyEth(row, nav, weth, 2500)).toBeCloseTo(0.15, 6);
+  });
+});
+
+describe("curator workflow", () => {
+  it("prioritizes legacy exit before buys", () => {
+    const wf = curatorWorkflow(
+      [{ token: "0xlegacy", onChainTargetBps: 500 }],
+      { "0xlegacy": 0 },
+      [
+        {
+          token: "0xlegacy",
+          symbol: "OLD",
+          liveBps: 500,
+          targetBps: 500,
+          draftBps: 0,
+          driftBps: 500,
+          valueEth: 0.05,
+          valueUsd: 100,
+          markDelta: null,
+          plVsTargetEth: 0.05,
+          plVsTargetUsd: 100,
+          action: "park",
+          swapEth: 0.05,
+        },
+        {
+          token: "0xnew",
+          symbol: "NEW",
+          liveBps: 0,
+          targetBps: 0,
+          draftBps: 1000,
+          driftBps: -1000,
+          valueEth: 0,
+          valueUsd: 0,
+          markDelta: null,
+          plVsTargetEth: -0.1,
+          plVsTargetUsd: -200,
+          action: "buy",
+          swapEth: 0.1,
+        },
+      ],
+      10n ** 17n,
+      [],
+    );
+    expect(wf.headline).toContain("OLD");
+    expect(wf.draftDirty).toBe(true);
   });
 });
