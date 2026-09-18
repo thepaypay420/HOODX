@@ -10,6 +10,7 @@ import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/l
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { ensureVaultBind, isUsdgQuote } from "@/lib/ensureBind";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
+import { capV4BuyWei } from "@/lib/v4SwapCap";
 import { publicClient, useWallet } from "@/lib/wallet";
 
 function bagText(wei: bigint) {
@@ -190,13 +191,27 @@ export function OwnerDesk({
           setSwapSimOk(false);
           return;
         }
+        const v4 = await publicClient.readContract({
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "isV4",
+          args: [token as Address],
+        });
+        const simAmt =
+          side === "buy" && v4
+            ? await capV4BuyWei(vault as Address, token as Address, address as Address, amt)
+            : amt;
+        if (side === "buy" && v4 && simAmt <= 0n) {
+          setSwapSimOk(false);
+          return;
+        }
         try {
           await publicClient.simulateContract({
             account: address as Address,
             address: vault as Address,
             abi: vaultAbi,
             functionName: "swapV3",
-            args: [tokenIn, tokenOut, amt, floor],
+            args: [tokenIn, tokenOut, simAmt, floor],
           });
           setSwapSimOk(true);
         } catch {
@@ -253,7 +268,24 @@ export function OwnerDesk({
 
   async function sendSwap(tokenIn: Address, tokenOut: Address, amt: bigint) {
     if (!walletClient || !address || !vault) throw new Error("connect the curator wallet");
-    let { twapOut, floor } = await quoteFloor(tokenIn, tokenOut, amt);
+    let spend = amt;
+    if (tokenIn === WETH && isAddress(tokenOut)) {
+      const v4 = await publicClient.readContract({
+        address: vault as Address,
+        abi: vaultAbi,
+        functionName: "isV4",
+        args: [tokenOut],
+      });
+      if (v4) {
+        const capped = await capV4BuyWei(vault as Address, tokenOut, address, spend);
+        if (capped <= 0n) throw new Error("V4 pool cannot fill at the TWAP floor for this size — try less WETH");
+        if (capped < spend) {
+          spend = capped;
+          setAmount(formatEther(spend));
+        }
+      }
+    }
+    let { twapOut, floor } = await quoteFloor(tokenIn, tokenOut, spend);
     if (floor === 0n) throw new Error("no TWAP quote");
     setQuoted(twapOut.toString());
     setMinOut(floor.toString());
@@ -263,14 +295,14 @@ export function OwnerDesk({
         address: vault as Address,
         abi: vaultAbi,
         functionName: "swapV3",
-        args: [tokenIn, tokenOut, amt, min],
+        args: [tokenIn, tokenOut, spend, min],
       });
       const hash = await walletClient.writeContract({
         account: address,
         address: vault as Address,
         abi: vaultAbi,
         functionName: "swapV3",
-        args: [tokenIn, tokenOut, amt, min],
+        args: [tokenIn, tokenOut, spend, min],
         chain: robinhood,
       });
       const rec = await publicClient.waitForTransactionReceipt({ hash });
@@ -284,7 +316,7 @@ export function OwnerDesk({
       if (!hint.includes("97% TWAP floor") && !hint.includes("could not fill") && !hint.includes("cash floor")) {
         throw e;
       }
-      ({ twapOut, floor } = await quoteFloor(tokenIn, tokenOut, amt));
+      ({ twapOut, floor } = await quoteFloor(tokenIn, tokenOut, spend));
       if (floor === 0n) throw e;
       setQuoted(twapOut.toString());
       setMinOut(floor.toString());
