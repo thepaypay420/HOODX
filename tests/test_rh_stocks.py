@@ -28,6 +28,7 @@ class RhStockRegistryTest(unittest.TestCase):
         self.assertIn("function setQuoteBridge(address quote, address v3Bridge)", SOL)
         self.assertIn("event QuoteBridgeSet(address indexed quote, address indexed v3Bridge)", SOL)
         self.assertIn("_seedQuoteBridge(", SOL)
+        self.assertIn("_seedQuoteBridge(USDG, WETH_USDG_V3)", SOL)
         self.assertIn("// NVDA", SOL)
         self.assertIn("// SPY", SOL)
         self.assertIn("// SPCX", SOL)

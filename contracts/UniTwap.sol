@@ -57,8 +57,8 @@ library UniTwap {
         if (delta < 0 && (delta % span != 0)) meanTick--;
     }
 
-    /// @dev WETH wad for 1e18 `token`. Pool must be token/WETH.
-    function priceWethWad(address pool, address token, address weth, uint32 secondsAgo)
+    /// @dev WETH wei for one full `token` (pass `10 ** decimals(token)`).
+    function priceWethWad(address pool, address token, address weth, uint256 tokenUnit, uint32 secondsAgo)
         internal
         view
         returns (uint256)
@@ -67,9 +67,24 @@ library UniTwap {
         address t1 = IUniV3Pool(pool).token1();
         if (!((token == t0 && weth == t1) || (token == t1 && weth == t0))) revert BadPool();
         int24 tick = consult(pool, secondsAgo);
-        uint256 px = quoteAtTick(tick, 1e18, token == t0);
+        uint256 px = quoteAtTick(tick, tokenUnit, token == t0);
         if (px == 0) revert Unpriced();
         return px;
+    }
+
+    /// @dev Quote-token amount for one full `base` through a V3 TWAP. Pool must be base/quote.
+    function quotePerBase(address pool, address base, address quote, uint256 baseUnit, uint32 secondsAgo)
+        internal
+        view
+        returns (uint256)
+    {
+        address t0 = IUniV3Pool(pool).token0();
+        address t1 = IUniV3Pool(pool).token1();
+        if (!((base == t0 && quote == t1) || (base == t1 && quote == t0))) revert BadPool();
+        int24 tick = consult(pool, secondsAgo);
+        uint256 out = quoteAtTick(tick, baseUnit, base == t0);
+        if (out == 0) revert Unpriced();
+        return out;
     }
 
     /// @dev V4 has no observe(). Spot tick from StateView. Native ETH counts as WETH.
@@ -79,13 +94,14 @@ library UniTwap {
         address token,
         address c0,
         address c1,
-        address weth
+        address weth,
+        uint256 tokenUnit
     ) internal view returns (uint256) {
         address other = token == c0 ? c1 : (token == c1 ? c0 : address(0));
         if (other != weth && other != address(0)) revert BadPool();
         if (token != c0 && token != c1) revert BadPool();
         (, int24 tick, , ) = IStateView(stateView).getSlot0(poolId);
-        uint256 px = quoteAtTick(tick, 1e18, token == c0);
+        uint256 px = quoteAtTick(tick, tokenUnit, token == c0);
         if (px == 0) revert Unpriced();
         return px;
     }

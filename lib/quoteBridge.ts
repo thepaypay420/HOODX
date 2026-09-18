@@ -2,19 +2,20 @@
 
 import { type Address, type WalletClient } from "viem";
 import { vaultAbi } from "@/lib/abi";
-import { type Coin, isV4RhQuotePool } from "@/lib/catalog";
+import { type Coin, isV4RhQuotePool, isV4UsdgQuotePool } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { findWethBridge } from "@/lib/lookup";
 import { publicClient } from "@/lib/wallet";
 
-/** Ensure the vault has a WETH V3 bridge for an RH stock quote before V4 bind/swap. */
+/** Ensure the vault has a WETH V3 bridge for an RH stock quote before V4 bind/swap. USDG is seeded at init. */
 export async function ensureQuoteBridge(
   vault: Address,
   coin: Coin,
   walletClient: WalletClient,
   owner: Address,
 ): Promise<void> {
+  if (isV4UsdgQuotePool(coin)) return;
   if (!isV4RhQuotePool(coin)) return;
   const quote = (coin.buyQuoteAddr || "").toLowerCase();
   if (!quote || !isRhStockToken(quote)) {

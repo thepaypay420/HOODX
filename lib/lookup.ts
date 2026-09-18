@@ -1,7 +1,7 @@
 "use client";
 
 import { type Coin, isIndexPool, rememberCoin } from "@/lib/catalog";
-import { WETH } from "@/lib/config";
+import { USDG, WETH } from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { publicClient } from "@/lib/wallet";
@@ -81,6 +81,12 @@ async function pairsFor(token: string): Promise<DexPair[]> {
   return [...seen.values()];
 }
 
+function usdgQuote(p: DexPair) {
+  const qaddr = (p.quoteToken?.address || "").toLowerCase();
+  const qsym = (p.quoteToken?.symbol || "").toUpperCase();
+  return qaddr === USDG.toLowerCase() || qsym === "USDG";
+}
+
 function rhStockQuote(p: DexPair) {
   const qaddr = (p.quoteToken?.address || "").toLowerCase();
   return isRhStockToken(qaddr);
@@ -93,17 +99,19 @@ function pickPool(pairs: DexPair[], token: string): DexPair | null {
     .filter((p) => kind(p) && num(p.liquidity?.usd) > 0)
     .sort((a, b) => num(b.liquidity?.usd) - num(a.liquidity?.usd));
 
-  // Naked RH stock stoken: bind the deepest WETH/ETH book directly.
+  // Naked RH stock stoken: bind the deepest WETH V3, USDG V3, or V4 ETH book.
   if (isRhStockToken(token)) {
-    const wethV3 = scored.filter((p) => ethQuote(p) && kind(p) === "v3");
-    if (wethV3.length) return wethV3[0];
-    const wethV4 = scored.filter((p) => ethQuote(p) && kind(p) === "v4");
-    if (wethV4.length) return wethV4[0];
+    const bindable = scored.filter(
+      (p) =>
+        (ethQuote(p) && (kind(p) === "v3" || kind(p) === "v4")) ||
+        (usdgQuote(p) && kind(p) === "v3"),
+    );
+    if (bindable.length) return bindable[0];
   }
 
-  // Meme on RH stock quote: bind the deepest stock-quoted V4 pool.
-  const synth = scored.filter((p) => rhStockQuote(p) && kind(p) === "v4");
-  if (synth.length) return synth[0];
+  // Meme on RH stock or USDG quote: bind the deepest quoted V4 pool.
+  const quotedV4 = scored.filter((p) => (rhStockQuote(p) || usdgQuote(p)) && kind(p) === "v4");
+  if (quotedV4.length) return quotedV4[0];
 
   const eth = scored.filter((p) => ethQuote(p));
   return eth[0] || null;
@@ -143,7 +151,7 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
   if (token === WETH.toLowerCase()) throw new Error("WETH is cash, not a name");
   const buy = pickPool(await pairsFor(token), token);
   if (!buy?.pairAddress) {
-    throw new Error("No bindable Uni pool — need WETH V3, V4 ETH, or V4 RH-stock quote on Dexscreener.");
+    throw new Error("No bindable Uni pool — need WETH V3, USDG V3, V4 ETH, or V4 quote on Dexscreener.");
   }
   const labels = kind(buy) === "v4" ? ["v4"] : ["v3"];
   const quoteTok = buy.quoteToken || {};
@@ -194,7 +202,7 @@ export async function lookupIndexCoin(addr: string): Promise<Coin> {
     buyLabels: labels,
   };
   if (!isIndexPool(coin)) {
-    throw new Error("Pool must be Uni V3 WETH, V4 ETH/WETH, or V4 RH stock quote.");
+    throw new Error("Pool must be Uni V3 WETH/USDG, V4 ETH/WETH, or V4 RH stock/USDG quote.");
   }
   rememberCoin(coin);
   return coin;

@@ -1,17 +1,20 @@
-# Synthetic quote bind (RH stock tokens)
+# Synthetic quote bind (RH stock tokens + USDG)
 
-PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/SPCX, BOW/SPY, SHROOM/MU), not thin ETH stubs. **Naked RH stock stokens** (SPY, NVDA, GME, …) bind directly on their WETH V3 pool when pasted by address.
+PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/SPCX, BOW/SPY, SHROOM/MU), not thin ETH stubs. **Naked RH stock stokens** (SPY, NVDA, AMZN, …) bind on their deepest **WETH V3** or **USDG V3** pool when pasted by address — Dexscreener lookup picks the deepest book (e.g. AMZN/USDG ~$1.24M over AMZN/WETH ~$4k).
 
 ## Contract (HoodxIndex)
 
-- Whitelisted quotes: any **canonical RH stock/ETF** (18 decimals) via `allowedQuote` + `quoteBridgeV3`
-- Bootstrap: 21 stock WETH V3 bridges seeded at init (see `public/rh_bridges.json`)
+- Whitelisted quotes: any **canonical RH stock/ETF** (18 decimals) or **USDG** (6 decimals) via `allowedQuote` + `quoteBridgeV3`
+- Bootstrap: WETH/USDG V3 bridge + 21 stock WETH V3 bridges seeded at init (see `public/rh_bridges.json`)
 - Runtime: owner `setQuoteBridge(quote, v3Bridge)` for new stocks or refreshed bridges
-- Bind meme: `addToken(token, stockPoolId)` on the name/stock V4 pool
-- Bind naked stock: `addToken(spy, wethV3PoolRef)` on SPY/WETH V3
-- Buy meme: `WETH → stock (V3) → token (V4)`
-- Sell meme: `token → stock (V4) → WETH (V3)`
-- NAV: spot on name/quote pool × TWAP on quote/WETH
+- Bind meme on stock: `addToken(token, stockPoolId)` on the name/stock V4 pool
+- Bind meme on USDG: `addToken(token, usdgPoolId)` on the name/USDG V4 pool
+- Bind naked stock: `addToken(amzn, usdgV3PoolRef)` on AMZN/USDG V3 (or WETH V3 when deeper)
+- Buy meme (stock quote): `WETH → stock (V3) → token (V4)`
+- Buy meme (USDG quote): `WETH → USDG (V3) → token (V4)`
+- Buy naked USDG stock: `WETH → USDG (V3) → stock (V3)`
+- Sell: reverse of buy path
+- NAV: spot or TWAP on name/quote pool × TWAP on quote/WETH (decimal-aware via `_quoteUnit`)
 - `rebindToken(token, poolRef)` when vault bag is zero (fix a bad bind without remove/add)
 
 ## Registry
@@ -19,18 +22,18 @@ PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/
 | File | Purpose |
 |------|---------|
 | `public/rh_stocks.json` | Canonical RH stock + ETF addresses (Investors Center catalog) |
-| `public/rh_bridges.json` | Known WETH V3 bridges per stock (refresh via `scripts/refresh_rh_bridges.py`) |
+| `public/rh_bridges.json` | WETH V3 bridges + preferred bind pool (WETH or USDG V3) per stock |
 | `lib/rhStocks.ts` | HUD helpers: `isRhStockToken`, `catalogBridge` |
 
-**Not yet supported:** USDG-quoted pools (6 decimals) — most naked stocks have a WETH V3 book; use that path.
+Refresh bridges + bind pools: `python3 scripts/refresh_rh_bridges.py`
 
 ## Live 696X (`0xeBFA…5C24`) — important
 
-The canonical vault is an **EIP-1167 minimal clone**. Its logic is fixed at deploy time (`implementation` `0x7057904c…` baked into clone bytecode). **You cannot patch quote-bind onto that address in place.**
+The canonical vault is an **EIP-1167 minimal clone**. Its logic is fixed at deploy time (`implementation` `0x7057904c…` baked into clone bytecode). **You cannot patch quote-bind or USDG onto that address in place.**
 
 | Action | Safe? |
 |--------|--------|
-| Deploy **new** HoodxIndex + **new** factory | Yes — new indexes get quote bind |
+| Deploy **new** HoodxIndex + **new** factory | Yes — new indexes get quote bind + USDG |
 | Leave live 696X unchanged | Yes — existing names keep working |
 | `rebindToken` / SPCX bind on **live** clone | **No** — not in deployed bytecode |
 | Redeploy 696X slug on new factory | Strands first vault — do not without migration plan |
@@ -45,7 +48,7 @@ Until new bytecode is live at the vault address, in-vault PROMETHEUS buys on the
 
 ## Security (carried from live / funds-safe)
 
-Quote-bind was added on top of the hardened `HoodxIndex` (991-line funds-safe baseline), not a fresh fork. The SPCX/SPY paths inherit every live guard:
+Quote-bind was added on top of the hardened `HoodxIndex` (991-line funds-safe baseline), not a fresh fork. The SPCX/SPY/USDG paths inherit every live guard:
 
 | Control | Quote-bind behavior |
 |---------|---------------------|
@@ -57,7 +60,7 @@ Quote-bind was added on top of the hardened `HoodxIndex` (991-line funds-safe ba
 | Exit safety | `withdraw` ignores pause; `minEthOut` + `_liveSupply` sweep |
 | Curator handoff | Two-step `pendingOwner` + `_assertPayTo` (blocks vault/router/dead) |
 | Creator cut | Only `creator` sets fee/recipient — owner cannot steal cut |
-| `restoreCash` | V3-only (quoted names are V4 bind — owner rebalances via `swapV3`) |
+| `restoreCash` | V3-only (quoted V4 names — owner rebalances via `swapV3`; USDG V3 naked stocks work) |
 | `rebindToken` | Zero bag only; clears bind + stale `lastPxWad` |
 
-`tests/test_quote_security.py` asserts these patterns stay in `contracts/HoodxIndex.sol`.
+`tests/test_quote_security.py` and `tests/test_usdg.py` assert these patterns stay in `contracts/HoodxIndex.sol`.

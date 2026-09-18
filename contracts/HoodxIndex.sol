@@ -59,6 +59,8 @@ contract HoodxIndex {
     uint160 internal constant MIN_SQRT_RATIO = 4295128739;
     uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
     uint8 public constant decimals = 18;
+    address internal constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
+    address internal constant WETH_USDG_V3 = 0x52e65B17fB6E5BA00Ed806f37Afcd2DaA50271Ca;
     /// @dev Uniswap-V2 dead LP. ~$0.002 at genesis; captures pre-mint donations.
     uint256 public constant VIRTUAL_ASSETS = 1e12;
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
@@ -253,26 +255,31 @@ contract HoodxIndex {
         return IERC20(weth).balanceOf(address(this));
     }
 
-    /// @dev WETH per 1e18 token. V3 uses the pool TWAP; V4 uses StateView spot tick.
-    ///      Synthetic-quote names price through a whitelisted quote + V3 quote/WETH bridge.
+    /// @dev WETH wei per one full token (`10 ** decimals`). V3 TWAP or V4 spot × quote bridge.
     function priceWethWad(address token) public view returns (uint256) {
         if (token == weth) return 1e18;
+        uint256 unit = _quoteUnit(token);
         if (allowedQuote[token] && quoteBridgeV3[token] != address(0)) {
-            return UniTwap.priceWethWad(quoteBridgeV3[token], token, weth, TWAP_SECS);
+            return UniTwap.priceWethWad(quoteBridgeV3[token], token, weth, unit, TWAP_SECS);
         }
         address quote = quoteOf[token];
         if (isV4[token]) {
             if (quote == address(0) || quote == weth) {
                 PoolKey memory key = v4Key[token];
-                return UniTwap.priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth);
+                return UniTwap.priceWethWadV4(v4StateView, poolIdOf[token], token, key.currency0, key.currency1, weth, unit);
             }
             uint256 quotePerToken = _spotQuotePerToken(token);
             uint256 wethPerQuote = priceWethWad(quote);
-            return (quotePerToken * wethPerQuote) / 1e18;
+            return (quotePerToken * wethPerQuote) / _quoteUnit(quote);
         }
         address pool = poolOf[token];
         if (pool == address(0)) revert Listed();
-        return UniTwap.priceWethWad(pool, token, weth, TWAP_SECS);
+        if (quote != address(0) && quote != weth) {
+            uint256 quotePerToken = UniTwap.quotePerBase(pool, token, quote, unit, TWAP_SECS);
+            uint256 wethPerQuote = priceWethWad(quote);
+            return (quotePerToken * wethPerQuote) / _quoteUnit(quote);
+        }
+        return UniTwap.priceWethWad(pool, token, weth, unit, TWAP_SECS);
     }
 
     function oracleReady(address token) external view returns (bool) {
@@ -591,10 +598,14 @@ contract HoodxIndex {
         if (pool == address(0) || pool.code.length == 0) revert BadPool();
         address t0 = IUniV3Pool(pool).token0();
         address t1 = IUniV3Pool(pool).token1();
-        if (!((token == t0 && weth == t1) || (token == t1 && weth == t0))) revert BadPool();
+        if ((token == t0 && weth == t1) || (token == t1 && weth == t0)) {
+            quoteOf[token] = weth;
+        } else if ((token == t0 && USDG == t1) || (token == t1 && USDG == t0)) {
+            if (!allowedQuote[USDG] || quoteBridgeV3[USDG] == address(0)) revert BadPool();
+            quoteOf[token] = USDG;
+        } else revert BadPool();
         if (IERC20(token).decimals() != 18) revert BadPool();
         IUniV3Pool(pool).fee();
-        quoteOf[token] = weth;
     }
 
     function _bindV4(address token, bytes32 poolId) internal {
@@ -616,7 +627,7 @@ contract HoodxIndex {
         address other = token == c0 ? c1 : c0;
         if (other == weth || other == address(0)) {
             quoteOf[token] = weth;
-        } else if (allowedQuote[other] && quoteBridgeV3[other] != address(0)) {
+        } else if (other == USDG || (allowedQuote[other] && quoteBridgeV3[other] != address(0))) {
             quoteOf[token] = other;
         } else revert BadPool();
         if (IERC20(token).decimals() != 18) revert BadPool();
@@ -657,12 +668,15 @@ contract HoodxIndex {
         emit CreatorRecipient(who);
     }
 
-    /// @dev Register a canonical RH stock token as a V4 quote with its WETH V3 bridge.
-    ///      Required before binding meme/name pools quoted in that stock (e.g. BOW/SPY).
-    ///      Quote must be 18-decimal ERC-8056 stock; bridge must be quote ↔ WETH V3.
+    /// @dev Register a quote token (RH stock 18-dec, or USDG 6-dec) with its WETH V3 bridge.
     function setQuoteBridge(address quote, address v3Bridge) external onlyOwner {
         if (quote == address(0) || v3Bridge == address(0) || quote == weth) revert Zero();
-        if (IERC20(quote).decimals() != 18) revert BadPool();
+        uint8 dec = IERC20(quote).decimals();
+        if (quote == USDG) {
+            if (dec != 6) revert BadPool();
+        } else if (dec != 18) {
+            revert BadPool();
+        }
         address t0 = IUniV3Pool(v3Bridge).token0();
         address t1 = IUniV3Pool(v3Bridge).token1();
         if (!((quote == t0 && weth == t1) || (quote == t1 && weth == t0))) revert BadPool();
@@ -1067,8 +1081,9 @@ contract HoodxIndex {
         quoteBridgeV3[quote] = bridge;
     }
 
-    /// @dev Seed WETH V3 bridges for canonical RH stock quotes (see public/rh_bridges.json).
+    /// @dev Seed WETH V3 bridges for canonical RH stock quotes + USDG (see public/rh_bridges.json).
     function _initRhQuotes() internal {
+        _seedQuoteBridge(USDG, WETH_USDG_V3);
         _seedQuoteBridge(0x117cc2133c37B721F49dE2A7a74833232B3B4C0C, 0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e); // SPY
         _seedQuoteBridge(0x1b0E319c6A659F002271B69dB8A7df2F911c153E, 0xc6BCC95043DC48C204bB2D57fb264a10Efe0a607); // GME
         _seedQuoteBridge(0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3, 0x8c2B4303fA0B99d07A5D3E9411497A277e65b673); // GOOGL
@@ -1101,10 +1116,35 @@ contract HoodxIndex {
         delete lastPxWad[token];
     }
 
+    function _quoteUnit(address token) internal pure returns (uint256) {
+        if (token == USDG) return 1e6;
+        return 1e18;
+    }
+
     function _spotQuotePerToken(address token) internal view returns (uint256) {
         PoolKey memory key = v4Key[token];
         (, int24 tick, , ) = IStateView(v4StateView).getSlot0(poolIdOf[token]);
         return UniTwap.quoteAtTick(tick, 1e18, token == key.currency0);
+    }
+
+    function _swapV3Exact(address tokenIn, address tokenOut, address pool, uint256 amountIn, uint256 minOut)
+        internal
+        returns (uint256 got)
+    {
+        uint24 fee = IUniV3Pool(pool).fee();
+        IERC20(tokenIn).approve(swapRouter, amountIn);
+        got = ISwapRouter02(swapRouter).exactInputSingle(
+            ISwapRouter02.ExactInputSingleParams({
+                tokenIn: tokenIn,
+                tokenOut: tokenOut,
+                fee: fee,
+                recipient: address(this),
+                amountIn: amountIn,
+                amountOutMinimum: minOut,
+                sqrtPriceLimitX96: 0
+            })
+        );
+        IERC20(tokenIn).approve(swapRouter, 0);
     }
 
     function _swapV4Exact(address tokenIn, address tokenOut, uint256 amountIn, uint256 minOut)
@@ -1119,47 +1159,37 @@ contract HoodxIndex {
         address bridge = quoteBridgeV3[quote];
         if (bridge == address(0)) revert BadPool();
         uint256 pxQuote = priceWethWad(quote);
-        uint256 quotedQuote = (wethIn * 1e18) / pxQuote;
+        uint256 quotedQuote = (wethIn * _quoteUnit(quote)) / pxQuote;
         uint256 quoteFloor = minOutFloor(quotedQuote);
-        IERC20(weth).approve(swapRouter, wethIn);
-        uint256 quoteGot = ISwapRouter02(swapRouter).exactInputSingle(
-            ISwapRouter02.ExactInputSingleParams({
-                tokenIn: weth,
-                tokenOut: quote,
-                fee: IUniV3Pool(bridge).fee(),
-                recipient: address(this),
-                amountIn: wethIn,
-                amountOutMinimum: quoteFloor,
-                sqrtPriceLimitX96: 0
-            })
-        );
-        IERC20(weth).approve(swapRouter, 0);
-        _swapV4Exact(quote, token, quoteGot, minTokenOut);
+        uint256 quoteGot = _swapV3Exact(weth, quote, bridge, wethIn, quoteFloor);
+        if (isV4[token]) {
+            _swapV4Exact(quote, token, quoteGot, minTokenOut);
+        } else {
+            _swapV3Exact(quote, token, poolOf[token], quoteGot, minTokenOut);
+        }
     }
 
     function _swapQuotedSell(address token, address quote, uint256 tokenIn, uint256 minWethOut) internal {
         address bridge = quoteBridgeV3[quote];
         if (bridge == address(0)) revert BadPool();
-        uint256 quotedQuote = _spotQuotePerToken(token);
-        quotedQuote = (tokenIn * quotedQuote) / 1e18;
-        uint256 quoteFloor = minOutFloor(quotedQuote);
-        uint256 quoteGot = _swapV4Exact(token, quote, tokenIn, quoteFloor);
+        uint256 quotedQuote;
+        uint256 quoteGot;
+        if (isV4[token]) {
+            quotedQuote = _spotQuotePerToken(token);
+            quotedQuote = (tokenIn * quotedQuote) / 1e18;
+            uint256 quoteFloor = minOutFloor(quotedQuote);
+            quoteGot = _swapV4Exact(token, quote, tokenIn, quoteFloor);
+        } else {
+            address pool = poolOf[token];
+            quotedQuote = UniTwap.quotePerBase(pool, token, quote, 1e18, TWAP_SECS);
+            quotedQuote = (tokenIn * quotedQuote) / 1e18;
+            uint256 quoteFloor = minOutFloor(quotedQuote);
+            quoteGot = _swapV3Exact(token, quote, pool, tokenIn, quoteFloor);
+        }
         uint256 pxQuote = priceWethWad(quote);
-        uint256 quotedWeth = (quoteGot * pxQuote) / 1e18;
+        uint256 quotedWeth = (quoteGot * pxQuote) / _quoteUnit(quote);
         uint256 wethFloor = minOutFloor(quotedWeth);
         if (wethFloor < minWethOut) revert Slippage();
-        IERC20(quote).approve(swapRouter, quoteGot);
-        ISwapRouter02(swapRouter).exactInputSingle(
-            ISwapRouter02.ExactInputSingleParams({
-                tokenIn: quote,
-                tokenOut: weth,
-                fee: IUniV3Pool(bridge).fee(),
-                recipient: address(this),
-                amountIn: quoteGot,
-                amountOutMinimum: minWethOut,
-                sqrtPriceLimitX96: 0
-            })
-        );
-        IERC20(quote).approve(swapRouter, 0);
+        _swapV3Exact(quote, weth, bridge, quoteGot, minWethOut);
     }
 }

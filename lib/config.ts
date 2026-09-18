@@ -9,6 +9,8 @@ export const EXPLORER =
   process.env.NEXT_PUBLIC_EXPLORER || "https://robinhoodchain.blockscout.com";
 export const WETH = (process.env.NEXT_PUBLIC_WETH ||
   "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73") as `0x${string}`;
+export const USDG = (process.env.NEXT_PUBLIC_USDG ||
+  "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168") as `0x${string}`;
 export const VAULT = (process.env.NEXT_PUBLIC_VAULT_ADDRESS ||
   "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24") as `0x${string}` | "";
 export const LIVE_696X = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24".toLowerCase();

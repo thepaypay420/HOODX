@@ -43,6 +43,20 @@ def is_v4_eth_weth(row: dict) -> bool:
     return is_bytes32(pool) and quote in ("ETH", "WETH") and "v4" in labels
 
 
+def is_v3_usdg_pool(row: dict) -> bool:
+    pool = str(row.get("buyPool") or "")
+    quote = str(row.get("buyQuote") or "").upper()
+    labels = [str(x).lower() for x in (row.get("buyLabels") or [])]
+    return is_address(pool) and quote == "USDG" and (not labels or "v3" in labels)
+
+
+def is_v4_usdg_pool(row: dict) -> bool:
+    pool = str(row.get("buyPool") or "")
+    quote = str(row.get("buyQuote") or "").upper()
+    labels = [str(x).lower() for x in (row.get("buyLabels") or [])]
+    return is_bytes32(pool) and quote == "USDG" and "v4" in labels
+
+
 def is_v4_quote_pool(row: dict) -> bool:
     pool = str(row.get("buyPool") or "")
     quote = str(row.get("buyQuote") or "").upper()
@@ -68,6 +82,15 @@ class BindPoolTest(unittest.TestCase):
             "buyLabels": ["v4"],
         }
         self.assertTrue(is_v4_quote_pool(bind))
+
+    def test_amzn_usdg_v3_is_bindable(self):
+        bind = {
+            "token": "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
+            "buyPool": "0x8ac92da74ab5f3b1d024dc1943ad7e15dc4179ef",
+            "buyQuote": "USDG",
+            "buyLabels": ["v3"],
+        }
+        self.assertTrue(is_v3_usdg_pool(bind))
 
     def test_bow_spy_is_bindable(self):
         bind = {

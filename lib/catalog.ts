@@ -48,6 +48,17 @@ export function isV4EthWethPool(c: Coin) {
   );
 }
 
+/** Uni V3 pool quoted in USDG (6 decimals). WETH/USDG bridge is seeded at init. */
+export function isV3UsdgPool(c: Coin) {
+  const quote = (c.buyQuote || "").toUpperCase();
+  const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
+  return (
+    Boolean(c.buyPool && isAddress(c.buyPool)) &&
+    quote === "USDG" &&
+    (labels.length === 0 || labels.includes("v3"))
+  );
+}
+
 /** Uni V4 pool quoted in a canonical RH stock token. WETH bridge is on-chain. */
 export function isV4RhQuotePool(c: Coin) {
   const quote = (c.buyQuote || "").toUpperCase();
@@ -60,6 +71,17 @@ export function isV4RhQuotePool(c: Coin) {
   );
 }
 
+/** Uni V4 pool quoted in USDG. WETH/USDG bridge is seeded at init. */
+export function isV4UsdgQuotePool(c: Coin) {
+  const quote = (c.buyQuote || "").toUpperCase();
+  const labels = (c.buyLabels || []).map((x) => x.toLowerCase());
+  return (
+    Boolean(c.buyPool && isBytes32(c.buyPool)) &&
+    quote === "USDG" &&
+    labels.includes("v4")
+  );
+}
+
 /** @deprecated use isV4RhQuotePool */
 export const isV4QuotePool = isV4RhQuotePool;
 
@@ -68,7 +90,7 @@ const NON_WAD = new Set(["0xca9c78dd337a67f6e0077f65f5e9218719d30edf"]);
 
 export function isIndexPool(c: Coin) {
   if (NON_WAD.has(c.token.toLowerCase())) return false;
-  return isV3WethPool(c) || isV4EthWethPool(c) || isV4RhQuotePool(c);
+  return isV3WethPool(c) || isV3UsdgPool(c) || isV4EthWethPool(c) || isV4RhQuotePool(c) || isV4UsdgQuotePool(c);
 }
 
 /** Pad a V3 pool address to bytes32; pass a V4 pool id through. */
@@ -76,7 +98,7 @@ export function poolRef(c: Coin): `0x${string}` {
   const p = c.buyPool || "";
   if (isBytes32(p)) return p as `0x${string}`;
   if (isAddress(p)) return `0x${p.slice(2).toLowerCase().padStart(64, "0")}` as `0x${string}`;
-  throw new Error("need a Uni V3 WETH, V4 ETH/WETH, or V4 RH-stock quote pool");
+  throw new Error("need a Uni V3 WETH/USDG, V4 ETH/WETH, or V4 quote pool");
 }
 
 export const V3_CATALOG: Coin[] = CATALOG.filter(isV3WethPool);
