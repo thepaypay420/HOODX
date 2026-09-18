@@ -431,6 +431,7 @@ body {
   .landing-float-chip,
   .landing-orbit,
   .landing-stage-glow,
+  .landing-basket-line,
   .landing-earth-glow {
     animation: none;
   }
@@ -632,14 +633,21 @@ body {
 
 .landing-stage {
   position: relative;
-  min-height: 320px;
+  min-height: min(72vw, 420px);
   margin-inline: auto;
-  max-width: 420px;
+  max-width: min(100%, 480px);
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .landing-stage {
+    min-height: 400px;
+  }
 }
 
 @media (min-width: 1024px) {
   .landing-stage {
-    min-height: 420px;
+    min-height: 480px;
     max-width: none;
   }
 }
@@ -672,6 +680,29 @@ body {
   height: 68%;
   border-color: rgba(31, 212, 198, 0.08);
   animation: landing-spin 32s linear infinite reverse;
+}
+
+.landing-orbit-c {
+  width: 96%;
+  height: 96%;
+  border-color: rgba(31, 212, 198, 0.05);
+  animation: landing-spin 64s linear infinite;
+}
+
+.landing-basket-web {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.landing-basket-line {
+  stroke: rgba(31, 212, 198, 0.14);
+  stroke-width: 0.15;
+  vector-effect: non-scaling-stroke;
 }
 
 .landing-coin {
@@ -711,17 +742,26 @@ body {
 .landing-float-chip {
   position: absolute;
   z-index: 3;
-  padding: 0.45rem 0.75rem;
+  padding: 0.38rem 0.62rem;
   border-radius: 999px;
   border: 1px solid rgba(238, 248, 246, 0.12);
   background: rgba(16, 24, 26, 0.82);
   backdrop-filter: blur(10px);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--paper);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
   animation: landing-float-chip 4.5s ease-in-out infinite;
+}
+
+@media (min-width: 480px) {
+  .landing-float-chip {
+    padding: 0.45rem 0.75rem;
+    font-size: 11px;
+  }
 }
 
 .landing-script {
@@ -1028,10 +1068,10 @@ body {
 @keyframes landing-float-chip {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate(-50%, -50%);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translate(-50%, calc(-50% - 8px));
   }
 }
 
