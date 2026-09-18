@@ -632,9 +632,10 @@ body {
 
 .landing-stage {
   position: relative;
-  min-height: 360px;
+  min-height: 320px;
   margin-inline: auto;
-  max-width: 420px;
+  width: 100%;
+  max-width: min(100%, 500px);
 }
 
 @media (min-width: 1024px) {
@@ -710,8 +711,6 @@ body {
 
 .landing-float-chip {
   position: absolute;
-  left: var(--chip-x);
-  top: var(--chip-y);
   z-index: 3;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
@@ -723,13 +722,16 @@ body {
   letter-spacing: 0.04em;
   color: var(--paper);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
   animation: landing-float-chip 4.5s ease-in-out infinite;
+}
+
+.landing-float-chip-far {
+  animation-name: landing-float-chip-far;
 }
 
 @media (max-width: 639px) {
   .landing-float-chip {
-    left: var(--chip-mx, var(--chip-x));
-    top: var(--chip-my, var(--chip-y));
     padding: 0.38rem 0.62rem;
     font-size: 10px;
   }
@@ -1043,6 +1045,16 @@ body {
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes landing-float-chip-far {
+  0%,
+  100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(-100%) translateY(-8px);
   }
 }
 
