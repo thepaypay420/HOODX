@@ -553,26 +553,33 @@ class LiveFundsTest(unittest.TestCase):
 
 
 class HudLivePointerTest(unittest.TestCase):
-    """xhoodindex.com must not resolve 696x through the emptied clone."""
+    """xhoodindex.com must resolve 696x through the hook-safe vault."""
 
-    LIVE_VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
-    LIVE_FACTORY = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71"
+    SAFE_VAULT = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE"
+    BRICKED_VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
+    LIVE_FACTORY = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD"
+    LEGACY_FACTORY = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71"
     EMPTIED_VAULT = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24"
     EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9"
 
-    def test_config_ignores_emptied_vercel_pins(self):
+    def test_config_ignores_legacy_vercel_pins(self):
         here = Path(__file__).resolve().parents[1]
         src = (here / "lib" / "config.ts").read_text()
         self.assertIn("function liveOr", src)
+        self.assertIn("SAFE_696X_ADDR", src)
+        self.assertIn("BRICKED_696X_ADDR", src)
         self.assertIn("EMPTIED_696X", src)
         self.assertIn("EMPTIED_FACTORY", src)
-        self.assertIn(self.LIVE_VAULT, src)
+        self.assertIn(self.SAFE_VAULT, src)
+        self.assertIn(self.BRICKED_VAULT, src)
         self.assertIn(self.LIVE_FACTORY, src)
+        self.assertIn(self.LEGACY_FACTORY, src)
         self.assertIn(self.EMPTIED_VAULT, src)
         self.assertIn(self.EMPTIED_FACTORY, src)
         client = (here / "components" / "IndexClient.tsx").read_text()
         self.assertIn("isEmptied696x", client)
-        self.assertIn("if (gen0 && isEmptied696x(addr)) return;", client)
+        self.assertIn("isBricked696x", client)
+        self.assertIn("if (gen0 && (isEmptied696x(addr) || isBricked696x(addr))) return;", client)
 
     def test_vault_coin_hydration_shipped(self):
         here = Path(__file__).resolve().parents[1]

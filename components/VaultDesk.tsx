@@ -18,7 +18,6 @@ import {
   TWEET,
   USD_PER_SHARE,
   WETH,
-  isBricked696x,
   isLive696x,
 } from "@/lib/config";
 import { fmtEth, fmtPct, fmtShares, fmtUsd, formatEtherSafe, isAddress, pctDelta, shortAddr, toneOf } from "@/lib/format";
@@ -810,12 +809,6 @@ export function VaultDesk({
           <p className="mt-3 text-[12px] leading-5 text-[var(--dim)]">
             Redeem cannot be paused{isLive696x(vault) ? ". Live 696X exits stay open." : "."}
           </p>
-          {isBricked696x(vault) && (
-            <p className="mt-2 text-[13px] leading-5 text-[var(--gold)]">
-              This vault clone predates hook guards. Aria blocked redemptions — curator must strand hooked
-              names on the upgraded vault before exit works again. Your ETH is still in the contract.
-            </p>
-          )}
           {canLeave === false && leaveWei > 0n && (
             <p className="mt-2 text-[13px] text-[var(--gold)]">Buffer short. Restore cash first.</p>
           )}

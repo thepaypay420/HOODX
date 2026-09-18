@@ -7,7 +7,7 @@ import { IndexCard } from "@/components/IndexCard";
 import { OwnerDesk } from "@/components/OwnerDesk";
 import { VaultDesk } from "@/components/VaultDesk";
 import { factoryAbi } from "@/lib/abi";
-import { FACTORY, VAULT, isEmptied696x } from "@/lib/config";
+import { FACTORY, VAULT, isBricked696x, isEmptied696x } from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { publicClient } from "@/lib/wallet";
 
@@ -28,7 +28,7 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
       })
       .then((addr) => {
         if (!addr || addr.toLowerCase() === zeroAddress) return;
-        if (gen0 && isEmptied696x(addr)) return;
+        if (gen0 && (isEmptied696x(addr) || isBricked696x(addr))) return;
         setVault(addr);
       })
       .catch(() => {});
