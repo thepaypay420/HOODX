@@ -30,7 +30,7 @@
   <img src="docs/hud-home.png" alt="HOODX HUD — One token. A whole book." width="920" />
 </p>
 
-HOODX is live on **Robinhood Chain (4663)**. Anyone can mint a trustless meme basket — 2 to 24 Uniswap V3 WETH or V4 ETH names — as a single ERC-20. Friends send ETH. The vault buys the book. They hold one token, not a folder of airdrops.
+HOODX is live on **Robinhood Chain (4663)**. Anyone can mint a trustless meme basket — 2 to 24 Uniswap V3 WETH/USDG or V4 ETH/stock-quote names — as a single ERC-20. Friends send ETH. The vault buys the book. They hold one token, not a folder of airdrops.
 
 You drop `/i/yourslug`. You keep the book from going thin. You earn a cut on every join. **Redeem is free, and it cannot be paused.**
 
@@ -64,7 +64,7 @@ Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
   <tr>
     <td width="33%" valign="top">
       <h3>01 · Compose</h3>
-      <p>Pick 2–24 RH names with a Uni V3 WETH or V4 ETH pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
+      <p>Pick 2–24 RH names with a Uni V3 WETH/USDG or V4 ETH/stock-quote pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
     </td>
     <td width="33%" valign="top">
       <h3>02 · Share</h3>
@@ -141,7 +141,7 @@ npm install
 npm run dev     # http://127.0.0.1:3100
 ```
 
-Vercel builds this Next HUD from the repository root. `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`.
+Vercel builds this Next HUD from the repository root. `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`. Emptied clone `0xeBFA…5C24` (old factory `0x46ea…`) is ignored even if a stale `NEXT_PUBLIC_*` pin is still on the project.
 
 ---
 

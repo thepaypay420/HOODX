@@ -178,6 +178,8 @@ drift (sell the tail, buy PONS/AI/CASHCAT). Later joins copy the live mix.
 696X is live. User ETH sits in `0x6350f9e8e630785ABF09fD1127366998Ad821E33`.
 Do not pause, set floors, hand the book to a dead key, unwind, or redeploy
 that clone. Operator scripts that could trap funds are refused.
+The HUD remaps emptied factory/vault env pins (`0x46ea…` / `0xeBFA…`) so
+`/i/696x` cannot show the redeemed clone as Live.
 
 On-chain: `withdraw` ignores `paused`. A held name with `priceWethWad == 0` reverts
 every exit (`Unpriced` / `NeedBuffer`). Curator HUD has no pause or setFloors.

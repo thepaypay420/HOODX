@@ -552,6 +552,29 @@ class LiveFundsTest(unittest.TestCase):
         self.assertIn("refuse_retarget(vault)", live)
 
 
+class HudLivePointerTest(unittest.TestCase):
+    """xhoodindex.com must not resolve 696x through the emptied clone."""
+
+    LIVE_VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
+    LIVE_FACTORY = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71"
+    EMPTIED_VAULT = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24"
+    EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9"
+
+    def test_config_ignores_emptied_vercel_pins(self):
+        here = Path(__file__).resolve().parents[1]
+        src = (here / "lib" / "config.ts").read_text()
+        self.assertIn("function liveOr", src)
+        self.assertIn("EMPTIED_696X", src)
+        self.assertIn("EMPTIED_FACTORY", src)
+        self.assertIn(self.LIVE_VAULT, src)
+        self.assertIn(self.LIVE_FACTORY, src)
+        self.assertIn(self.EMPTIED_VAULT, src)
+        self.assertIn(self.EMPTIED_FACTORY, src)
+        client = (here / "components" / "IndexClient.tsx").read_text()
+        self.assertIn("isEmptied696x", client)
+        self.assertIn("if (gen0 && isEmptied696x(addr)) return;", client)
+
+
 class VaultPerfTest(unittest.TestCase):
     def test_genesis_is_flat(self):
         g = genesis_eth_per_share(2438.95)
