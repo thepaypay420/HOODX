@@ -16,6 +16,7 @@ import {
   liveMixTargets,
   normalizeDraft,
   resizeSliderTargets,
+  suggestBuyEth,
   trimDriftTargets,
   parkLegacyTargets,
   vaultMcapTargets,
@@ -24,6 +25,7 @@ import {
   type TargetDraft,
 } from "@/lib/curator";
 import { fmtPct, fmtUsdSleeve, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
+import { deployableWethWei } from "@/lib/eject";
 import { sleeveWethWei } from "@/lib/sleeveValue";
 import { hydrateVaultCoins } from "@/lib/vaultCoins";
 import { publicClient, useWallet } from "@/lib/wallet";
@@ -58,6 +60,7 @@ export function CuratorBook({
   const [rows, setRows] = useState<BagRow[]>([]);
   const [draft, setDraft] = useState<TargetDraft>({});
   const [navWei, setNavWei] = useState(0n);
+  const [wethBagWei, setWethBagWei] = useState(0n);
   const [minSleeveWei, setMinSleeveWei] = useState(0n);
   const [cashBps, setCashBps] = useState(2500);
   const [ethUsd, setEthUsd] = useState(0);
@@ -77,6 +80,13 @@ export function CuratorBook({
     setNavWei(nav);
     setMinSleeveWei(minSleeve);
     setCashBps(Number(cashTarget));
+    const wethBal = await publicClient.readContract({
+      address: WETH,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [v],
+    });
+    setWethBagWei(wethBal);
 
     const tape = (await fetch(
       "https://api.dexscreener.com/tokens/v1/robinhood/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
@@ -150,6 +160,10 @@ export function CuratorBook({
   }, [draft, vault]);
 
   const totals = useMemo(() => draftTotals(draft, cashBps), [draft, cashBps]);
+  const deployableWei = useMemo(
+    () => deployableWethWei(wethBagWei, navWei, cashBps),
+    [wethBagWei, navWei, cashBps],
+  );
   const navUsd = ethUsd > 0 ? Number(formatEther(navWei)) * ethUsd : 0;
 
   const mcapRows = useMemo<McapRow[]>(
@@ -306,12 +320,18 @@ export function CuratorBook({
             · Cash {totals.cashPct.toFixed(1)}%
           </p>
           <p className="mt-0.5">Cap {maxSliderPct.toFixed(0)}% · room {totals.room / 100}%</p>
+          {wethBagWei > 0n && (
+            <p className="mt-0.5">
+              Idle WETH {formatEtherSafe(wethBagWei)} · deployable {formatEtherSafe(deployableWei)}
+            </p>
+          )}
         </div>
       </div>
 
       <p className="mt-2 text-[14px] leading-6 text-[var(--dim)]">
-        Targets use capped sqrt-mcap vs the book. Moving one slider reallocates the rest by mcap — rows stay
-        fixed. Cash stays at least {(cashBps / 100).toFixed(0)}% for exits.
+        Sliders set draft targets only — they do not swap. Raising a name means you want to deploy idle WETH
+        (above the {(cashBps / 100).toFixed(0)}% cash floor). Write targets on-chain, then Fix → Buy prefills
+        vault swaps up to deployable WETH.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -410,7 +430,7 @@ export function CuratorBook({
                         className="ghost px-2 py-1 text-[11px]"
                         onClick={() => {
                           if (r.action === "buy") {
-                            const eth = Math.min(r.swapEth, Number(formatEtherSafe(navWei)) * 0.15);
+                            const eth = suggestBuyEth(r, navWei, wethBagWei, cashBps);
                             onFocusSwap?.(r.token, "buy", eth > 0 ? formatEther(BigInt(Math.floor(eth * 1e18))) : undefined);
                           } else {
                             onFocusSwap?.(r.token, "sell");

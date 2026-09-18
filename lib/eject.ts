@@ -23,6 +23,15 @@ export function sellBlocked(amountWei: bigint, bagWei: bigint, symbol: string, b
   return null;
 }
 
+/** WETH above the vault cash floor — what buys can deploy without breaching the floor. */
+export function deployableWethWei(wethWei: bigint, assetsWei: bigint, cashBps: number): bigint {
+  if (wethWei <= 0n) return 0n;
+  if (assetsWei <= 0n || cashBps <= 0) return wethWei;
+  const floor = (assetsWei * BigInt(cashBps)) / 10_000n;
+  if (wethWei <= floor) return 0n;
+  return wethWei - floor;
+}
+
 /** WETH buys cannot spend below the vault cash floor (default 25%). */
 export function buyBlocked(
   amountWei: bigint,

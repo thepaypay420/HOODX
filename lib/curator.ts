@@ -1,3 +1,4 @@
+import { deployableWethWei } from "@/lib/eject";
 import { listTargetBps, type Sleeve } from "@/lib/weights";
 
 /** Risk-on budget: everything not parked in WETH. */
@@ -394,7 +395,16 @@ export function suggestSwapWei(row: DriftRow, navWei: bigint, maxFraction = 0.85
   if (row.action === "hold") return 0n;
   const wei = BigInt(Math.floor(row.swapEth * 1e18 * maxFraction));
   if (row.action === "sell" || row.action === "park") return wei;
-  // buy: cap by drift need
   const need = (navWei * BigInt(Math.abs(row.driftBps))) / 10_000n;
   return need > wei ? wei : need;
+}
+
+/** Buy size for Fix: min(gap to draft target, idle WETH above cash floor). */
+export function suggestBuyEth(row: DriftRow, navWei: bigint, wethBagWei: bigint, cashBps: number): number {
+  if (row.action !== "buy") return 0;
+  const deployable = deployableWethWei(wethBagWei, navWei, cashBps);
+  if (deployable <= 0n) return 0;
+  const gapWei = BigInt(Math.floor(row.swapEth * 1e18));
+  const wei = deployable < gapWei ? deployable : gapWei;
+  return Number(wei) / 1e18;
 }

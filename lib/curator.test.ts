@@ -8,6 +8,7 @@ import {
   resizeSliderTargets,
   parkLegacyTargets,
   riskCap,
+  suggestBuyEth,
   trimDriftTargets,
   vaultMcapTargets,
   mcapScore,
@@ -150,5 +151,30 @@ describe("drift analysis", () => {
     expect(pons?.action).toBe("buy");
     expect(tail?.action).toBe("sell");
     expect(pons?.markDelta).toBeCloseTo(0.1, 5);
+  });
+
+  it("suggestBuyEth caps by deployable WETH above cash floor", () => {
+    const nav = 10n ** 18n;
+    const weth = 4n * 10n ** 17n; // 0.4 ETH
+    const row = analyzeDrift(
+      [
+        {
+          token: "0xpons",
+          symbol: "PONS",
+          balanceWei: 10n ** 18n,
+          wethValueWei: 1n * 10n ** 16n,
+          onChainTargetBps: 500,
+          draftBps: 5000,
+          lastPxWad: 10n ** 18n,
+          currentPxWad: 10n ** 18n,
+        },
+      ],
+      nav,
+      2500,
+      200,
+    )[0]!;
+    expect(row.action).toBe("buy");
+    // floor = 25% of 1 ETH = 0.25; deployable = 0.15
+    expect(suggestBuyEth(row, nav, weth, 2500)).toBeCloseTo(0.15, 6);
   });
 });

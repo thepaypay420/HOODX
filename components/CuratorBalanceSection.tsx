@@ -43,8 +43,8 @@ export function CuratorBalanceSection({
       <p className="text-[13px] text-[var(--dim)]">Curator · Balance</p>
       <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Targets, drift & rebalance</h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[var(--dim)]">
-        Slide each name to the weight you want, pick a preset strategy, write targets on-chain, then use Fix
-        to prefill vault swaps. P/L vs target is sleeve drift from your draft — not wallet ROI.
+        Slide each name to the weight you want, write targets on-chain, then Fix → Buy to spend idle WETH
+        (above the cash floor). Sliders plan allocation — swaps run separately in vault swaps below.
       </p>
 
       <CuratorBook
