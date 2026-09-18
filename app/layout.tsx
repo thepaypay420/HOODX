@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Outfit } from "next/font/google";
+import { Caveat, IBM_Plex_Mono, Outfit } from "next/font/google";
 import { Aura } from "@/components/Aura";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_URL } from "@/lib/config";
@@ -10,6 +10,12 @@ const ui = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-ui",
+});
+
+const script = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-script",
 });
 
 const mono = IBM_Plex_Mono({
@@ -24,7 +30,8 @@ export const metadata: Metadata = {
     default: "HOODX",
     template: "%s · HOODX",
   },
-  description: "Live on Robinhood Chain. One token. A whole book. DYOR.",
+  description:
+    "Permissionless index funds on Robinhood Chain. One token for a curated basket of RH assets — with a WETH cash sleeve, all on-chain.",
   applicationName: "HOODX",
   alternates: { canonical: "/" },
   openGraph: {
@@ -55,7 +62,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${ui.variable} ${mono.variable} antialiased`}>
+      <body className={`${ui.variable} ${script.variable} ${mono.variable} antialiased`}>
         <Providers>
           <Aura />
           {children}

@@ -50,10 +50,6 @@ type VaultSnap = {
   bags: Bag[];
 };
 
-async function sleeveWeth(vault: Address, token: Address, wei: bigint): Promise<bigint> {
-  return sleeveWethWei(vault, token, wei);
-}
-
 export function VaultDesk({
   slug,
   vault: vaultProp,
