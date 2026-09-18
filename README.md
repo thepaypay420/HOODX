@@ -5,8 +5,8 @@
 <h1 align="center">HOODX</h1>
 
 <p align="center">
-  <strong>The index factory for Robinhood Chain.</strong><br />
-  One token. A whole book.
+  <strong>Robinhood Chain · On-chain index tokens</strong><br />
+  One token. A whole basket.
 </p>
 
 <p align="center">
@@ -27,29 +27,30 @@
 </p>
 
 <p align="center">
-  <img src="docs/hud-home.png" alt="HOODX HUD — One token. A whole book." width="920" />
+  <img src="docs/hud-home.png" alt="HOODX — One token. A whole basket." width="920" />
 </p>
 
-HOODX is live on **Robinhood Chain (4663)**. Anyone can mint a trustless meme basket — 2 to 24 Uniswap V3 WETH/USDG or V4 ETH/stock-quote names — as a single ERC-20. Friends send ETH. The vault buys the book. They hold one token, not a folder of airdrops.
+HOODX is live on **Robinhood Chain (4663)**. Permissionless index funds — buy one token for exposure to a curated basket of RH assets, with a WETH cash sleeve, all on-chain. Anyone can mint 2–24 Uniswap V3 WETH/USDG or hookless V4 ETH/stock-quote names as a single ERC-20.
 
-You drop `/i/yourslug`. You keep the book from going thin. You earn a cut on every join. **Redeem is free, and it cannot be paused.**
+You drop `/i/yourslug`. You keep the basket from going thin. You earn a cut on every join. **Redeem is free, and it cannot be paused.**
 
 ---
 
 ## $696X is live
 
-**$696X** is index zero: [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one bag. The HUD carries 696’s X picture. One share starts at **$100 of ETH**. Join buys the mix. Leave sells your slice back to ETH.
+**$696X** is index zero: [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one basket. The HUD carries 696’s X picture. One share starts at **$100 of ETH**. Join buys the mix. Leave sells your slice back to ETH.
 
 <p align="center">
-  <img src="docs/hud-696x.png" alt="$696X — You, ROI, vault names, Join and Leave" width="920" />
+  <img src="docs/hud-696x.png" alt="$696X — vault desk, ROI, basket, join and leave" width="920" />
 </p>
 
 | | On-chain now |
 |---|---|
 | Vault | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
+| Factory | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
 | Status | **Live** · joins open · redeem open |
 | Share | ~0.04 ETH · genesis peg **$100** of ETH |
-| Book | 10 listed names · no hooked/thin books · Uni V3 TWAP + hookless V4 · 25% WETH cash |
+| Basket | 10 listed names · hooked/thin pools blocked · Uni V3 TWAP + hookless V4 · ~40% WETH cash |
 | Fees | 0.50% in · **0% out** |
 | First mint | Open · **0.08 ETH** (~$200). Later joins copy the live mix. |
 | Token image | On-chain `imageURI` / ERC-7572 `contractURI` · 696 PFP |
@@ -64,7 +65,7 @@ Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
   <tr>
     <td width="33%" valign="top">
       <h3>01 · Compose</h3>
-      <p>Pick 2–24 RH names with a Uni V3 WETH/USDG or V4 ETH/stock-quote pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
+      <p>Pick 2–24 RH names with a Uni V3 WETH/USDG or hookless V4 ETH/stock-quote pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
     </td>
     <td width="33%" valign="top">
       <h3>02 · Share</h3>
@@ -80,7 +81,7 @@ Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
 ```
 ETH in ── 0.10% protocol
        ── 0.40% creator
-       └── net buys the book (Uni V3 TWAP / V4 ETH, 3% max slip)
+       └── net buys the basket (Uni V3 TWAP / hookless V4, 3% max slip)
               ├── thin names stay WETH
               ├── cash sleeve for exits
               └── Leave sells your slice back to ETH. Fee: 0.
@@ -92,8 +93,8 @@ ETH in ── 0.10% protocol
 | Share at genesis | $100 of ETH | $100 of ETH |
 | Join | 0.50% | 0.10% protocol + 0–0.50% you |
 | Redeem | **0% · cannot be paused** | same |
-| Book | 2–24 names · curator rebalances | same |
-| Add a name | paste any RH `0x` with a V3 WETH or V4 ETH pool | same |
+| Basket | 2–24 names · curator rebalances | same |
+| Add a name | paste any RH `0x` with a safe V3 WETH or hookless V4 pool | same |
 
 A name that cannot fill inside 3% stays ETH. NAV is **every sleeve plus WETH** — not one pool token standing in for the fund. USD on the HUD is the live ETH tape, never a hardcoded price.
 
@@ -124,14 +125,14 @@ The factory is permissionless. `HoodxFactory.create` is for anyone. `create696x`
 
 ## HUD
 
-Next.js 15, viem, no private keys. Uniswap-quiet dark UI. Hat mark, teal `#1fd4c6`, gold `#e0b54a`.
+Next.js 15, viem, no private keys. Dark landing with teal `#1fd4c6`, gold `#e0b54a`, and the hat mark.
 
 Production: **[www.xhoodindex.com](https://www.xhoodindex.com)** (`xhoodindex.com` redirects there).
 
 | Route | |
 |---|---|
-| `/` | HOODX · featured $696X · create |
-| `/i/696x` | You / ROI / vault / NAV · join · leave · book |
+| `/` | Landing · explore indexes · create |
+| `/i/696x` | You / ROI / vault / NAV · join · leave · basket |
 | `/i/[slug]` | any index |
 | `/create` | mint |
 
@@ -141,23 +142,26 @@ npm install
 npm run dev     # http://127.0.0.1:3100
 ```
 
-Vercel builds this Next HUD from the repository root. `.env.example` already points at the live factory, $696X vault, and `https://www.xhoodindex.com`. Emptied clone `0xeBFA…5C24` (old factory `0x46ea…`) is ignored even if a stale `NEXT_PUBLIC_*` pin is still on the project.
+Vercel builds this Next HUD from the repository root. `.env.example` already points at the live hardened factory, $696X vault, and `https://www.xhoodindex.com`. Legacy pins (`0x46ea…`, `0xeBFA…`, `0x6350…`, `0x3860…`) are ignored even if a stale `NEXT_PUBLIC_*` is still on the project.
 
 ---
 
 ## Contracts
 
-Robinhood Chain **4663**. EIP-1167 clones of `HoodxIndex`.
+Robinhood Chain **4663**. EIP-1167 clones of hardened `HoodxIndex`.
 
 | | Address |
 |---|---|
 | **Factory** | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
-| Implementation | [`0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19`](https://robinhoodchain.blockscout.com/address/0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19) |
+| Implementation | [`0x7A5A47022E993401c5C6CFce0208c10fB032025E`](https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E) |
+| Swap logic | [`0x2505a3185136cE990077a71c4929a115d9AEDf75`](https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75) |
 | **$696X vault** | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
 | TWAP oracle | [`0x815A0D4909460B29c70868e24831f575cA86F3aD`](https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD) |
 | WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
 | Uni V3 SwapRouter02 | [`0xCaf681a66D020601342297493863E78C959E5cb2`](https://robinhoodchain.blockscout.com/address/0xCaf681a66D020601342297493863E78C959E5cb2) |
 | Uni V4 PoolManager | [`0x8366a39CC670B4001A1121B8F6A443A643e40951`](https://robinhoodchain.blockscout.com/address/0x8366a39CC670B4001A1121B8F6A443A643e40951) |
+
+Deprecated (do not use): bricked vault `0x6350…1E33` · emptied vault `0xeBFA…5C24` · legacy factories `0x46ea…d2b9` / `0x3860…Df71`.
 
 ```
 contracts/HoodxFactory.sol   permissionless clones · create / create696x · imageURI
@@ -168,13 +172,14 @@ contracts/UniTwap.sol        V3 TWAP + V4 spot oracle
 
 - `deposit(minShares)` — 97% of preview. Joins can close; **withdraw ignores pause**.
 - `withdraw(shares, minEthOut)` — sells the slice, 3% per swap.
+- Hooked V4 pools revert at bind. Thin pools and unsafe names are blocked in the HUD.
 - Two-step `owner` (nominate → Accept). Creator-only fee recipient and bps.
 - V3 TWAP + V4 spot (mint uses `max(spot, lastPx)`). `restoreCash` is V3-only.
 - Quote bind: V3 WETH, V3 USDG, V4 ETH/WETH, V4 stock quote (PROMETHEUS/SPCX), V4 USDG.
 - `imageURI` + ERC-7572 `contractURI` at create; curator can `setImageURI`.
 
 ```bash
-python3 -m unittest tests.test_weights tests.test_vault
+python3 -m unittest tests.test_weights tests.test_vault tests.test_harden
 ```
 
 Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain catalog.
@@ -185,7 +190,7 @@ Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain cata
 
 - **Redeem stays open** if joins are paused. User ETH is not a curator hostage.
 - A typo owner (zero, vault, WETH, dead) reverts. The new curator cannot steal the creator cut.
-- NAV sums every priced sleeve plus WETH. One dumped pool cannot mint the rest of the book cheap.
+- NAV sums every priced sleeve plus WETH. One dumped pool cannot mint the rest of the basket cheap.
 - The live $696X clone above is canonical. Do not treat a second 696X deploy as this product.
 - DYOR. Not HOOD10. Not a seeded Uni pool yet. Not financial advice.
 

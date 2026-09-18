@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     title: "HOODX",
-    description: "Live on Robinhood Chain. One token. A whole book.",
+    description: "Live on Robinhood Chain. One token. A whole basket.",
     url: SITE_URL,
     siteName: "HOODX",
     type: "website",

@@ -27,15 +27,16 @@ PROMETHEUS and similar names trade on **V4 stock-quote pools** (e.g. PROMETHEUS/
 
 Refresh bridges + bind pools: `python3 scripts/refresh_rh_bridges.py`
 
-## Live 696X (`0x6350…1E33`)
+## Live 696X (`0xAC45…1a3A`)
 
-Canonical vault is an EIP-1167 clone of implementation `0x21B0…4f19` with
-`HoodxSwap` + `UniTwapOracle`. PROMETHEUS is bound to PROMETHEUS/SPCX V4
-`0x627c…de2e8` (not the thin ETH stub). USDG V3/V4 and RH-stock quote binds
-work on this bytecode. Curator `setQuoteBridge` / `addToken` for new names
-without another relaunch.
+Canonical vault is an EIP-1167 clone of implementation `0x7A5A…025E` on
+factory `0x5680…C19b`, with hardened `HoodxSwap` + `UniTwapOracle`. Hooked V4
+pools revert at bind. PROMETHEUS/SPCX and USDG quote binds work on this
+bytecode. Curator `setQuoteBridge` / `addToken` for new names without another
+relaunch.
 
-Old emptied clone `0xeBFA…5C24` (factory `0x46ea…d2b9`) cannot be patched.
+Deprecated clones (`0x6350…1E33`, `0xeBFA…5C24`, older factories) cannot be
+patched and are ignored by the HUD.
 
 ## Security (carried from live / funds-safe)
 

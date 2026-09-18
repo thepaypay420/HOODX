@@ -175,11 +175,13 @@ drift (sell the tail, buy PONS/AI/CASHCAT). Later joins copy the live mix.
 
 ## Live funds (do not trap)
 
-696X is live. User ETH sits in `0x6350f9e8e630785ABF09fD1127366998Ad821E33`.
-Do not pause, set floors, hand the book to a dead key, unwind, or redeploy
-that clone. Operator scripts that could trap funds are refused.
-The HUD remaps emptied factory/vault env pins (`0x46ea…` / `0xeBFA…`) so
-`/i/696x` cannot show the redeemed clone as Live.
+696X is live on the hardened factory. Canonical vault:
+`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A` (factory
+`0x56809a2738A23650aF939F73588E72C67CafC19b`). Do not pause, set floors,
+hand the basket to a dead key, unwind, or treat legacy clones as this product.
+Operator scripts that could trap funds are refused. The HUD remaps emptied /
+bricked / legacy factory pins (`0x46ea…`, `0xeBFA…`, `0x6350…`, `0x3860…`) so
+`/i/696x` cannot show an old clone as Live.
 
 On-chain: `withdraw` ignores `paused`. A held name with `priceWethWad == 0` reverts
 every exit (`Unpriced` / `NeedBuffer`). Curator HUD has no pause or setFloors.
