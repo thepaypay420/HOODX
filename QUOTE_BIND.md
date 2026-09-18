@@ -30,3 +30,22 @@ The canonical vault is an **EIP-1167 minimal clone**. Its logic is fixed at depl
 3. For production 696X: schedule an explicit **migration** (withdraw → deposit new vault) **only** after fork proofs and user comms — never auto-migrate.
 
 Until new bytecode is live at the vault address, in-vault PROMETHEUS buys on the old clone will keep failing on the ETH stub.
+
+## Security (carried from live / funds-safe)
+
+Quote-bind was added on top of the hardened `HoodxIndex` (991-line funds-safe baseline), not a fresh fork. The SPCX/SPY paths inherit every live guard:
+
+| Control | Quote-bind behavior |
+|---------|---------------------|
+| 97% TWAP floor | `swapV3`, `restoreCash`, V3 bridge leg, and composite `quoteOut` |
+| V4 mint NAV | `mintAssets()` uses `max(spot, lastPxWad)` — quoted names snapshot composite px |
+| EIP-4626 deposit | Required `minShares`; credited mint capped at net ETH in |
+| Dead shares | `VIRTUAL_ASSETS` minted to `DEAD` on first real deposit |
+| Cash floor | Buys (incl. WETH→SPCX→token) revert below `cashTargetBps` |
+| Exit safety | `withdraw` ignores pause; `minEthOut` + `_liveSupply` sweep |
+| Curator handoff | Two-step `pendingOwner` + `_assertPayTo` (blocks vault/router/dead) |
+| Creator cut | Only `creator` sets fee/recipient — owner cannot steal cut |
+| `restoreCash` | V3-only (quoted names are V4 bind — owner rebalances via `swapV3`) |
+| `rebindToken` | Zero bag only; clears bind + stale `lastPxWad` |
+
+`tests/test_quote_security.py` asserts these patterns stay in `contracts/HoodxIndex.sol`.

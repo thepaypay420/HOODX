@@ -638,6 +638,7 @@ contract HoodxIndex {
         delete isV4[token];
         delete v4Key[token];
         delete quoteOf[token];
+        delete lastPxWad[token];
         for (uint256 i; i < n; i++) {
             if (tokens[i] == token) {
                 tokens[i] = tokens[n - 1];
@@ -1060,6 +1061,7 @@ contract HoodxIndex {
         delete isV4[token];
         delete v4Key[token];
         delete quoteOf[token];
+        delete lastPxWad[token];
     }
 
     function _spotQuotePerToken(address token) internal view returns (uint256) {
