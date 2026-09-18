@@ -1,15 +1,16 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { GEN0_SLUG } from "@/lib/curators";
 
 const FLOAT_TOKENS = [
-  { label: "PONS", x: "8%", y: "12%", delay: "0s" },
-  { label: "MEME", x: "72%", y: "8%", delay: "0.8s" },
-  { label: "CASHCAT", x: "76%", y: "22%", delay: "1.1s" },
-  { label: "AI", x: "84%", y: "38%", delay: "1.4s" },
-  { label: "ETH", x: "4%", y: "52%", delay: "0.4s" },
-  { label: "696X", x: "68%", y: "62%", delay: "1s" },
-  { label: "HOOKR", x: "86%", y: "58%", delay: "1.6s" },
+  { label: "PONS", x: "8%", y: "12%", mx: "4%", my: "6%", delay: "0s" },
+  { label: "MEME", x: "72%", y: "8%", mx: "58%", my: "2%", delay: "0.8s" },
+  { label: "CASHCAT", x: "76%", y: "22%", mx: "92%", my: "16%", delay: "1.1s" },
+  { label: "AI", x: "84%", y: "38%", mx: "64%", my: "30%", delay: "1.4s" },
+  { label: "ETH", x: "4%", y: "52%", mx: "0%", my: "68%", delay: "0.4s" },
+  { label: "696X", x: "68%", y: "62%", mx: "78%", my: "50%", delay: "1s" },
+  { label: "HOOKR", x: "86%", y: "58%", mx: "88%", my: "66%", delay: "1.6s" },
 ];
 
 const VALUE_PROPS = [
@@ -79,7 +80,15 @@ export function HomeLanding() {
               <div
                 key={t.label}
                 className="landing-float-chip"
-                style={{ left: t.x, top: t.y, animationDelay: t.delay }}
+                style={
+                  {
+                    "--chip-x": t.x,
+                    "--chip-y": t.y,
+                    "--chip-mx": t.mx,
+                    "--chip-my": t.my,
+                    animationDelay: t.delay,
+                  } as CSSProperties
+                }
               >
                 {t.label}
               </div>

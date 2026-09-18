@@ -632,7 +632,7 @@ body {
 
 .landing-stage {
   position: relative;
-  min-height: 320px;
+  min-height: 360px;
   margin-inline: auto;
   max-width: 420px;
 }
@@ -710,6 +710,8 @@ body {
 
 .landing-float-chip {
   position: absolute;
+  left: var(--chip-x);
+  top: var(--chip-y);
   z-index: 3;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
@@ -722,6 +724,15 @@ body {
   color: var(--paper);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   animation: landing-float-chip 4.5s ease-in-out infinite;
+}
+
+@media (max-width: 639px) {
+  .landing-float-chip {
+    left: var(--chip-mx, var(--chip-x));
+    top: var(--chip-my, var(--chip-y));
+    padding: 0.38rem 0.62rem;
+    font-size: 10px;
+  }
 }
 
 .landing-script {
