@@ -50,7 +50,7 @@ You drop `/i/yourslug`. You keep the basket from going thin. You earn a cut on e
 | Factory | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
 | Status | **Live** · joins open · redeem open |
 | Share | ~0.04 ETH · genesis peg **$100** of ETH |
-| Basket | 10 listed names · hooked/thin pools blocked · Uni V3 TWAP + hookless V4 · ~40% WETH cash |
+| Basket | 10 listed names · hooked/thin pools blocked · Uni V3 TWAP + hookless V4 · ~25% WETH cash |
 | Fees | 0.50% in · **0% out** |
 | First mint | Open · **0.08 ETH** (~$200). Later joins copy the live mix. |
 | Token image | On-chain `imageURI` / ERC-7572 `contractURI` · 696 PFP |
