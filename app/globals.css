@@ -438,6 +438,21 @@ body {
 
 /* ——— Landing page ——— */
 
+.landing {
+  position: relative;
+}
+
+.landing::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(520px, 70vw);
+  height: 280px;
+  background: radial-gradient(ellipse at 100% 0%, rgba(31, 212, 198, 0.12), transparent 68%);
+}
+
 .landing-header {
   position: sticky;
   top: 0;
