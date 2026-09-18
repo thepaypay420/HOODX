@@ -1,10 +1,10 @@
-# HOODX — build a meme index, share it, earn a cut
+# HOODX — build an index, share it, earn a cut
 
 Live on Robinhood Chain **4663**. `$696X` is Gen-0. The factory is HOODX.
 
 ## The product
 
-> Build your own meme index. Share it. Earn a cut when friends ape in.
+> Build your own index. Share it. Earn a cut when friends ape in.
 >
 > $696X kicks it off — Gen-0 index of the @696_eth RH watchlist. Whole pack, one bag.
 >
