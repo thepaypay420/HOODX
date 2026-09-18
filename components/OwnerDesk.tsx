@@ -7,7 +7,6 @@ import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
-import { CuratorBook } from "@/components/CuratorBook";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
@@ -21,7 +20,19 @@ function bagText(wei: bigint) {
   return formatEtherSafe(wei);
 }
 
-export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string }) {
+export function OwnerDesk({
+  vault,
+  slug = "",
+  prefilledToken = "",
+  prefilledSide = "sell",
+  prefilledAmount = "",
+}: {
+  vault?: string;
+  slug?: string;
+  prefilledToken?: string;
+  prefilledSide?: "buy" | "sell";
+  prefilledAmount?: string;
+}) {
   const live = isAddress(vault || "");
   const { address, chainId, walletClient } = useWallet();
   const [owner, setOwner] = useState("");
@@ -89,6 +100,13 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
   useEffect(() => {
     void loadBags().catch(() => {});
   }, [loadBags]);
+
+  useEffect(() => {
+    if (!prefilledToken) return;
+    setToken(prefilledToken);
+    setSide(prefilledSide);
+    if (prefilledAmount) setAmount(prefilledAmount);
+  }, [prefilledToken, prefilledSide, prefilledAmount]);
 
   useEffect(() => {
     const sync = () => setBlurb(readBlurb(slug, vault));
@@ -377,7 +395,7 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
   return (
     <section data-testid="owner-desk" className="holo p-4 sm:p-5">
       <p className="text-[13px] text-[var(--dim)]">Owner · {shortAddr(owner)}</p>
-      <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Rebalance</h2>
+      <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Vault swaps</h2>
       <p className="mt-2 text-[15px] leading-6 text-[var(--dim)]">
         Amount in is vault tokens, not a guess. Max fills the bag. Buys send the 97% TWAP floor
         (V4 pools fill there, not at the headline quote). Sell & drop sells to WETH then removeToken.
@@ -450,16 +468,6 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
           </button>
         )}
       </div>
-      <CuratorBook
-        vault={vault!}
-        onStatus={setMsg}
-        onFocusSwap={(tok, side, amt) => {
-          setToken(tok);
-          setSide(side);
-          setAmount(amt || "");
-          setMsg(side === "buy" ? `Prefilled WETH → ${byAddress(tok)?.symbol || "name"} swap` : `Prefilled sell ${byAddress(tok)?.symbol || "name"}`);
-        }}
-      />
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <label className="block text-[11px] text-[var(--dim)]">
           Name

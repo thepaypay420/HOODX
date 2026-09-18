@@ -578,11 +578,15 @@ class HudLivePointerTest(unittest.TestCase):
         here = Path(__file__).resolve().parents[1]
         owner = (here / "components" / "OwnerDesk.tsx").read_text()
         book = (here / "components" / "CuratorBook.tsx").read_text()
+        section = (here / "components" / "CuratorBalanceSection.tsx").read_text()
+        client = (here / "components" / "IndexClient.tsx").read_text()
         math = (here / "lib" / "curator.ts").read_text()
-        self.assertIn("CuratorBook", owner)
+        self.assertIn("CuratorBalanceSection", client)
+        self.assertIn("data-testid=\"curator-balance-section\"", section)
         self.assertIn("data-testid=\"curator-book\"", book)
         self.assertIn("resizeSliderTargets", math)
         self.assertIn("analyzeDrift", math)
+        self.assertNotIn("CuratorBook", owner)
 
 
 class VaultPerfTest(unittest.TestCase):

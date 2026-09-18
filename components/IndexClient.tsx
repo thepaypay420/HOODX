@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { zeroAddress, type Address } from "viem";
+import { CuratorBalanceSection } from "@/components/CuratorBalanceSection";
 import { IndexCard } from "@/components/IndexCard";
 import { OwnerDesk } from "@/components/OwnerDesk";
 import { VaultDesk } from "@/components/VaultDesk";
@@ -12,6 +13,9 @@ import { publicClient } from "@/lib/wallet";
 
 export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
   const [vault, setVault] = useState(gen0 && isAddress(VAULT) ? VAULT : "");
+  const [swapToken, setSwapToken] = useState("");
+  const [swapSide, setSwapSide] = useState<"buy" | "sell">("sell");
+  const [swapAmount, setSwapAmount] = useState("");
 
   useEffect(() => {
     if (!isAddress(FACTORY)) return;
@@ -33,8 +37,22 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
   return (
     <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-4 pb-24 pt-5 sm:space-y-8 sm:px-6 sm:pb-28 sm:pt-8">
       <VaultDesk slug={slug} vault={vault || undefined} isGen0={gen0} />
+      <CuratorBalanceSection
+        vault={vault || undefined}
+        onFocusSwap={(tok, side, amt) => {
+          setSwapToken(tok);
+          setSwapSide(side);
+          setSwapAmount(amt || "");
+        }}
+      />
       <IndexCard slug={slug} vault={vault || undefined} compact />
-      <OwnerDesk slug={slug} vault={vault || undefined} />
+      <OwnerDesk
+        slug={slug}
+        vault={vault || undefined}
+        prefilledToken={swapToken}
+        prefilledSide={swapSide}
+        prefilledAmount={swapAmount}
+      />
     </div>
   );
 }

@@ -41,10 +41,12 @@ type BagRow = {
 
 export function CuratorBook({
   vault,
+  locked = false,
   onFocusSwap,
   onStatus,
 }: {
   vault: string;
+  locked?: boolean;
   onFocusSwap?: (token: string, side: "buy" | "sell", amountEth?: string) => void;
   onStatus?: (msg: string) => void;
 }) {
@@ -241,13 +243,9 @@ export function CuratorBook({
   const maxSliderPct = totals.cap / 100;
 
   return (
-    <div data-testid="curator-book" className="mt-6 border-t border-[var(--line)] pt-6">
+    <div data-testid="curator-book" className="mt-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[13px] text-[var(--dim)]">Curator book</p>
-          <h3 className="mt-1 text-lg font-semibold tracking-[-0.03em]">Targets & drift</h3>
-        </div>
-        <div className="text-right text-[12px] tabular text-[var(--dim)]">
+        <div className="text-right text-[12px] tabular text-[var(--dim)] sm:ml-auto">
           <p>
             Risk-on{" "}
             <span className={totals.over > 0 ? "text-[var(--gold)]" : "text-[var(--paper)]"}>
@@ -270,7 +268,7 @@ export function CuratorBook({
             key={s.id}
             type="button"
             data-testid={`strategy-${s.id}`}
-            disabled={busy || !rows.length}
+            disabled={busy || !rows.length || locked}
             title={s.hint}
             onClick={() => applyStrategy(s.id)}
             className={`ghost px-3 py-2 text-[12px] ${strategy === s.id ? "ring-1 ring-[var(--gold)]" : ""}`}
@@ -278,7 +276,7 @@ export function CuratorBook({
             {s.label}
           </button>
         ))}
-        <button type="button" data-testid="strategy-reset" disabled={busy} onClick={resetDraft} className="ghost px-3 py-2 text-[12px]">
+        <button type="button" data-testid="strategy-reset" disabled={busy || locked} onClick={resetDraft} className="ghost px-3 py-2 text-[12px]">
           Reset draft
         </button>
       </div>
@@ -323,6 +321,7 @@ export function CuratorBook({
                         max={maxSliderPct}
                         step={0.05}
                         value={pct}
+                        disabled={locked}
                         data-testid={`slider-${r.symbol}`}
                         onChange={(e) => {
                           setStrategy("custom");
@@ -351,8 +350,8 @@ export function CuratorBook({
                     {ethUsd > 0 ? fmtUsd(r.plVsTargetUsd, 0) : `${r.plVsTargetEth.toFixed(4)} ETH`}
                   </td>
                   <td className="px-3 py-3 text-right">
-                    {r.action === "hold" ? (
-                      <span className="text-[var(--dim)]">hold</span>
+                    {r.action === "hold" || locked ? (
+                      <span className="text-[var(--dim)]">{locked ? "—" : "hold"}</span>
                     ) : (
                       <button
                         type="button"
@@ -388,7 +387,7 @@ export function CuratorBook({
         <button
           type="button"
           data-testid="curator-write-targets"
-          disabled={busy || chainId !== robinhood.id || validation.errors.length > 0}
+          disabled={busy || locked || chainId !== robinhood.id || validation.errors.length > 0}
           onClick={() => void writeTargets()}
           className="ape px-4"
         >

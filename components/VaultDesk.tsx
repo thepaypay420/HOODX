@@ -927,6 +927,14 @@ export function VaultDesk({
           </h2>
           <p className="mt-1 max-w-lg text-[13px] leading-5 text-[var(--dim)]">
             {liveRows ? "Live is the vault TWAP sleeve. Target is the 696 weight — it does not fall when a name dumps." : `Under ${fmtUsd(MIN_SLEEVE_USD, 0)} parks in WETH.`}
+            {liveRows ? (
+              <>
+                {" "}
+                <a href="#curator-balance" className="text-[var(--paper)] underline-offset-2 hover:underline">
+                  Curator balance →
+                </a>
+              </>
+            ) : null}
             {isGen0 && (
               <>
                 {" "}
