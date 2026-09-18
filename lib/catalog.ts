@@ -116,7 +116,7 @@ export function byAddress(addr: string) {
   const bound = BIND.get(k);
   const base = cat || extra;
   if (bound && base) {
-    return { ...base, buyPool: bound.buyPool, buyQuote: bound.buyQuote, buyLabels: bound.buyLabels };
+    return { ...base, buyPool: bound.buyPool, buyLabels: bound.buyLabels };
   }
   return bound || base;
 }

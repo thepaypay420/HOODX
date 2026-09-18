@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, type Address } from "viem";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
-import { INDEX_CATALOG, byAddress } from "@/lib/catalog";
+import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USD_PER_SHARE, WETH, isLive696x } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
-import { revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
+import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { formatEtherSafe, fmtUsd, genesisEthWei, isAddress, shortAddr } from "@/lib/format";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { listTargetBps, type Sleeve } from "@/lib/weights";
@@ -46,6 +46,8 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
   const tokenKey = token.toLowerCase();
   const bagWei = side === "sell" ? bags[tokenKey] || 0n : bags[wethKey] || 0n;
   const coin = byAddress(token);
+  const catalogCoin = CATALOG.find((c) => c.token === tokenKey);
+  const listedQuote = catalogCoin?.buyQuote || coin?.buyQuote;
   const symbol = coin?.symbol || shortAddr(token);
   const inSym = side === "sell" ? symbol : "WETH";
   const outSym = side === "sell" ? "WETH" : symbol;
@@ -329,7 +331,11 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
       );
       if (side === "sell") setAmount("");
     } catch (e) {
-      setMsg(revertHint(e));
+      setMsg(
+        side === "buy" && isSlippageError(e)
+          ? buySlippageHint(symbol, listedQuote)
+          : revertHint(e),
+      );
     } finally {
       setBusy(false);
     }
@@ -629,6 +635,12 @@ export function OwnerDesk({ vault, slug = "" }: { vault?: string; slug?: string 
           />
         </label>
       </div>
+      {listedQuote && !["ETH", "WETH"].includes(listedQuote.toUpperCase()) && (
+        <p className="mt-3 text-[13px] leading-5 text-[var(--dim)]">
+          DexScreener book: {symbol}/{listedQuote.toUpperCase()}. Live vault swaps still bind ETH/WETH only — V4{" "}
+          {listedQuote.toUpperCase()} support is required for in-vault buys.
+        </p>
+      )}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <button
           type="button"

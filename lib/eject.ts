@@ -62,6 +62,20 @@ export function partitionRemovals(
   return { empty, held };
 }
 
+export function isSlippageError(err: unknown): boolean {
+  const blob = blobOf(err);
+  return blob.includes("slippage") || blob.includes(SLIPPAGE_SEL);
+}
+
+/** Names like PROMETHEUS trade on SPCX/SPY books; the live vault may still be bound to a thin ETH stub. */
+export function buySlippageHint(symbol: string, listedQuote?: string): string {
+  const q = (listedQuote || "").toUpperCase();
+  if (q && q !== "ETH" && q !== "WETH") {
+    return `${symbol} trades on the ${q} pool (see DexScreener) — this vault is still bound to a thin ETH/WETH stub until V4 ${q} bind ships`;
+  }
+  return `${symbol} bind pool is too thin to fill at the 97% TWAP floor — seed the ETH/WETH book or wait for depth`;
+}
+
 function blobOf(err: unknown): string {
   const parts: string[] = [];
   const walk = (value: unknown, depth: number) => {
@@ -89,7 +103,7 @@ export function revertHint(err: unknown): string {
     return "still holding that name — sell to WETH on Rebalance, then tap ×";
   }
   if (blob.includes("slippage") || blob.includes(SLIPPAGE_SEL)) {
-    return "pool filled below the quote — we send the 97% TWAP floor; retry Swap";
+    return "pool filled below the TWAP floor — retry after the bind book has more depth";
   }
   if (blob.includes("cashfloor") || blob.includes("0xdc55f981")) {
     return "that buy would breach the cash floor — use a smaller WETH amount";
