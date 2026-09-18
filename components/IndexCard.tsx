@@ -697,11 +697,6 @@ export function IndexCard({
             }}
           />
         )}
-        {live && !canEdit && (
-          <p className="mb-3 text-[13px] leading-5 text-[var(--dim)]">
-            Connect the curator wallet to add a token that is not on this list.
-          </p>
-        )}
         {canEdit && (
           <input
             data-testid="pack-filter"

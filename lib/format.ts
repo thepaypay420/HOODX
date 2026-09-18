@@ -32,6 +32,17 @@ export function fmtUsd(n: number, digits = 2) {
   });
 }
 
+/** Sleeve / drift lines — keep sub-dollar and tiny high-price bags visible. */
+export function fmtUsdSleeve(n: number) {
+  if (!Number.isFinite(n)) return "—";
+  const abs = Math.abs(n);
+  if (abs === 0) return fmtUsd(0, 2);
+  if (abs >= 1000) return fmtUsd(n, 0);
+  if (abs >= 1) return fmtUsd(n, 2);
+  if (abs >= 0.01) return fmtUsd(n, 2);
+  return fmtUsd(n, 4);
+}
+
 export function fmtEth(wei: bigint, digits = 4) {
   const n = Number(formatEtherSafe(wei));
   return `${n.toFixed(digits)} ETH`;

@@ -583,6 +583,7 @@ class HudLivePointerTest(unittest.TestCase):
         math = (here / "lib" / "curator.ts").read_text()
         self.assertIn("CuratorBalanceSection", client)
         self.assertIn("data-testid=\"curator-balance-section\"", section)
+        self.assertIn("if (!isOwner) return null", section)
         self.assertIn("data-testid=\"curator-book\"", book)
         self.assertIn("resizeSliderTargets", math)
         self.assertIn("analyzeDrift", math)

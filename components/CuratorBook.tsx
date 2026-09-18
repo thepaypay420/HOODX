@@ -20,7 +20,8 @@ import {
   type StrategyId,
   type TargetDraft,
 } from "@/lib/curator";
-import { fmtPct, fmtUsd, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
+import { fmtPct, fmtUsdSleeve, formatEtherSafe, isAddress, shortAddr } from "@/lib/format";
+import { sleeveWethWei } from "@/lib/sleeveValue";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { type Sleeve } from "@/lib/weights";
 import snapshot from "../public/sleeves.json";
@@ -41,12 +42,10 @@ type BagRow = {
 
 export function CuratorBook({
   vault,
-  locked = false,
   onFocusSwap,
   onStatus,
 }: {
   vault: string;
-  locked?: boolean;
   onFocusSwap?: (token: string, side: "buy" | "sell", amountEth?: string) => void;
   onStatus?: (msg: string) => void;
 }) {
@@ -96,10 +95,11 @@ export function CuratorBook({
           functionName: "priceWethWad",
           args: [token],
         });
-        if (currentPx > 0n && bal > 0n) wethValue = (bal * currentPx) / 10n ** 18n;
       } catch {
         /* cold oracle */
       }
+      if (currentPx <= 0n && lastPx) currentPx = lastPx as bigint;
+      wethValue = await sleeveWethWei(v, token, bal);
       const coin = byAddress(token);
       out.push({
         token: token.toLowerCase(),
@@ -268,7 +268,7 @@ export function CuratorBook({
             key={s.id}
             type="button"
             data-testid={`strategy-${s.id}`}
-            disabled={busy || !rows.length || locked}
+            disabled={busy || !rows.length}
             title={s.hint}
             onClick={() => applyStrategy(s.id)}
             className={`ghost px-3 py-2 text-[12px] ${strategy === s.id ? "ring-1 ring-[var(--gold)]" : ""}`}
@@ -276,7 +276,7 @@ export function CuratorBook({
             {s.label}
           </button>
         ))}
-        <button type="button" data-testid="strategy-reset" disabled={busy || locked} onClick={resetDraft} className="ghost px-3 py-2 text-[12px]">
+        <button type="button" data-testid="strategy-reset" disabled={busy} onClick={resetDraft} className="ghost px-3 py-2 text-[12px]">
           Reset draft
         </button>
       </div>
@@ -286,7 +286,7 @@ export function CuratorBook({
         <span>{driftSummary.sells} overweight / park</span>
         <span>
           Total drift{" "}
-          {ethUsd > 0 ? fmtUsd(driftSummary.driftUsd, 0) : `${(driftSummary.driftUsd / Math.max(ethUsd, 1)).toFixed(4)} ETH`}
+          {ethUsd > 0 ? fmtUsdSleeve(driftSummary.driftUsd) : `${(driftSummary.driftUsd / Math.max(ethUsd, 1)).toFixed(6)} ETH`}
         </span>
       </div>
 
@@ -321,7 +321,6 @@ export function CuratorBook({
                         max={maxSliderPct}
                         step={0.05}
                         value={pct}
-                        disabled={locked}
                         data-testid={`slider-${r.symbol}`}
                         onChange={(e) => {
                           setStrategy("custom");
@@ -342,16 +341,16 @@ export function CuratorBook({
                     {r.driftBps >= 0 ? "+" : ""}
                     {(r.driftBps / 100).toFixed(2)}%
                   </td>
-                  <td className="px-3 py-3 text-right tabular">{ethUsd > 0 ? fmtUsd(r.valueUsd, 0) : `${r.valueEth.toFixed(4)} ETH`}</td>
+                  <td className="px-3 py-3 text-right tabular">{ethUsd > 0 ? fmtUsdSleeve(r.valueUsd) : `${r.valueEth.toFixed(6)} ETH`}</td>
                   <td className="px-3 py-3 text-right tabular">
                     {r.markDelta == null ? "—" : fmtPct(r.markDelta, 1)}
                   </td>
                   <td className={`px-3 py-3 text-right tabular ${plTone}`}>
-                    {ethUsd > 0 ? fmtUsd(r.plVsTargetUsd, 0) : `${r.plVsTargetEth.toFixed(4)} ETH`}
+                    {ethUsd > 0 ? fmtUsdSleeve(r.plVsTargetUsd) : `${r.plVsTargetEth.toFixed(6)} ETH`}
                   </td>
                   <td className="px-3 py-3 text-right">
-                    {r.action === "hold" || locked ? (
-                      <span className="text-[var(--dim)]">{locked ? "—" : "hold"}</span>
+                    {r.action === "hold" ? (
+                      <span className="text-[var(--dim)]">hold</span>
                     ) : (
                       <button
                         type="button"
@@ -387,7 +386,7 @@ export function CuratorBook({
         <button
           type="button"
           data-testid="curator-write-targets"
-          disabled={busy || locked || chainId !== robinhood.id || validation.errors.length > 0}
+          disabled={busy || chainId !== robinhood.id || validation.errors.length > 0}
           onClick={() => void writeTargets()}
           className="ape px-4"
         >
