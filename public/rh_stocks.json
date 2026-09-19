@@ -93,6 +93,11 @@
       "kind": "stock"
     },
     {
+      "symbol": "NFLX",
+      "token": "0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8",
+      "kind": "stock"
+    },
+    {
       "symbol": "NBIS",
       "token": "0x9d9c6684f596f66a64c030b93a886d51fd4d7931",
       "kind": "stock"

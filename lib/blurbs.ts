@@ -3,6 +3,8 @@ export const BLURB_EVENT = "hoodx:blurb";
 
 const DEFAULTS: Record<string, string> = {
   "696x": "CTO lead of @PrometheusGrok / Health & Wealth",
+  faangx:
+    "Equal-weight FAANG on RH Chain — META, AMZN, AAPL, NFLX, GOOGL. 0% curator fees; 10 bps protocol only.",
 };
 
 function key(id: string) {

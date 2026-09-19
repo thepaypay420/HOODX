@@ -10,7 +10,7 @@ SOL = (
     + (ROOT / "contracts" / "HoodxSwap.sol").read_text()
     + (ROOT / "contracts" / "HoodxStorage.sol").read_text()
 )
-AMZN = "0x12f190a9f9d7d37a250758b26824b97cef1bf54"
+AMZN = "0x12f190a9f9d7d37a250758b26824b97ce941bf54"
 AMZN_USDG_V3 = "0x8ac92da74ab5f3b1d024dc1943ad7e15dc4179ef"
 USDG = "0x5fc5360d0400a0fd4f2af552add042d716f1d168"
 WETH_USDG = "0x52e65b17fb6e5ba00ed806f37afcd2daa50271ca"
