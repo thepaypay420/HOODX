@@ -23,14 +23,6 @@ export const LIVE_FACTORY_ADDR = "0x56809a2738A23650aF939F73588E72C67CafC19b";
 export const INDEX_IMPL_ADDR = "0x7A5A47022E993401c5C6CFce0208c10fB032025E";
 export const SWAP_LOGIC_ADDR = "0x2505a3185136cE990077a71c4929a115d9AEDf75";
 export const TWAP_ORACLE_ADDR = "0x815A0D4909460B29c70868e24831f575cA86F3aD";
-
-/** Core contracts verified on Blockscout (exact match). */
-export const VERIFIED_CONTRACTS = [
-  { label: "Factory", address: LIVE_FACTORY_ADDR },
-  { label: "Implementation", address: INDEX_IMPL_ADDR },
-  { label: "Swap", address: SWAP_LOGIC_ADDR },
-  { label: "Oracle", address: TWAP_ORACLE_ADDR },
-] as const;
 export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
 export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
   "0x58daec3116aae6D93017bAAea7749052E8a04fA7") as `0x${string}`;
