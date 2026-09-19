@@ -20,5 +20,6 @@
   "supersededFaangxVault": "0x011204DB4CEb6D8D9c972da55269927C6738785b",
   "faangxReady": true,
   "faangxUsdGBridgeFix": true,
-  "faangxEmergencyLatch": true
+  "faangxEmergencyLatch": true,
+  "faangxDustLock": true
 }

@@ -51,7 +51,7 @@ class UsdgContractTest(unittest.TestCase):
         self.assertIn("_swapV3Exact(quote, token, poolOf[token]", buy)
         self.assertIn("IUniTwapOracle(twapOracle).quotePerBase(pool, token, quote", sell)
         self.assertIn("_swapV3Exact(token, quote, pool", sell)
-        self.assertIn("_quoteUnit(quote)", sell)
+        self.assertIn("IERC20(quote).balanceOf(address(this))", sell)
 
     def test_uniswap_decimal_safe(self):
         unit = (ROOT / "contracts" / "UniTwap.sol").read_text()
