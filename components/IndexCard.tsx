@@ -14,7 +14,13 @@ import { blockedHandoff, shortAddr, ZERO_ADDR } from "@/lib/format";
 import { defaultPack, loadPayout, loadTokens, ownsDraft, savePayout, saveTokens } from "@/lib/packs";
 import { ensureQuoteBridge } from "@/lib/quoteBridge";
 import { lookupIndexCoin } from "@/lib/lookup";
-import { canSetTokenImage, fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
+import {
+  canSetTokenImage,
+  fileToTokenImage,
+  saveTokenImage,
+  stockTokenImage,
+  walletImageUri,
+} from "@/lib/tokenImage";
 import { hydrateVaultCoins, stashVaultCoin } from "@/lib/vaultCoins";
 import { publicClient, useWallet } from "@/lib/wallet";
 
@@ -587,17 +593,18 @@ export function IndexCard({
     isAddress(payout) &&
     recipient &&
     payout.toLowerCase() !== recipient.toLowerCase();
+  const artSrc = stockTokenImage(slug) || walletImageUri(imageUri) || undefined;
 
   return (
     <article data-testid="index-card" className="holo overflow-hidden p-4 sm:p-6">
       <div className="flex items-center gap-3.5 sm:gap-5">
         {gen0 ? (
           <a href={CURATOR_696.x} target="_blank" rel="noreferrer" className="shrink-0">
-            <TokenArt slug={slug} size="md" priority />
+            <TokenArt slug={slug} src={artSrc} size="md" priority />
           </a>
         ) : (
           <span className="relative shrink-0">
-            <TokenArt key={artTick} slug={slug} size="md" />
+            <TokenArt key={artTick} slug={slug} src={artSrc} size="md" />
             {canEdit && canSetTokenImage(slug) && (
               <label className="absolute inset-0 cursor-pointer rounded-full">
                 <span className="sr-only">Upload token image</span>

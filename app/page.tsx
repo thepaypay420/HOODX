@@ -19,8 +19,8 @@ export default function Home() {
                 <p className="text-[13px] text-[var(--dim)]">Live indexes</p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Explore the book</h2>
               </div>
-              <Link href="/i/696x" className="ghost px-4 text-[13px]">
-                Open 696X →
+              <Link href="/explore" className="ghost px-4 text-[13px]">
+                Explore vaults →
               </Link>
             </div>
             <LiveIndexes />

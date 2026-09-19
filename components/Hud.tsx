@@ -67,7 +67,7 @@ export function Hud({ landing = false }: { landing?: boolean }) {
   const navLinks = (
     <>
       <Link
-        href={landing ? `#explore` : `/i/${GEN0_SLUG}`}
+        href={landing ? "/explore" : "/explore"}
         data-testid="nav-explore"
         className="landing-nav-link"
         onClick={() => setOpen(false)}
@@ -115,11 +115,11 @@ export function Hud({ landing = false }: { landing?: boolean }) {
         ) : (
           <nav className="flex min-w-0 items-center gap-0.5 text-[13px] text-[var(--dim)]">
             <Link
-              href={`/i/${GEN0_SLUG}`}
-              data-testid="nav-696x"
+              href="/explore"
+              data-testid="nav-explore-desk"
               className="inline-flex h-11 items-center rounded-full px-2.5 hover:text-[var(--paper)]"
             >
-              696X
+              Explore
             </Link>
             <Link href="/#create" data-testid="nav-create" className="inline-flex h-11 items-center rounded-full px-2.5 hover:text-[var(--paper)]">
               Create

@@ -61,7 +61,7 @@ export function HomeLanding() {
               with a WETH cash sleeve, all on-chain.
             </p>
             <div className="landing-cta-row">
-              <Link href={`/i/${GEN0_SLUG}`} className="landing-btn-primary">
+              <Link href="/explore?from=home" className="landing-btn-primary">
                 Explore indexes
                 <span aria-hidden>→</span>
               </Link>
@@ -113,7 +113,7 @@ export function HomeLanding() {
 
       <section className="landing-paths mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="landing-paths-grid">
-          <Link href={`/i/${GEN0_SLUG}`} className="landing-path-card landing-path-holders rise">
+          <Link href="/explore?from=home" className="landing-path-card landing-path-holders rise">
             <div className="landing-path-bg landing-path-chart" aria-hidden>
               <svg viewBox="0 0 200 80" preserveAspectRatio="none" className="h-full w-full">
                 <defs>

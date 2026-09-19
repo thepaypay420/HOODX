@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { CURATOR_696, GEN0_SLUG } from "@/lib/curators";
-import { loadTokenImage } from "@/lib/tokenImage";
+import { loadTokenImage, stockTokenImage } from "@/lib/tokenImage";
 
 const BOX = {
   xs: "h-5 w-5",
@@ -39,7 +39,7 @@ export function TokenArt({
   alt?: string;
   priority?: boolean;
 }) {
-  const stock = slug === GEN0_SLUG ? CURATOR_696.avatar : "";
+  const stock = stockTokenImage(slug);
   const [stored, setStored] = useState("");
 
   useEffect(() => {

@@ -1,15 +1,15 @@
-import { CURATOR_696, GEN0_SLUG } from "@/lib/curators";
+import { vaultImage } from "@/lib/vaults";
 
 const KEY = (slug: string) => `hoodx-token-image-v1:${slug}`;
 const SIZE = 400;
 const MAX_CHARS = 350_000;
 
 export function stockTokenImage(slug: string): string {
-  return slug === GEN0_SLUG ? CURATOR_696.avatar : "";
+  return vaultImage(slug);
 }
 
 export function canSetTokenImage(slug: string): boolean {
-  return Boolean(slug) && slug !== GEN0_SLUG;
+  return Boolean(slug) && !vaultImage(slug);
 }
 
 /** On-chain imageURI: https or ipfs, no quotes, ≤256 chars. Data URLs stay HUD-only. */
