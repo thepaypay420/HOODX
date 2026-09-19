@@ -278,6 +278,7 @@ def main() -> None:
             "faangxReady": True,
             "faangxUsdGBridgeFix": True,
             "faangxEmergencyLatch": True,
+            "faangxDustLock": True,
         }
     )
     (ROOT / "deployed.json").write_text(json.dumps(deployed, indent=2) + "\n")

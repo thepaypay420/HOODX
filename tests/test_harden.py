@@ -59,15 +59,14 @@ class BindGuardTest(unittest.TestCase):
         self.assertIn("MIN_CASH_BPS", floors)
         self.assertNotIn("cashBps_ < 1000", floors)
 
-    def test_strand_rejects_liquid_names_when_live(self):
+    def test_strand_requires_pause(self):
         body = SWAP.split("function _strandToken")[1].split("function _dropToken")[0]
-        self.assertIn("if (!paused)", body)
-        self.assertIn("v4Key[token].hooks == address(0)", body)
-        self.assertIn("revert BadPool()", body)
+        self.assertIn("if (!paused) revert Paused()", body)
 
     def test_paused_strand_allows_emergency_eject(self):
         body = SWAP.split("function _strandToken")[1].split("function _dropToken")[0]
         self.assertIn("token == weth", body)
+        self.assertIn("dustLock = true", body)
         self.assertIn("claimDust", SWAP)
 
     def test_paused_blocks_share_transfers(self):
@@ -101,7 +100,7 @@ class ExtractAttackSurfaceTest(unittest.TestCase):
         claim = SWAP.split("function claimDustRaw")[1].split("function rebindTokenRaw")[0]
         self.assertIn("msg.sender", claim)
         strand = SWAP.split("function _strandToken")[1].split("function _dropToken")[0]
-        self.assertIn("hooks == address(0)", strand)
+        self.assertIn("if (!paused) revert Paused()", strand)
 
 
 if __name__ == "__main__":

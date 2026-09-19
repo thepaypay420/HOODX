@@ -457,12 +457,12 @@ contract HoodxIndex is HoodxStorage {
     function contractURI() external view returns (string memory) {
         return string.concat(
             "data:application/json;utf8,{\"name\":\"",
-            _jsonSafe(name),
+            name,
             "\",\"symbol\":\"",
-            _jsonSafe(symbol),
-            "\",\"description\":\"HOODX index on Robinhood Chain\",\"image\":\"",
+            symbol,
+            "\",\"image\":\"",
             imageURI,
-            "\",\"external_url\":\"https://www.xhoodindex.com\"}"
+            "\"}"
         );
     }
 
@@ -546,8 +546,7 @@ contract HoodxIndex is HoodxStorage {
     }
 
     function setPaused(bool v) external onlyOwner {
-        paused = v;
-        emit PausedSet(v);
+        _dlg(abi.encodeWithSelector(HoodxSwap.setPausedRaw.selector, v));
     }
 
     /// @dev Nominate a curator. They must `acceptOwnership` from that wallet.
@@ -782,21 +781,6 @@ contract HoodxIndex is HoodxStorage {
         uint256 assets = totalAssets();
         if (assets == 0) return;
         if (wethBuffer() * BPS_DENOM < assets * uint256(cashTargetBps)) revert CashFloor();
-    }
-
-    function _jsonSafe(string memory s) internal pure returns (string memory) {
-        bytes memory b = bytes(s);
-        bytes memory out = new bytes(b.length);
-        uint256 n;
-        for (uint256 i; i < b.length; i++) {
-            bytes1 c = b[i];
-            if (c == 0x22 || c == 0x5c || c < 0x20) continue;
-            out[n] = c;
-            n++;
-        }
-        bytes memory trimmed = new bytes(n);
-        for (uint256 j; j < n; j++) trimmed[j] = out[j];
-        return string(trimmed);
     }
 
     function _quoteUnit(address token) internal pure returns (uint256) {

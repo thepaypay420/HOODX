@@ -128,6 +128,13 @@ contract HoodxSwap is HoodxStorage {
         _strandToken(token);
     }
 
+    function setPausedRaw(bool v) external payable {
+        if (msg.sender != owner) revert NotOwner();
+        if (!v && dustLock) revert Paused();
+        paused = v;
+        emit PausedSet(v);
+    }
+
     function claimDustRaw(address token) external payable {
         if (listed[token]) revert Listed();
         uint256 supply = strandedSupply[token];
@@ -136,12 +143,21 @@ contract HoodxSwap is HoodxStorage {
         if (strandedClaimed[token][msg.sender]) revert AlreadyClaimed();
         uint256 shares = balanceOf[msg.sender];
         if (shares == 0) revert Zero();
-        strandedClaimed[token][msg.sender] = true;
+        uint256 paid = strandedPaid[token];
+        uint256 owed = bag > paid ? bag - paid : 0;
+        if (owed == 0) revert Zero();
         uint256 amt = (bag * shares) / supply;
+        if (amt > owed) amt = owed;
         uint256 have = IERC20(token).balanceOf(address(this));
         if (amt > have) amt = have;
         if (amt == 0) revert Zero();
+        strandedClaimed[token][msg.sender] = true;
+        strandedPaid[token] = paid + amt;
         if (!IERC20(token).transfer(msg.sender, amt)) revert TransferFailed();
+        if (IERC20(token).balanceOf(address(this)) == 0) {
+            if (dustStrands > 0) dustStrands--;
+            if (dustStrands == 0) dustLock = false;
+        }
         emit DustClaimed(msg.sender, token, amt);
     }
 
@@ -299,16 +315,15 @@ contract HoodxSwap is HoodxStorage {
     function _strandToken(address token) internal {
         if (!listed[token]) revert Listed();
         if (token == weth) revert BadPair();
-        // When paused, curator may eject any listed bag pro-rata via claimDust (share transfers frozen).
-        // Otherwise stranding is only for hooked V4 bags that cannot exit on withdraw.
-        if (!paused) {
-            if (!isV4[token] || v4Key[token].hooks == address(0)) revert BadPool();
-        }
+        if (!paused) revert Paused();
+        if (strandedBag[token] != 0) revert AlreadyClaimed();
         uint256 bag = IERC20(token).balanceOf(address(this));
         uint256 live = totalSupply > balanceOf[DEAD] ? totalSupply - balanceOf[DEAD] : 0;
         if (bag > 0 && live > 0) {
             strandedBag[token] = bag;
             strandedSupply[token] = live;
+            dustStrands++;
+            dustLock = true;
         }
         _dropToken(token);
         emit TokenStranded(token, bag);

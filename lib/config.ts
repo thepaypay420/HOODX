@@ -19,13 +19,14 @@ export const SAFE_696X_ADDR = "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A";
 /** @deprecated alias for the superseded clone */
 export const LIVE_696X_ADDR = BRICKED_696X_ADDR;
 /** FAANGX exit fix — V4/USDG sells no longer strand AMZN/NFLX on withdraw. */
-export const LIVE_FACTORY_ADDR = "0x67427270Dd489822d6348C8c68f7545B0f3c27eE";
+export const LIVE_FACTORY_ADDR = "0xB6CdCA31fC5EDAb747d69Ec6D7e6d251De8DE03a";
 /** Superseded FAANGX test factories — vaults had USDG bridge dust. */
-export const SUPERSEDED_FAANGX_FACTORY_ADDR = "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D";
+export const SUPERSEDED_FAANGX_FACTORY_ADDR = "0x67427270Dd489822d6348C8c68f7545B0f3c27eE";
 export const SUPERSEDED_FAANGX_FACTORY_ADDR_2 = "0x2eDfB7b9A46A29DD5f932aa15a07a79d0Cae7c83";
+export const SUPERSEDED_FAANGX_FACTORY_ADDR_3 = "0x67427270Dd489822d6348C8c68f7545B0f3c27eE";
 /** HoodxIndex implementation — EIP-1167 clones (e.g. $696X) point here. */
-export const INDEX_IMPL_ADDR = "0xE33917Ff96f7d83030a4BB27683A16d6688F59F4";
-export const SWAP_LOGIC_ADDR = "0x82Ad62774e79E9027F28EC11f7Cc99c6eaf7A57b";
+export const INDEX_IMPL_ADDR = "0x7B16e89a210984B349c5A69e1c9C31f17075117E";
+export const SWAP_LOGIC_ADDR = "0x61a32A64A9B316238D2E0F976b134cD0a0e623CA";
 /** Pre-fix factory — FAANGX withdraw skipped AMZN/NFLX (~$50 stranded). */
 export const BROKEN_FAANGX_FACTORY_ADDR = "0x56809a2738A23650aF939F73588E72C67CafC19b";
 /** Pre-fix FAANGX clone — AMZN/NFLX cannot be sold (swapLogic 0x2505…). */
@@ -33,8 +34,9 @@ export const BROKEN_FAANGX_VAULT_ADDR = "0x1e2Fc61A6794C452f712730228abb4f87838f
 /** Superseded FAANGX test clones — USDG bridge dust from deploy tests. */
 export const SUPERSEDED_FAANGX_VAULT_ADDR = "0x52659a924Dd8CF87f3e75eB9bB14fC8d83104910";
 export const SUPERSEDED_FAANGX_VAULT_ADDR_2 = "0x4A049494CE63a728eCE650398B4F63BFf51c26E8";
+export const SUPERSEDED_FAANGX_VAULT_ADDR_3 = "0x011204DB4CEb6D8D9c972da55269927C6738785b";
 /** Canonical live FAANGX — set after `scripts/ready_faangx.py` proves enter/exit. */
-export const SAFE_FAANGX_VAULT_ADDR = "0x011204DB4CEb6D8D9c972da55269927C6738785b" as `0x${string}` | "";
+export const SAFE_FAANGX_VAULT_ADDR = "0x037c116d7C09Ed4D2733Eb628488ab9c0394353f" as `0x${string}` | "";
 export const TWAP_ORACLE_ADDR = "0x815A0D4909460B29c70868e24831f575cA86F3aD";
 export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
 export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
@@ -76,6 +78,7 @@ const FAANGX_DENY = [
   BROKEN_FAANGX_VAULT_ADDR,
   SUPERSEDED_FAANGX_VAULT_ADDR,
   SUPERSEDED_FAANGX_VAULT_ADDR_2,
+  SUPERSEDED_FAANGX_VAULT_ADDR_3,
 ];
 export function isBrokenFaangx(addr?: string | null) {
   const v = (addr || "").toLowerCase();
@@ -95,6 +98,7 @@ export const FACTORY = liveOr(
     BROKEN_FAANGX_FACTORY_ADDR,
     SUPERSEDED_FAANGX_FACTORY_ADDR,
     SUPERSEDED_FAANGX_FACTORY_ADDR_2,
+    SUPERSEDED_FAANGX_FACTORY_ADDR_3,
   ],
 ) as `0x${string}` | "";
 export const QUOTER = (process.env.NEXT_PUBLIC_QUOTER ||

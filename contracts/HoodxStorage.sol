@@ -104,12 +104,15 @@ contract HoodxStorage {
     uint256 public minSleeveWeth;
     uint256 public genesisEthPerShare;
     bool public paused;
+    bool public dustLock;
+    uint32 public dustStrands;
     string public imageURI;
     uint256 internal locked;
     bool internal implLock;
     mapping(address => uint64) public listedAt;
     mapping(address => uint256) public strandedBag;
     mapping(address => uint256) public strandedSupply;
+    mapping(address => uint256) public strandedPaid;
     mapping(address => mapping(address => bool)) public strandedClaimed;
 
     error NotOwner();
