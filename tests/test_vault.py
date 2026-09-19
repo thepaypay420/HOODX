@@ -584,6 +584,10 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn("isEmptied696x", client)
         self.assertIn("isBricked696x", client)
         self.assertIn("if (gen0 && (isEmptied696x(addr) || isBricked696x(addr))) return;", client)
+        self.assertIn("isBrokenFaangx", client)
+        self.assertIn("SAFE_FAANGX_VAULT_ADDR", client)
+        desk = (here / "components" / "VaultDesk.tsx").read_text()
+        self.assertIn("snap.assets > 0n", desk)
 
     def test_vault_coin_hydration_shipped(self):
         here = Path(__file__).resolve().parents[1]

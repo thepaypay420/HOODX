@@ -61,6 +61,7 @@ type VaultSnap = {
   shortfall: bigint;
   listed: Address[];
   bags: Bag[];
+  usdgDust: bigint;
 };
 
 export function VaultDesk({
@@ -259,6 +260,7 @@ export function VaultDesk({
       shortfall,
       listed: listed as Address[],
       bags,
+      usdgDust: usdgWei,
     });
     if (!restoreToken && listed.length) setRestoreToken(listed[0]);
   }, [vault, address]);
@@ -274,7 +276,8 @@ export function VaultDesk({
     snap && snap.assets > 0n ? Number(snap.buffer) / Number(snap.assets) : null;
   const sharePxEth = snap && snap.sharePrice > 0n ? Number(formatEtherSafe(snap.sharePrice)) : 0;
   const userRoi = snap ? pctDelta(snap.userValue, snap.userCost) : null;
-  const vaultRoi = snap ? vaultRoiPct(snap.sharePrice, snap.genesis, ethUsd, USD_PER_SHARE) : null;
+  const vaultRoi =
+    snap && snap.assets > 0n ? vaultRoiPct(snap.sharePrice, snap.genesis, ethUsd, USD_PER_SHARE) : null;
   const book = useMemo(
     () => (sleeves.length ? activeBook(sleeves, displayNavUsd || 200, MIN_SLEEVE_USD, CASH_TARGET) : null),
     [sleeves, displayNavUsd],
@@ -546,6 +549,7 @@ export function VaultDesk({
 
   const minJoin = onchainSupply === 0n ? minFirst : MIN_DEPOSIT_ETH;
   const joinTooSmall = Number(joinAmt || 0) > 0 && Number(joinAmt) < minJoin - 1e-12;
+  const joinBlocked = Boolean(snap && snap.usdgDust > 0n);
 
   function share() {
     const url = `${window.location.origin}/i/${slug}`;
@@ -783,6 +787,11 @@ export function VaultDesk({
             </div>
           </div>
           {joinTooSmall && <p className="mt-2 text-[13px] text-[var(--gold)]">Min {minJoin} ETH.</p>}
+          {joinBlocked && (
+            <p className="mt-2 text-[13px] text-amber-400">
+              Joins blocked — vault has USDG bridge dust. Wait for the clean vault deploy.
+            </p>
+          )}
           <div className="mt-auto w-full pt-4">
           <button
             type="button"
@@ -791,6 +800,7 @@ export function VaultDesk({
               !live ||
               busy ||
               paused ||
+              joinBlocked ||
               (isConnected && !wrongChain && (joinWei === 0n || joinTooSmall))
             }
             onClick={() => {

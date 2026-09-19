@@ -7,7 +7,14 @@ import { IndexCard } from "@/components/IndexCard";
 import { OwnerDesk } from "@/components/OwnerDesk";
 import { VaultDesk } from "@/components/VaultDesk";
 import { factoryAbi } from "@/lib/abi";
-import { FACTORY, VAULT, isBricked696x, isEmptied696x } from "@/lib/config";
+import {
+  FACTORY,
+  SAFE_FAANGX_VAULT_ADDR,
+  VAULT,
+  isBricked696x,
+  isBrokenFaangx,
+  isEmptied696x,
+} from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { publicClient } from "@/lib/wallet";
 
@@ -18,6 +25,11 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
   const [swapAmount, setSwapAmount] = useState("");
 
   useEffect(() => {
+    const clean = slug.trim().toLowerCase();
+    if (clean === "faangx" && isAddress(SAFE_FAANGX_VAULT_ADDR)) {
+      setVault(SAFE_FAANGX_VAULT_ADDR as Address);
+      return;
+    }
     if (!isAddress(FACTORY)) return;
     publicClient
       .readContract({
@@ -29,6 +41,7 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
       .then((addr) => {
         if (!addr || addr.toLowerCase() === zeroAddress) return;
         if (gen0 && (isEmptied696x(addr) || isBricked696x(addr))) return;
+        if (clean === "faangx" && isBrokenFaangx(addr)) return;
         setVault(addr);
       })
       .catch(() => {});
