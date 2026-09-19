@@ -840,7 +840,7 @@ export function IndexCard({
             Owner adds, removes, and rebalances. Two-step: nominate, then they Accept from that
             wallet. They cannot move or zero the creator cut.
             {isLive696x(vault)
-              ? " Live 696X has user funds — nominate only a wallet whose key you hold. A dead key bricks rebalance (redeem still works)."
+              ? " Live 696X has user funds — nominate only a wallet whose key you hold. A lost key blocks curator tools (redeem still works)."
               : ""}
             {owner ? ` Now: ${shortAddr(owner)}` : ""}
           </p>

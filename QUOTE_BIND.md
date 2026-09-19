@@ -35,8 +35,8 @@ pools revert at bind. PROMETHEUS/SPCX and USDG quote binds work on this
 bytecode. Curator `setQuoteBridge` / `addToken` for new names without another
 relaunch.
 
-Deprecated clones (`0x6350…1E33`, `0xeBFA…5C24`, older factories) cannot be
-patched and are ignored by the HUD.
+Only the canonical vault above is served by the HUD. Copycat or superseded
+deployments are ignored.
 
 ## Security (carried from live / funds-safe)
 

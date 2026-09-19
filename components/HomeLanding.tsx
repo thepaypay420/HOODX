@@ -57,8 +57,8 @@ export function HomeLanding() {
               A whole basket.
             </h1>
             <p className="landing-lede">
-              Permissionless index funds on Robinhood Chain. Buy one token for exposure to a curated basket of RH
-              assets — with a WETH cash sleeve, all on-chain.
+              Permissionless index funds on Robinhood Chain. Buy one token for a curated basket of RH-chain tokens —
+              with a WETH cash sleeve, all on-chain. Community project; not Robinhood Markets and not audited.
             </p>
             <div className="landing-cta-row">
               <Link href={`/i/${GEN0_SLUG}`} className="landing-btn-primary">
@@ -174,8 +174,8 @@ export function HomeLanding() {
         </div>
         <div className="landing-opportunity-inner mx-auto max-w-6xl px-4 pb-16 pt-28 text-center sm:px-6 sm:pb-24 sm:pt-36">
           <p className="landing-opportunity-eyebrow">The opportunity</p>
-          <h2 className="landing-opportunity-title">A new era of index investing on Robinhood Chain.</h2>
-          <p className="landing-opportunity-sub">Real assets. Real communities. Fully on-chain.</p>
+          <h2 className="landing-opportunity-title">On-chain baskets for Robinhood Chain.</h2>
+          <p className="landing-opportunity-sub">Curated tokens. Transparent vaults. Redeem anytime.</p>
           <p className="landing-opportunity-tag">Same people. Bigger possibilities.</p>
         </div>
       </section>

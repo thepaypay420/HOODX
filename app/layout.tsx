@@ -31,12 +31,12 @@ export const metadata: Metadata = {
     template: "%s · HOODX",
   },
   description:
-    "Permissionless index funds on Robinhood Chain. One token for a curated basket of RH assets — with a WETH cash sleeve, all on-chain.",
+    "Community index factory on Robinhood Chain — not Robinhood Markets, not audited. One token for a curated RH-chain basket with a WETH cash sleeve.",
   applicationName: "HOODX",
   alternates: { canonical: "/" },
   openGraph: {
     title: "HOODX",
-    description: "Live on Robinhood Chain. One token. A whole basket.",
+    description: "Community index on Robinhood Chain. One token. A whole basket. Verify contracts on xhoodindex.com.",
     url: SITE_URL,
     siteName: "HOODX",
     type: "website",
