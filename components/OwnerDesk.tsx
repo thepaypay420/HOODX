@@ -5,7 +5,7 @@ import { formatEther, parseEther, type Address } from "viem";
 import { erc20Abi, vaultAbi } from "@/lib/abi";
 import { INDEX_CATALOG, byAddress, CATALOG } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
-import { USD_PER_SHARE, WETH } from "@/lib/config";
+import { USDG, USD_PER_SHARE, WETH } from "@/lib/config";
 import { BLURB_EVENT, BLURB_MAX, defaultBlurb, readBlurb, writeBlurb } from "@/lib/blurbs";
 import { buySlippageHint, isSlippageError, revertHint, sellBlocked, buyBlocked } from "@/lib/eject";
 import { ensureVaultBind, isUsdgQuote } from "@/lib/ensureBind";
@@ -53,6 +53,7 @@ export function OwnerDesk({
   const [swapSimOk, setSwapSimOk] = useState<boolean | null>(null);
   const [blurb, setBlurb] = useState(() => readBlurb(slug, vault));
   const [blurbSaved, setBlurbSaved] = useState("");
+  const [usdgDust, setUsdgDust] = useState(0n);
 
   const isOwner = Boolean(address && owner && address.toLowerCase() === owner.toLowerCase());
   const wethKey = WETH.toLowerCase();
@@ -70,13 +71,20 @@ export function OwnerDesk({
 
   const loadBags = useCallback(async () => {
     if (!live || !vault) return;
-    const [own, short, list, nav, cashTarget] = await Promise.all([
+    const [own, short, list, nav, cashTarget, usdgBal] = await Promise.all([
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "owner" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "cashShortfall" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "constituents" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "totalAssets" }),
       publicClient.readContract({ address: vault as Address, abi: vaultAbi, functionName: "cashTargetBps" }),
+      publicClient.readContract({
+        address: USDG,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [vault as Address],
+      }),
     ]);
+    setUsdgDust(usdgBal);
     setOwner(own);
     setShortfall(short);
     setAssets(nav);
@@ -690,6 +698,15 @@ export function OwnerDesk({
         <p className="mt-3 text-[13px] leading-5 text-[var(--dim)]">
           Bound book: {symbol}/{listedQuote.toUpperCase()} (WETH → {listedQuote.toUpperCase()} → {symbol}).
         </p>
+      )}
+      {usdgDust > 0n && (
+        <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="text-[13px] leading-5 text-[var(--dim)]">
+            {(Number(usdgDust) / 1e6).toFixed(2)} USDG bridge dust is in the vault (not counted in NAV). It is
+            leftover from a partial V4 sell during testing. The next factory deploy will add an owner sweep; this clone
+            cannot move it on-chain yet.
+          </p>
+        </div>
       )}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <button

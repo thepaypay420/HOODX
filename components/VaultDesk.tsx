@@ -17,6 +17,7 @@ import {
   PROTOCOL_FEE_BPS,
   TWEET,
   USD_PER_SHARE,
+  USDG,
   WETH,
 } from "@/lib/config";
 import {
@@ -55,6 +56,7 @@ type VaultSnap = {
   sharePrice: bigint;
   genesis: bigint;
   symbol: string;
+  vaultName: string;
   minFirst: number;
   shortfall: bigint;
   listed: Address[];
@@ -126,7 +128,7 @@ export function VaultDesk({
       setSnap(null);
       return;
     }
-    const [assets, supply, buffer, paused, feeBps, creatorBps, protocolBps, symbol, minFirstWei, shortfall, listed, genesis] =
+    const [assets, supply, buffer, paused, feeBps, creatorBps, protocolBps, symbol, vaultName, minFirstWei, shortfall, listed, genesis, usdgWei] =
       await Promise.all([
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "totalAssets" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "totalSupply" }),
@@ -136,10 +138,17 @@ export function VaultDesk({
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "creatorFeeBps" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "protocolFeeBps" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "symbol" }),
+      publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "name" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "minFirstDeposit" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "cashShortfall" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "constituents" }),
       publicClient.readContract({ address: vault, abi: vaultAbi, functionName: "genesisEthPerShare" }),
+      publicClient.readContract({
+        address: USDG,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [vault],
+      }),
     ]);
     let redeemable = assets;
     try {
@@ -219,6 +228,15 @@ export function VaultDesk({
           targetBps: listedIdx >= 0 ? Number(targets[listedIdx]) : 0,
         });
       });
+      if (usdgWei > 0n) {
+        bags.push({
+          token: USDG as Address,
+          symbol: "USDG",
+          wei: usdgWei,
+          wethWei: 0n,
+          targetBps: 0,
+        });
+      }
     } catch {
       /* explorer link still works if a sleeve balance fails */
     }
@@ -236,6 +254,7 @@ export function VaultDesk({
       sharePrice: price,
       genesis,
       symbol,
+      vaultName: String(vaultName || "").trim(),
       minFirst: Number(formatEther(minFirstWei)),
       shortfall,
       listed: listed as Address[],
@@ -277,7 +296,14 @@ export function VaultDesk({
       const eth = Number(formatEtherSafe(b.wethWei));
       const usd = ethUsd && ethUsd > 0 ? eth * ethUsd : 0;
       const liveW = nav > 0n ? Number(b.wethWei) / Number(nav) : 0;
-      const status: "held" | "missed" | "cash" = cash ? "cash" : b.wei > 0n ? "held" : "missed";
+      const dust = b.symbol === "USDG";
+      const status: "held" | "missed" | "cash" | "dust" = dust
+        ? "dust"
+        : cash
+          ? "cash"
+          : b.wei > 0n
+            ? "held"
+            : "missed";
       const coin = byAddress(b.token);
       const legacy =
         !cash &&
@@ -293,14 +319,20 @@ export function VaultDesk({
         listW: policy?.weight ?? 0,
         targetBps: b.targetBps,
         legacy,
-        targetLabel: formatTargetPct(b.targetBps, policy?.weight ?? 0, {
-          cash,
-          held: status === "held",
-          liveWeight: liveW,
-          legacy,
-        }),
+        targetLabel: dust
+          ? "bridge dust · sweep to WETH"
+          : formatTargetPct(b.targetBps, policy?.weight ?? 0, {
+              cash,
+              held: status === "held",
+              liveWeight: liveW,
+              legacy,
+            }),
         usd,
-        bag: cash ? `${Number(formatEtherSafe(b.wei)).toFixed(4)} WETH` : `${Number(formatEtherSafe(b.wei)).toFixed(4)}`,
+        bag: dust
+          ? `${(Number(b.wei) / 1e6).toFixed(2)} USDG`
+          : cash
+            ? `${Number(formatEtherSafe(b.wei)).toFixed(4)} WETH`
+            : `${Number(formatEtherSafe(b.wei)).toFixed(4)}`,
       };
     });
     rows.sort((a, b) => {
@@ -343,6 +375,7 @@ export function VaultDesk({
   const creatorBps = snap?.creatorBps ?? CREATOR_FEE_BPS;
   const protocolBps = snap?.protocolBps ?? PROTOCOL_FEE_BPS;
   const token = snap?.symbol || (isGen0 ? "696X" : slug.toUpperCase());
+  const vaultTitle = snap?.vaultName || token;
   const onchainSupply = snap?.supply ?? 0n;
   const paused = Boolean(snap?.paused);
   const minFirst = snap?.minFirst ?? (isGen0 ? MIN_FIRST_ETH : MIN_CREATE_FIRST_ETH);
@@ -529,7 +562,8 @@ export function VaultDesk({
           <TokenArt slug={slug} size="md" priority={isGen0} />
           <div className="min-w-0 shrink-0">
             <p className="text-[13px] text-[var(--dim)]">{isGen0 ? "Index" : `/${slug}`}</p>
-            <h1 className="mt-0.5 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">${token}</h1>
+            <h1 className="mt-0.5 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{vaultTitle}</h1>
+            <p className="mt-0.5 font-[family-name:var(--font-mono)] text-[12px] text-[var(--dim)]">${token}</p>
           </div>
           {blurb ? (
             <div className="hidden min-w-0 flex-1 sm:block sm:pt-[1.55rem]">
