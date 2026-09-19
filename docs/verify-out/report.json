@@ -41,11 +41,12 @@
       "address": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
       "runtimeMatch": true,
       "runtimeBytes": 3000,
-      "creationTx": "",
+      "creationTx": "0x0e13280899931865aeaab5be500ca931a11a7dbdd6cf42d666a24e59db6fee86",
       "creationBlock": 0,
       "constructorArgsHex": "",
       "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD/contract-verification",
-      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD#code"
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD#code",
+      "blockscoutVerified": true
     },
     {
       "name": "HoodxSwap",
@@ -53,11 +54,12 @@
       "address": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
       "runtimeMatch": true,
       "runtimeBytes": 19369,
-      "creationTx": "",
+      "creationTx": "0x0165fd81fe99c24ecf430075c8665b8f8fb3d08400b3b9b4972c695aefff77a1",
       "creationBlock": 0,
       "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad",
       "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75/contract-verification",
-      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75#code"
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75#code",
+      "blockscoutVerified": true
     },
     {
       "name": "HoodxIndex",
@@ -65,11 +67,12 @@
       "address": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
       "runtimeMatch": true,
       "runtimeBytes": 24514,
-      "creationTx": "",
+      "creationTx": "0xd19dcd3c9d99fb1abc77dc5d38b842565a008080608397acc878332885bbeef5",
       "creationBlock": 0,
       "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad0000000000000000000000002505a3185136ce990077a71c4929a115d9aedf75",
       "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E/contract-verification",
-      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E#code"
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E#code",
+      "blockscoutVerified": true
     },
     {
       "name": "HoodxFactory",
@@ -77,11 +80,12 @@
       "address": "0x56809a2738A23650aF939F73588E72C67CafC19b",
       "runtimeMatch": true,
       "runtimeBytes": 6113,
-      "creationTx": "",
+      "creationTx": "0xa48b36c9a818a6a208540246d96498533d3861756fd0bd4c17483a64072f0107",
       "creationBlock": 0,
       "constructorArgsHex": "0000000000000000000000000bd7d308f8e1639fab988df18a8011f41eacad73000000000000000000000000caf681a66d020601342297493863e78c959e5cb2000000000000000000000000134d468b0bcaea6df127916f951f7938c06a37c60000000000000000000000008366a39cc670b4001a1121b8f6a443a643e40951000000000000000000000000f3334192d15450cdd385c8b70e03f9a6bd9e673b00000000000000000000000058daec3116aae6d93017baaea7749052e8a04fa70000000000000000000000007a5a47022e993401c5c6cfce0208c10fb032025e",
       "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b/contract-verification",
-      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b#code"
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b#code",
+      "blockscoutVerified": true
     }
   ],
   "vault696x": {
@@ -91,9 +95,20 @@
     "factory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
     "runtimeBytes": 45,
     "pointsAtImpl": true,
-    "creationTx": "",
+    "creationTx": "0x4321ee38639449aef3052479ed0bd42ba8ef81cf3f340f3d0c3b9c1a145b15d3",
     "creationBlock": 0,
     "note": "Verify HoodxIndex implementation on Blockscout; the vault is a clone.",
     "codeUrl": "https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A#code"
+  },
+  "blockscout": {
+    "verified": [
+      "UniTwapOracle",
+      "HoodxSwap",
+      "HoodxIndex",
+      "HoodxFactory"
+    ],
+    "pending": [],
+    "verifiedAt": "2026-09-19",
+    "note": "Published via headed Playwright on robinhoodchain.blockscout.com (Standard JSON input)."
   }
 }

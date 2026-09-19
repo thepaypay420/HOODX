@@ -152,7 +152,7 @@ Vercel builds this Next HUD from the repository root. `.env.example` points at t
 
 Robinhood Chain **4663**. EIP-1167 clones of hardened `HoodxIndex`.
 
-**Verify source:** see **[docs/VERIFY.md](docs/VERIFY.md)** — bytecode in this repo matches the canonical deployments (runtime diff after metadata strip). Blockscout publish is manual while the explorer API is Cloudflare-gated.
+**Verify source:** see **[docs/VERIFY.md](docs/VERIFY.md)** — bytecode in this repo matches the canonical deployments (runtime diff after metadata strip). All four implementations are **verified on [Blockscout](https://robinhoodchain.blockscout.com)** (exact match, Sep 2026). The $696X vault is an EIP-1167 clone — read source on the implementation row.
 
 **How to check before you join**
 

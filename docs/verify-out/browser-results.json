@@ -1,0 +1,6 @@
+[
+  {"name": "UniTwapOracle", "address": "0x815A0D4909460B29c70868e24831f575cA86F3aD", "status": "verified"},
+  {"name": "HoodxSwap", "address": "0x2505a3185136cE990077a71c4929a115d9AEDf75", "status": "verified"},
+  {"name": "HoodxIndex", "address": "0x7A5A47022E993401c5C6CFce0208c10fB032025E", "status": "verified"},
+  {"name": "HoodxFactory", "address": "0x56809a2738A23650aF939F73588E72C67CafC19b", "status": "verified"}
+]

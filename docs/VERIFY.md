@@ -143,7 +143,7 @@ forge verify-contract 0x56809a2738A23650aF939F73588E72C67CafC19b \
   --constructor-args $(python3 -c "import json;print(json.load(open('docs/verify-out/report.json'))['contracts'][3]['constructorArgsHex'])")
 ```
 
-**Note:** As of 2026-09-19, automated `forge verify-contract` from CI/agents hits **Cloudflare 403** on `robinhoodchain.blockscout.com/api/`. Use the browser flow below.
+**Note:** `forge verify-contract` from CI/agents may hit **Cloudflare 403** or **429** on `robinhoodchain.blockscout.com/api/`. Use the browser flow below (or `scripts/verify_blockscout_browser.py` on `DISPLAY=:0`).
 
 ### Browser (Standard JSON) — recommended
 
@@ -176,14 +176,14 @@ Sourcify lists Robinhood Chain (4663). After Blockscout verify, optionally mirro
 python3 scripts/compile_factory.py
 python3 scripts/verify_prepare.py
 # bytecode match: PASS (all 4 implementations)
-# forge verify-contract → Cloudflare 403 on Blockscout API
-# RPC historical state unavailable for auto creation-tx lookup
+# Blockscout: verified 2026-09-19 via browser (Standard JSON input)
+# forge verify-contract → Cloudflare 403 / 429 from agents
 ```
 
-Creation transaction hashes: copy from each address page on Blockscout → **Contract creation** (RPC archive not exposed on public endpoint).
+Creation transaction hashes are in `docs/verify-out/report.json` (from Blockscout address API).
 
-## Remaining blockers
+## Status
 
-- [ ] Blockscout green check (needs browser or API key + CF bypass)
+- [x] Blockscout verified (oracle, swap, implementation, factory)
 - [ ] Sourcify mirror (optional)
-- [ ] Fill creation tx hashes in `docs/verify-out/report.json` from Blockscout UI
+- [x] Creation tx hashes in `docs/verify-out/report.json`
