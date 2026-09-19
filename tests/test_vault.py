@@ -590,6 +590,8 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn("SAFE_FAANGX_VAULT_ADDR", client)
         desk = (here / "components" / "VaultDesk.tsx").read_text()
         self.assertIn("snap.assets > 0n", desk)
+        self.assertIn("liveSupply", desk)
+        self.assertIn("unseeded", desk)
 
     def test_vault_coin_hydration_shipped(self):
         here = Path(__file__).resolve().parents[1]

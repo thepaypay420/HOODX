@@ -24,6 +24,7 @@ import {
   fmtEth,
   fmtPct,
   fmtShares,
+  DEAD_ADDR,
   fmtUsd,
   formatEtherSafe,
   isAddress,
@@ -45,6 +46,7 @@ type Bag = { token: Address; symbol: string; wei: bigint; wethWei: bigint; targe
 type VaultSnap = {
   assets: bigint;
   supply: bigint;
+  liveSupply: bigint;
   buffer: bigint;
   paused: boolean;
   feeBps: number;
@@ -167,6 +169,13 @@ export function VaultDesk({
     } catch {
       /* pre-sharePrice impl: derive from NAV when supply > 0; never assume 1 ETH/share */
     }
+    const deadShares = await publicClient.readContract({
+      address: vault,
+      abi: vaultAbi,
+      functionName: "balanceOf",
+      args: [DEAD_ADDR as Address],
+    });
+    const liveSupply = supply > deadShares ? supply - deadShares : 0n;
     let userShares = 0n;
     let userValue = 0n;
     let userCost = 0n;
@@ -244,6 +253,7 @@ export function VaultDesk({
     setSnap({
       assets: redeemable,
       supply,
+      liveSupply,
       buffer,
       paused,
       feeBps: Number(feeBps),
@@ -379,7 +389,8 @@ export function VaultDesk({
   const protocolBps = snap?.protocolBps ?? PROTOCOL_FEE_BPS;
   const token = snap?.symbol || (isGen0 ? "696X" : slug.toUpperCase());
   const vaultTitle = snap?.vaultName || token;
-  const onchainSupply = snap?.supply ?? 0n;
+  const liveSupply = snap?.liveSupply ?? 0n;
+  const unseeded = liveSupply === 0n;
   const paused = Boolean(snap?.paused);
   const minFirst = snap?.minFirst ?? (isGen0 ? MIN_FIRST_ETH : MIN_CREATE_FIRST_ETH);
   const usdHint = ethUsd && ethUsd > 0;
@@ -547,7 +558,7 @@ export function VaultDesk({
     }
   }
 
-  const minJoin = onchainSupply === 0n ? minFirst : MIN_DEPOSIT_ETH;
+  const minJoin = unseeded ? minFirst : MIN_DEPOSIT_ETH;
   const joinTooSmall = Number(joinAmt || 0) > 0 && Number(joinAmt) < minJoin - 1e-12;
   const joinBlocked = Boolean(snap && snap.usdgDust > 0n);
 
@@ -641,9 +652,11 @@ export function VaultDesk({
             }
             hint={
               snap && snap.genesis > 0n
-                ? usdHint
-                  ? `${fmtUsd(USD_PER_SHARE, 0)} → ${fmtUsd(sharePxEth * ethUsd, 2)} / share`
-                  : `${fmtEth(snap.genesis, 4)} → ${fmtEth(snap.sharePrice, 4)}`
+                ? unseeded
+                  ? `${fmtUsd(USD_PER_SHARE, 0)} / share · first mint ${minFirst} ETH`
+                  : usdHint
+                    ? `${fmtUsd(USD_PER_SHARE, 0)} → ${fmtUsd(sharePxEth * ethUsd, 2)} / share`
+                    : `${fmtEth(snap.genesis, 4)} → ${fmtEth(snap.sharePrice, 4)}`
                 : "Genesis not set"
             }
             tone={vaultRoi == null ? "flat" : toneOf(vaultRoi)}
@@ -660,7 +673,7 @@ export function VaultDesk({
           <Stat
             label="Share"
             value={
-              onchainSupply === 0n
+              unseeded
                 ? fmtUsd(USD_PER_SHARE, 0)
                 : usdHint
                   ? fmtUsd(sharePxEth * ethUsd, 2)
@@ -669,7 +682,7 @@ export function VaultDesk({
                     : "—"
             }
             hint={
-              onchainSupply === 0n
+              unseeded
                 ? `First mint ${minFirst} ETH`
                 : `${sharePxEth.toFixed(4)} ETH`
             }
@@ -735,7 +748,7 @@ export function VaultDesk({
           <div className="flex items-baseline justify-between">
             <h2 className="text-[15px] font-medium text-[var(--dim)]">Join</h2>
             <p className="text-[12px] text-[var(--dim)]">
-              {onchainSupply === 0n ? `First ${minFirst} ETH` : `${(feeBps / 100).toFixed(2)}% fee`}
+              {unseeded ? `First ${minFirst} ETH` : `${(feeBps / 100).toFixed(2)}% fee`}
             </p>
           </div>
           <div className="mt-3 flex items-center gap-3">
@@ -778,7 +791,7 @@ export function VaultDesk({
             <div>
               <p className="text-[var(--dim)]">Share</p>
               <p className="mt-0.5 font-medium tabular">
-                {onchainSupply === 0n
+                {unseeded
                   ? fmtUsd(USD_PER_SHARE, 0)
                   : usdHint
                     ? fmtUsd(sharePxEth * ethUsd, 2)
