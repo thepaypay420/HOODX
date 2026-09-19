@@ -28,7 +28,7 @@ from tx_gas import send_eoa_tx, tx_hash_hex  # noqa: E402
 from vault_math import min_shares_floor  # noqa: E402
 import launch_v2  # noqa: E402
 
-FACTORY = "0x56809a2738A23650aF939F73588E72C67CafC19b"
+FACTORY = "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D"
 IMAGE = "https://www.xhoodindex.com/curators/faangx.png"
 WETH = "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
 TEST_WEI = 2 * 10**16

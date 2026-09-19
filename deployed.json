@@ -1,129 +1,19 @@
 {
   "chainId": 4663,
-  "factory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
-  "implementation": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
-  "vault696x": "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A",
-  "oracle": "0x815A0D4909460B29c70868e24831F575cA86F3aD",
-  "swapLogic": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
+  "factory": "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D",
+  "implementation": "0xCC69Deaa92dDDbFaDb1A1eb546A30061d96396c5",
+  "swapLogic": "0x032F3B8F00Cb22ee2961b967EF74BE395E82dbD4",
+  "vaultFaangx": "0x52659a924Dd8CF87f3e75eB9bB14fC8d83104910",
+  "oracle": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
   "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
-  "deprecatedFactory": "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9",
-  "deprecatedImplementation": "0x21B0aE9ecb112d828C6a66b82FdD413B99e44f19",
-  "deprecatedSwapLogic": "0x41759b22d45a0770618F0D4B9D0ce738E32cC822",
-  "deprecatedVault696x": "0x6350f9e8e630785ABF09fD1127366998Ad821E33",
-  "brickedVault696x": "0x6350f9e8e630785ABF09fD1127366998Ad821E33",
+  "brokenFaangxFactory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
+  "brokenFaangxVault": "0x1e2Fc61A6794C452f712730228abb4f87838f392",
+  "vault696x": "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A",
   "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
   "swapRouter": "0xCaf681a66D020601342297493863E78C959E5cb2",
   "v4Manager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
   "v4StateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
   "v4Posm": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
-  "imageURI": "https://www.xhoodindex.com/curators/696_eth.jpg",
   "explorer": "https://robinhoodchain.blockscout.com",
-  "zapJoin": true,
-  "maxSlipBps": 300,
-  "pack": [
-    {
-      "id": "PONS",
-      "symbol": "PONS",
-      "token": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
-      "pool": "0xEd50bDeeA8aDC232f159486192a4157281D722ff",
-      "fee": 3000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "AI",
-      "symbol": "AI",
-      "token": "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
-      "pool": "0xc4a21f9d6485FC5893DD4A491B320a83DAF4Da1D",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "CASHCAT",
-      "symbol": "CASHCAT",
-      "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
-      "pool": "0xA70fc67C9F69da90B63a0e4C05D229954574E313",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "MEME",
-      "symbol": "MEME",
-      "token": "0x385F4f8ae47651ce5F58F5265395a669f8281e18",
-      "pool": "0xE2c12a7379706A291CadAaEc1d22458be2f7239D",
-      "fee": 3000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "Index",
-      "symbol": "Index",
-      "token": "0x56910D4409F3a0C78C64DD8D0545FF0705389870",
-      "pool": "0xD29893fFac8b29eC4Db2cfE0CDB3FE1377c028Ff",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "STONKBROKER",
-      "symbol": "STONKBROKER",
-      "token": "0xe934e36A439C94017B64a3FecE66AF12099aBF50",
-      "pool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
-      "fee": 10000,
-      "tickSpacing": 200,
-      "hooks": "0x0000000000000000000000000000000000000000",
-      "v4": true,
-      "tick": 123137
-    },
-    {
-      "id": "DELTA",
-      "symbol": "DELTA",
-      "token": "0xe8ffd7e24187F72afB08d75B1bb13088A989a791",
-      "pool": "0xD64FbdA67E1015dF43Fa5e49F02cA844729E5F94",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "UP",
-      "symbol": "UP",
-      "token": "0x57C0E45cB534413D1C20A4240955d6bB250BB4F1",
-      "pool": "0x4EF94cD1Ab45eBbB50F9E73Cd6e45C5027caa3F7",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    },
-    {
-      "id": "HOOKR",
-      "symbol": "HOOKR",
-      "token": "0x18E674231A58c239Dc7DaeDcffE15Ec3A24cff5c",
-      "pool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
-      "fee": 2500,
-      "tickSpacing": 25,
-      "hooks": "0x0000000000000000000000000000000000000000",
-      "v4": true,
-      "tick": 126105
-    },
-    {
-      "id": "website",
-      "symbol": "website",
-      "token": "0x0762C1708F0D23F86b29D6B857121FF7DF357506",
-      "pool": "0x6D489e07d7Fe2b4Bc5749f75d56337888B68a34a",
-      "fee": 10000,
-      "v4": false,
-      "twapOk": true
-    }
-  ],
-  "deprecatedVault": "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24",
-  "deprecatedV3Factory": "0x87530eF180dF2CF41D86d5eD0DC08969287745c1",
-  "deprecatedV3Vault": "0x24e5A0b5DA2d5791dF4e8D67fB2Ef07128c430b4",
-  "deprecatedV2Factory": "0xb542f6b3D1F5f867363700FD1F61b34342d1C4C9",
-  "deprecatedV2Vault": "0x2C3E8D24C9E70B5fCB0bE8b071b36Fffa1A2Fc58",
-  "emptyRelaunchAttemptFactory": "0xC7366b7d957294C6b2a9A76De64E190e4fB244bB",
-  "emptyRelaunchAttemptVault": "0xad3F32285605211bd6304D54B0c95F5579b6368d",
-  "hookSafeFactory": "0xc29a60cc325b35794f4AE65B8bc518639e716FbD",
-  "hookSafeVault": "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE",
-  "hardened": true
+  "faangxExitFix": true
 }

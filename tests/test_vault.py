@@ -557,7 +557,8 @@ class HudLivePointerTest(unittest.TestCase):
 
     SAFE_VAULT = "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A"
     BRICKED_VAULT = "0x6350f9e8e630785ABF09fD1127366998Ad821E33"
-    LIVE_FACTORY = "0x56809a2738A23650aF939F73588E72C67CafC19b"
+    LIVE_FACTORY = "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D"
+    BROKEN_FAANGX_FACTORY = "0x56809a2738A23650aF939F73588E72C67CafC19b"
     LEGACY_FACTORY = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71"
     EMPTIED_VAULT = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24"
     EMPTIED_FACTORY = "0x46eaB4De2BabF2AdE1cfC24C02b46888498ed2b9"
@@ -575,6 +576,7 @@ class HudLivePointerTest(unittest.TestCase):
         self.assertIn(self.SAFE_VAULT, src)
         self.assertIn(self.BRICKED_VAULT, src)
         self.assertIn(self.LIVE_FACTORY, src)
+        self.assertIn(self.BROKEN_FAANGX_FACTORY, src)
         self.assertIn(self.LEGACY_FACTORY, src)
         self.assertIn(self.EMPTIED_VAULT, src)
         self.assertIn(self.EMPTIED_FACTORY, src)

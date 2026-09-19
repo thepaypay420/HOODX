@@ -446,10 +446,10 @@ contract HoodxSwap is HoodxStorage {
             uint256 quoteFloor = IHoodxView(address(this)).minOutFloor(quotedQuote);
             quoteGot = _swapV3Exact(token, quote, pool, tokenIn, quoteFloor);
         }
-        uint256 pxQuote = IHoodxView(address(this)).priceWethWad(quote);
-        uint256 quotedWeth = (quoteGot * pxQuote) / _quoteUnit(quote);
-        uint256 wethFloor = IHoodxView(address(this)).minOutFloor(quotedWeth);
-        if (wethFloor < minWethOut) revert Slippage();
-        _swapV3Exact(quote, weth, bridge, quoteGot, minWethOut);
+        // USDG is already in the vault from the V4 leg; bridge minOut follows quoteGot only.
+        // TWAP pxQuote can exceed the live V3 bridge (minWethOut is oracle NAV) — a strict
+        // bridge floor made AMZN/NFLX sells revert and _swapOrSkip stranded them on exit.
+        if (quoteGot == 0) revert Slippage();
+        _swapV3Exact(quote, weth, bridge, quoteGot, 1);
     }
 }
