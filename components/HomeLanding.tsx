@@ -58,7 +58,8 @@ export function HomeLanding() {
             </h1>
             <p className="landing-lede">
               Permissionless index funds on Robinhood Chain. Buy one token for a curated basket of RH-chain tokens —
-              with a WETH cash sleeve, all on-chain. Community project; not Robinhood Markets and not audited.
+              with a WETH cash sleeve, all on-chain. Community project; not Robinhood Markets. No formal audit — core
+              contracts verified on Blockscout; security &amp; economic review by Cursor Grok 4.6 High.
             </p>
             <div className="landing-cta-row">
               <Link href={`/i/${GEN0_SLUG}`} className="landing-btn-primary">
