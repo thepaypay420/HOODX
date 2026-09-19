@@ -183,6 +183,13 @@ export const vaultAbi = [
   },
   {
     type: "function",
+    name: "setPaused",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "bool", name: "v" }],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "name",
     stateMutability: "view",
     inputs: [],

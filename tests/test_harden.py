@@ -59,10 +59,22 @@ class BindGuardTest(unittest.TestCase):
         self.assertIn("MIN_CASH_BPS", floors)
         self.assertNotIn("cashBps_ < 1000", floors)
 
-    def test_strand_rejects_liquid_names(self):
+    def test_strand_rejects_liquid_names_when_live(self):
         body = SWAP.split("function _strandToken")[1].split("function _dropToken")[0]
+        self.assertIn("if (!paused)", body)
         self.assertIn("v4Key[token].hooks == address(0)", body)
         self.assertIn("revert BadPool()", body)
+
+    def test_paused_strand_allows_emergency_eject(self):
+        body = SWAP.split("function _strandToken")[1].split("function _dropToken")[0]
+        self.assertIn("token == weth", body)
+        self.assertIn("claimDust", SWAP)
+
+    def test_paused_blocks_share_transfers(self):
+        move = INDEX.split("function _move(address from, address to, uint256 value)")[1].split(
+            "function _assertPriced"
+        )[0]
+        self.assertIn("if (paused) revert Paused()", move)
 
     def test_ui_rejects_thin_and_hooked_in_plain_language(self):
         self.assertIn("too small to add safely", LOOKUP)

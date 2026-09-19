@@ -1,9 +1,9 @@
 {
   "chainId": 4663,
-  "factory": "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D",
-  "implementation": "0xCC69Deaa92dDDbFaDb1A1eb546A30061d96396c5",
-  "swapLogic": "0x032F3B8F00Cb22ee2961b967EF74BE395E82dbD4",
-  "vaultFaangx": "0x52659a924Dd8CF87f3e75eB9bB14fC8d83104910",
+  "factory": "0x67427270Dd489822d6348C8c68f7545B0f3c27eE",
+  "implementation": "0xE33917Ff96f7d83030a4BB27683A16d6688F59F4",
+  "swapLogic": "0x82Ad62774e79E9027F28EC11f7Cc99c6eaf7A57b",
+  "vaultFaangx": "0x011204DB4CEb6D8D9c972da55269927C6738785b",
   "oracle": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
   "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
   "brokenFaangxFactory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
@@ -15,5 +15,10 @@
   "v4StateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
   "v4Posm": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
   "explorer": "https://robinhoodchain.blockscout.com",
-  "faangxExitFix": true
+  "faangxExitFix": true,
+  "supersededFaangxFactory": "0xEc4074610F0A801C6BC4Ac6394B177bA8906582D",
+  "supersededFaangxVault": "0x52659a924Dd8CF87f3e75eB9bB14fC8d83104910",
+  "faangxReady": true,
+  "faangxUsdGBridgeFix": true,
+  "faangxEmergencyLatch": true
 }

@@ -298,8 +298,12 @@ contract HoodxSwap is HoodxStorage {
 
     function _strandToken(address token) internal {
         if (!listed[token]) revert Listed();
-        // Liquid names must be sold. Stranding is only for hooked V4 bags that cannot exit.
-        if (!isV4[token] || v4Key[token].hooks == address(0)) revert BadPool();
+        if (token == weth) revert BadPair();
+        // When paused, curator may eject any listed bag pro-rata via claimDust (share transfers frozen).
+        // Otherwise stranding is only for hooked V4 bags that cannot exit on withdraw.
+        if (!paused) {
+            if (!isV4[token] || v4Key[token].hooks == address(0)) revert BadPool();
+        }
         uint256 bag = IERC20(token).balanceOf(address(this));
         uint256 live = totalSupply > balanceOf[DEAD] ? totalSupply - balanceOf[DEAD] : 0;
         if (bag > 0 && live > 0) {

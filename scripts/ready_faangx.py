@@ -137,7 +137,7 @@ def assert_clean(w3, vault_addr: str, swap_expect: str = "") -> None:
     print(f"clean check OK swapLogic={swap[:10]}… USDG=0 nav=0")
 
 
-def patch_config(factory: str, vault: str, old_factory: str) -> None:
+def patch_config(factory: str, vault: str, old_factory: str, impl: str, swap: str) -> None:
     path = ROOT / "lib" / "config.ts"
     src = path.read_text()
     src = re.sub(
@@ -153,6 +153,18 @@ def patch_config(factory: str, vault: str, old_factory: str) -> None:
         count=1,
     )
     src = re.sub(
+        r'export const INDEX_IMPL_ADDR = "0x[a-fA-F0-9]{40}";',
+        f'export const INDEX_IMPL_ADDR = "{impl}";',
+        src,
+        count=1,
+    )
+    src = re.sub(
+        r'export const SWAP_LOGIC_ADDR = "0x[a-fA-F0-9]{40}";',
+        f'export const SWAP_LOGIC_ADDR = "{swap}";',
+        src,
+        count=1,
+    )
+    src = re.sub(
         r'export const SAFE_FAANGX_VAULT_ADDR = "[^"]*" as `0x\$\{string\}` \| "";',
         f'export const SAFE_FAANGX_VAULT_ADDR = "{vault}" as `0x${{string}}` | "";',
         src,
@@ -160,6 +172,33 @@ def patch_config(factory: str, vault: str, old_factory: str) -> None:
     )
     path.write_text(src)
     print(f"patched {path.name}")
+
+
+def _estimate_reverts(w3, tx: dict) -> bool:
+    try:
+        w3.eth.estimate_gas({**tx, "from": tx.get("from")})
+        return False
+    except Exception:
+        return True
+
+
+def test_emergency_latch(w3, acct, vault, art) -> None:
+    """Paused vault blocks deposits and share transfers; withdraw stays open."""
+    idx = w3.eth.contract(address=_cs(w3, vault), abi=art["indexAbi"])
+    send(w3, acct, idx.functions.setPaused(True).build_transaction({"from": acct.address}), "emergency-latch")
+    dep = idx.functions.deposit(1).build_transaction({"from": acct.address, "value": TEST_WEI, "gas": 500_000})
+    if not _estimate_reverts(w3, dep):
+        raise SystemExit("deposit should fail when paused")
+    shares = int(idx.functions.balanceOf(acct.address).call())
+    if shares > 0:
+        xfer = idx.functions.transfer(_cs(w3, CURATOR), 1).build_transaction({"from": acct.address, "gas": 200_000})
+        if not _estimate_reverts(w3, xfer):
+            raise SystemExit("transfer should fail when paused")
+        wd = idx.functions.withdraw(shares, 0).build_transaction({"from": acct.address, "gas": 8_000_000})
+        if _estimate_reverts(w3, wd):
+            raise SystemExit("withdraw must stay open when paused")
+    send(w3, acct, idx.functions.setPaused(False).build_transaction({"from": acct.address}), "emergency-unlatch")
+    print("emergency latch OK — deposits/transfers blocked, withdraw open while paused")
 
 
 def main() -> None:
@@ -222,6 +261,8 @@ def main() -> None:
     if int(min_out) <= 0:
         raise SystemExit("previewSell zero — exit would brick")
 
+    test_emergency_latch(w3, acct, vault_addr, art)
+
     withdraw_all(w3, acct, vault, shares, "smoke-exit")
     assert_clean(w3, vault_addr, swap)
 
@@ -236,10 +277,11 @@ def main() -> None:
             "brokenFaangxVault": deployed.get("brokenFaangxVault"),
             "faangxReady": True,
             "faangxUsdGBridgeFix": True,
+            "faangxEmergencyLatch": True,
         }
     )
     (ROOT / "deployed.json").write_text(json.dumps(deployed, indent=2) + "\n")
-    patch_config(factory, vault_addr, old_factory)
+    patch_config(factory, vault_addr, old_factory, impl, swap)
 
     print(f"\nREADY faangx={vault_addr} factory={factory}")
     print("https://www.xhoodindex.com/i/faangx")

@@ -407,6 +407,23 @@ export function OwnerDesk({
         return;
       }
       try {
+        const paused = await publicClient.readContract({
+          address: vault as Address,
+          abi: vaultAbi,
+          functionName: "paused",
+        });
+        if (!paused) {
+          const latch = await walletClient.writeContract({
+            account: address,
+            address: vault as Address,
+            abi: vaultAbi,
+            functionName: "setPaused",
+            args: [true],
+            chain: robinhood,
+          });
+          const latchRec = await publicClient.waitForTransactionReceipt({ hash: latch });
+          if (latchRec.status !== "success") throw new Error("setPaused reverted");
+        }
         const hash = await walletClient.writeContract({
           account: address,
           address: vault as Address,
@@ -419,9 +436,11 @@ export function OwnerDesk({
         if (rec.status !== "success") throw new Error("strandToken reverted");
         await loadBags();
         setAmount("");
-        setMsg(`${symbol} was stuck on a broken pool and left as leftover for share holders`);
+        setMsg(
+          `${symbol} ejected pro-rata — share holders claim leftover or exit WETH; deposits frozen until you unpause`,
+        );
       } catch {
-        setMsg(`${symbol} still has a working pool — sell it to ETH, then drop`);
+        setMsg(`${symbol} still has a working pool — sell it to ETH, then drop (or pause + eject for emergency)`);
       }
     } catch (e) {
       setMsg(revertHint(e));
@@ -702,9 +721,8 @@ export function OwnerDesk({
       {usdgDust > 0n && (
         <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
           <p className="text-[13px] leading-5 text-[var(--dim)]">
-            {(Number(usdgDust) / 1e6).toFixed(2)} USDG bridge dust is in the vault (not counted in NAV). It is
-            leftover from a partial V4 sell during testing. The next factory deploy will add an owner sweep; this clone
-            cannot move it on-chain yet.
+            {(Number(usdgDust) / 1e6).toFixed(2)} USDG bridge dust is in the vault (not counted in NAV). Exit again
+            after a rebalance clip, or use emergency pause + eject on a stuck name.
           </p>
         </div>
       )}

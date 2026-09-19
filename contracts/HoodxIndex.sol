@@ -760,6 +760,7 @@ contract HoodxIndex is HoodxStorage {
     }
 
     function _move(address from, address to, uint256 value) internal {
+        if (paused) revert Paused();
         if (to == address(0) || value == 0) revert Zero();
         if (balanceOf[from] < value) revert Zero();
         _shiftCost(from, to, value);
