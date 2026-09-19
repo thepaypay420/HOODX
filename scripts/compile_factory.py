@@ -27,6 +27,7 @@ def compile_factory() -> dict:
             "settings": {
                 "optimizer": {"enabled": True, "runs": 1},
                 "viaIR": True,
+                "metadata": {"bytecodeHash": "ipfs"},
                 "outputSelection": {"*": {"*": ["abi", "evm.bytecode", "evm.deployedBytecode"]}},
                 "evmVersion": "cancun",
             },

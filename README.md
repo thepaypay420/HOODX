@@ -152,6 +152,16 @@ Vercel builds this Next HUD from the repository root. `.env.example` points at t
 
 Robinhood Chain **4663**. EIP-1167 clones of hardened `HoodxIndex`.
 
+**Verify source:** see **[docs/VERIFY.md](docs/VERIFY.md)** — bytecode in this repo matches the canonical deployments (runtime diff after metadata strip). Blockscout publish is manual while the explorer API is Cloudflare-gated.
+
+**How to check before you join**
+
+- Use only [robinhoodchain.blockscout.com](https://robinhoodchain.blockscout.com) (not third-party explorers).
+- Use only addresses from this table or [xhoodindex.com](https://www.xhoodindex.com).
+- `$696X` is an **EIP-1167 clone** of the implementation row — read source on the implementation, not a copycat vault.
+- On the vault: read `owner`, `creator`, `creatorRecipient`, `paused`, and a real `withdraw` tx.
+- Verified source **≠ audited**.
+
 | | Address |
 |---|---|
 | **Factory** | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
@@ -182,7 +192,8 @@ contracts/UniTwap.sol        V3 TWAP + V4 spot oracle
 python3 -m unittest tests.test_weights tests.test_vault tests.test_harden
 ```
 
-Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain catalog.
+Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain catalog.  
+Read **[docs/VERIFY.md](docs/VERIFY.md)** for solc settings, constructor args, and Blockscout steps.
 
 ---
 

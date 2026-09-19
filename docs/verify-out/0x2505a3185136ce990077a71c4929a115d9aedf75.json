@@ -1,0 +1,15 @@
+{
+  "contractName": "HoodxSwap",
+  "fullyQualifiedName": "contracts/HoodxSwap.sol:HoodxSwap",
+  "address": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
+  "compiler": {
+    "solc": "0.8.24",
+    "optimizer": true,
+    "runs": 1,
+    "viaIR": true,
+    "evmVersion": "cancun",
+    "bytecodeHash": "ipfs"
+  },
+  "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad",
+  "standardJsonInput": "standard-input.json"
+}

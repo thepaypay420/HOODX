@@ -1,0 +1,99 @@
+{
+  "network": {
+    "chainId": 4663,
+    "rpc": "https://rpc.mainnet.chain.robinhood.com",
+    "explorer": "https://robinhoodchain.blockscout.com"
+  },
+  "compiler": {
+    "solc": "0.8.24",
+    "optimizer": true,
+    "runs": 1,
+    "viaIR": true,
+    "evmVersion": "cancun",
+    "bytecodeHash": "ipfs"
+  },
+  "bytecode": [
+    {
+      "name": "UniTwapOracle",
+      "address": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
+      "match": true
+    },
+    {
+      "name": "HoodxSwap",
+      "address": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
+      "match": true
+    },
+    {
+      "name": "HoodxIndex",
+      "address": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
+      "match": true
+    },
+    {
+      "name": "HoodxFactory",
+      "address": "0x56809a2738A23650aF939F73588E72C67CafC19b",
+      "match": true
+    }
+  ],
+  "contracts": [
+    {
+      "name": "UniTwapOracle",
+      "path": "contracts/UniTwap.sol:UniTwapOracle",
+      "address": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
+      "runtimeMatch": true,
+      "runtimeBytes": 3000,
+      "creationTx": "",
+      "creationBlock": 0,
+      "constructorArgsHex": "",
+      "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD/contract-verification",
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD#code"
+    },
+    {
+      "name": "HoodxSwap",
+      "path": "contracts/HoodxSwap.sol:HoodxSwap",
+      "address": "0x2505a3185136cE990077a71c4929a115d9AEDf75",
+      "runtimeMatch": true,
+      "runtimeBytes": 19369,
+      "creationTx": "",
+      "creationBlock": 0,
+      "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad",
+      "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75/contract-verification",
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75#code"
+    },
+    {
+      "name": "HoodxIndex",
+      "path": "contracts/HoodxIndex.sol:HoodxIndex",
+      "address": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
+      "runtimeMatch": true,
+      "runtimeBytes": 24514,
+      "creationTx": "",
+      "creationBlock": 0,
+      "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad0000000000000000000000002505a3185136ce990077a71c4929a115d9aedf75",
+      "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E/contract-verification",
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E#code"
+    },
+    {
+      "name": "HoodxFactory",
+      "path": "contracts/HoodxFactory.sol:HoodxFactory",
+      "address": "0x56809a2738A23650aF939F73588E72C67CafC19b",
+      "runtimeMatch": true,
+      "runtimeBytes": 6113,
+      "creationTx": "",
+      "creationBlock": 0,
+      "constructorArgsHex": "0000000000000000000000000bd7d308f8e1639fab988df18a8011f41eacad73000000000000000000000000caf681a66d020601342297493863e78c959e5cb2000000000000000000000000134d468b0bcaea6df127916f951f7938c06a37c60000000000000000000000008366a39cc670b4001a1121b8f6a443a643e40951000000000000000000000000f3334192d15450cdd385c8b70e03f9a6bd9e673b00000000000000000000000058daec3116aae6d93017baaea7749052e8a04fa70000000000000000000000007a5a47022e993401c5c6cfce0208c10fb032025e",
+      "verifyUrl": "https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b/contract-verification",
+      "codeUrl": "https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b#code"
+    }
+  ],
+  "vault696x": {
+    "address": "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A",
+    "kind": "EIP-1167 minimal proxy",
+    "implementation": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
+    "factory": "0x56809a2738A23650aF939F73588E72C67CafC19b",
+    "runtimeBytes": 45,
+    "pointsAtImpl": true,
+    "creationTx": "",
+    "creationBlock": 0,
+    "note": "Verify HoodxIndex implementation on Blockscout; the vault is a clone.",
+    "codeUrl": "https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A#code"
+  }
+}

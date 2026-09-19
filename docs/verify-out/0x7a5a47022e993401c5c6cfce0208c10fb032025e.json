@@ -1,0 +1,15 @@
+{
+  "contractName": "HoodxIndex",
+  "fullyQualifiedName": "contracts/HoodxIndex.sol:HoodxIndex",
+  "address": "0x7A5A47022E993401c5C6CFce0208c10fB032025E",
+  "compiler": {
+    "solc": "0.8.24",
+    "optimizer": true,
+    "runs": 1,
+    "viaIR": true,
+    "evmVersion": "cancun",
+    "bytecodeHash": "ipfs"
+  },
+  "constructorArgsHex": "000000000000000000000000815a0d4909460b29c70868e24831f575ca86f3ad0000000000000000000000002505a3185136ce990077a71c4929a115d9aedf75",
+  "standardJsonInput": "standard-input.json"
+}

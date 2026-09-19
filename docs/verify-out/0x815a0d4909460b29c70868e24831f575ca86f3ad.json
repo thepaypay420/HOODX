@@ -1,0 +1,15 @@
+{
+  "contractName": "UniTwapOracle",
+  "fullyQualifiedName": "contracts/UniTwap.sol:UniTwapOracle",
+  "address": "0x815A0D4909460B29c70868e24831f575cA86F3aD",
+  "compiler": {
+    "solc": "0.8.24",
+    "optimizer": true,
+    "runs": 1,
+    "viaIR": true,
+    "evmVersion": "cancun",
+    "bytecodeHash": "ipfs"
+  },
+  "constructorArgsHex": "",
+  "standardJsonInput": "standard-input.json"
+}
