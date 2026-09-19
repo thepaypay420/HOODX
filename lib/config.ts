@@ -12,11 +12,11 @@ export const WETH = (process.env.NEXT_PUBLIC_WETH ||
 export const USDG = (process.env.NEXT_PUBLIC_USDG ||
   "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168") as `0x${string}`;
 
-/** Hook-bricked clone — stranded hooked V4 bags block redeem. */
+/** Superseded Gen-0 clone — HUD ignores this pin. */
 export const BRICKED_696X_ADDR = "0x6350f9e8e630785ABF09fD1127366998Ad821E33";
-/** Canonical Gen-0 vault — hardened factory, empty, ready to join. */
+/** Canonical Gen-0 vault — hardened factory, live $696X. */
 export const SAFE_696X_ADDR = "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A";
-/** @deprecated alias for the bricked clone */
+/** @deprecated alias for the superseded clone */
 export const LIVE_696X_ADDR = BRICKED_696X_ADDR;
 export const LIVE_FACTORY_ADDR = "0x56809a2738A23650aF939F73588E72C67CafC19b";
 export const LEGACY_FACTORY_ADDR = "0x3860176e3cEd09519C377FFc9eDC8379aC4DDf71";
@@ -24,7 +24,7 @@ export const V4_POSM = (process.env.NEXT_PUBLIC_V4_POSM ||
   "0x58daec3116aae6D93017bAAea7749052E8a04fA7") as `0x${string}`;
 export const V4_STATE_VIEW = (process.env.NEXT_PUBLIC_V4_STATE_VIEW ||
   "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b") as `0x${string}`;
-/** Empty hook-safe vault — no anti-rug caps. HUD ignores this pin. */
+/** Superseded hook-safe vault — HUD ignores this pin. */
 export const HOOK_SAFE_696X_ADDR = "0x466742D65C21eC1A4c82f2D0Fd9E3C01C78D89dE";
 export const HOOK_SAFE_FACTORY_ADDR = "0xc29a60cc325b35794f4AE65B8bc518639e716FbD";
 export const EMPTIED_696X = "0xeBFA7c94D6d708a242f84c98a048C84b59e95C24";

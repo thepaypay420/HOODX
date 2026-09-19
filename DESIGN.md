@@ -178,10 +178,9 @@ drift (sell the tail, buy PONS/AI/CASHCAT). Later joins copy the live mix.
 696X is live on the hardened factory. Canonical vault:
 `0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A` (factory
 `0x56809a2738A23650aF939F73588E72C67CafC19b`). Do not pause, set floors,
-hand the basket to a dead key, unwind, or treat legacy clones as this product.
-Operator scripts that could trap funds are refused. The HUD remaps emptied /
-bricked / legacy factory pins (`0x46ea…`, `0xeBFA…`, `0x6350…`, `0x3860…`) so
-`/i/696x` cannot show an old clone as Live.
+or hand the basket to a lost key. Operator scripts that could trap funds are
+refused. The HUD only serves those canonical addresses — stale env pins and
+copycat contracts are ignored so `/i/696x` always shows the live vault.
 
 On-chain: `withdraw` ignores `paused`. A held name with `priceWethWad == 0` reverts
 every exit (`Unpriced` / `NeedBuffer`). Curator HUD has no pause or setFloors.
@@ -194,7 +193,9 @@ Do not share a nonce with another live bot on the same EOA.
 
 ## What this is not
 
+- Not Robinhood Markets, not tokenized HOOD stock (xStocks / Backed), not audited.
 - Not HOOD10. Constituent `Index` ("The Index") is one name in 696X.
+- Not a diversified stock portfolio — RH-chain tokens with liquidity and rug risk.
 - Not a streaming management fee.
 - Not permissionless rebalance (the curator keeps the book from going dust).
 - Not a seeded Uni pool yet.
