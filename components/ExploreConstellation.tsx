@@ -24,41 +24,43 @@ export function ExploreConstellation({ fromHome = false }: { fromHome?: boolean 
 
   return (
     <section
-      className={`explore-stage rise ${entering ? "explore-stage-entering" : ""}`}
+      className={`explore-stage ${entering ? "explore-stage-entering" : ""}`}
       data-testid="explore-constellation"
     >
-      <div className="explore-stage-glow" aria-hidden />
-      <div className="landing-orbit landing-orbit-a explore-orbit" aria-hidden />
-      <div className="landing-orbit landing-orbit-b explore-orbit" aria-hidden />
+      <div
+        className="explore-orbit-field"
+        aria-hidden={false}
+      >
+        <div className="explore-stage-glow" aria-hidden />
+        <div className="landing-orbit landing-orbit-a" aria-hidden />
+        <div className="landing-orbit landing-orbit-b" aria-hidden />
 
-      {FEATURED_VAULTS.map((v, i) => {
-        const pos = orbitPos(v.orbitDeg);
-        return (
-          <Link
-            key={v.slug}
-            href={`/i/${v.slug}`}
-            data-testid={`explore-vault-${v.slug}`}
-            className="explore-vault-orb"
-            style={{
-              ...pos,
-              animationDelay: `${0.12 + i * 0.1}s`,
-            }}
-          >
-            <span className="explore-vault-art">
-              <TokenArt slug={v.slug} size="md" priority={i === 0} />
-            </span>
-            <span className="explore-vault-label">
-              <span className="explore-vault-symbol">${v.symbol}</span>
-              <span className="explore-vault-flair">{v.flair}</span>
-            </span>
-          </Link>
-        );
-      })}
+        {FEATURED_VAULTS.map((v, i) => {
+          const pos = orbitPos(v.orbitDeg);
+          return (
+            <Link
+              key={v.slug}
+              href={`/i/${v.slug}`}
+              data-testid={`explore-vault-${v.slug}`}
+              className="explore-vault-orb"
+              style={pos}
+            >
+              <span className="explore-vault-art">
+                <TokenArt slug={v.slug} size="md" priority={i === 0} />
+              </span>
+              <span className="explore-vault-label">
+                <span className="explore-vault-symbol">${v.symbol}</span>
+                <span className="explore-vault-flair">{v.flair}</span>
+              </span>
+            </Link>
+          );
+        })}
 
-      <Link href="/" className="explore-coin" data-testid="explore-home" aria-label="Back to HOODX home">
-        <div className="landing-coin-rim" aria-hidden />
-        <BrandMark size={96} priority className="landing-coin-mark" />
-      </Link>
+        <Link href="/" className="explore-coin" data-testid="explore-home" aria-label="Back to HOODX home">
+          <div className="landing-coin-rim" aria-hidden />
+          <BrandMark size={96} priority className="landing-coin-mark explore-coin-mark" />
+        </Link>
+      </div>
 
       <p className="explore-script">Pick your basket.</p>
     </section>

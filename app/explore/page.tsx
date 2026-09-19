@@ -29,7 +29,7 @@ export default async function ExplorePage({
                 Each orb is a live on-chain basket. Tap a vault to open the desk — allocations, NAV, and join/exit are
                 all on Robinhood Chain.
               </p>
-              <div className="landing-cta-row">
+              <div className="landing-cta-row hidden sm:flex">
                 <Link href="/#create" className="landing-btn-secondary">
                   Create an index
                 </Link>
