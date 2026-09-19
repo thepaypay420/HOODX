@@ -223,67 +223,20 @@ body {
 }
 
 .trust-notice {
-  font-size: 11px;
-  line-height: 1.55;
-  color: var(--dim);
-}
-
-.trust-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.65rem;
-}
-
-.trust-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  padding: 0.2rem 0.55rem;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.trust-badge-verified {
-  border-color: rgba(31, 212, 198, 0.45);
-  background: rgba(31, 212, 198, 0.1);
-  color: var(--cyan);
-}
-
-.trust-badge-review {
-  border-color: rgba(224, 181, 74, 0.45);
-  background: rgba(224, 181, 74, 0.08);
-  color: var(--gold);
-}
-
-.trust-line {
-  margin: 0 0 0.45rem;
-}
-
-.trust-line:last-child {
-  margin-bottom: 0;
-}
-
-.trust-muted {
-  opacity: 0.92;
-}
-
-.trust-strong {
-  font-weight: 600;
-  color: rgba(238, 248, 246, 0.88);
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.45;
+  color: rgba(138, 154, 151, 0.75);
 }
 
 .trust-link {
-  color: var(--paper);
+  color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .trust-link:hover {
-  color: var(--cyan);
+  color: var(--dim);
 }
 
 @keyframes pop {
