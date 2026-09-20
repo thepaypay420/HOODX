@@ -5,10 +5,12 @@ import { BaseError, erc20Abi, formatEther, parseEther, parseUnits, zeroAddress, 
 import { robinhood } from "@/lib/chain";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { preflightV2Routes } from "@/lib/v2Preflight";
+import { V2CuratorDesk } from "@/components/V2CuratorDesk";
+import { VaultPerformance } from "@/components/VaultPerformance";
 import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
 
-type Snapshot = { account: Address; vault: Address; owner: Address; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
+type Snapshot = { account: Address; vault: Address; owner: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
 const deadline = () => BigInt(Math.floor(Date.now() / 1000) + 600);
 
 export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
@@ -28,30 +30,33 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   const read = useCallback(async () => {
     const ticket = ++generation.current;
     const account = address ?? zeroAddress;
+    const block = await publicClient.getBlockNumber();
     // Price failures must not hide shares or direct asset redemption.
-    const [shares, supply, paused, tokens, weth, firstMinimum, owner] = await Promise.all([
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "balanceOf", args: [account] }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "totalSupply" }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "paused" }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "constituents" }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "weth" }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "minFirstDeposit" }),
-      publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "owner" }),
+    const [shares, supply, paused, tokens, weth, firstMinimum, owner, walletEth] = await Promise.all([
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "balanceOf", args: [account] }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "totalSupply" }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "paused" }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "constituents" }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "weth" }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "minFirstDeposit" }),
+      publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "owner" }),
+      address ? publicClient.getBalance({ address, blockNumber: block }).catch(() => undefined) : Promise.resolve(undefined),
     ]);
     const claimTokens = [zeroAddress, weth, ...tokens];
     const amounts = await Promise.all(claimTokens.map(token => publicClient.readContract({
-      address: vault, abi: v2VaultAbi, functionName: "claimable", args: [account, token],
+      address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "claimable", args: [account, token],
     })));
     if (ticket !== generation.current) return;
-    setSnap({ account, vault, owner, firstMinimum, shares, supply, paused, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
-    const assets = await publicClient.readContract({ address: vault, abi: v2VaultAbi, functionName: "totalAssets" }).catch(() => undefined);
+    setSnap({ account, vault, owner, walletEth, block, firstMinimum, shares, supply, paused, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
+    const assets = await publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "totalAssets" }).catch(() => undefined);
     if (ticket !== generation.current) return;
-    setSnap({ account, vault, owner, firstMinimum, shares, supply, paused, assets, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
+    setSnap({ account, vault, owner, walletEth, block, firstMinimum, shares, supply, paused, assets, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
   }, [address, vault]);
   useEffect(() => { let cancelled = false; setSnap(undefined); setRecipient(address); read().catch(() => { if (!cancelled) setMessage("Unable to read vault balances. Retry before transacting."); }); return () => { cancelled = true; generation.current++; }; }, [read, address]);
   useEffect(() => {
     if (snap?.supply === 0n) setEth(formatEther(snap.firstMinimum));
   }, [snap?.supply, snap?.firstMinimum, vault]);
+  useEffect(() => { if (!address) return; const timer = setInterval(() => { if (!busy) void read().catch(() => {}); }, 30000); return () => clearInterval(timer); }, [address, busy, read]);
   async function transact(action: "deposit" | "withdraw" | "assets" | "claim" | "pause" | "unwind", token?: Address) {
     if (!address || !walletClient || !snap) return;
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
@@ -106,8 +111,11 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   }
   const button = "vault-button";
   return <section className="vault-dashboard">
-    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets} supply={snap?.supply} paused={snap?.paused} connected={!!address} />
-    <div className="vault-actions desk">
+    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets} supply={snap?.supply} paused={snap?.paused} connected={!!address} curator={!!address && address.toLowerCase() === snap?.owner.toLowerCase()}>
+    <VaultPerformance vault={vault} account={address} assets={snap?.assets} shares={snap?.shares} supply={snap?.supply} block={snap?.block} />
+    </VaultOverview>
+    {snap && address?.toLowerCase() === snap.owner.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel"><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary><V2CuratorDesk key={`${vault}:${address}`} vault={vault} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} /></details>}
+    <div id="wallet-actions" className="vault-actions desk">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">YOUR POSITION</p><h2>Make your next move.</h2></div><span className="vault-tag">{slug.toUpperCase()}</span></div>
 
     {!address ? <button className={button} onClick={() => void connect()}>Connect wallet</button> : chainId !== robinhood.id ? <button className={button} onClick={() => void switchToRobinhood()}>Switch to Robinhood Chain</button> : null}
@@ -126,13 +134,18 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       </div>}
       <div className="vault-trade-grid"><div className="vault-trade-card">
         <p className="vault-eyebrow">01 / JOIN THE BASKET</p><h3>Deposit</h3>
+        <p>Wallet: {address ? (snap.walletEth === undefined ? "Balance unavailable" : `${formatEther(snap.walletEth)} ETH`) : "Connect wallet"}</p>
         <label className="block">Deposit ETH <input aria-label="Deposit ETH" className="vault-input" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
+        <div className="vault-presets">{["0.02", "0.05", "0.08", "0.1"].map(value => <button className="vault-button" key={value} disabled={busy || parseEther(value) < (snap.supply === 0n ? snap.firstMinimum : parseEther("0.02")) || (snap.walletEth !== undefined && parseEther(value) > snap.walletEth)} onClick={() => setEth(value)}>{value} ETH</button>)}</div>
         <p className="text-sm">Minimum deposit: {formatEther(snap.supply === 0n ? snap.firstMinimum : parseEther("0.02"))} ETH.</p>
         <p className="text-sm">Up to 1% fewer shares than the current preview. Your wallet shows the transaction before signing.</p>
         <button className={button} disabled={busy || !address || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>Deposit ETH</button>
       </div>
       <div className="vault-trade-card">
         <p className="vault-eyebrow">02 / TAKE YOUR SHARE</p><h3>Withdraw</h3>
+        <p>Wallet: {formatEther(snap.shares)} {slug.toUpperCase()}</p>
+        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => setPercent(value)}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
+        <p>Sell: {formatEther(snap.shares * BigInt(percent) / 100n)} {slug.toUpperCase()}</p>
         <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} onChange={e => setMinimum(e.target.value)} inputMode="decimal" /></label>
         <p className="text-sm">Redeems the selected portion of your shares. If any required sale fails, the whole withdrawal reverts and your shares stay intact.</p>
         <button className={button} disabled={busy || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>

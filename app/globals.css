@@ -1368,3 +1368,20 @@ body {
 .vault-notice {padding:14px;background:#1fd4c60a;border:1px solid #1fd4c633;border-radius:12px;font-size:12px;margin-top:18px;overflow-wrap:anywhere;}
 @media(min-width:1024px) {.vault-dashboard {grid-template-columns:minmax(0,1fr);} }
 @media(max-width:640px) {.vault-hero,.vault-basket,.vault-actions {padding:20px;}.vault-identity {gap:16px;}.vault-stats {grid-template-columns:1fr 1fr;}.vault-stats>div {padding:18px;border-bottom:1px solid var(--line);}.vault-trade-grid {grid-template-columns:1fr;}.vault-hero-footer {gap:12px;}.vault-section-heading {flex-wrap:wrap;}.vault-table {font-size:12px;}.vault-trade-card {padding:18px;}.vault-subtitle {font-size:12px;}}
+.vault-presets {display:flex;gap:8px;flex-wrap:wrap;}
+.vault-trade-card .vault-presets .vault-button {flex:none;margin:0;background:transparent;color:var(--paper);border:1px solid var(--line);padding:8px 12px;font-weight:400;}
+.vault-presets .vault-button[aria-pressed="true"] {border-color:var(--cyan);color:var(--cyan);background:#1fd4c614;}
+.vault-curator-panel {border:1px solid #1fd4c633;border-radius:20px;overflow:hidden;background:#101a1b;}
+.vault-curator-panel>summary {cursor:pointer;padding:22px;font-size:16px;}
+.vault-curator-panel>summary span {font-size:11px;color:var(--dim);margin-left:16px;}
+.vault-curator-panel .vault-actions {border:0;}
+.vault-target-input {width:90px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#081113;text-align:right;color:var(--paper);}
+.vault-target-input:focus {outline:1px solid var(--cyan);}
+.vault-recovery summary {cursor:pointer;}
+.vault-performance {display:grid;grid-template-columns:1fr 1fr;padding:24px;gap:24px;}
+.vault-performance strong {font-size:30px;font-weight:500;color:var(--cyan);letter-spacing:-.04em;}
+.vault-performance .vault-loss {color:var(--danger);}
+.vault-performance p:not(.vault-eyebrow) {font-size:11px;color:var(--dim);line-height:1.7;margin-top:6px;}
+.vault-performance details {grid-column:1/-1;font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:12px;}
+.vault-performance summary {cursor:pointer;}
+@media(max-width:640px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {padding:20px;gap:16px;}.vault-performance strong {font-size:25px;}}
