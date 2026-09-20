@@ -19,6 +19,7 @@ contract OfficialVaultForkV2Test is RouterForkV2Test {
     using SafeERC20 for IERC20;
     bool exerciseEmergency;
     bool only696X;
+    bool onlyFAANGX;
     address constant CURATOR = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
 
     function testForkOfficialFullStackExitSafety() public {
@@ -33,6 +34,12 @@ contract OfficialVaultForkV2Test is RouterForkV2Test {
     function testFork696XPausedEmergencyAndNormalCanary() public {
         exerciseEmergency = true;
         only696X = true;
+        _runOfficial(true);
+    }
+
+    function testForkFAANGXPausedEmergencyAndNormalCanary() public {
+        exerciseEmergency = true;
+        onlyFAANGX = true;
         _runOfficial(true);
     }
 
@@ -124,7 +131,7 @@ contract OfficialVaultForkV2Test is RouterForkV2Test {
         );
         assertEq(factory.owner(), CURATOR);
         assertEq(policy.owner(), CURATOR);
-        cycle(HoodxIndexV2(payable(factory.bySlug("696x"))), 0.08 ether, requireNormal);
+        if (!onlyFAANGX) cycle(HoodxIndexV2(payable(factory.bySlug("696x"))), 0.08 ether, requireNormal);
         if (!only696X) cycle(HoodxIndexV2(payable(factory.bySlug("faangx"))), 0.02 ether, requireNormal);
     }
 
