@@ -6,3 +6,11 @@ optimizer_runs = 1
 via_ir = true
 evm_version = "cancun"
 bytecode_hash = "ipfs"
+
+[profile.default.fuzz]
+runs = 1024
+
+[profile.default.invariant]
+runs = 128
+depth = 64
+fail_on_revert = true

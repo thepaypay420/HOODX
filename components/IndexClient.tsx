@@ -5,6 +5,8 @@ import { zeroAddress, type Address } from "viem";
 import { CuratorBalanceSection } from "@/components/CuratorBalanceSection";
 import { IndexCard } from "@/components/IndexCard";
 import { OwnerDesk } from "@/components/OwnerDesk";
+import { V2VaultDesk } from "@/components/V2VaultDesk";
+import { productionV2Vault } from "@/lib/v2";
 import { VaultDesk } from "@/components/VaultDesk";
 import { factoryAbi } from "@/lib/abi";
 import {
@@ -47,6 +49,8 @@ export function IndexClient({ slug, gen0 }: { slug: string; gen0: boolean }) {
       .catch(() => {});
   }, [slug, gen0]);
 
+  const v2 = productionV2Vault(slug);
+  if (v2) return <div className="relative z-10 mx-auto max-w-5xl px-4 py-8"><V2VaultDesk vault={v2} slug={slug} /></div>;
   return (
     <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-4 pb-24 pt-5 sm:space-y-8 sm:px-6 sm:pb-28 sm:pt-8">
       <VaultDesk slug={slug} vault={vault || undefined} isGen0={gen0} />

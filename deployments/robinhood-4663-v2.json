@@ -1,0 +1,18 @@
+{
+  "chainId": 4663,
+  "version": 2,
+  "status": "development-candidate-not-deployed",
+  "releaseApproved": false,
+  "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+  "curator": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "creatorRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "treasury": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "finalSweepRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "routingManifest": "robinhood-4663-routing-v2.json",
+  "canary": null,
+  "production": null,
+  "transactionHashes": [],
+  "sourceVerification": "not-applicable-before-deployment",
+  "frontendActivated": false,
+  "broadcastsPerformed": 0
+}

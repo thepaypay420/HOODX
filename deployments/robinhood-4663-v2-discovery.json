@@ -1,0 +1,293 @@
+{
+  "chainId": 4663,
+  "block": 67565367,
+  "rpcSource": "public",
+  "contracts": {
+    "weth": {
+      "address": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "codeBytes": 2202,
+      "runtimeKeccak256": "0x5706be52f64875fee65a2cec0d80e47a23d8793cbe85d214b48445e2d05f5353"
+    },
+    "swapRouter": {
+      "address": "0xCaf681a66D020601342297493863E78C959E5cb2",
+      "codeBytes": 24497,
+      "runtimeKeccak256": "0x6f36c378e272c6324c48f045182bcb54bd8ad654cf9ebd42e8893d52c4cb25dc"
+    },
+    "v4Manager": {
+      "address": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+      "codeBytes": 24009,
+      "runtimeKeccak256": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626"
+    },
+    "v4StateView": {
+      "address": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+      "codeBytes": 3531,
+      "runtimeKeccak256": "0x7d9c591e0956fd89d98feb4ffcfe8bf1f7a62bd485edd979fa21d104b49878a6"
+    },
+    "v4Posm": {
+      "address": "0x58daec3116aae6D93017bAAea7749052E8a04fA7",
+      "codeBytes": 23877,
+      "runtimeKeccak256": "0xc873e135dc9aaec88489cfbad146b4cb49d6a32e0d80326377784b7ba17670b2"
+    },
+    "universalRouter": {
+      "address": "0x8876789976decbfcbbbe364623c63652db8c0904",
+      "codeBytes": 24546,
+      "runtimeKeccak256": "0x2ce6aaaf9f4151f5e1cbf774668772f17f532ae11b15e9284fd0a072a8b0fbde"
+    },
+    "permit2": {
+      "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+      "codeBytes": 9152,
+      "runtimeKeccak256": "0x5208783f52488f7d3493e5e38311ab707c1d75457fe472a19b0b4d57d66a7fca"
+    },
+    "v4Quoter": {
+      "address": "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
+      "codeBytes": 6118,
+      "runtimeKeccak256": "0xd707b1da8cb165e5ea35a3b4450d971eb562ec171e23492aa117036b78a868f6"
+    },
+    "swapProxy": {
+      "address": "0x02E5be68D46DAc0B524905bfF209cf47EE6dB2a9",
+      "codeBytes": 1005,
+      "runtimeKeccak256": "0x24a203c24b85e0994ae6aecccc2bc0c1df4e22f1b3d63f33d18bec0245867aaf"
+    }
+  },
+  "vaults": {
+    "696X": {
+      "address": "0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A",
+      "nativeWei": "0",
+      "totalSupply": "25000000000000",
+      "deadShares": "25000000000000",
+      "liveShares": "0",
+      "totalAssets": "0",
+      "redeemableAssets": "0",
+      "roles": {
+        "owner": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "creator": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "creatorRecipient": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "protocol": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "factory": "0x56809a2738a23650af939f73588e72c67cafc19b"
+      },
+      "constituents": [
+        {
+          "token": "0x39dbed3a2bd333467115de45665cc57f813c4571",
+          "balance": "0",
+          "targetBps": 1254,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xed50bdeea8adc232f159486192a4157281d722ff",
+          "poolKeyRaw": null,
+          "priceWeth": "228384308827458"
+        },
+        {
+          "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+          "balance": "0",
+          "targetBps": 1252,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
+          "poolKeyRaw": null,
+          "priceWeth": "102613528149105"
+        },
+        {
+          "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+          "balance": "0",
+          "targetBps": 1252,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xa70fc67c9f69da90b63a0e4c05d229954574e313",
+          "poolKeyRaw": null,
+          "priceWeth": "68510702641377"
+        },
+        {
+          "token": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
+          "balance": "0",
+          "targetBps": 641,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xe2c12a7379706a291cadaaec1d22458be2f7239d",
+          "poolKeyRaw": null,
+          "priceWeth": "11240016921977"
+        },
+        {
+          "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+          "balance": "0",
+          "targetBps": 863,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xd29893ffac8b29ec4db2cfe0cdb3fe1377c028ff",
+          "poolKeyRaw": null,
+          "priceWeth": "10944988495880"
+        },
+        {
+          "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+          "balance": "0",
+          "targetBps": 867,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": true,
+          "pool": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+          "poolKeyRaw": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e934e36a439c94017b64a3fece66af12099abf50000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000000000000000000000000c80000000000000000000000000000000000000000000000000000000000000000",
+          "priceWeth": "3849079125109"
+        },
+        {
+          "token": "0xe8ffd7e24187f72afb08d75b1bb13088a989a791",
+          "balance": "0",
+          "targetBps": 730,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xd64fbda67e1015df43fa5e49f02ca844729e5f94",
+          "poolKeyRaw": null,
+          "priceWeth": "4358498933698"
+        },
+        {
+          "token": "0x57c0e45cb534413d1c20a4240955d6bb250bb4f1",
+          "balance": "0",
+          "targetBps": 0,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0x4ef94cd1ab45ebbb50f9e73cd6e45c5027caa3f7",
+          "poolKeyRaw": null,
+          "priceWeth": "185330407635859"
+        },
+        {
+          "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+          "balance": "0",
+          "targetBps": 641,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": true,
+          "pool": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
+          "poolKeyRaw": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018e674231a58c239dc7daedcffe15ec3a24cff5c00000000000000000000000000000000000000000000000000000000000009c400000000000000000000000000000000000000000000000000000000000000190000000000000000000000000000000000000000000000000000000000000000",
+          "priceWeth": "4629388111502"
+        },
+        {
+          "token": "0x0762c1708f0d23f86b29d6b857121ff7df357506",
+          "balance": "0",
+          "targetBps": 0,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0x6d489e07d7fe2b4bc5749f75d56337888b68a34a",
+          "poolKeyRaw": null,
+          "priceWeth": "1621054994606"
+        }
+      ],
+      "quoteBalances": {
+        "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73": "0",
+        "0x0bd7d308f8e1639fab988df18a8011f41eacad73": "0",
+        "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C": "0",
+        "0x1b0E319c6A659F002271B69dB8A7df2F911c153E": "0",
+        "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3": "0",
+        "0x322F0929c4625eD5bAd873c95208D54E1c003b2d": "0",
+        "0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f": "0",
+        "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa": "0",
+        "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA": "0",
+        "0x5fc5360d0400a0fd4f2af552add042d716f1d168": "0",
+        "0x6330D8C3178a418788dF01a47479c0ce7CCF450b": "0",
+        "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC": "0",
+        "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A": "0",
+        "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5": "0",
+        "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd": "0",
+        "0xB90A19fF0Af67f7779afF50A882A9CfF42446400": "0",
+        "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68": "0",
+        "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9": "0",
+        "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35": "0",
+        "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681": "0",
+        "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC": "0",
+        "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5": "0",
+        "0xec262a75e413fAfD0dF80480274532C79D42da09": "0",
+        "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD": "0"
+      }
+    },
+    "FAANGX": {
+      "address": "0x037c116d7C09Ed4D2733Eb628488ab9c0394353f",
+      "nativeWei": "0",
+      "totalSupply": "25000000000000",
+      "deadShares": "25000000000000",
+      "liveShares": "0",
+      "totalAssets": "0",
+      "redeemableAssets": "0",
+      "roles": {
+        "owner": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "creator": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "creatorRecipient": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "protocol": "0x134d468b0bcaea6df127916f951f7938c06a37c6",
+        "factory": "0xb6cdca31fc5edab747d69ec6d7e6d251de8de03a"
+      },
+      "constituents": [
+        {
+          "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+          "balance": "0",
+          "targetBps": 1500,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0xa4bdb396a69617eb7f70e2cc1ef526f7340b1b0d",
+          "poolKeyRaw": null,
+          "priceWeth": "255960571346500124"
+        },
+        {
+          "token": "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
+          "balance": "0",
+          "targetBps": 1500,
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "v4": true,
+          "pool": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+          "poolKeyRaw": "0x00000000000000000000000012f190a9f9d7d37a250758b26824b97ce941bf540000000000000000000000005fc5360d0400a0fd4f2af552add042d716f1d168000000000000000000000000000000000000000000000000000000000000096000000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000000",
+          "priceWeth": "97190388994722694"
+        },
+        {
+          "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+          "balance": "0",
+          "targetBps": 1500,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0x8bb3514e2204e1cdf3ac149efee7ff04d91b719f",
+          "poolKeyRaw": null,
+          "priceWeth": "127990759144468395"
+        },
+        {
+          "token": "0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8",
+          "balance": "0",
+          "targetBps": 1500,
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "v4": true,
+          "pool": "0xe4930a6215f21aa3b37c01adbded3362f56ae31b9a60066f5f9641e601d5111f",
+          "poolKeyRaw": "0x0000000000000000000000005fc5360d0400a0fd4f2af552add042d716f1d168000000000000000000000000e0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000000",
+          "priceWeth": "27429938839555408"
+        },
+        {
+          "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+          "balance": "0",
+          "targetBps": 1500,
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "v4": false,
+          "pool": "0x8c2b4303fa0b99d07a5d3e9411497a277e65b673",
+          "poolKeyRaw": null,
+          "priceWeth": "133493923809642571"
+        }
+      ],
+      "quoteBalances": {
+        "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73": "0",
+        "0x0bd7d308f8e1639fab988df18a8011f41eacad73": "0",
+        "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C": "0",
+        "0x1b0E319c6A659F002271B69dB8A7df2F911c153E": "0",
+        "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3": "0",
+        "0x322F0929c4625eD5bAd873c95208D54E1c003b2d": "0",
+        "0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f": "0",
+        "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa": "0",
+        "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA": "0",
+        "0x5fc5360d0400a0fd4f2af552add042d716f1d168": "0",
+        "0x6330D8C3178a418788dF01a47479c0ce7CCF450b": "0",
+        "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC": "0",
+        "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A": "0",
+        "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5": "0",
+        "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd": "0",
+        "0xB90A19fF0Af67f7779afF50A882A9CfF42446400": "0",
+        "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68": "0",
+        "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9": "0",
+        "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35": "0",
+        "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681": "0",
+        "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC": "0",
+        "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5": "0",
+        "0xec262a75e413fAfD0dF80480274532C79D42da09": "0",
+        "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD": "0"
+      }
+    }
+  },
+  "releaseApproved": false
+}
