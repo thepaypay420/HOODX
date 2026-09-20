@@ -1,0 +1,121 @@
+{
+  "chainId": 4663,
+  "status": "complete-finalized",
+  "factory": "0x531b632463050e55db60f0025085ffbb2326ff64",
+  "vault": "0xbef9108f551e95a281d1d82f05db71a0f172d0f5",
+  "buildFingerprint": "0xe7388911d0a7cb3c1fef4b8555d060a05782b7ada1dd18e5494ba3857bbc9138",
+  "productionApproved": false,
+  "faangxStarted": false,
+  "operations": [
+    {
+      "action": "deposit",
+      "hash": "0x6259b11c0e68149b1bb4a07e31f496d98dac2cb56f03b695dc2603803426e9f2",
+      "verified": true,
+      "block": 67687114
+    },
+    {
+      "action": "pause",
+      "hash": "0x7ba96092f646e8a33875c6568e3beeef928e75756d0b47bc02da449571c26275",
+      "verified": true,
+      "block": 67690044
+    },
+    {
+      "action": "curator-unwind",
+      "hash": "0xbe55e8c1de28c60ac7a5d7e44697e10e572bdcc81c152810e282e8761d7a1d75",
+      "verified": true,
+      "block": 67691337
+    },
+    {
+      "action": "in-kind",
+      "hash": "0x9d12eaed75b238c58d5f18285bd85a24d5224a0468b7b339f0aca512cec1845a",
+      "verified": true,
+      "block": 67693713
+    },
+    {
+      "receiptsVerified": true,
+      "residualWETHWei": "415545306276",
+      "action": "recover-tokens",
+      "hashes": [
+        "0x073fd0652cced2167a05f10403f732d01b875b497b6361a110da6b6503bf93a2",
+        "0x2c2db2491857a46c34eb547c31e80f7ab841a05879ce11542e46c672f342757d",
+        "0x8b8649933b4f46c71a848fe82b4d0093b38dad9ca0d4be9089f3f9e195717ca8",
+        "0x01c36b28ce3dc27973810bdb5b58c77adbeea891947420aa46a6b4c4c4a39a2e",
+        "0x5f96448cc55e4746e6bea9b620f6929b2020ba4add426554e045c3c5b99cb4fb",
+        "0xa7d7be4defd1a8b597e1f84ff3f2b572923668c6bbacdcb847ccae8f245208c0",
+        "0x7bbe61da7fd816e5d0fa10f7c817535adc03d08eeb6428d08f2d0779a56b7735",
+        "0x2e5d13d251c18191df3c459189eb75e8e8bc6b65a15e476da91e8dd4a03cce8c",
+        "0x706c02a604116144d7f6d28599176258436c6a2cd8cabf02bd0f7ceb0ca629bf",
+        "0x36d6fb83fb7d462e764cd345dbc26844fc3dca66e86703b88bbcebe6f8376ace",
+        "0x15765d7237fee1aa718b8791c74cc69316d5c675e58b35e40a73ec55dc0cbee0",
+        "0xf541dddd16c3c3cb0f4cfa36f648ffcf725e28b02ab3b5de4e84184518ae2712",
+        "0xd58809bab33392164b24015133d2e2325eaa092d83ac97eda1426800c05c801e",
+        "0x41d6ea23590f33a86f32dbea099a9867599ee78937c09dd47ee016be9d393621",
+        "0xa748e3c51d8d6435c73efbd29914b7e6ac8f8a73e6633e66ae3248dbe724f6a1",
+        "0x0fe9c94c839fd72c378c0186a3de6910be8ff87c52333b0c9becd320718e4338",
+        "0x52b21053da4e033ee684e3394f32db530617f0a66aa27ba5b6caedd657b3c01e",
+        "0x65b6e7ec79f7c8933752d9ab1be7875fda49f84a8efb781dee36de0357d0c053",
+        "0x164579cbb5009485e2557febd31d70585ebee4925d337c25f1726f1ac434ce43",
+        "0x47e10a2cf5f03da64e484f03179be19bc77ba4355d9bc78f1f0445a2d7dced2e",
+        "0x9c275e8df92881acff4aa22f0db496e6c8ca878836da0086437858a9fb6f7c80",
+        "0x6d7cb93470511068617f2f7b68c5142530013491834dd0d0f858a92939143fff",
+        "0x29a2f6ab501322ba6c2d41e442bbbe7cae4afd38a1d348acd056489c63879f04",
+        "0x4ad97662d5f3b8ea1b6f376627cd84cacd1df6185950243d762f752b892ca5c4",
+        "0x52ca4a6785280c67464934ef692244b56449841de3447aea0e81f793a4e57fdc"
+      ]
+    },
+    {
+      "approvalsRevoked": true,
+      "hash": "0xe1334435dfcc537bc0149a74068d0ac72f2887438769b7d017a709c910ff1207",
+      "allReturnedTokensRecovered": true,
+      "action": "residual-unwrap",
+      "verified": true
+    },
+    {
+      "hash": "0xed8b9604f5d02eaa1f365b9a37827a62c1df8538c946f9b774631194e4dabc52",
+      "block": 67708422,
+      "action": "partial",
+      "returnedETHWei": "39043185380692482",
+      "verified": true
+    },
+    {
+      "action": "final",
+      "hash": "0xcebb280318a1fd297611fdd702be8ee73ccf5c7da3aae9d3e2cd3280a45abb47",
+      "verified": true,
+      "returnedETHWei": "38785873017901580",
+      "block": 67720910
+    }
+  ],
+  "remainingShares": "0",
+  "finalWithdrawalBlocker": {
+    "status": "final-withdrawal-blocked-by-protected-minimum",
+    "chainId": 4663,
+    "stateBlock": 67715623,
+    "rehearsalBlock": 67714531,
+    "finalAttemptBroadcast": false,
+    "nonce": 48,
+    "pendingNonce": 48,
+    "remainingShares": "981470164506359394",
+    "deployerETHWei": "71831980404592093",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "symbol": "AI",
+    "inputAmount": "49168797121849611584",
+    "route": "V3 direct constituent to WETH, fee 10000 (1%)",
+    "pool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
+    "expectedOutputWei": "4712773282956415",
+    "protectedMinimumWei": "4714375125390544",
+    "shortfallWei": "1601842434129",
+    "revert": "InvalidAmount()",
+    "selector": "0x2c5211c6",
+    "assessment": "Route swaps successfully in replay, but current output is below the 97% TWAP floor; consistent with price/liquidity movement, not demonstrated structural routing failure.",
+    "canaryComplete": false,
+    "faangxStarted": false,
+    "productionApproved": false,
+    "resolved": true,
+    "resolution": "Fresh protected simulation passed; final withdrawal confirmed and vault verified empty."
+  },
+  "canary696xPassed": true,
+  "allReceiptsFinalized": true,
+  "deployerETHWei": "110433355040285673",
+  "returnedCapitalWei": "78615878224379806",
+  "transactionCount": 51
+}

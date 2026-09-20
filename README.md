@@ -223,3 +223,10 @@ Not HOOD10. Not a seeded Uni pool yet. Not financial advice.
   <a href="https://t.me/HOODXINDEX"><strong>t.me/HOODXINDEX</strong></a><br />
   <sub>Private repository. All rights reserved.</sub>
 </p>
+
+
+## V2 hardening candidate
+
+The V2 implementation is under development on a dedicated branch. No V2 production deployment or frontend address activation has occurred. Read [architecture](docs/V2_ARCHITECTURE.md), [security evidence and limitations](docs/V2_SECURITY.md), and the [deployment runbook](docs/V2_DEPLOYMENT.md). The versioned deployment manifest explicitly records undeployed status.
+
+Development uses Node 24 and recursively checked-out, pinned Foundry/OpenZeppelin submodules. V2 local tests run with forge test --no-match-contract '.*Fork.*'; private-RPC fork tests require process-only environment configuration. Never add the paid endpoint to a browser bundle or repository file.

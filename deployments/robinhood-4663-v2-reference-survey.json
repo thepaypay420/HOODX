@@ -1,0 +1,591 @@
+{
+  "chainId": 4663,
+  "block": 67588771,
+  "window": 1800,
+  "assets": [
+    {
+      "vault": "696X",
+      "token": "0x39dbed3a2bd333467115de45665cc57f813c4571",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0x0f5f5bcc08cae61d19c9a2d2594c252f1baddae6",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x6693cf7e87a7039e36fa5f3c0d7e06818d259468",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "323649123866401181086",
+          "history1800": false
+        },
+        {
+          "pool": "0xed50bdeea8adc232f159486192a4157281d722ff",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "384991285450127454920065",
+          "history1800": true
+        },
+        {
+          "pool": "0x10cc6bd38112cac182db90b6a71d8bb5939526ba",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "225412381508892348481889",
+          "history1800": true
+        },
+        {
+          "pool": "0x0652d61511f3a96b8721be6825680f5954d9baf3",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "21061685216396740",
+          "history1800": false
+        },
+        {
+          "pool": "0x7a192e71564ec66ee0763e328a3ac274942de4e1",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "6688781599655114702",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xe962c23fc78e5809891f487b109c81ccba338702",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xd78480cafef722d75519e13b9f516e5704d0d659",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "27424469715147173102322",
+          "history1800": true
+        },
+        {
+          "pool": "0xc4a21f9d6485fc5893dd4a491b320a83daf4da1d",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "238021817448750094406909",
+          "history1800": true
+        },
+        {
+          "pool": "0x3a290b420553b8bf9912355e00d8dc015dbc6c30",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xe547c18f46db55ab788343bcc503f9cf0bd7d564",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "212084606709895230",
+          "history1800": false
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0x7026ae07fb1f7883bd2160b06559894895c42acc",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xa3103a9b16d17ba6601a7cca4954bc9abed5593c",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xd42a491087a15e5afd51feb3606066cc152d2b09",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "264793048271043251935494",
+          "history1800": true
+        },
+        {
+          "pool": "0xa70fc67c9f69da90b63a0e4c05d229954574e313",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "306372891086453019852858",
+          "history1800": true
+        },
+        {
+          "pool": "0xf3a57982092bd57d791b49072cfa84d20686e6ba",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x525dd86ccff2a5265429971ed42bea6d15ffd271",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x4b0c312ffbb068f6a0bea128759e35d94b94d0e1",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "1472223025098714030",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xe2c12a7379706a291cadaaec1d22458be2f7239d",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "28007936913806984509505",
+          "history1800": true
+        },
+        {
+          "pool": "0x97bcdd384fc144899545deb749b6daf2aa52a2c5",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "32458671104065900393646",
+          "history1800": true
+        },
+        {
+          "pool": "0x5d37b1d887b502594414a82d2cf7d4ef774a8027",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "173066528001993175",
+          "history1800": true
+        },
+        {
+          "pool": "0x538557cb827c97b28f0733b097e8d5bce5f2d263",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "13320436736167371",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xc9626616efb4e4644de5ed863c8f92ab87aa0385",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x36ab2f1b987f4777724c6ef7bfd816660537719b",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xb89ff110b548314105fb2ab29cd5aca040bee57f",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xd29893ffac8b29ec4db2cfe0cdb3fe1377c028ff",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "207131738018191547566476",
+          "history1800": true
+        },
+        {
+          "pool": "0xb89de909ae9fdf14592c868ad532c4ca3d100222",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "233318983376183794",
+          "history1800": false
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+      "executionV4": true,
+      "references": [
+        {
+          "pool": "0xa9d49caa5e906558dacdc66d563ac78f0c26d4ef",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "28011498580701086666622",
+          "history1800": true
+        },
+        {
+          "pool": "0x9cd74d5980a4bf60408b9ba2b0f6a3d368ebf594",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "67893211341221083233322",
+          "history1800": true
+        },
+        {
+          "pool": "0x8b1d1996f65178d9697224c570a09c51caf79bfc",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "34773970755784248",
+          "history1800": false
+        },
+        {
+          "pool": "0xffd4009bd06e9946a615df0361fb4627005f3456",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0xe8ffd7e24187f72afb08d75b1bb13088a989a791",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xd64fbda67e1015df43fa5e49f02ca844729e5f94",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "211794299407581711127313",
+          "history1800": true
+        },
+        {
+          "pool": "0xd46cc5dc760ced6d4fde9a3ab5b7633db3e918bc",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x57c0e45cb534413d1c20a4240955d6bb250bb4f1",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0x0d9da71e712ee0b57c3faeb1a32f2beb82b36c5d",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x4ef94cd1ab45ebbb50f9e73cd6e45c5027caa3f7",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "3823046488745222676626",
+          "history1800": true
+        },
+        {
+          "pool": "0xb51d3b81eb40f233919af58bf8bca4a57e07192b",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "15993487405606922",
+          "history1800": false
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+      "executionV4": true,
+      "references": [
+        {
+          "pool": "0xd8b750f564321ce68b4b3d8498616da96fad798d",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x42b19e5e3f28c4148c518444546f102f6ba87ab1",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "21668704033879213909138",
+          "history1800": true
+        },
+        {
+          "pool": "0xd75a3f0ce28c54ccfdbf0a1c54d5297750bd97e6",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "157816510080547562",
+          "history1800": false
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "696X",
+      "token": "0x0762c1708f0d23f86b29d6b857121ff7df357506",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0x6d489e07d7fe2b4bc5749f75d56337888b68a34a",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "56807051500542040036115",
+          "history1800": true
+        },
+        {
+          "pool": "0x6aaf49e4fde6d899d4914d398af115e524888522",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "FAANGX",
+      "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xa4bdb396a69617eb7f70e2cc1ef526f7340b1b0d",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "5548277954459144658559",
+          "history1800": true
+        },
+        {
+          "pool": "0xad6df50832884f3498cd354086cefb0e39070f1b",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x107a7cb40d8665360ba10e59471af06150a50922",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "190485399923604715",
+          "history1800": true
+        },
+        {
+          "pool": "0x6fd62e9843ad2ac2c4fbf2b62647953ea29b3537",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "376879933379092",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "FAANGX",
+      "token": "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
+      "executionV4": true,
+      "references": [
+        {
+          "pool": "0x8b2a73a8234cfc12b8b53ae048d0ddf76bfac37c",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x2232a2d6382bffdf18d4cd434b45d11a6b1c24ce",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x7b242dfa849419242e3733308d5c91fe2a7dae7e",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0xa99dea8d168392abb4aed0419629309dac7dbfbb",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x8ac92da74ab5f3b1d024dc1943ad7e15dc4179ef",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "2482926905107333733",
+          "history1800": true
+        },
+        {
+          "pool": "0x25967b7ca2d06aa46e47e188231ca78c87ef1fd7",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "FAANGX",
+      "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0xe4d4ba605b042054bd8815d515d98ddf46232622",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x8bb3514e2204e1cdf3ac149efee7ff04d91b719f",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "3067362518725527953545",
+          "history1800": true
+        },
+        {
+          "pool": "0xaae0d815ee56e4092a5e5c2911e676fea50b2d6d",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 500,
+          "liquidity": "2238109921643756927",
+          "history1800": true
+        },
+        {
+          "pool": "0x783c9bbb765047cfdd2b84b92b2ca9f11d34b7ed",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "96865408752807148",
+          "history1800": true
+        },
+        {
+          "pool": "0x3714aa8105de1f384481b425788af413748c1837",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "172161551175904",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "FAANGX",
+      "token": "0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8",
+      "executionV4": true,
+      "references": [
+        {
+          "pool": "0xa7e6d6cdb4e1f1af8fceed9b443039b05637162e",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 3000,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x59895c0302f41aeaa129d2fa2442cec01e7ef45e",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "333190485087353657",
+          "history1800": true
+        },
+        {
+          "pool": "0xea75ea625d83ae276b9ae8b0a3dc205916ee65cf",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "18828519820604292",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    },
+    {
+      "vault": "FAANGX",
+      "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+      "executionV4": false,
+      "references": [
+        {
+          "pool": "0x8fb9301586f27e2cff85312f7c1d0f16c6167cde",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 100,
+          "liquidity": "23975882059468148600",
+          "history1800": true
+        },
+        {
+          "pool": "0x778f2a0cf24e8d12fe3730c87fe1448d47e66add",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 500,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x8c2b4303fa0b99d07a5d3e9411497a277e65b673",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "12454208086992014140109",
+          "history1800": true
+        },
+        {
+          "pool": "0xa3617bb4d7dc9dd20f79165486097a54b3593164",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 100,
+          "liquidity": "0",
+          "history1800": true
+        },
+        {
+          "pool": "0x34d0dc122cf9a8eb296fc5e0d3a233625d7d19b7",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 500,
+          "liquidity": "1824688450203676355",
+          "history1800": true
+        },
+        {
+          "pool": "0x553e9a453425cd9b90919f317061fbc3794cc57a",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 3000,
+          "liquidity": "4944349550014296",
+          "history1800": true
+        },
+        {
+          "pool": "0xb2bb17fa1905bcc1558b5aaec894faab666b323a",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "0",
+          "history1800": true
+        }
+      ],
+      "hasCandidate": true
+    }
+  ],
+  "releaseApproved": false,
+  "limitation": "Candidate availability only; not manipulation-resistance or economic-depth approval."
+}

@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { zeroAddress, type Address } from "viem";
+import { parseAbi, parseEther, type Address } from "viem";
 import { TokenArt } from "@/components/TokenArt";
 import { AddName } from "@/components/AddName";
-import { factoryAbi } from "@/lib/abi";
-import { INDEX_CATALOG, poolRef, tier, type Coin } from "@/lib/catalog";
+import { productionV2Factory, productionV2Treasury, verifiedV2Vaults, v2FactoryAbi } from "@/lib/v2";
+import { INDEX_CATALOG, tier, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
-import { CREATOR_FEE_BPS, FACTORY, PROTOCOL_FEE_BPS } from "@/lib/config";
+import { CREATOR_FEE_BPS, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
 import { lookupIndexCoin } from "@/lib/lookup";
 import { saveDraft, savePayout } from "@/lib/packs";
@@ -31,7 +31,7 @@ export function Forge() {
   const [imageSrc, setImageSrc] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [extra, setExtra] = useState<Coin[]>([]);
-  const live = isAddress(FACTORY);
+  const live = isAddress(productionV2Factory);
   const slugOk = okUserSlug(slug);
   const ready = picked.length >= 2 && name.trim().length >= 2 && symbol.length >= 2 && slugOk;
 
@@ -70,18 +70,30 @@ export function Forge() {
         coins.push(await lookupIndexCoin(t));
       }
       const tokens = coins.map((c) => c.token as Address);
-      const pools = coins.map((c) => poolRef(c));
-      const recipient = payout && isAddress(payout) ? (payout as Address) : zeroAddress;
+      const recipient = payout && isAddress(payout) ? (payout as Address) : address;
       const onChainImage = walletImageUri(imageUrl) || "";
-      const hash = await walletClient.writeContract({
+      if (chainId !== robinhood.id) throw new Error("Switch your wallet to Robinhood Chain.");
+      if (new TextEncoder().encode(onChainImage).length > 256) throw new Error("Use an HTTPS or IPFS image URL of at most 256 bytes.");
+      const configAbi = parseAbi(["function configId(address) view returns (bytes32)"]);
+      const configs = await Promise.all(tokens.map(async token => {
+        for (const vault of Object.values(verifiedV2Vaults)) {
+          const id = await publicClient.readContract({ address: vault, abi: configAbi, functionName: "configId", args: [token] });
+          if (id !== `0x${"0".repeat(64)}`) return id;
+        }
+        throw new Error("A selected asset does not yet have an approved V2 route. Choose an asset from the official baskets.");
+      }));
+      const weights = tokens.map((_, i) => Math.floor(7500 / tokens.length) + (i < 7500 % tokens.length ? 1 : 0));
+      const { request } = await publicClient.simulateContract({
         account: address,
-        address: FACTORY as Address,
-        abi: factoryAbi,
+        address: productionV2Factory,
+        abi: v2FactoryAbi,
         functionName: "create",
-        args: [name.trim(), symbol, slug, tokens, pools, feeBps, recipient, onChainImage],
+        args: [slug, { curator: address, creator: address, recipient, treasury: productionV2Treasury, name: name.trim(), symbol, creatorFee: feeBps, protocolFee: 10, cashBps: 2500, firstDeposit: parseEther("0.02"), imageURI: onChainImage }, configs, weights],
         chain: robinhood,
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      const hash = await walletClient.writeContract(request);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status !== "success") throw new Error("Index creation reverted.");
       router.push(`/i/${slug}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message.slice(0, 220) : "mint failed");
@@ -108,8 +120,8 @@ export function Forge() {
         </h2>
         <p className="mt-3 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
           Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on each join;
-          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Thin or hooked pools are skipped
-          automatically — you just launch.
+          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Only assets with approved V2 routes can be used. The basket holds 25% cash, with the rest split equally. Routes are checked
+          before you sign.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">

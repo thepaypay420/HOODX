@@ -1,0 +1,42 @@
+name: V2 checks
+on:
+  pull_request:
+  push:
+    branches: [codex/hoodx-v2-hardening]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  solidity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
+        with:
+          version: v1.8.3
+          cache: false
+      - run: forge fmt --check contracts/v2 test/v2 script
+      - run: forge build --sizes
+      - run: forge test --no-match-contract '.*Fork.*'
+      - run: python3 -m unittest discover -s tests
+        env:
+          PYTHONUTF8: "1"
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --audit-level=moderate
+# Paid RPC fork tests run in the controlled local environment.
+# No wallet, keystore, RPC secret or broadcast capability is available to these jobs.
