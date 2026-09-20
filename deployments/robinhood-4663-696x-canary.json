@@ -1,6 +1,6 @@
 {
   "chainId": 4663,
-  "status": "final-withdrawal-blocked-by-protected-minimum",
+  "status": "696x-complete-confirmed-awaiting-chain-finality",
   "factory": "0x531b632463050e55db60f0025085ffbb2326ff64",
   "vault": "0xbef9108f551e95a281d1d82f05db71a0f172d0f5",
   "buildFingerprint": "0xe7388911d0a7cb3c1fef4b8555d060a05782b7ada1dd18e5494ba3857bbc9138",
@@ -76,9 +76,16 @@
       "action": "partial",
       "returnedETHWei": "39043185380692482",
       "verified": true
+    },
+    {
+      "action": "final",
+      "hash": "0xcebb280318a1fd297611fdd702be8ee73ccf5c7da3aae9d3e2cd3280a45abb47",
+      "verified": true,
+      "returnedETHWei": "38785873017901580",
+      "block": 67720910
     }
   ],
-  "remainingShares": "981470164506359394",
+  "remainingShares": "0",
   "finalWithdrawalBlocker": {
     "status": "final-withdrawal-blocked-by-protected-minimum",
     "chainId": 4663,
@@ -102,6 +109,13 @@
     "assessment": "Route swaps successfully in replay, but current output is below the 97% TWAP floor; consistent with price/liquidity movement, not demonstrated structural routing failure.",
     "canaryComplete": false,
     "faangxStarted": false,
-    "productionApproved": false
-  }
+    "productionApproved": false,
+    "resolved": true,
+    "resolution": "Fresh protected simulation passed; final withdrawal confirmed and vault verified empty."
+  },
+  "canary696xPassed": true,
+  "allReceiptsFinalized": false,
+  "deployerETHWei": "110433355040285673",
+  "returnedCapitalWei": "78615878224379806",
+  "transactionCount": 51
 }
