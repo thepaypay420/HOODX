@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import {Script} from "forge-std/Script.sol";
 import {VmSafe} from "forge-std/Vm.sol";
-import {v2BuildFingerprint} from "./V2Build.sol";
+import {VerifiedCanaryV2} from "./VerifiedCanaryV2.sol";
 import {HoodxOfficialFactoryV2} from "../contracts/v2/HoodxBootstrapV2.sol";
 import {HoodxIndexV2} from "../contracts/v2/HoodxIndexV2.sol";
 import {IV2Oracle, IV2Weth} from "../contracts/v2/Types.sol";
@@ -19,12 +19,13 @@ contract CanaryStepV2 is Script {
         require(block.chainid == 4663, "wrong chain");
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
-            require(vm.envBytes32("HOODX_REVIEWED_BUILD") == v2BuildFingerprint(), "build mismatch");
+            require(vm.envBytes32("HOODX_REVIEWED_BUILD") == VerifiedCanaryV2.BUILD, "build mismatch");
         }
         string memory basket = vm.envString("HOODX_CANARY_BASKET");
         bytes32 name = keccak256(bytes(basket));
         require(name == keccak256("696x") || name == keccak256("faangx"), "unknown basket");
         HoodxOfficialFactoryV2 factory = HoodxOfficialFactoryV2(vm.envAddress("HOODX_CANARY_FACTORY"));
+        VerifiedCanaryV2.verify(address(factory));
         require(factory.owner() == CURATOR, "factory owner");
         HoodxIndexV2 v = HoodxIndexV2(payable(factory.bySlug(basket)));
         require(
