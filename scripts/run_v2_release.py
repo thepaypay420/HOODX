@@ -28,7 +28,7 @@ def main():
         args=[os.environ.get("HOODX_FORGE","forge"),"script",f"script/{target}.s.sol:{target}","--rpc-url",url,"--sender","0xf63E63a80A25611154C5d1c06E55FD763E0cfC19","--disable-external-identification"]
         if a.broadcast:
             args+=["--broadcast","--slow","--account","hoodx-deployer-v2"]
-            if os.environ.get("HOODX_CANARY_ONLY")=="1":
+            if os.environ.get("HOODX_CANARY_ONLY")=="1" or a.stage=="production":
                 args += ["--with-gas-price","0.26gwei"]
             print("Signing with encrypted account hoodx-deployer-v2. Enter the password only at Foundry's hidden terminal prompt.",flush=True)
         else:args+=["--non-interactive"]
