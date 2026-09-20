@@ -6,6 +6,8 @@ import {HoodxTwapV2} from "../../contracts/v2/HoodxTwapV2.sol";
 import {HoodxSeededPolicyV2, HoodxOfficialFactoryV2} from "../../contracts/v2/HoodxBootstrapV2.sol";
 import {HoodxIndexV2} from "../../contracts/v2/HoodxIndexV2.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IV2Oracle, IV2Weth} from "../../contracts/v2/Types.sol";
 import {IUniV3Pool} from "../../contracts/UniTwap.sol";
 
 interface ILegacySettingsV2 {
@@ -14,10 +16,17 @@ interface ILegacySettingsV2 {
 }
 
 contract OfficialVaultForkV2Test is RouterForkV2Test {
+    using SafeERC20 for IERC20;
+    bool exerciseEmergency;
     address constant CURATOR = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
 
     function testForkOfficialFullStackExitSafety() public {
         _runOfficial(false);
+    }
+
+    function testForkOfficialPausedEmergencyAndNormalCanary() public {
+        exerciseEmergency = true;
+        _runOfficial(true);
     }
 
     function testForkOfficialNormalExitAtRecordedStableBlock() public {
@@ -125,6 +134,34 @@ contract OfficialVaultForkV2Test is RouterForkV2Test {
             if (v.targetBps(ts[i]) > 0) assertGt(IERC20(ts[i]).balanceOf(address(v)), 0, "intended buy deferred");
         }
         assertGt(v.totalAssets(), capital * 95 / 100);
+        if (exerciseEmergency) {
+            vm.prank(CURATOR);
+            v.setPaused(true);
+            vm.expectRevert();
+            v.deposit{value: capital}(1, block.timestamp);
+            uint256 curatorEth = CURATOR.balance;
+            uint256 curatorWeth = IERC20(W).balanceOf(CURATOR);
+            (, address oracle,,) = v.policy().config(v.configId(ts[0]));
+            uint256 unwind = IERC20(ts[0]).balanceOf(address(v)) / 100;
+            uint256 floor = IV2Oracle(oracle).value(ts[0], unwind) * 97 / 100;
+            vm.prank(CURATOR);
+            v.emergencyUnwind(ts[0], unwind, floor, block.timestamp);
+            assertEq(CURATOR.balance, curatorEth);
+            assertEq(IERC20(W).balanceOf(CURATOR), curatorWeth);
+            v.emergencyRedeemInKind(shares / 100, address(this));
+            for (uint256 i; i < ts.length; ++i) {
+                assertEq(v.claimable(address(this), ts[i]), 0);
+                uint256 amount = IERC20(ts[i]).balanceOf(address(this));
+                if (amount == 0) continue;
+                (, address ref,, bytes memory sell) = v.policy().config(v.configId(ts[i]));
+                IERC20(ts[i]).forceApprove(address(ex), amount);
+                ex.execute(ts[i], W, amount, IV2Oracle(ref).value(ts[i], amount) * 97 / 100, sell, block.timestamp);
+                IERC20(ts[i]).forceApprove(address(ex), 0);
+                assertEq(IERC20(ts[i]).balanceOf(address(this)), 0);
+            }
+            IV2Weth(W).withdraw(IERC20(W).balanceOf(address(this)));
+            shares = v.balanceOf(address(this));
+        }
         bool normal = true;
         gasStart = gasleft();
         try v.withdraw(shares / 2, capital * 45 / 100, block.timestamp) {
