@@ -9,6 +9,11 @@ def main():
     a=p.parse_args()
     if a.stage=="production" and os.environ.get("HOODX_CANARY_ONLY")=="1":
         raise SystemExit("Production is disabled for this canary-only session.")
+    if os.environ.get("HOODX_696X_ONLY")=="1":
+        if a.stage not in ("canary-deploy", "canary-step"):
+            raise SystemExit("Only stepwise 696X canary execution is enabled.")
+        if a.stage=="canary-step" and os.environ.get("HOODX_CANARY_BASKET")!="696x":
+            raise SystemExit("FAANGX is disabled until 696X is recovered and verified.")
     if a.broadcast and os.environ.get("HOODX_LIVE_BROADCAST")!="1":
         raise SystemExit("HOODX_LIVE_BROADCAST=1 is required. Nothing was broadcast.")
     endpoint=os.environ.get("ROBINHOOD_RPC_URL")
