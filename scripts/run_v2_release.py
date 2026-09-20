@@ -25,7 +25,7 @@ def main():
     if a.broadcast and a.stage!="recover"and not env.get("HOODX_REVIEWED_BUILD"):
         raise SystemExit("Reviewed build fingerprint is missing. Nothing was broadcast.")
     with local_rpc(endpoint)as url:
-        args=[os.environ.get("HOODX_FORGE","forge"),"script",f"script/{target}.s.sol:{target}","--rpc-url",url,"--sender","0xf63E63a80A25611154C5d1c06E55FD763E0cfC19"]
+        args=[os.environ.get("HOODX_FORGE","forge"),"script",f"script/{target}.s.sol:{target}","--rpc-url",url,"--sender","0xf63E63a80A25611154C5d1c06E55FD763E0cfC19","--disable-external-identification"]
         if a.broadcast:
             args+=["--broadcast","--slow","--account","hoodx-deployer-v2"]
             if os.environ.get("HOODX_CANARY_ONLY")=="1":
