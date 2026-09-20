@@ -44,6 +44,12 @@ contract CanaryStepV2 is Script {
             vm.startBroadcast(DEPLOYER);
             v.deposit{value: capital}(floor, deadline);
             vm.stopBroadcast();
+            address[] memory bought = v.constituents();
+            for (uint256 i; i < bought.length; ++i) {
+                if (v.targetBps(bought[i]) > 0) {
+                    require(IERC20(bought[i]).balanceOf(address(v)) > 0, "intended buy deferred");
+                }
+            }
         } else if (action == keccak256("partial") || action == keccak256("final")) {
             require(expected > 0, "no shares");
             uint256 amount = action == keccak256("partial") ? expected / 2 : expected;
