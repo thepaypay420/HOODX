@@ -92,7 +92,9 @@ contract HoodxExecutorV2 is ReentrancyGuard {
             V2Hop memory h = hops[i];
             if (normalized(h.tokenIn) != next || normalized(h.tokenOut) == next) revert InvalidRoute();
             if (h.kind == 3) {
-                if (h.tokenIn == address(0) || h.tokenOut == address(0) || h.hookData.length != 0) revert InvalidRoute();
+                if (h.tokenIn == address(0) || h.tokenOut == address(0) || h.hookData.length != 0) {
+                    revert InvalidRoute();
+                }
                 address pool = IV3FactoryV2(v3Factory).getPool(h.tokenIn, h.tokenOut, h.fee);
                 if (pool.code.length == 0 || ILiquidityV2(pool).liquidity() == 0) revert InvalidRoute();
             } else if (h.kind == 4) {
@@ -179,15 +181,13 @@ contract HoodxExecutorV2 is ReentrancyGuard {
         if (h.kind == 3) {
             uint256[] memory prices = new uint256[](1);
             prices[0] = h.minHopPriceX36;
-            inputs[0] =
-                abi.encode(
+            inputs[0] = abi.encode(
                 address(this), amount, uint256(1), abi.encodePacked(h.tokenIn, h.fee, h.tokenOut), true, prices
             );
             command = hex"00";
         } else {
             bytes[] memory params = new bytes[](3);
-            params[0] =
-                abi.encode(
+            params[0] = abi.encode(
                 V4ExactIn(h.key, h.tokenIn == h.key.currency0, uint128(amount), 1, h.minHopPriceX36, h.hookData)
             );
             params[1] = abi.encode(h.tokenIn, amount);
@@ -204,7 +204,11 @@ contract HoodxExecutorV2 is ReentrancyGuard {
         if (beforeIn - IERC20(input).balanceOf(address(this)) != amount) revert Residual();
         got = IERC20(output).balanceOf(address(this)) - beforeOut;
         if (got == 0 || address(this).balance != nativeBefore) revert Residual();
-        if ((h.tokenIn == address(0) ? router.balance : IERC20(h.tokenIn).balanceOf(router)) != routerIn) revert Residual();
-        if ((h.tokenOut == address(0) ? router.balance : IERC20(h.tokenOut).balanceOf(router)) != routerOut) revert Residual();
+        if ((h.tokenIn == address(0) ? router.balance : IERC20(h.tokenIn).balanceOf(router)) != routerIn) {
+            revert Residual();
+        }
+        if ((h.tokenOut == address(0) ? router.balance : IERC20(h.tokenOut).balanceOf(router)) != routerOut) {
+            revert Residual();
+        }
     }
 }

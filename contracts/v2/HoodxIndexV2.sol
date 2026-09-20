@@ -81,7 +81,9 @@ contract HoodxIndexV2 is ERC20, Ownable2Step, ReentrancyGuard {
     }
 
     function initialize(Init calldata p, bytes32[] calldata configs, uint16[] calldata weights) external {
-        if (initialized || configs.length < 2 || configs.length > 24 || configs.length != weights.length) revert Invalid();
+        if (initialized || configs.length < 2 || configs.length > 24 || configs.length != weights.length) {
+            revert Invalid();
+        }
         initialized = true;
         if (
             !_role(p.curator) || !_role(p.creator) || !_role(p.recipient) || !_role(p.treasury)
@@ -252,7 +254,9 @@ contract HoodxIndexV2 is ERC20, Ownable2Step, ReentrancyGuard {
     }
 
     function withdraw(uint256 shares, uint256 minEthOut, uint256 deadline) external nonReentrant returns (uint256 net) {
-        if (shares == 0 || shares > balanceOf(msg.sender) || minEthOut == 0 || deadline < block.timestamp) revert Invalid();
+        if (shares == 0 || shares > balanceOf(msg.sender) || minEthOut == 0 || deadline < block.timestamp) {
+            revert Invalid();
+        }
         uint256 supply = totalSupply();
         uint256 cash = Math.mulDiv(freeBalance(weth), shares, supply);
         uint256 nativeTake = Math.mulDiv(freeBalance(address(0)), shares, supply);
@@ -384,7 +388,9 @@ contract HoodxIndexV2 is ERC20, Ownable2Step, ReentrancyGuard {
 
     function _add(bytes32 id) private {
         (address t, address oracle, bytes memory buy, bytes memory sell) = policy.config(id);
-        if (tokens.length >= 24 || t == weth || t == address(0) || t == address(this) || configId[t] != 0) revert Invalid();
+        if (tokens.length >= 24 || t == weth || t == address(0) || t == address(this) || configId[t] != 0) {
+            revert Invalid();
+        }
         executor.validateRoute(buy, weth, t);
         executor.validateRoute(sell, t, weth);
         if (IV2Oracle(oracle).value(t, 1e18) == 0) revert Invalid();

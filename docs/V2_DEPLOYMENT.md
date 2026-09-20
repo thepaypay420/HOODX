@@ -23,6 +23,8 @@ CanaryV2.s.sol strictly requires all targeted buys and normal partial/final ETH 
 
 ## Draft funding evidence
 
+The historical estimate below is superseded by the itemized release funding envelope in V2_RELEASE_VALIDATION.md. Use V2_CANARY_RECEIPTS.md for the required actual-receipt checks; an empty canary alone is not proof that its normal cycles passed.
+
 One complete stack simulation at block 67596687:
 - Estimated gas including Forge estimation multiplier: 49,200,088.
 - Estimated maximum fee: 0.130900001 gwei.

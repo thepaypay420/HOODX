@@ -40,6 +40,8 @@ contract HoodxOfficialFactoryV2 is HoodxFactoryV2 {
     }
 
     function _officialRoles(HoodxIndexV2.Init memory p, address admin, address treasury_) private pure {
-        if (p.curator != admin || p.creator != admin || p.recipient != admin || p.treasury != treasury_) revert Invalid();
+        if (p.curator != admin || p.creator != admin || p.recipient != admin || p.treasury != treasury_) {
+            revert Invalid();
+        }
     }
 }
