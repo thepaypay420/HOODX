@@ -5,6 +5,7 @@ import { BaseError, erc20Abi, formatEther, parseEther, parseUnits, zeroAddress, 
 import { robinhood } from "@/lib/chain";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { preflightV2Routes } from "@/lib/v2Preflight";
+import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
 
 type Snapshot = { account: Address; vault: Address; owner: Address; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
@@ -103,37 +104,41 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       setMessage(error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : "Transaction failed.");
     } finally { setBusy(false); }
   }
-  const button = "rounded-lg border border-white/20 px-4 py-3 disabled:opacity-40";
-  return <section className="space-y-5 rounded-2xl border border-white/15 bg-black/50 p-6">
-    <h1 className="text-2xl">{slug.toUpperCase()} · V2</h1>
-    <p className="break-all text-xs">{vault}</p>
+  const button = "vault-button";
+  return <section className="vault-dashboard">
+    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets} supply={snap?.supply} paused={snap?.paused} connected={!!address} />
+    <div className="vault-actions desk">
+    <div className="vault-section-heading"><div><p className="vault-eyebrow">YOUR POSITION</p><h2>Make your next move.</h2></div><span className="vault-tag">{slug.toUpperCase()}</span></div>
+
     {!address ? <button className={button} onClick={() => void connect()}>Connect wallet</button> : chainId !== robinhood.id ? <button className={button} onClick={() => void switchToRobinhood()}>Switch to Robinhood Chain</button> : null}
     {snap && <>
-      <p>Your shares: {formatEther(snap.shares)}</p>
-      <p>{snap.assets === undefined ? "Pricing is unavailable. Direct asset redemption remains available." : `Vault value: ${formatEther(snap.assets)} ETH`}</p>
+
+      {snap.assets === undefined && <p className="vault-notice">Pricing is unavailable. Direct asset redemption remains available.</p>}
       {snap.paused && <p>Deposits are paused. You can still withdraw.</p>}
       {address?.toLowerCase() === snap.owner.toLowerCase() && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}
-      {address?.toLowerCase() === snap.owner.toLowerCase() && snap.paused && <div className="space-y-2 border border-white/20 p-4">
+      {address?.toLowerCase() === snap.owner.toLowerCase() && snap.paused && <div className="vault-recovery">
         <h2>Curator emergency unwind</h2>
         <p>Sell a constituent into WETH kept inside the vault. This does not send shareholder assets to your wallet. Oracle and output protections still apply.</p>
         <label className="block">Constituent <select className="w-full bg-black" value={unwindToken ?? ""} onChange={e => setUnwindToken(e.target.value as Address)}><option value="">Select an asset</option>{snap.tokens.map(token => <option key={token} value={token}>{token}</option>)}</select></label>
-        <label className="block">Token amount <input className="bg-black" value={unwindAmount} onChange={e => setUnwindAmount(e.target.value)} inputMode="decimal" /></label>
-        <label className="block">Minimum WETH received by vault <input className="bg-black" value={unwindMinimum} onChange={e => setUnwindMinimum(e.target.value)} inputMode="decimal" /></label>
+        <label className="block">Token amount <input className="vault-input" value={unwindAmount} onChange={e => setUnwindAmount(e.target.value)} inputMode="decimal" /></label>
+        <label className="block">Minimum WETH received by vault <input className="vault-input" value={unwindMinimum} onChange={e => setUnwindMinimum(e.target.value)} inputMode="decimal" /></label>
         <button className={button} disabled={busy || !unwindToken || !unwindAmount || !unwindMinimum} onClick={() => void transact("unwind")}>Review emergency unwind</button>
       </div>}
-      <div className="space-y-2">
-        <label className="block">Deposit ETH <input aria-label="Deposit ETH" className="ml-2 bg-black p-2" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
+      <div className="vault-trade-grid"><div className="vault-trade-card">
+        <p className="vault-eyebrow">01 / JOIN THE BASKET</p><h3>Deposit</h3>
+        <label className="block">Deposit ETH <input aria-label="Deposit ETH" className="vault-input" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
         <p className="text-sm">Minimum deposit: {formatEther(snap.supply === 0n ? snap.firstMinimum : parseEther("0.02"))} ETH.</p>
         <p className="text-sm">Up to 1% fewer shares than the current preview. Your wallet shows the transaction before signing.</p>
         <button className={button} disabled={busy || !address || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>Deposit ETH</button>
       </div>
-      <div className="space-y-2">
-        <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="ml-2 bg-black p-2" value={minimum} onChange={e => setMinimum(e.target.value)} inputMode="decimal" /></label>
+      <div className="vault-trade-card">
+        <p className="vault-eyebrow">02 / TAKE YOUR SHARE</p><h3>Withdraw</h3>
+        <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} onChange={e => setMinimum(e.target.value)} inputMode="decimal" /></label>
         <p className="text-sm">Redeems the selected portion of your shares. If any required sale fails, the whole withdrawal reverts and your shares stay intact.</p>
         <button className={button} disabled={busy || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>
       </div>
-      <label className="block">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => setPercent(Number(e.target.value))} /></label>
-      <div className="space-y-2 border-t border-white/15 pt-4">
+      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => setPercent(Number(e.target.value))} /></label>
+      <div className="vault-recovery">
         <h2 className="text-lg">Receive assets directly</h2>
         <p>Redeem the selected portion of your shares for your proportional tokens and cash without selling through a router. This works while paused and does not need prices. Any token that cannot transfer remains separately claimable by you.</p>
         <button className={button} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("assets")}>Redeem {percent}% as tokens and cash</button>
@@ -148,6 +153,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       </div>}
     </>}
     <button className={button} disabled={busy} onClick={() => void read().catch(() => setMessage("Unable to refresh balances."))}>Refresh balances</button>
-    <p role="status" aria-live="polite">{message}</p>
+    <p className={message ? "vault-notice" : ""} role="status" aria-live="polite">{message}</p>
+    </div>
   </section>;
 }
