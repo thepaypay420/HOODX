@@ -1,6 +1,6 @@
 {
   "chainId": 4663,
-  "status": "696x-complete-confirmed-awaiting-chain-finality",
+  "status": "complete-finalized",
   "factory": "0x531b632463050e55db60f0025085ffbb2326ff64",
   "vault": "0xbef9108f551e95a281d1d82f05db71a0f172d0f5",
   "buildFingerprint": "0xe7388911d0a7cb3c1fef4b8555d060a05782b7ada1dd18e5494ba3857bbc9138",
@@ -114,7 +114,7 @@
     "resolution": "Fresh protected simulation passed; final withdrawal confirmed and vault verified empty."
   },
   "canary696xPassed": true,
-  "allReceiptsFinalized": false,
+  "allReceiptsFinalized": true,
   "deployerETHWei": "110433355040285673",
   "returnedCapitalWei": "78615878224379806",
   "transactionCount": 51
