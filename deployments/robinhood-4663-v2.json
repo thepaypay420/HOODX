@@ -52,7 +52,7 @@
       "0x46273a6bd0d82d65753e141aecc3aaca6e9729618fad9403bfc48004038b941e",
       "0x324ff132d0d4c00bcbafd6e9fd014b874e9e9aeb67b106cb0ea77f1a15774fe3"
     ],
-    "allReceiptsFinalized": false
+    "allReceiptsFinalized": true
   },
   "transactionHashes": [
     "0x1e8e92b1da10d099634cc30a785c707c4f8da63e81078f45f542e8822b265c16",
@@ -149,9 +149,14 @@
     "0x46273a6bd0d82d65753e141aecc3aaca6e9729618fad9403bfc48004038b941e",
     "0x324ff132d0d4c00bcbafd6e9fd014b874e9e9aeb67b106cb0ea77f1a15774fe3"
   ],
-  "sourceVerification": "Reviewed creation inputs and compiled runtime verified; explorer publication pending",
+  "sourceVerification": "Sourcify verified all 19 deployments: 15 exact matches and 4 executable matches with metadata differences; Blockscout forwarding unconfirmed",
   "frontendActivated": false,
   "broadcastsPerformed": 93,
   "deployerBroadcastsPerformed": 89,
-  "curatorBroadcastsPerformed": 4
+  "curatorBroadcastsPerformed": 4,
+  "frontendValidation": {
+    "unitTestsPassed": 20,
+    "productionBuildPassed": true,
+    "publication": "release branch pending preview; main unchanged"
+  }
 }

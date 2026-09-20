@@ -1,64 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { type Address } from "viem";
+
+
 import { TokenArt } from "@/components/TokenArt";
-import { factoryAbi, vaultAbi } from "@/lib/abi";
-import { FACTORY } from "@/lib/config";
-import { isAddress } from "@/lib/format";
-import { publicClient } from "@/lib/wallet";
+
+import { verifiedV2Vaults } from "@/lib/v2";
+
+
 
 type Row = { slug: string; vault: string; symbol: string };
 
 export function LiveIndexes() {
-  const [rows, setRows] = useState<Row[]>([]);
-
-  useEffect(() => {
-    if (!isAddress(FACTORY)) return;
-    let cancel = false;
-    (async () => {
-      const n = Number(
-        await publicClient.readContract({
-          address: FACTORY as Address,
-          abi: factoryAbi,
-          functionName: "indexCount",
-        }),
-      );
-      const out: Row[] = [];
-      for (let i = 0; i < n; i++) {
-        const vault = await publicClient.readContract({
-          address: FACTORY as Address,
-          abi: factoryAbi,
-          functionName: "indexAt",
-          args: [BigInt(i)],
-        });
-        const slug = await publicClient.readContract({
-          address: FACTORY as Address,
-          abi: factoryAbi,
-          functionName: "slugOf",
-          args: [vault],
-        });
-        let symbol = slug.toUpperCase();
-        try {
-          symbol = (await publicClient.readContract({
-            address: vault,
-            abi: vaultAbi,
-            functionName: "symbol",
-          })) as string;
-        } catch {
-          /* keep slug */
-        }
-        out.push({ slug, vault, symbol });
-      }
-      if (!cancel) setRows(out);
-    })().catch(() => {
-      if (!cancel) setRows([]);
-    });
-    return () => {
-      cancel = true;
-    };
-  }, []);
+  const rows: Row[] = Object.entries(verifiedV2Vaults).map(([slug, vault]) => ({ slug, vault, symbol: slug.toUpperCase() }));
 
   if (!rows.length) return null;
 
