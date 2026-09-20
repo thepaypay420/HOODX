@@ -36,11 +36,22 @@ def main():
             for location in locations:
                 start=location['start'];end=start+location['length']
                 want[start:end]=actual[start:end]=bytes(location['length'])
-        assert want==actual, 'runtime differs from reviewed compiler artifact'
+        metadata_from_reviewed=False
+        if want!=actual:
+            # Recompiling a different source graph can change the IPFS metadata hash.
+            # Never ignore executable differences: also require the complete normalized
+            # deployed runtime (including its exact metadata) in the preserved creation input.
+            want_meta=int.from_bytes(want[-2:],'big')+2
+            actual_meta=int.from_bytes(actual[-2:],'big')+2
+            assert want_meta==actual_meta and 2<want_meta<256, 'unexpected metadata layout'
+            assert want[:-want_meta]==actual[:-actual_meta], 'executable runtime differs'
+            assert actual.hex() in source['input'].lower(), 'runtime not embedded in reviewed creation'
+            metadata_from_reviewed=True
         records.append({'name':name,'address':r['contractAddress'],'hash':h,'blockNumber':int(r['blockNumber'],16),
                         'blockHash':r['blockHash'],'gasUsed':int(r['gasUsed'],16),
-                        'effectiveGasPrice':int(r['effectiveGasPrice'],16),'receipt':r})
-    report={'chainId':4663,'deploymentVerified':True,'runtimeComparison':'exact except compiler-declared immutable locations; constructor inputs matched exactly',
+                        'effectiveGasPrice':int(r['effectiveGasPrice'],16),
+                        'metadataProvenFromReviewedCreation':metadata_from_reviewed,'receipt':r})
+    report={'chainId':4663,'deploymentVerified':True,'runtimeComparison':'Executable bytes matched with compiler-declared immutable locations normalized; differing metadata proven exactly from preserved reviewed creation input; constructor inputs matched exactly',
             'finalityVerified':False,'canaryCyclesPassed':False,'productionApproved':False,'transactions':records,
             'gasCostWei':sum(x['gasUsed']*x['effectiveGasPrice'] for x in records)}
     Path(a.output).write_text(json.dumps(report,indent=2)+'\n')

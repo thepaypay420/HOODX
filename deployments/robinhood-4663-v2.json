@@ -1,7 +1,7 @@
 {
   "chainId": 4663,
   "version": 2,
-  "status": "development-candidate-not-deployed",
+  "status": "canary-deployed-696x-cycle-pending",
   "releaseApproved": false,
   "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
   "curator": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
@@ -9,10 +9,37 @@
   "treasury": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
   "finalSweepRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
   "routingManifest": "robinhood-4663-routing-v2.json",
-  "canary": null,
+  "canary": {
+    "normalCyclesPassed": false,
+    "buildFingerprint": "0xe7388911d0a7cb3c1fef4b8555d060a05782b7ada1dd18e5494ba3857bbc9138",
+    "vault696x": "0xbef9108f551e95a281d1d82f05db71a0f172d0f5",
+    "faangxCycleStarted": false,
+    "factory": "0x531b632463050e55db60f0025085ffbb2326ff64",
+    "vaultFaangx": "0x9882ee516c62b725abfe7257b3387dc7c771a50a"
+  },
   "production": null,
-  "transactionHashes": [],
-  "sourceVerification": "not-applicable-before-deployment",
+  "transactionHashes": [
+    "0x1e8e92b1da10d099634cc30a785c707c4f8da63e81078f45f542e8822b265c16",
+    "0xce355febdf02a443a3778caf75b3dc7af8da12ae33adea5d871086a18cce8ef4",
+    "0x02fc6142ac46cfb6ce4527ccf18a8ac4a5d6180b8cceba3b7a3a31c68243df3c",
+    "0xe38a4a9b013b1917fce5fbaf662c914b5dfd9ddec9d370d87736b84f9e7a587d",
+    "0x045ae4a0e5cb6c394249ae8f8a54a66d5c3246f7f41d0362ac496aad044cf87b",
+    "0xa364e148aa3bafe180646386eef13d600008858b00dc93dccaf2636ed631ed7c",
+    "0x031aa03c17d83b35ce1933d21ea908971cf8fae7b508c47358c8e87f8d6fe7b7",
+    "0x44aa677acaa6dc95450ed1f9a77b4b5da773b2713ac9f6b01933579e2f49ed86",
+    "0x9ded74d9c2b6698a3da7b3337b83852144dd075592153e9e3a13178987229d7f",
+    "0xa737c0c5c60467191c810110a0b08806155a59f78852769d5578d6650dbf2537",
+    "0x7da53fdf2c22508551112b724d6ba4e5d14fe2ebc9d12f24917d6d83870a9aa1",
+    "0xd8cf9dc99ee018edca98f2ddabf92cb0827e323087d47507d791a5d693e575a4",
+    "0x203fa53b49588557740dbeb25192ad37dbb6e81855c06be87dc6106b4d3d4b99",
+    "0x6cd5ea7b580ba2ec9708a864827978f73c4ff95f3f0738e6166b3c15bc9e5455",
+    "0x8f40ba21ea4ed36a26eb81a7db4f7ca3b97acb44eca70818eb861ccf8e0a9b5a",
+    "0x289d2dbc4212d0786b9f55c9311769cff5eccb3dda7de854a755fb452064b9df",
+    "0x73e20d5e42b25d5c22a699fdbb8418433435bbd0d3f7aaab97a5904b91d8ef37",
+    "0xd1b7df48bbab3c674a505d69e5e77335423ebfc17a18be6bf63e9a0d29a8b80b",
+    "0xb695dcd0c638c07a867f891fb89faa58f9759b07bd25a50dbfe86c5bcb6fa4a5"
+  ],
+  "sourceVerification": "reviewed creation inputs and executable runtimes verified; explorer verification pending",
   "frontendActivated": false,
-  "broadcastsPerformed": 0
+  "broadcastsPerformed": 19
 }
