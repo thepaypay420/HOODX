@@ -13,6 +13,6 @@ describe("holdings market data", () => {
   it("accepts only the image CDN and rejects arbitrary remote URLs", () => {
     const pair = { chainId: "robinhood", baseToken: { address: "a" } };
     for (const imageUrl of ["http://cdn.dexscreener.com/a", "https://evil.com/a", "https://cdn.dexscreener.com.evil.com/a", "https://user:pass@cdn.dexscreener.com/a"]) expect(selectMarket([{ ...pair, info: { imageUrl } }], "a").image).toBeNull();
-    expect(selectMarket([{ ...pair, info: { imageUrl: "https://cdn.dexscreener.com/a.png" } }], "a").image).toBe("https://cdn.dexscreener.com/a.png?width=96&height=96&format=png");
+    expect(selectMarket([{ ...pair, info: { imageUrl: "https://cdn.dexscreener.com/a.png" } }], "a").image).toBe("https://cdn.dexscreener.com/a.png");
   });
 });
