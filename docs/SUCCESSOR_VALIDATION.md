@@ -107,3 +107,46 @@ full current-state basket tests, UI integration and canaries. No live deployment
 
 The generic QUOTRON failures remain visible in their diagnostic suite; they are not
 hidden or relabeled as successful integration tests.
+
+## Source-liveness investigation at block 68903983
+
+QUOTRON's two WETH V3 references had observation ages of 2,168,562 and 2,181,035
+seconds (about 25 days). They still returned extrapolated TWAP values. Their spot
+ratios were approximately 0.8553 and 0.8410 WETH per raw token ratio, versus 1.7601
+in the active V4 pool. They must not be admitted merely because `observe` succeeds.
+
+`HoodxFreshTwapV3` adds a maximum observation age to a separately reviewed
+`HoodxTwapV2` reference and its bridge, retaining the underlying time-window and
+historical-depth checks. Eight local tests passed, including stale bridge/source,
+uint32 timestamp wrap, code replacement and propagation of underlying depth failure.
+The age limit cannot exceed the underlying TWAP window. Recent observations alone
+still do not prove economic price quality or actual trading activity.
+
+PRISM and ZEAL had recent V3 observations (39 and 10 seconds old), but each had
+current/next observation cardinality 1. Increasing capacity is a potential path to
+obtaining real history, not proof that the resulting oracle is safe. Separate V2
+cumulative-price diagnostics for PRISM and NET produced 30-minute candidates; those
+endpoint reads do not prove historical liquidity depth and are not approved feeds.
+
+### Prepared maintenance, not broadcast
+
+`prepared-price-history.json` contains two unsigned, zero-value calls to the canonical
+PRISM/WETH and ZEAL/WETH V3 pools to increase capacity to 128. At block 68907837:
+each estimate was 2,876,941 gas; combined estimated cost was 0.00029551937952 ETH.
+The proposed 20% gas margin and doubled fee cap give a combined budget of
+0.0007092466752 ETH. The designated curator wallet had sufficient balance at this
+check. All numbers require refresh before signing.
+
+A 2048-slot estimate exceeded the node's simulation gas allowance; its oversized
+fork run was stopped and is not counted as successful. The smaller 128-slot calls
+passed both estimates and fork tests. Capacity 128 does not guarantee 30-minute
+retention under every activity rate. Admission still requires actual successful
+30-minute observations, freshness, historical depth and price/execution agreement;
+the oracle window has not been shortened.
+
+At block 68908112 all three source tests passed: PRISM and ZEAL capacity expansion
+preserved spot price, observation index and active liquidity, and the new guard
+rejected QUOTRON's actual stale reference. Expanding capacity did not immediately
+make missing history available. The two live calls require separate user approval
+and wallet signatures. No production deployment, vault change or asset migration is
+part of these calls.

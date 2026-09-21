@@ -1,0 +1,41 @@
+{
+  "chainId": 4663,
+  "block": "68907837",
+  "account": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "capacity": 128,
+  "gasPriceWei": "51360000",
+  "balanceWei": "14724596945398772",
+  "transactions": [
+    {
+      "symbol": "PRISM",
+      "to": "0xF1D6b8eCAF2271233BED626FB1962BC0c39Cb1f3",
+      "data": "0x32148f670000000000000000000000000000000000000000000000000000000000000080",
+      "value": "0",
+      "currentCapacity": 1,
+      "currentCapacityNext": 1,
+      "estimatedGas": "2876941",
+      "proposedGasLimit": "3452330",
+      "proposedMaxFeePerGas": "102720000",
+      "estimatedCostEth": "0.00014775968976",
+      "budgetEth": "0.0003546233376"
+    },
+    {
+      "symbol": "ZEAL",
+      "to": "0xF1Bef60E5Cf6C00e7E1308d3710811dad71f4B6C",
+      "data": "0x32148f670000000000000000000000000000000000000000000000000000000000000080",
+      "value": "0",
+      "currentCapacity": 1,
+      "currentCapacityNext": 1,
+      "estimatedGas": "2876941",
+      "proposedGasLimit": "3452330",
+      "proposedMaxFeePerGas": "102720000",
+      "estimatedCostEth": "0.00014775968976",
+      "budgetEth": "0.0003546233376"
+    }
+  ],
+  "broadcast": false,
+  "requiresLiveRefresh": true,
+  "warning": "Increasing capacity does not create history. Wait for genuine observations and validate age, depth, price agreement and route behavior before use.",
+  "totalBudgetEth": "0.0007092466752",
+  "balanceSufficientAtCheck": true
+}
