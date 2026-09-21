@@ -116,7 +116,9 @@ contract HoodxExecutorV3 is ReentrancyGuard {
                 if (pair.code.length == 0 || IPairV3(pair).factory() != v2Factory) revert InvalidRoute();
                 address t0 = IPairV3(pair).token0();
                 address t1 = IPairV3(pair).token1();
-                if (!((t0 == h.tokenIn && t1 == h.tokenOut) || (t1 == h.tokenIn && t0 == h.tokenOut))) revert InvalidRoute();
+                if (!((t0 == h.tokenIn && t1 == h.tokenOut) || (t1 == h.tokenIn && t0 == h.tokenOut))) {
+                    revert InvalidRoute();
+                }
                 (uint112 r0, uint112 r1,) = IPairV3(pair).getReserves();
                 if (r0 == 0 || r1 == 0) revert InvalidRoute();
             } else if (h.kind == 3) {

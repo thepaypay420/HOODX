@@ -208,7 +208,7 @@ contract SuccessorV3Test is Test {
         h[0].tokenIn = address(u);
         h[0].tokenOut = address(w);
         ids[1] = policy.approveConfig(address(u), address(oracle), buy, abi.encode(h), bytes32(uint256(2)));
-        HoodxIndexV3 impl = new HoodxIndexV3(address(policy));
+        HoodxIndexV3 impl = new HoodxIndexV3(address(policy), address(0));
         HoodxFactoryV3 factory = new HoodxFactoryV3(address(this), address(0xbeef), address(impl));
         uint16[] memory weights = new uint16[](2);
         weights[0] = 3750;

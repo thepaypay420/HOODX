@@ -119,13 +119,12 @@ contract SuccessorWatchlistForkTest is Test {
         }
     }
 
-    function run(V2Hop memory assetHop) internal {
+    function run(V2Hop memory assetHop, uint256 amount) internal {
         address token = assetHop.tokenOut;
         bool needsBridge = assetHop.tokenIn != W && assetHop.tokenIn != address(0);
         V2Hop[] memory b = new V2Hop[](needsBridge ? 2 : 1);
         b[b.length - 1] = assetHop;
         if (needsBridge) b[0] = bridge(assetHop.tokenIn);
-        uint256 amount = 0.001 ether;
         uint256 expected = amount;
         for (uint256 i; i < b.length; i++) {
             expected = quote(b[i], expected);
@@ -153,16 +152,34 @@ contract SuccessorWatchlistForkTest is Test {
         if (needsBridge) assertEq(IERC20(assetHop.tokenIn).balanceOf(address(ex)), 0);
     }
 
-    function testPONS() public {
+    function testPONSSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"39dbed3a2bd333467115de45665cc57f813c4571"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 3000;
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testAI() public {
+    function testPONSMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"39dbed3a2bd333467115de45665cc57f813c4571"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 3000;
+        run(h, 0.001 ether);
+    }
+
+    function testPONSLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"39dbed3a2bd333467115de45665cc57f813c4571"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 3000;
+        run(h, 0.005 ether);
+    }
+
+    function testAISmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18"));
         h.kind = 4;
@@ -174,10 +191,40 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testCASHCAT() public {
+    function testAIMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            10000,
+            200,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testAILarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            10000,
+            200,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testCASHCATSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4"));
         h.kind = 4;
@@ -189,19 +236,67 @@ contract SuccessorWatchlistForkTest is Test {
             54,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testIndex() public {
+    function testCASHCATMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            2690,
+            54,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testCASHCATLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            2690,
+            54,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testIndexSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"56910d4409f3a0c78c64dd8d0545ff0705389870"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testMEME() public {
+    function testIndexMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"56910d4409f3a0c78c64dd8d0545ff0705389870"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.001 ether);
+    }
+
+    function testIndexLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"56910d4409f3a0c78c64dd8d0545ff0705389870"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.005 ether);
+    }
+
+    function testMEMESmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18"));
         h.kind = 4;
@@ -213,10 +308,40 @@ contract SuccessorWatchlistForkTest is Test {
             30,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testSTONKBROKER() public {
+    function testMEMEMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            2969,
+            30,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testMEMELarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18")),
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            2969,
+            30,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testSTONKBROKERSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50"));
         h.kind = 4;
@@ -228,10 +353,40 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testPRISM() public {
+    function testSTONKBROKERMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50")),
+            10000,
+            200,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testSTONKBROKERLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50")),
+            10000,
+            200,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testPRISMSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777"));
         h.kind = 4;
@@ -243,10 +398,40 @@ contract SuccessorWatchlistForkTest is Test {
             150,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testHOOKR() public {
+    function testPRISMMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777")),
+            15000,
+            150,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testPRISMLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777")),
+            15000,
+            150,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testHOOKRSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c"));
         h.kind = 4;
@@ -258,10 +443,40 @@ contract SuccessorWatchlistForkTest is Test {
             25,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testDELTA() public {
+    function testHOOKRMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c")),
+            2500,
+            25,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testHOOKRLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c")),
+            2500,
+            25,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testDELTASmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791"));
         h.kind = 4;
@@ -273,10 +488,40 @@ contract SuccessorWatchlistForkTest is Test {
             199,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testSHROOM() public {
+    function testDELTAMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791")),
+            19900,
+            199,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testDELTALarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791")),
+            19900,
+            199,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testSHROOMSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29"));
         h.kind = 4;
@@ -288,10 +533,40 @@ contract SuccessorWatchlistForkTest is Test {
             90,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testBOW() public {
+    function testSHROOMMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29")),
+            9000,
+            90,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testSHROOMLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
+            address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29")),
+            9000,
+            90,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testBOWSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751"));
         h.kind = 4;
@@ -303,19 +578,67 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testUP() public {
+    function testBOWMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c")),
+            address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testBOWLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c")),
+            address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testUPSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"57c0e45cb534413d1c20a4240955d6bb250bb4f1"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testQUOTRON() public {
+    function testUPMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"57c0e45cb534413d1c20a4240955d6bb250bb4f1"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.001 ether);
+    }
+
+    function testUPLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"57c0e45cb534413d1c20a4240955d6bb250bb4f1"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.005 ether);
+    }
+
+    function testQUOTRONSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
         h.kind = 4;
@@ -327,10 +650,40 @@ contract SuccessorWatchlistForkTest is Test {
             60,
             address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testNET() public {
+    function testQUOTRONMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0bd7d308f8e1639fab988df18a8011f41eacad73"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0bd7d308f8e1639fab988df18a8011f41eacad73")),
+            address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f")),
+            8388608,
+            60,
+            address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testQUOTRONLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0bd7d308f8e1639fab988df18a8011f41eacad73"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0bd7d308f8e1639fab988df18a8011f41eacad73")),
+            address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f")),
+            8388608,
+            60,
+            address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testNETSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf"));
         h.kind = 4;
@@ -342,10 +695,40 @@ contract SuccessorWatchlistForkTest is Test {
             85,
             address(bytes20(hex"0000000000000000000000000000000000000000"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testZEAL() public {
+    function testNETMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf")),
+            8500,
+            85,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testNETLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf")),
+            8500,
+            85,
+            address(bytes20(hex"0000000000000000000000000000000000000000"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testZEALSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc"));
         h.kind = 4;
@@ -357,19 +740,67 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testwebsite() public {
+    function testZEALMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testZEALLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testwebsiteSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testAria() public {
+    function testwebsiteMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.001 ether);
+    }
+
+    function testwebsiteLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 10000;
+        run(h, 0.005 ether);
+    }
+
+    function testAriaSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55"));
         h.kind = 4;
@@ -381,10 +812,40 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testHARMONIC() public {
+    function testAriaMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testAriaLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testHARMONICSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5"));
         h.kind = 4;
@@ -396,19 +857,67 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testQUOTIENT() public {
+    function testHARMONICMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testHARMONICLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"0000000000000000000000000000000000000000")),
+            address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.005 ether);
+    }
+
+    function testQUOTIENTSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 100;
-        run(h);
+        run(h, 0.0001 ether);
     }
 
-    function testPROMETHEUS() public {
+    function testQUOTIENTMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 100;
+        run(h, 0.001 ether);
+    }
+
+    function testQUOTIENTLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
+        h.kind = 3;
+        h.tokenIn = W;
+        h.fee = 100;
+        run(h, 0.005 ether);
+    }
+
+    function testPROMETHEUSSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261"));
         h.kind = 4;
@@ -420,6 +929,36 @@ contract SuccessorWatchlistForkTest is Test {
             200,
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
-        run(h);
+        run(h, 0.0001 ether);
+    }
+
+    function testPROMETHEUSMedium() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261")),
+            address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.001 ether);
+    }
+
+    function testPROMETHEUSLarge() public {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261"));
+        h.kind = 4;
+        h.tokenIn = address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea"));
+        h.key = V2PoolKey(
+            address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261")),
+            address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, 0.005 ether);
     }
 }

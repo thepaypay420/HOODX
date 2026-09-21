@@ -1,0 +1,80 @@
+{
+  "liveTransactionsBroadcast": false,
+  "existingVaultsChanged": false,
+  "build": [
+    {
+      "runtimeBytes": 21245,
+      "sourceSha256": "0c6d67b34e81043d18c8228dc434a44dc24c174d6c28d028101089a3c36f539d",
+      "contract": "HoodxIndexV3"
+    },
+    {
+      "runtimeBytes": 12074,
+      "sourceSha256": "33c02e1e6f43bc4ab5d2f4984bba1e0e194d5c77965b756518718390e3905235",
+      "contract": "HoodxExecutorV3"
+    },
+    {
+      "runtimeBytes": 9604,
+      "sourceSha256": "d725e03ddea0144bfa1237c73120d4200a4652b99567a1ed1fe094ba825d22ad",
+      "contract": "HoodxRoutingV3"
+    },
+    {
+      "runtimeBytes": 3843,
+      "sourceSha256": "14f811ab8e1827cd0accf9a7a7d0ee35463c6cdd529735e344198587044a0972",
+      "contract": "HoodxFeeModelV3"
+    },
+    {
+      "runtimeBytes": 1603,
+      "sourceSha256": "5132cdfa4d3bdb54cc9656f9b1bfbf16270e76d85c0fd8616751ef987e6fc61b",
+      "contract": "HoodxHookRegistryV3"
+    },
+    {
+      "runtimeBytes": 3423,
+      "sourceSha256": "a1d3748ad5dc3976a71205ce9cc839e830260710a3f76168f2e3bb7722336aef",
+      "contract": "HoodxFactoryV3"
+    }
+  ],
+  "releaseApproved": false,
+  "missingPriceHistory": [
+    "PRISM",
+    "NET",
+    "ZEAL",
+    "Aria",
+    "HARMONIC",
+    "PROMETHEUS"
+  ],
+  "genericFork": {
+    "block": 68602239,
+    "quoteBasedOnly": true,
+    "failure": "QUOTRON standard router restriction at all three sizes",
+    "amountsEth": [
+      "0.0001",
+      "0.001",
+      "0.005"
+    ],
+    "failed": 3,
+    "passed": 57
+  },
+  "entryMode": "ETH only",
+  "chainId": 4663,
+  "dedicatedFork": {
+    "block": 68610884,
+    "prismRoundTripEth": "0.000935263670034657",
+    "failure": "Independent QUOTRON oracle minimum remains incompatible after accounting for its 3% fee",
+    "protectedBuyMinimumTokenUnits": "1100069952046067",
+    "failed": 1,
+    "quotronRoundTripEth": "0.000940899999999999",
+    "passed": 3
+  },
+  "local": {
+    "passed": 136,
+    "skipped": 0,
+    "includes": [
+      "fuzz",
+      "V2 and V3 accounting invariants",
+      "taxed deposit and partial/final withdrawals",
+      "taxed in-kind claim",
+      "fee-aware previews"
+    ],
+    "failed": 0
+  }
+}
