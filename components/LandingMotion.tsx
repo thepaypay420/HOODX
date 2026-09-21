@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export function LandingMotion({children}:{children:ReactNode}) {
   const root=useRef<HTMLDivElement>(null);
-  const [paused,setPaused]=useState(false);
+
   const [visible,setVisible]=useState(true);
   const [reduced,setReduced]=useState(true);
   useEffect(()=>{
@@ -15,8 +15,7 @@ export function LandingMotion({children}:{children:ReactNode}) {
     root.current?.querySelectorAll("[data-motion]").forEach(el=>observer.observe(el));
     return()=>{observer.disconnect();media.removeEventListener("change",preference);document.removeEventListener("visibilitychange",visibility);};
   },[]);
-  return <div ref={root} className="landing studio-home" data-motion-running={!paused&&visible&&!reduced}>
-    <div className="studio-motion-bar"><button type="button" aria-pressed={paused} onClick={()=>setPaused(p=>!p)} disabled={reduced}>{reduced?"Reduced motion":paused?"Play motion":"Pause motion"}<span aria-hidden>{paused?" ▷":" Ⅱ"}</span></button></div>
+  return <div ref={root} className="landing studio-home" data-motion-running={visible&&!reduced}>
     {children}
   </div>;
 }
