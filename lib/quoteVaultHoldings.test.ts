@@ -1,0 +1,8 @@
+import {it,expect} from 'vitest';
+import {encodeAbiParameters,parseAbiParameters,zeroAddress,type PublicClient} from 'viem';
+import {quoteVaultHoldings} from './quoteVaultHoldings';
+const token='0x0000000000000000000000000000000000000001',weth='0x0000000000000000000000000000000000000002';
+const route=encodeAbiParameters(parseAbiParameters('(uint8 kind,address tokenIn,address tokenOut,uint24 fee,(address currency0,address currency1,uint24 fee,int24 tickSpacing,address hooks) key,uint256 minHopPriceX36,bytes hookData)[]'),[[{kind:3,tokenIn:token,tokenOut:weth,fee:3000,key:{currency0:token,currency1:weth,fee:3000,tickSpacing:60,hooks:zeroAddress},minHopPriceX36:0n,hookData:'0x'}]]);
+function client(fail=false){return {getBlock:async()=>({number:10n,timestamp:100n}),readContract:async({functionName,args}:any)=>{switch(functionName){case'constituents':return[token];case'weth':return weth;case'policy':return token;case'totalSupply':return 100n;case'freeBalance':return args[0]===token?10n:2n;case'configId':return '0x'+'00'.repeat(32);case'config':return[token,token,'0x',route];}},simulateContract:async({blockNumber,args}:any)=>{expect(blockNumber).toBe(10n);expect(args[0].amountIn).toBe(10n);if(fail)throw Error('unquotable');return{result:[7n]};}} as unknown as PublicClient;}
+it('quotes exact free holdings at one block and includes both cash balances',async()=>{const q=await quoteVaultHoldings(client(),token);expect(q.assets).toBe('11');expect(q.supply).toBe('100');expect(q.rows).toHaveLength(1);});
+it('rejects the whole valuation when a constituent cannot be quoted',async()=>{await expect(quoteVaultHoldings(client(true),token)).rejects.toThrow('unquotable');});
