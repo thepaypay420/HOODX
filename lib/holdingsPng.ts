@@ -27,7 +27,7 @@ export async function renderHoldingsPng({ slug, rows, cash, markets, oldest }: {
   rows.forEach((row, i) => { const y = 240 + i * 66; ctx.fillStyle = i % 2 ? "#101e1b" : "#0d1917"; ctx.fillRect(32, y, 1136, 64); text(String(i + 1).padStart(2, "0"), 48, y + 40, 18, "#78988f"); const image = images[i]; if (image) { ctx.save(); ctx.beginPath(); ctx.roundRect(94, y + 13, 38, 38, 9); ctx.clip(); ctx.drawImage(image, 94, y + 13, 38, 38); ctx.restore(); } else text(row.symbol.slice(0, 2), 97, y + 40, 18, "#4dd4c1"); text(row.symbol.slice(0, 24), 148, y + 40, 23); const market = markets[row.token.toLowerCase()]; ctx.font = `500 18px ${ui}`; const name = fit(market?.name || "", 270); text(name, 440, y + 40, 18, "#8baba3"); text(compactCap(market?.marketCap), 943, y + 40, 26, "#50d2bf", "right"); text(`${(row.weight / 100).toFixed(2)}%`, 1152, y + 40, 22, "#c1d6cf", "right"); });
   let y = 240 + rows.length * 66;
   if (cash) { text("WETH / Cash reserve", 48, y + 36, 20, "#8baba3"); text(`${(cash.weight / 100).toFixed(2)}% target`, 1152, y + 36, 20, "#8baba3", "right"); y += 56; }
-  text("xhoodindex.com", 48, y + 45, 24); text("One token. Shared conviction.", 1152, y + 48, 43, "#50d2bf", "right", script);
+  text("xhoodindex.com", 48, y + 45, 24); text("One token. Up to 24 assets.", 1152, y + 48, 43, "#50d2bf", "right", script);
   text(`DEX Screener • ${oldest ? new Date(oldest).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "Market caps unavailable"} • Targets, not current weights`, 48, y + 82, 15, "#8baba3");
   return new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("PNG failed")), "image/png"));
 }
