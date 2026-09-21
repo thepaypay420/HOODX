@@ -1385,3 +1385,29 @@ body {
 .vault-performance details {grid-column:1/-1;font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:12px;}
 .vault-performance summary {cursor:pointer;}
 @media(max-width:640px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {padding:20px;gap:16px;}.vault-performance strong {font-size:25px;}}
+
+/* Compact, exportable holdings board. */
+.holdings-board {padding:24px 28px;}
+.holdings-board .vault-section-heading {margin-bottom:20px;}
+.holdings-caption,.holdings-cash,.holdings-signoff {display:flex;justify-content:space-between;gap:16px;align-items:center;}
+.holdings-caption {font-size:11px;color:var(--dim);margin-bottom:18px;}
+.holdings-table th {padding:8px 0;}
+.holdings-table td {padding:9px 0;height:50px;}
+.holdings-table th:first-child,.holdings-table td:first-child {width:32px;text-align:left;color:var(--dim);font-size:11px;}
+.holdings-table th:nth-child(2),.holdings-table td:nth-child(2) {text-align:left;}
+.holdings-table td:nth-child(2) {width:40%;}
+.holdings-table td a {gap:10px;}
+.holdings-table .holdings-cap {color:var(--cyan);font-variant-numeric:tabular-nums;font-size:15px;}
+.holdings-icon {width:28px;height:28px;flex-shrink:0;border-radius:7px;background:#203c35;display:grid;place-items:center;color:var(--cyan);font-size:10px;overflow:hidden;}
+.holdings-icon img {width:28px;height:28px;object-fit:cover;}
+.holdings-cash {padding:13px 0;border-bottom:1px solid var(--line);font-size:12px;color:var(--dim);}
+.holdings-cash small {font-size:10px;margin-left:10px;}
+.holdings-signoff {margin-top:18px;}
+.holdings-signoff>span:first-child {font-size:9px;letter-spacing:.12em;color:var(--dim);}
+.holdings-signoff>span:last-child {font-family:var(--font-script),cursive;font-size:29px;color:var(--cyan);}
+.holdings-board .vault-footnote {font-size:10px;margin-top:10px;}
+.holdings-preview {border-top:1px solid var(--line);margin-top:20px;padding-top:20px;}
+.holdings-preview>div {display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.holdings-preview>img {width:100%;height:auto;border-radius:12px;margin-bottom:18px;}
+.holdings-preview>a {display:inline-block;}
+@media(max-width:640px) {.holdings-board {padding:20px 14px;}.holdings-balance {display:none;}.holdings-table td:nth-child(2) {width:auto;}.holdings-table td small {max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.holdings-table td {font-size:11px;}.holdings-table .holdings-cap {font-size:13px;}.holdings-cash small {display:block;margin:3px 0 0;}}
