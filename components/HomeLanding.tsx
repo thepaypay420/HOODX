@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
-import { GEN0_SLUG } from "@/lib/curators";
+import { LandingMotion } from "@/components/LandingMotion";
 
 /** Right-side chips zigzag on x (in/out) so labels don’t stack on one column. */
 const FLOAT_TOKENS = [
@@ -46,15 +46,14 @@ const VALUE_PROPS = [
 
 export function HomeLanding() {
   return (
-    <div className="landing">
+    <LandingMotion>
       <section className="landing-hero mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 sm:pb-12 sm:pt-10 lg:pb-16 lg:pt-14">
         <div className="landing-hero-grid">
-          <div className="landing-hero-copy rise">
+          <div className="landing-hero-copy" data-motion>
             <p className="landing-eyebrow">Robinhood Chain · On-chain index tokens</p>
             <h1 className="landing-headline">
-              One token.
-              <br />
-              A whole basket.
+              <span className="studio-title-line">One token.</span>
+              <span className="studio-title-line">A whole basket.</span>
             </h1>
             <p className="landing-lede">
               Permissionless index funds on Robinhood Chain. Buy one token for a curated basket of RH-chain tokens —
@@ -71,10 +70,10 @@ export function HomeLanding() {
             </div>
           </div>
 
-          <div className="landing-stage rise" style={{ animationDelay: "80ms" }}>
+          <div className="landing-stage" data-motion>
             <div className="landing-stage-glow" aria-hidden />
             <div className="landing-orbit landing-orbit-a" aria-hidden />
-            <div className="landing-orbit landing-orbit-b" aria-hidden />
+            <div className="landing-orbit landing-orbit-b" aria-hidden /><div className="studio-orbit-third" aria-hidden />
             {FLOAT_TOKENS.map((t) => (
               <div
                 key={t.label}
@@ -89,7 +88,7 @@ export function HomeLanding() {
               </div>
             ))}
             <div className="landing-coin">
-              <div className="landing-coin-rim" aria-hidden />
+              <div className="landing-coin-rim" aria-hidden /><div className="studio-coin-light" aria-hidden />
               <BrandMark size={112} priority className="landing-coin-mark" />
             </div>
             <p className="landing-script">More together.</p>
@@ -100,7 +99,7 @@ export function HomeLanding() {
       <section className="landing-values mx-auto max-w-6xl px-4 sm:px-6">
         <div className="landing-values-grid">
           {VALUE_PROPS.map((v, i) => (
-            <div key={v.title} className="landing-value-tile rise" style={{ animationDelay: `${120 + i * 60}ms` }}>
+            <div key={v.title} className="landing-value-tile" data-motion style={{ animationDelay: `${i * 100}ms` }}>
               <span className="landing-value-icon">{v.icon}</span>
               <div>
                 <p className="landing-value-title">{v.title}</p>
@@ -113,25 +112,15 @@ export function HomeLanding() {
 
       <section className="landing-paths mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="landing-paths-grid">
-          <Link href="/explore?from=home" className="landing-path-card landing-path-holders rise">
+          <Link href="/explore?from=home" className="landing-path-card landing-path-holders" data-motion>
             <div className="landing-path-bg landing-path-chart" aria-hidden>
               <svg viewBox="0 0 200 80" preserveAspectRatio="none" className="h-full w-full">
-                <defs>
-                  <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(31,212,198,0.35)" />
-                    <stop offset="100%" stopColor="rgba(31,212,198,0)" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0 58 C30 52, 45 68, 70 44 S120 22, 200 36 L200 80 L0 80 Z"
-                  fill="url(#chartFill)"
-                />
-                <path
-                  d="M0 58 C30 52, 45 68, 70 44 S120 22, 200 36"
-                  fill="none"
-                  stroke="rgba(31,212,198,0.85)"
-                  strokeWidth="2"
-                />
+                <defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#4bcfc2" stopOpacity=".35"/><stop offset="1" stopColor="#4bcfc2" stopOpacity="0"/></linearGradient></defs>
+                <g className="studio-wave">
+                  <path d="M0 58 C30 52,45 68,70 44 S120 22,200 36 L200 80 L0 80 Z" fill="url(#chartFill)"/>
+                  <path d="M0 58 C30 52,45 68,70 44 S120 22,200 36" fill="none" stroke="#4bcfc2" strokeWidth="2"/>
+                  <path className="studio-wave-highlight" pathLength="1" d="M0 58 C30 52,45 68,70 44 S120 22,200 36" fill="none" stroke="#c0fff0" strokeWidth="2"/>
+                </g>
               </svg>
             </div>
             <p className="landing-path-label">For holders</p>
@@ -145,12 +134,9 @@ export function HomeLanding() {
             </span>
           </Link>
 
-          <Link href="#create" className="landing-path-card landing-path-curators rise" style={{ animationDelay: "90ms" }}>
+          <Link href="#create" className="landing-path-card landing-path-curators" data-motion>
             <div className="landing-path-bg landing-path-stack" aria-hidden>
-              <span />
-              <span />
-              <span />
-              <span />
+              <span/><span/><span/><span/>
             </div>
             <p className="landing-path-label">For curators</p>
             <h2 className="landing-path-title">Build. Share. Earn.</h2>
@@ -165,7 +151,7 @@ export function HomeLanding() {
         </div>
       </section>
 
-      <section className="landing-opportunity">
+      <section className="landing-opportunity" data-motion>
         <div className="landing-earth-wrap" aria-hidden>
           <div className="landing-earth-glow" />
           <div className="landing-earth-arc" />
@@ -179,6 +165,6 @@ export function HomeLanding() {
           <p className="landing-opportunity-tag">Same people. Bigger possibilities.</p>
         </div>
       </section>
-    </div>
+    </LandingMotion>
   );
 }
