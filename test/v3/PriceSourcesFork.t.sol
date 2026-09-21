@@ -24,6 +24,10 @@ contract PriceSourcesForkTest is Test {
         IHistoryPoolV3 p = IHistoryPoolV3(pool);
         (uint160 price,, uint16 index,,,,) = p.slot0();
         uint128 liquidity = p.liquidity();
+        uint32[] memory times = new uint32[](2);
+        times[0] = 1800;
+        bool hadHistory;
+        try p.observe(times) returns (int56[] memory, uint160[] memory) { hadHistory = true; } catch {}
         uint256 before_ = gasleft();
         p.increaseObservationCardinalityNext(128);
         emit log_named_uint("History capacity expansion gas", before_ - gasleft());
@@ -32,10 +36,8 @@ contract PriceSourcesForkTest is Test {
         assertEq(afterIndex, index);
         assertEq(p.liquidity(), liquidity);
         assertGe(next, 128);
-        uint32[] memory times = new uint32[](2);
-        times[0] = 1800;
-        // Growing storage cannot invent historical observations. Do not claim readiness.
-        vm.expectRevert();
+        // Growing capacity preserves existing history but cannot invent missing history.
+        if (!hadHistory) vm.expectRevert();
         p.observe(times);
     }
 

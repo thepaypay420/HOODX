@@ -1,0 +1,23 @@
+{
+  "chainId": 4663,
+  "checkedBlock": "68994022",
+  "results": [
+    {
+      "symbol": "prism",
+      "hash": "0xfec211a2fe3e0699b61e7c95bdb1ed20499cd300faf15977e267eae342ecec13",
+      "feeEth": "0.0001510447022",
+      "capacity": 128,
+      "history30Minutes": true
+    },
+    {
+      "symbol": "zeal",
+      "hash": "0xea6dc0ac84d906a805442eba19af83d6b5751ff1ef091a3e77d112137dbc8448",
+      "feeEth": "0.00016432887548",
+      "capacity": 128,
+      "history30Minutes": true
+    }
+  ],
+  "totalFeeEth": "0.00031537357768",
+  "walletBalanceEth": "0.014409223367718772",
+  "pricingApproved": false
+}

@@ -1,7 +1,7 @@
 {
   "chainId": 4663,
-  "block": "68610469",
-  "checkedAt": "2026-09-21T07:15:46.949Z",
+  "block": "68993868",
+  "checkedAt": "2026-09-21T17:57:23.295Z",
   "releaseApproved": false,
   "limitations": [
     "History candidates still require economic depth and price-agreement validation.",
@@ -16,13 +16,13 @@
           "pool": "0xF1D6b8eCAF2271233BED626FB1962BC0c39Cb1f3",
           "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
           "fee": 10000,
-          "liquidity": "788970167512588416284",
-          "history1800": false,
-          "harmonicLiquidity": "0"
+          "liquidity": "362046764273575638717",
+          "history1800": true,
+          "harmonicLiquidity": "643459787905943009736"
         }
       ],
       "errors": 0,
-      "historyCandidate": false
+      "historyCandidate": true
     },
     {
       "symbol": "NET",
@@ -56,13 +56,13 @@
           "pool": "0xF1Bef60E5Cf6C00e7E1308d3710811dad71f4B6C",
           "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
           "fee": 10000,
-          "liquidity": "9090865566221185875100",
-          "history1800": false,
-          "harmonicLiquidity": "0"
+          "liquidity": "7830991208567806913657",
+          "history1800": true,
+          "harmonicLiquidity": "7830991208567806914034"
         }
       ],
       "errors": 0,
-      "historyCandidate": false
+      "historyCandidate": true
     },
     {
       "symbol": "Aria",
