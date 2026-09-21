@@ -9,6 +9,7 @@ import { V2CuratorDesk } from "@/components/V2CuratorDesk";
 import { VaultPerformance } from "@/components/VaultPerformance";
 import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
+import { withdrawalFloor } from "@/lib/withdrawMinimum";
 
 type Snapshot = { account: Address; vault: Address; owner: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
 const deadline = () => BigInt(Math.floor(Date.now() / 1000) + 600);
@@ -21,6 +22,11 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   const [eth, setEth] = useState("0.02");
   const [minimum, setMinimum] = useState("");
   const [percent, setPercent] = useState(100);
+  const [quoteRefresh, setQuoteRefresh] = useState(0);
+  const [quoteMessage, setQuoteMessage] = useState("");
+  const [quoting, setQuoting] = useState(false);
+  const manualMinimum = useRef("");
+  const minimumScope = `${address}:${vault}:${percent}:${snap?.shares}`;
   const [recipient, setRecipient] = useState<Address>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,6 +63,27 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     if (snap?.supply === 0n) setEth(formatEther(snap.firstMinimum));
   }, [snap?.supply, snap?.firstMinimum, vault]);
   useEffect(() => { if (!address) return; const timer = setInterval(() => { if (!busy) void read().catch(() => {}); }, 30000); return () => clearInterval(timer); }, [address, busy, read]);
+  useEffect(() => {
+    let active = true;
+    if (manualMinimum.current === minimumScope) return;
+    setMinimum(""); setQuoteMessage(""); setQuoting(false);
+    const shares = snap?.shares, assets = snap?.assets, supply = snap?.supply;
+    if (!address || !shares || !supply || assets === undefined) return;
+    const { selected, floor: navFloor } = withdrawalFloor(assets, shares, supply, percent);
+    if (selected === 0n || navFloor === 0n) { setQuoteMessage("This portion is too small to quote safely."); return; }
+    setQuoting(true);
+    const timer = setTimeout(() => {
+      // Read-only full withdrawal rehearsal, with a positive NAV protection floor.
+      // The broadcast path independently simulates again with the displayed minimum.
+      void publicClient.simulateContract({ address: vault, abi: v2VaultAbi, account: address, functionName: "withdraw", args: [selected, navFloor, deadline()] }).then(({ result }) => {
+        if (!active) return;
+        const outputFloor = result * 99n / 100n;
+        setMinimum(formatEther(outputFloor > navFloor ? outputFloor : navFloor));
+        setQuoteMessage(`Estimated receive: ${formatEther(result)} ETH. Minimum allows up to 1% below this estimate, while retaining the NAV floor. Rechecked before signing.`);
+      }).catch(() => { if (active) setQuoteMessage("A protected withdrawal quote is unavailable. Refresh the quote or enter your own minimum; the full withdrawal must still pass simulation."); }).finally(() => { if (active) setQuoting(false); });
+    }, 400);
+    return () => { active = false; clearTimeout(timer); };
+  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, quoteRefresh, minimumScope]);
   async function transact(action: "deposit" | "withdraw" | "assets" | "claim" | "pause" | "unwind", token?: Address) {
     if (!address || !walletClient || !snap) return;
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
@@ -144,13 +171,15 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       <div className="vault-trade-card">
         <p className="vault-eyebrow">02 / TAKE YOUR SHARE</p><h3>Withdraw</h3>
         <p>Wallet: {formatEther(snap.shares)} {slug.toUpperCase()}</p>
-        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => setPercent(value)}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
+        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => { manualMinimum.current = ""; setMinimum(""); setPercent(value); setQuoteRefresh(n => n + 1); }}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
         <p>Sell: {formatEther(snap.shares * BigInt(percent) / 100n)} {slug.toUpperCase()}</p>
-        <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} onChange={e => setMinimum(e.target.value)} inputMode="decimal" /></label>
+        <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} disabled={busy || quoting} placeholder={quoting ? "Calculating protected minimum…" : "Minimum ETH"} onChange={e => { manualMinimum.current = minimumScope; setMinimum(e.target.value); }} inputMode="decimal" /></label>
+        <p role="status">{quoting ? "Checking the full withdrawal…" : quoteMessage}</p>
+        <button className={button} disabled={busy || quoting || !address || !snap.shares} onClick={() => { manualMinimum.current = ""; setMinimum(""); setQuoteRefresh(n => n + 1); }}>Refresh withdrawal quote</button>
         <p className="text-sm">Redeems the selected portion of your shares. If any required sale fails, the whole withdrawal reverts and your shares stay intact.</p>
-        <button className={button} disabled={busy || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>
+        <button className={button} disabled={busy || quoting || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>
       </div>
-      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => setPercent(Number(e.target.value))} /></label>
+      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => { manualMinimum.current = ""; setMinimum(""); setPercent(Number(e.target.value)); }} /></label>
       <div className="vault-recovery">
         <h2 className="text-lg">Receive assets directly</h2>
         <p>Redeem the selected portion of your shares for your proportional tokens and cash without selling through a router. This works while paused and does not need prices. Any token that cannot transfer remains separately claimable by you.</p>
