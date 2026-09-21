@@ -1,0 +1,18 @@
+{
+  "chainId": 4663,
+  "block": "68574692",
+  "directCases": 42,
+  "directPassed": 36,
+  "directFailed": 6,
+  "alternativeCases": 3,
+  "alternativePassed": 0,
+  "alternativeFailed": 3,
+  "failedTokens": [
+    "QUOTRON",
+    "SHROOM"
+  ],
+  "fullVaultRehearsalCertified": false,
+  "liveTransactions": false,
+  "configurationApproved": false,
+  "limitation": "Test-only depth thresholds are candidate retention floors, not economic approval; token identity confirmation remains required."
+}

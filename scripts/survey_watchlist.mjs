@@ -9,12 +9,14 @@ const integrations=JSON.parse(fs.readFileSync('deployed.json'));
 const client=createPublicClient({transport:http(process.env.ROBINHOOD_RPC_URL||'https://rpc.mainnet.chain.robinhood.com',{retryCount:1,timeout:20000})});
 process.on('unhandledRejection',()=>{console.error('Discovery stopped: remote data unavailable. No approval or transaction was produced.');process.exitCode=1;});
 const chain=await client.getChainId();if(chain!==4663)throw Error('Wrong chain');
-const block=await client.getBlockNumber(),zero='0x0000000000000000000000000000000000000000';
+const previous=process.argv.includes('--resume')?JSON.parse(fs.readFileSync('deployments/696x-compatibility-discovery.json')):null;
+const block=previous?BigInt(previous.block):await client.getBlockNumber(),zero='0x0000000000000000000000000000000000000000';
 const abi=parseAbi(['function v3Factory() view returns(address)','function getPool(address,address,uint24) view returns(address)','function liquidity() view returns(uint128)','function observe(uint32[]) view returns(int56[],uint160[])','function poolKeys(bytes25) view returns(address,address,uint24,int24,address)','function getLiquidity(bytes32) view returns(uint128)','function compatibleHook(address) view returns(bool)','function symbol() view returns(string)','function decimals() view returns(uint8)','function owner() view returns(address)']);
 const read=async(address,functionName,args=[])=>{await new Promise(r=>setTimeout(r,180));return client.readContract({address,abi,functionName,args,blockNumber:block});};
 const factory=await read(deployed.executor,'v3Factory');
 const report={chainId:chain,block:String(block),sampledAt:new Date().toISOString(),policy:deployed.policy,policyOwner:await read(deployed.policy,'owner'),limitations:['Discovery only. No protected round-trip or vault simulation is certified.','DEX liquidity is display data, not an economic safety bound.','V3 history availability alone does not certify price quality or liquidity retention.','V4 pool discovery is limited to indexed pools with recoverable pool keys.'],assets:[]};
-for(const symbol of names){
+if(previous)report.assets=previous.assets.filter(r=>!r.error);
+async function survey(symbol){
  const token=extra[symbol]||universe.find(t=>t.symbol===symbol)?.token;if(!token)throw Error('Missing identity '+symbol);
  const row={symbol,token,identitySource:extra[symbol]?'prior user address or exact-name public listing; curator confirmation required':'existing universe',references:[],pools:[]};
  try{
@@ -41,7 +43,10 @@ for(const symbol of names){
   row.v3HistoryCandidate=row.references.some(r=>BigInt(r.liquidity)>0n&&r.history1800&&BigInt(r.harmonicLiquidity)>0n);
   row.v4ExecutionCandidate=row.pools.some(p=>p.version==='v4'&&p.identityMatches&&p.hookAllowed&&BigInt(p.activeLiquidity)>0n);
  }catch(e){row.error='Incomplete discovery; retry before drawing conclusions';row.errorType=e.name;}
- report.assets.push(row);fs.writeFileSync('deployments/696x-compatibility-discovery.json',JSON.stringify(report,null,2)+'\n');
+ report.assets.push(row);report.assets.sort((a,b)=>names.indexOf(a.symbol)-names.indexOf(b.symbol));fs.writeFileSync('deployments/696x-compatibility-discovery.json',JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({symbol,v3HistoryCandidate:row.v3HistoryCandidate,v4ExecutionCandidate:row.v4ExecutionCandidate,pools:row.pools.length,error:row.error}));
 }
 
+
+const pending=names.filter(s=>!report.assets.some(r=>r.symbol===s));
+await Promise.all(Array.from({length:3},async()=>{while(pending.length){const symbol=pending.shift();await survey(symbol);}}));
