@@ -9,4 +9,4 @@ export const getHoldingMarket = unstable_cache(async (token: string) => {
   const pairs = await response.json();
   if (!Array.isArray(pairs)) throw new Error("Invalid market data");
   return selectMarket(pairs, token);
-}, ["holding-market-v1"], { revalidate: 900 });
+}, ["holding-market-v2"], { revalidate: 900 });
