@@ -1,0 +1,265 @@
+{
+  "block": "69387014",
+  "timestamp": "1790052990",
+  "approved": false,
+  "pools": [
+    {
+      "symbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "pool": "0x99e70A5b06215e5D2F3BeC773b4f59c008fc1673",
+      "factory": "0x1ac9dB4a2608ba45D6127B1737949b51Bb54B7F3",
+      "token0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+      "fee": 10000,
+      "liquidity": "2950237092276",
+      "slot0": [
+        "98781714210838806591425126632",
+        4411,
+        47,
+        360,
+        360,
+        true
+      ],
+      "tickSpacing": 200,
+      "slot0Layout": "concentrated-liquidity-six-fields",
+      "history": [
+        [
+          "3369804396",
+          "3377799534"
+        ],
+        [
+          "673678320738957655806720802604144857",
+          "673678564550008858340968199823893569"
+        ]
+      ],
+      "latestObservation": [
+        1790052963,
+        "3377680437",
+        "673678561435810365304795726186940598",
+        true
+      ],
+      "spacingFactoryPool": "0x99e70A5b06215e5D2F3BeC773b4f59c008fc1673",
+      "isPool": true,
+      "poolImplementation": "0x11725976BF1F38c4aB78d1F480bc5883d70D9dc3",
+      "runtimeHash": "0xda57657ec68ddfb0987ba1352a44cefe40433e55585f3e4555b8ced4bbeb540d",
+      "runtimeBytes": 45,
+      "cloneRuntime": "0x363d3d373d3d3d363d7311725976bf1f38c4ab78d1f480bc5883d70d9dc35af43d82803e903d91602b57fd5bf3"
+    },
+    {
+      "symbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "pool": "0x813fBeF16E3D3529b6339ccaa03AF4df803E3862",
+      "factory": "0xE0c4ceb92d08CA985bB70fe0a22fEb121A9854A8",
+      "token0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+      "fee": 10000,
+      "liquidity": "1012141935888",
+      "slot0": [
+        "98778535262681852773012111211",
+        4411,
+        0,
+        1,
+        1,
+        50000,
+        true
+      ],
+      "tickSpacing": 100,
+      "history": null,
+      "latestObservation": [
+        1790052962,
+        "1414770202",
+        "608940445438366162762019279126742202649966688443",
+        true
+      ],
+      "spacingFactoryPool": "0x813fBeF16E3D3529b6339ccaa03AF4df803E3862",
+      "runtimeHash": "0x5c6d0d5dcb47268652dc629990b2c2346682843cc2b326f82ada95df2ed28dad",
+      "runtimeBytes": 21609
+    },
+    {
+      "symbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "pool": "0x3525FEAe3ba5484d64A910B28918A4757600003E",
+      "factory": "0x1ac9dB4a2608ba45D6127B1737949b51Bb54B7F3",
+      "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+      "fee": 10000,
+      "liquidity": "1207080648275",
+      "slot0": [
+        "5295386852465268990406690",
+        -192275,
+        0,
+        1,
+        1,
+        true
+      ],
+      "tickSpacing": 2000,
+      "slot0Layout": "concentrated-liquidity-six-fields",
+      "history": [
+        [
+          "-76744350954",
+          "-77090445954"
+        ],
+        [
+          "31826369909314070496569217551849",
+          "32333799351856294185284143233418"
+        ]
+      ],
+      "latestObservation": [
+        1790045466,
+        "-75643768854",
+        "30212744282029799166455753884459",
+        true
+      ],
+      "spacingFactoryPool": "0x3525FEAe3ba5484d64A910B28918A4757600003E",
+      "isPool": true,
+      "poolImplementation": "0x11725976BF1F38c4aB78d1F480bc5883d70D9dc3",
+      "runtimeHash": "0xda57657ec68ddfb0987ba1352a44cefe40433e55585f3e4555b8ced4bbeb540d",
+      "runtimeBytes": 45,
+      "cloneRuntime": "0x363d3d373d3d3d363d7311725976bf1f38c4ab78d1f480bc5883d70d9dc35af43d82803e903d91602b57fd5bf3"
+    },
+    {
+      "symbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "pool": "0x0a02d94074E60274De26471ADFC53906D8f42365",
+      "factory": "0x1ac9dB4a2608ba45D6127B1737949b51Bb54B7F3",
+      "token0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+      "fee": 10000,
+      "liquidity": "0",
+      "slot0": [
+        "81078394546316541574031859628",
+        461,
+        0,
+        1,
+        1,
+        true
+      ],
+      "tickSpacing": 2000,
+      "slot0Layout": "concentrated-liquidity-six-fields",
+      "history": [
+        [
+          "14203018844",
+          "14203848644"
+        ],
+        [
+          "1066610999682945948877073462910765648957111394",
+          "1067223507943403638111307537204142831737732194"
+        ]
+      ],
+      "latestObservation": [
+        1787816541,
+        "13172845655",
+        "306199348725437732437106859787972246995172450",
+        true
+      ],
+      "spacingFactoryPool": "0x0a02d94074E60274De26471ADFC53906D8f42365",
+      "isPool": true,
+      "poolImplementation": "0x11725976BF1F38c4aB78d1F480bc5883d70D9dc3",
+      "runtimeHash": "0xda57657ec68ddfb0987ba1352a44cefe40433e55585f3e4555b8ced4bbeb540d",
+      "runtimeBytes": 45,
+      "cloneRuntime": "0x363d3d373d3d3d363d7311725976bf1f38c4ab78d1f480bc5883d70d9dc35af43d82803e903d91602b57fd5bf3"
+    },
+    {
+      "symbol": "HARMONIC",
+      "token": "0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5",
+      "pool": "0xCF22Be23060e10F278B76F0D4C9A625B6a349411",
+      "factory": "0xE0c4ceb92d08CA985bB70fe0a22fEb121A9854A8",
+      "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "token1": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
+      "fee": 10000,
+      "liquidity": "22549648876451018514",
+      "slot0": [
+        "108367638403554116338686668466655",
+        144426,
+        0,
+        1,
+        1,
+        50000,
+        true
+      ],
+      "tickSpacing": 100,
+      "history": null,
+      "latestObservation": [
+        1790052535,
+        "300073116777",
+        "608889248254845272053904434047233516353817826302",
+        true
+      ],
+      "spacingFactoryPool": "0xCF22Be23060e10F278B76F0D4C9A625B6a349411",
+      "runtimeHash": "0xc62c3946b6662b1d46bfb425b6abf22ac1b32e90233b374baf3dbc11c4a8e7a4",
+      "runtimeBytes": 21609
+    },
+    {
+      "symbol": "HARMONIC",
+      "token": "0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5",
+      "pool": "0x7bcBe0b3FBb2029c38289a7c0c22D79742957A0b",
+      "factory": "0xBa04837DC830FB2C5c16855BD8256f0409cdE656",
+      "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "token1": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
+      "fee": 2500,
+      "liquidity": "459537866823281310227",
+      "slot0": [
+        "109052481881389594009794310343608",
+        144552,
+        0,
+        1,
+        1,
+        209718400,
+        true
+      ],
+      "tickSpacing": 50,
+      "history": null,
+      "latestObservation": [
+        1790052577,
+        "118165589696",
+        "49166378349305635771521656501869845884364093",
+        true
+      ],
+      "factoryPool": "0x7bcBe0b3FBb2029c38289a7c0c22D79742957A0b",
+      "runtimeHash": "0xfa521ea1198a1fdf04905d21818930d11f1d86d231bf118a5160fa9fbb796f05",
+      "runtimeBytes": 22962
+    },
+    {
+      "symbol": "HARMONIC",
+      "token": "0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5",
+      "pool": "0x04127b8A651D1501a1A4A23b11d98280424D57a1",
+      "factory": "0x1ac9dB4a2608ba45D6127B1737949b51Bb54B7F3",
+      "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "token1": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
+      "fee": 10000,
+      "liquidity": "0",
+      "slot0": [
+        "129489006821835062649938840522342",
+        147987,
+        0,
+        1,
+        1,
+        true
+      ],
+      "tickSpacing": 2000,
+      "slot0Layout": "concentrated-liquidity-six-fields",
+      "history": [
+        [
+          "255384706398",
+          "255651082998"
+        ],
+        [
+          "579851361704286769895497192315602864095193280",
+          "580463869964744459129731266608980046875814080"
+        ]
+      ],
+      "latestObservation": [
+        1788661759,
+        "49766981001",
+        "107052492350960319667117148137073726283671744",
+        true
+      ],
+      "spacingFactoryPool": "0x04127b8A651D1501a1A4A23b11d98280424D57a1",
+      "isPool": true,
+      "poolImplementation": "0x11725976BF1F38c4aB78d1F480bc5883d70D9dc3",
+      "runtimeHash": "0xda57657ec68ddfb0987ba1352a44cefe40433e55585f3e4555b8ced4bbeb540d",
+      "runtimeBytes": 45,
+      "cloneRuntime": "0x363d3d373d3d3d363d7311725976bf1f38c4ab78d1f480bc5883d70d9dc35af43d82803e903d91602b57fd5bf3"
+    }
+  ]
+}

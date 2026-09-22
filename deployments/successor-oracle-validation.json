@@ -1,0 +1,41 @@
+{
+  "releaseApproved": false,
+  "liveTransactions": 0,
+  "local": {
+    "passed": 66,
+    "failed": 0,
+    "fuzzRunsPerTest": 1024,
+    "fuzzTests": 3,
+    "invariantRuns": 128,
+    "invariantCalls": 8192
+  },
+  "currentFork": {
+    "block": 69394631,
+    "passed": 11,
+    "failed": 2,
+    "failures": [
+      "testMaturedNetBasketPausedInKindTaxedExit",
+      "testMaturedNetBasketTwoUsersPartialFinalExit"
+    ],
+    "reason": "NET current and harmonic liquidity below pinned minimum"
+  },
+  "pinnedClaimRegression": {
+    "block": 69390039,
+    "passed": 2,
+    "failed": 0,
+    "automaticPrismClaim": true
+  },
+  "netRouteTests": {
+    "block": 69386411,
+    "passed": 3,
+    "failed": 0
+  },
+  "sourceHashes": {
+    "contracts/v3/HoodxIndexV3.sol": "78a32ce59accadf675014a2f7ed01b09d439e64eb27d2d237341b8e8ee09cf81",
+    "contracts/v3/HoodxClTwapV3.sol": "dfdee09e8ba3df67e73e48f61230fb35acbd64e4f38b853ab94ca6109dd0b917"
+  },
+  "runtimeBytes": {
+    "HoodxIndexV3": 21752,
+    "HoodxClTwapV3": 4996
+  }
+}

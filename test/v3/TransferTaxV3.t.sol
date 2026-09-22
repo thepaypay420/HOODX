@@ -155,9 +155,8 @@ contract TransferTaxV3Test is Test {
         b[0].tokenOut = address(second);
         V2Hop[] memory s = abi.decode(route(false), (V2Hop[]));
         s[0].tokenIn = address(second);
-        ids[1] = policy.approveConfig(
-            address(second), address(oracle), abi.encode(b), abi.encode(s), bytes32(uint256(2))
-        );
+        ids[1] =
+            policy.approveConfig(address(second), address(oracle), abi.encode(b), abi.encode(s), bytes32(uint256(2)));
         HoodxFeeModelV3 model = new HoodxFeeModelV3(address(routing), address(0), address(0));
         HoodxIndexV3 impl = new HoodxIndexV3(address(policy), address(model));
         HoodxFactoryV3 factory = new HoodxFactoryV3(address(this), address(0xbeef), address(impl));
@@ -189,7 +188,9 @@ contract TransferTaxV3Test is Test {
         assertEq(v.executionFactor(address(t), true), 967090000000000000);
         uint256 portion = shares / 2;
         v.withdraw(portion, v.previewWithdraw(portion) * 99 / 100, block.timestamp);
-        v.withdraw(v.balanceOf(address(this)), v.previewWithdraw(v.balanceOf(address(this))) * 99 / 100, block.timestamp);
+        v.withdraw(
+            v.balanceOf(address(this)), v.previewWithdraw(v.balanceOf(address(this))) * 99 / 100, block.timestamp
+        );
         assertEq(v.totalSupply(), 0);
         assertEq(t.balanceOf(address(v)), 0);
         assertEq(w.balanceOf(address(v)), 0);
@@ -204,5 +205,33 @@ contract TransferTaxV3Test is Test {
         assertEq(v.claimable(address(this), address(t)), 0);
         assertEq(v.reserved(address(t)), 0);
         assertEq(t.balanceOf(address(v)), 0);
+    }
+
+    function testClaimCacheTracksConfigAndPreservesTaxLimit() public {
+        HoodxIndexV3 v = makeVault();
+        bytes32 original = v.configId(address(t));
+        assertEq(v.claimTransferFactor(address(t)), 970e15);
+        uint256 shares = v.deposit{value: 0.08 ether}(v.previewDeposit(0.08 ether) * 99 / 100, block.timestamp);
+        uint256 held = t.balanceOf(address(v));
+        V2Hop[] memory buy = abi.decode(route(true), (V2Hop[]));
+        V2Hop[] memory sell = abi.decode(route(false), (V2Hop[]));
+        buy[0].hookData = abi.encode(uint256(200));
+        sell[0].hookData = abi.encode(uint256(200));
+        bytes32 tighter = HoodxPolicyV2(address(v.policy()))
+            .approveConfig(
+                address(t), address(new TestOracleV2()), abi.encode(buy), abi.encode(sell), bytes32(uint256(9))
+            );
+        v.replaceConfig(tighter);
+        assertEq(v.claimTransferFactor(address(t)), 980e15);
+        v.emergencyRedeemInKind(shares, address(this));
+        assertEq(v.claimable(address(this), address(t)), held);
+        assertEq(v.reserved(address(t)), held);
+        vm.expectRevert(HoodxIndexV3.Invalid.selector);
+        v.claim(address(t), address(this));
+        v.replaceConfig(original);
+        assertEq(v.claimTransferFactor(address(t)), 970e15);
+        v.claim(address(t), address(this));
+        assertEq(v.claimable(address(this), address(t)), 0);
+        assertEq(t.balanceOf(address(this)), held - held * 300 / 10000);
     }
 }

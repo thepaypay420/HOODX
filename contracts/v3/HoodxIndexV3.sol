@@ -46,6 +46,9 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
     mapping(address => uint16) public targetBps;
     mapping(address => uint256) public reserved;
     mapping(address => mapping(address => uint256)) public claimable;
+    // Transfer limits are pure configuration, unlike dynamic swap fees. Cache them so
+    // bounded emergency claims do not load and decode both complete swap routes.
+    mapping(address => uint256) public claimTransferFactor;
 
     struct Init {
         address curator;
@@ -195,9 +198,10 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
     }
 
     function _claimMinimum(address token, uint256 amount) private view returns (uint256) {
-        if (address(feeModel) == address(0) || token == weth) return amount;
-        (,, bytes memory buy,) = policy.config(configId[token]);
-        return Math.mulDiv(amount, feeModel.transferFactor(buy), 1e18, Math.Rounding.Ceil);
+        if (token == weth) return amount;
+        uint256 factor = claimTransferFactor[token];
+        if (factor == 0) revert Invalid();
+        return Math.mulDiv(amount, factor, 1e18, Math.Rounding.Ceil);
     }
 
     function previewDeposit(uint256 gross) external view returns (uint256) {
@@ -216,8 +220,7 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
     function previewWithdraw(uint256 shares) external view returns (uint256 expected) {
         uint256 supply = totalSupply();
         if (shares == 0 || shares > supply) revert Invalid();
-        expected = Math.mulDiv(freeBalance(weth), shares, supply)
-            + Math.mulDiv(freeBalance(address(0)), shares, supply);
+        expected = Math.mulDiv(freeBalance(weth), shares, supply) + Math.mulDiv(freeBalance(address(0)), shares, supply);
         for (uint256 i; i < tokens.length; ++i) {
             address token = tokens[i];
             uint256 amount = Math.mulDiv(freeBalance(token), shares, supply);
@@ -440,6 +443,7 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
         executor.validateRoute(sell, t, weth);
         if (IV2Oracle(oracle).value(t, 1e18) == 0) revert Invalid();
         configId[t] = id;
+        claimTransferFactor[t] = address(feeModel) == address(0) ? 1e18 : feeModel.transferFactor(buy);
         executionFactor(t, true);
         executionFactor(t, false);
         tokens.push(t);
@@ -452,6 +456,7 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
         executor.validateRoute(buy, weth, t);
         executor.validateRoute(sell, t, weth);
         configId[t] = id;
+        claimTransferFactor[t] = address(feeModel) == address(0) ? 1e18 : feeModel.transferFactor(buy);
         executionFactor(t, true);
         executionFactor(t, false);
         emit ConstituentChanged(t, id);
@@ -470,6 +475,7 @@ contract HoodxIndexV3 is ERC20, Ownable2Step, ReentrancyGuard {
             }
         }
         delete configId[t];
+        delete claimTransferFactor[t];
         emit ConstituentChanged(t, 0);
     }
 
