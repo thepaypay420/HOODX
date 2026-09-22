@@ -10,7 +10,7 @@
     "invariantCalls": 8192
   },
   "currentFork": {
-    "block": 69394631,
+    "block": 69493244,
     "passed": 11,
     "failed": 2,
     "failures": [

@@ -1,7 +1,7 @@
 {
   "chainId": 4663,
-  "block": "68993868",
-  "checkedAt": "2026-09-21T17:57:23.295Z",
+  "block": "69493648",
+  "checkedAt": "2026-09-22T07:57:07.854Z",
   "releaseApproved": false,
   "limitations": [
     "History candidates still require economic depth and price-agreement validation.",
@@ -16,9 +16,9 @@
           "pool": "0xF1D6b8eCAF2271233BED626FB1962BC0c39Cb1f3",
           "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
           "fee": 10000,
-          "liquidity": "362046764273575638717",
+          "liquidity": "4485151739068777900103",
           "history1800": true,
-          "harmonicLiquidity": "643459787905943009736"
+          "harmonicLiquidity": "3771933869066276182222"
         }
       ],
       "errors": 0,
@@ -56,9 +56,9 @@
           "pool": "0xF1Bef60E5Cf6C00e7E1308d3710811dad71f4B6C",
           "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
           "fee": 10000,
-          "liquidity": "7830991208567806913657",
+          "liquidity": "33180351992868296679320",
           "history1800": true,
-          "harmonicLiquidity": "7830991208567806914034"
+          "harmonicLiquidity": "33180351992868296701863"
         }
       ],
       "errors": 0,

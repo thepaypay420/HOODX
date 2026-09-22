@@ -1,15 +1,15 @@
 {
-  "block": "69394631",
-  "timestamp": "1790053761",
+  "block": "69492995",
+  "timestamp": "1790063760",
   "approved": false,
   "references": [
     {
       "name": "NET",
       "pool": "0x99e70a5b06215e5d2f3bec773b4f59c008fc1673",
       "minimum": "2118471187028",
-      "live": "1726943999685",
-      "harmonic": "1913024003913",
-      "age": "15",
+      "live": "1995378151189",
+      "harmonic": "1715432445917",
+      "age": "3",
       "livePass": false,
       "historyDepthPass": false,
       "fresh": true
@@ -18,9 +18,9 @@
       "name": "USDG/ETH",
       "pool": "0x52e65b17fb6e5ba00ed806f37afcd2daa50271ca",
       "minimum": "2631289198634062971",
-      "live": "3355165570110572825",
-      "harmonic": "3349908064841647391",
-      "age": "16",
+      "live": "3362115961083606486",
+      "harmonic": "3363797127180887389",
+      "age": "1",
       "livePass": true,
       "historyDepthPass": true,
       "fresh": true
