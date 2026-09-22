@@ -4,14 +4,80 @@
   "note": "Template hashes precede constructor immutable substitutions. This check does not authorize deployment or replace receipt/runtime verification.",
   "builds": [
     {
-      "name": "HoodxProportionalV3",
-      "runtimeBytes": 21848,
-      "creationTemplateHash": "0x19d838c1f7efc6d8da5b7133a5df8ce66e10b50697034765ae459aa833e7aca8",
-      "runtimeTemplateHash": "0x2aaf994959d59b117491d06e5276f1b48a997fa4522280bd5e3604d27bb12493",
+      "name": "HoodxHookRegistryV3",
+      "runtimeBytes": 1603,
+      "creationTemplateHash": "0x92a5fa5efe26140978a8b53b25b054972ef539ed1d07789108a47c41f72e28c7",
+      "runtimeTemplateHash": "0xe99ef6b4630b07bd49e8183cfcc3f4f27dcb1df1fcd4d03460821e41354118ed",
+      "sourceHashes": {
+        "contracts/v3/HoodxHookRegistryV3.sol": "0x027ebfbba5b8599d9ed6d4fba7834caba36122d0007a57d4365dbc790dad11ed",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+        "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2"
+      }
+    },
+    {
+      "name": "HoodxExecutorV3",
+      "runtimeBytes": 12074,
+      "creationTemplateHash": "0xc515e914bcdc7cef78014b42eb3ac3b3f9c341af7fce4e3bf00982e80ad144b7",
+      "runtimeTemplateHash": "0xf4eff137e10be1098bbfaaa70611b35235edfda71e7c7d1df75c313fc1f9a7ac",
+      "sourceHashes": {
+        "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
+        "contracts/v3/HoodxExecutorV3.sol": "0x8387c7ddff7e25e2fefa5456149f0a7f8fa108ff8522a4a9d23609b8b9e1b2cd",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol": "0xd5ea07362ab630a6a3dee4285a74cf2377044ca2e4be472755ad64d7c5d4b69d",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol": "0x0afcb7e740d1537b252cb2676f600465ce6938398569f09ba1b9ca240dde2dfc",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol": "0x1a6221315ce0307746c2c4827c125d821ee796c74a676787762f4778671d4f44",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol": "0x982c5cb790ab941d1e04f807120a71709d4c313ba0bfc16006447ffbd27fbbd5",
+        "lib/openzeppelin-contracts/contracts/utils/Panic.sol": "0xf7fe324703a64fc51702311dc51562d5cb1497734f074e4f483bfb6717572d7a",
+        "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol": "0x11a5a79827df29e915a12740caf62fe21ebe27c08c9ae3e09abe9ee3ba3866d3",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol": "0x8891738ffe910f0cf2da09566928589bf5d63f4524dd734fd9cedbac3274dd5c",
+        "lib/openzeppelin-contracts/contracts/utils/math/Math.sol": "0x1225214420c83ebcca88f2ae2b50f053aaa7df7bd684c3e878d334627f2edfc6",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol": "0x195533c86d0ef72bcc06456a4f66a9b941f38eb403739b00f21fd7c1abd1ae54"
+      }
+    },
+    {
+      "name": "HoodxRoutingV3",
+      "runtimeBytes": 9604,
+      "creationTemplateHash": "0xf1551de21a4a14f1012685bb96acddf5ce92e98109e108f2a1510b4cf1b2cee7",
+      "runtimeTemplateHash": "0x20c0da3619e8bef49c2b5f9cbb1572a51068bf344de2eba9207d0afb0792ff53",
+      "sourceHashes": {
+        "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
+        "contracts/v3/HoodxExecutorV3.sol": "0x8387c7ddff7e25e2fefa5456149f0a7f8fa108ff8522a4a9d23609b8b9e1b2cd",
+        "contracts/v3/HoodxRoutingV3.sol": "0xd1f5c5f91d573f6c4aed84136aa8b1a5121b521322691596798dd0edde8d433c",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol": "0xd5ea07362ab630a6a3dee4285a74cf2377044ca2e4be472755ad64d7c5d4b69d",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol": "0x0afcb7e740d1537b252cb2676f600465ce6938398569f09ba1b9ca240dde2dfc",
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol": "0x1a6221315ce0307746c2c4827c125d821ee796c74a676787762f4778671d4f44",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol": "0x982c5cb790ab941d1e04f807120a71709d4c313ba0bfc16006447ffbd27fbbd5",
+        "lib/openzeppelin-contracts/contracts/utils/Panic.sol": "0xf7fe324703a64fc51702311dc51562d5cb1497734f074e4f483bfb6717572d7a",
+        "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol": "0x11a5a79827df29e915a12740caf62fe21ebe27c08c9ae3e09abe9ee3ba3866d3",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol": "0x8891738ffe910f0cf2da09566928589bf5d63f4524dd734fd9cedbac3274dd5c",
+        "lib/openzeppelin-contracts/contracts/utils/math/Math.sol": "0x1225214420c83ebcca88f2ae2b50f053aaa7df7bd684c3e878d334627f2edfc6",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol": "0x195533c86d0ef72bcc06456a4f66a9b941f38eb403739b00f21fd7c1abd1ae54"
+      }
+    },
+    {
+      "name": "HoodxFeeModelV3",
+      "runtimeBytes": 3843,
+      "creationTemplateHash": "0x5e74c61e59b6aa8220765622e14f739ad822558f715120113eba647992c52be4",
+      "runtimeTemplateHash": "0xd79d43914884f261207297eae39688451a9c172e57832ba6c480853ea764ed99",
       "sourceHashes": {
         "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
         "contracts/v3/HoodxFeeModelV3.sol": "0x122de426b77d273b36c17d876ee1495be57daeccb65a3f1a366f3221b051107b",
-        "contracts/v3/HoodxProportionalV3.sol": "0xfb54cd306ae74815408e2b8e52e2b9d142b5885026759474ebf18e4b62aa6434",
+        "lib/openzeppelin-contracts/contracts/utils/Panic.sol": "0xf7fe324703a64fc51702311dc51562d5cb1497734f074e4f483bfb6717572d7a",
+        "lib/openzeppelin-contracts/contracts/utils/math/Math.sol": "0x1225214420c83ebcca88f2ae2b50f053aaa7df7bd684c3e878d334627f2edfc6",
+        "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol": "0x195533c86d0ef72bcc06456a4f66a9b941f38eb403739b00f21fd7c1abd1ae54"
+      }
+    },
+    {
+      "name": "HoodxProportionalV3",
+      "runtimeBytes": 24366,
+      "creationTemplateHash": "0x2aab6f4a471cd3845cc9d9998967c546ca848854096fc055ededf1827d6b51c2",
+      "runtimeTemplateHash": "0x6a4d1fedce0bf91aba03316805ff3202000fbb634c42c3fb391c0abb5548d7f4",
+      "sourceHashes": {
+        "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
+        "contracts/v3/HoodxFeeModelV3.sol": "0x122de426b77d273b36c17d876ee1495be57daeccb65a3f1a366f3221b051107b",
+        "contracts/v3/HoodxProportionalV3.sol": "0x17c2266fecfad3eea6afec4a02d7aecc9f35861931cda702f4ef10142dc0a1ea",
         "lib/openzeppelin-contracts/contracts/access/Ownable.sol": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
         "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
         "lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol": "0xd5ea07362ab630a6a3dee4285a74cf2377044ca2e4be472755ad64d7c5d4b69d",

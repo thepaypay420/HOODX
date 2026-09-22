@@ -12,20 +12,24 @@ Checkpoint: 2026-09-22. **Not approved for production deployment.** Existing V2 
 - Proportional ETH withdrawals with per-sale and aggregate floors; in-kind recovery while paused; reserved claims survive a full exit and reopening.
 - Expiring transaction plans and configuration nonce invalidation; route approvals cleared after execution.
 - Curator constituent, target, pause and trade controls. Adding an empty sleeve does not make proportional deposits purchase it; the curator must fund it through a separate rebalance.
-- Independent frontend arithmetic for deposit and withdrawal plans, pinned-block quote checks and 60-second quote freshness. This library is not yet connected to the live app.
+- Vault-native buy and withdrawal quotes always revert after simulation. External failures are masked so a route cannot forge a successful quote result. No quote can commit a trade.
+- Bounded affordable-share solver (at most four complete-basket simulations), pinned-block quotes, 60-second freshness, exact-share plans and aggregate withdrawal floors.
+- Separate successor transaction screen with ETH presets, percentage/Max exit quotes, balance and claim reads, in-kind recovery, curator pause, current-state simulation, gas/balance checks, wallet identity checks, and pending receipt tracking. The release manifest is deliberately inactive; existing V2 pages are unchanged.
 
 ## Validation evidence
 
-- Solidity 0.8.24, optimizer 1, via IR, Cancun: compilation succeeded. Final implementation runtime: 21,848 bytes, below EIP-170's 24,576-byte limit. Source/compiler matching passed for all three contracts; template fingerprints and dependency source hashes are recorded in proportional-build-check.json.
-- 19 candidate unit/fuzz tests passed, including 1,024 randomized joins.
-- Two accounting invariants passed over 128 runs of 64 actions, 8,192 handler calls, with no handler reverts. Foundry reports the combined invariant campaign as one test (20 total candidate results).
+- Solidity 0.8.24, optimizer 1, via IR, Cancun: compilation succeeded. Final implementation runtime: 24,366 bytes, below EIP-170's 24,576-byte limit. Source/compiler matching passed for all seven infrastructure contracts; template fingerprints and dependency source hashes are recorded in proportional-build-check.json.
+- 23 candidate unit/fuzz tests passed, including 1,024 randomized joins.
+- Two accounting invariants passed over 128 runs of 64 actions, 8,192 handler calls across two independently acting handler accounts, with no handler reverts. Foundry reports the combined invariant campaign as one test (24 total candidate results).
 - 66 existing V3 local regression tests passed.
-- Nine frontend plan tests, all 47 frontend regression tests, and the project TypeScript check passed.
+- All 59 frontend tests, strict TypeScript, and the optimized production frontend build passed.
+- The actual frontend quote adapter passed a disposable Anvil integration test: native quote errors decoded, deposit simulated and mined, Max exit simulated and mined, final supply/free assets zero. These were synthetic local accounts/contracts, not Robinhood broadcasts.
+- Vault-native quote lifecycle passed on fresh Robinhood RPC block 69807269. The bounded affordable-share solver subsequently passed the full 20-token lifecycle at block 69820893 for bootstrap sizes 0.02, 0.08 and 0.5 ETH; second deposit maxima were respectively 0.02, 0.05 and 0.3125 ETH. All had protected partial ETH exit, paused in-kind recovery and final ETH exit.
 - Full 20-token lifecycle passed at Robinhood block **69792788**: 0.08 ETH bootstrap, second-user exact-share deposit with 0.05 ETH maximum, partial ETH withdrawal, paused in-kind exit, and original holder's final ETH exit. Every token had a positive initial holding. Assertions verified incumbent backing, resolved newcomer claims, zero final free token/WETH balances and zero routing-contract token residue. Protocol/creator fee claims intentionally remain reserved.
 - Assets: PONS, AI, CASHCAT, Index, MEME, STONKBROKER, PRISM, HOOKR, DELTA, SHROOM, BOW, UP, QUOTRON, NET, ZEAL, website, Aria, HARMONIC, QUOTIENT, PROMETHEUS.
 - QUOTRON uses its specialized approved route. This is not the previously failing generic route.
 - The fork fixture creates its own approvals and matures its hook approval in simulated time. It does not establish that corresponding live approvals exist.
-- Fork quote probes use minimum 1 only inside rolled-back snapshots; actual bootstrap and ETH-sale calls enforce positive 97% quote floors. Exact-share joins enforce required token quantities. Both partial and final fork withdrawals also enforce an aggregate minimum of cash plus protected sale outputs, matching the frontend planner. The strengthened rerun passed at the same block.
+- Vault quote probes use minimum 1 only inside always-reverting simulation calls; actual bootstrap and ETH-sale calls enforce positive 97% quote floors. Exact-share joins enforce required token quantities. Both partial and final fork withdrawals also enforce an aggregate minimum of cash plus protected sale outputs, matching the frontend planner. The strengthened rerun passed at the same block.
 - No live transaction or deployment was broadcast by these tests.
 
 Reproduce the basket test with `node --use-system-ca scripts/run_watchlist_fork.mjs --successor --proportional-candidate --block=69792788`, with RPC privately configured. The relay permits read-only RPC methods only. Local logs are outside the repository in `../outputs/proportional-candidate-fork.txt`, `proportional-candidate-local-final.txt`, and `successor-local-regression.txt`.
@@ -35,9 +39,17 @@ Reproduce the basket test with `node --use-system-ca scripts/run_watchlist_fork.
 1. Deposits replicate actual holdings, not target weights. The genesis share denomination is not NAV. Indicative portfolio value and performance must remain display-only.
 2. Curator trades use explicit curator-signed output/cash floors, without the old independent-price guard. This increases curator execution trust. The UI and product review must make that clear before launch; target cash percentage is not continuously oracle-enforced.
 3. Token admission still requires token/proxy, fee, liquidity, hook and sellability review. Runtime hashes do not pin proxy implementations. Rebases, false balance reporting, sender-extra-debit and hostile callbacks are not universally supported. The tested watchlist at one block is not a promise that arbitrary future tokens are safe.
-4. Complete and review the affordable-share quote solver, real route quotes, net transfer-tax handling, wallet simulation, chain/address identity checks, claim UI and successor-only frontend integration. Do not expose the arithmetic library as a complete quote service.
-5. Extend adversarial review and regression coverage for malicious callbacks, changing taxes, proxy upgrades, concurrent balance changes, multiple users and different basket sizes/trade sizes. Obtain an independent security review of the changed economic model and implementation.
-6. Produce final source/build fingerprints, deployment manifests, live hook/policy approval evidence, funding envelope and canary procedures. Refresh full-watchlist rehearsal immediately before signing.
+4. Complete browser-wallet UX validation and release review. The quote solver, actual-execution probes, simulation adapter, release identity checks and inactive successor screen are implemented; the synthetic adapter integration passed. They have not yet been exercised through a real wallet on a live successor.
+5. Independent security review of the changed economic model and implementation remains outstanding. The dedicated security-review service is unavailable in this session. Local adversarial checks, two-user invariants and three real-route trade sizes passed; those do not establish arbitrary-token/proxy-upgrade safety.
+6. Final contract source/build fingerprints and a read-only infrastructure rehearsal are saved. Live deployment manifests, reviewed live hook/token approval evidence, the complete per-stage signing envelope and canary procedures remain required. Refresh the full-watchlist rehearsal immediately before signing.
 7. Run and recover a bounded live canary only after those gates and explicit live authorization. Production launch remains stopped until receipts, roles, fees, dust and recovery are verified.
 
 No assertion of production readiness or universal asset compatibility is made by this checkpoint.
+
+## Infrastructure and funding checkpoint
+
+The read-only PrepareProportionalV3 script succeeded at RPC fork block 69818223: seven deployments and two delayed hook proposals (nine simulated transactions, zero live receipts). Estimated padded gas was 17,187,187 at a 102,896,001 wei max fee, or 0.001768492810739187 ETH. This excludes token approvals, canary creation, trading and capital. The script rejects broadcast mode; the relay also rejects transaction-send methods.
+
+At RPC block 69819579 the deployer 0xf63E63a80A25611154C5d1c06E55FD763E0cfC19 held 0.000005229504 ETH. Funding is insufficient. Proposed minimum-size canary funding target: 0.05 ETH balance, comprising 0.02 ETH bootstrap, up to 0.02 ETH repeat entry and 0.01 ETH reserve. This is not a spending authorization or a guaranteed total cost. Funds recovered may be reduced by gas, trading fees, transfer taxes and market movement. Refresh all fees before signing. The registry has a 172,800-second delay; its live timer has not started.
+
+Additional reproduction: node scripts/proportional_local_e2e.cjs compiles the actual adapter and starts/cleans a disposable localhost-only Anvil chain. For minimum/larger fork cases set HOODX_CANARY_TEST_SEED to 20000000000000000 or 500000000000000000 and use --block=69820893. Logs: ../outputs/proportional-solver-{minimum,standard,larger}-fork.txt, proportional-quote-regression.txt, proportional-ui-build-final.txt and proportional-infrastructure.txt.

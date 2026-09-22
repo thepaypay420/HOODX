@@ -4,7 +4,7 @@ import path from 'node:path';
 import {keccak256, toHex} from 'viem';
 
 const root = process.cwd();
-const contracts = ['HoodxProportionalV3', 'HoodxProportionalPolicyV3', 'HoodxProportionalFactoryV3'];
+const contracts = ['HoodxHookRegistryV3', 'HoodxExecutorV3', 'HoodxRoutingV3', 'HoodxFeeModelV3', 'HoodxProportionalV3', 'HoodxProportionalPolicyV3', 'HoodxProportionalFactoryV3'];
 const builds = [];
 for (const name of contracts) {
   const artifact = JSON.parse(fs.readFileSync(path.join(root, 'out', `${name}.sol`, `${name}.json`), 'utf8'));

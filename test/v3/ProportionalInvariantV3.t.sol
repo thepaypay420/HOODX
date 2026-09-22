@@ -56,6 +56,9 @@ contract ProportionalInvariantV3Test is ProportionalV3Fixture {
         vm.deal(address(handler), 10000 ether);
         vm.deal(address(w), 10000 ether);
         targetContract(address(handler));
+        ProportionalHandlerV3 second = new ProportionalHandlerV3(vault);
+        vm.deal(address(second), 10000 ether);
+        targetContract(address(second));
     }
 
     function invariantInitialHolderNeverLosesTokenBacking() public view {

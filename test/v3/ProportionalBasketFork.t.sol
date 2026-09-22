@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SuccessorWatchlistForkTest} from "./SuccessorWatchlistFork.t.sol";
 import {HoodxProportionalV3} from "../../contracts/v3/HoodxProportionalV3.sol";
 import {HoodxProportionalPolicyV3} from "../../contracts/v3/HoodxProportionalPolicyV3.sol";
@@ -233,36 +234,41 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         sell = abi.encode(r);
     }
 
-    function exactSimulation(HoodxRoutingV3 router, address input, address output, uint256 amount, bytes memory route)
-        internal
-        returns (uint256 got)
-    {
-        uint256 snapshot = vm.snapshotState();
-        IERC20(input).approve(address(router), amount);
-        got = router.execute(input, output, amount, 1, route, block.timestamp + 300);
-        assertTrue(vm.revertToState(snapshot));
+    function payload(bytes memory reason, bytes4 selector) internal pure returns (bytes memory data) {
+        require(reason.length >= 4 && bytes4(reason) == selector, "wrong quote response");
+        data = new bytes(reason.length - 4);
+        for (uint256 i; i < data.length; ++i) {
+            data[i] = reason[i + 4];
+        }
     }
 
-    function vaultFloors(
-        HoodxRoutingV3 router,
-        HoodxProportionalV3 vault,
-        address[] memory tokens,
-        bytes[] memory sells,
-        uint256 shares
-    ) internal returns (uint256[] memory floors) {
-        floors = new uint256[](tokens.length);
-        for (uint256 i; i < tokens.length; ++i) {
-            uint256 snapshot = vm.snapshotState();
-            uint256 amount = vault.freeBalance(tokens[i]) * shares / vault.totalSupply();
-            if (amount != 0) {
-                vm.prank(address(vault));
-                IERC20(tokens[i]).approve(address(router), amount);
-                vm.prank(address(vault));
-                uint256 got = router.execute(tokens[i], W, amount, 1, sells[i], block.timestamp + 300);
-                floors[i] = got * 9700 / 10000;
-                assertGt(floors[i], 0);
-            }
-            assertTrue(vm.revertToState(snapshot));
+    function buyOutputs(HoodxProportionalV3 vault, uint256[] memory budgets)
+        internal
+        returns (uint256[] memory outputs)
+    {
+        uint256 funding;
+        for (uint256 i; i < budgets.length; ++i) {
+            funding += budgets[i];
+        }
+        (bool ok, bytes memory reason) = address(vault).call{value: funding}(abi.encodeCall(vault.quoteBuys, (budgets)));
+        assertFalse(ok);
+        outputs = abi.decode(payload(reason, HoodxProportionalV3.BuyQuote.selector), (uint256[]));
+    }
+
+    function vaultFloors(HoodxProportionalV3 vault, address holder, uint256 shares)
+        internal
+        returns (uint256[] memory floors)
+    {
+        vm.prank(holder);
+        (bool ok, bytes memory reason) = address(vault).call(abi.encodeCall(vault.quoteWithdrawal, (shares)));
+        assertFalse(ok);
+        (uint256 cash, uint256[] memory outputs) =
+            abi.decode(payload(reason, HoodxProportionalV3.WithdrawalQuote.selector), (uint256, uint256[]));
+        assertEq(cash, vault.freeBalance(W) * shares / vault.totalSupply());
+        floors = new uint256[](outputs.length);
+        for (uint256 i; i < outputs.length; ++i) {
+            floors[i] = outputs[i] * 9700 / 10000;
+            assertGt(floors[i], 0);
         }
     }
 
@@ -289,15 +295,14 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         uint256[] memory floors = new uint256[](20);
         bytes[] memory sells = new bytes[](20);
         address[] memory tokens = new address[](20);
-        uint256 net = 0.08 ether * 9950 / 10000;
+        uint256 gross = vm.envOr("HOODX_CANARY_TEST_SEED", uint256(0.08 ether));
+        uint256 net = gross * 9950 / 10000;
         uint256 seedBudget = net * 375 / 10000;
         for (uint256 i; i < 20; ++i) {
             bytes memory buy;
             (tokens[i], buy, sells[i]) = routeFor(i);
             ids[i] = policy.approveRoute(tokens[i], buy, sells[i], bytes32(i + 1));
             weights[i] = 375;
-            floors[i] = exactSimulation(router, W, tokens[i], seedBudget, buy) * 9700 / 10000;
-            assertGt(floors[i], 0);
         }
         HoodxProportionalV3 impl = new HoodxProportionalV3(address(policy), address(fees));
         HoodxProportionalV3 vault = HoodxProportionalV3(payable(Clones.clone(address(impl))));
@@ -318,8 +323,17 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             ids,
             weights
         );
-        vm.deal(address(this), 1 ether);
-        vault.bootstrap{value: 0.08 ether}(floors, vault.planNonce(), block.timestamp + 300);
+        vm.deal(address(this), 100 ether);
+        uint256[] memory seedBudgets = new uint256[](20);
+        for (uint256 i; i < 20; ++i) {
+            seedBudgets[i] = seedBudget;
+        }
+        floors = buyOutputs(vault, seedBudgets);
+        for (uint256 i; i < 20; ++i) {
+            floors[i] = floors[i] * 9700 / 10000;
+            assertGt(floors[i], 0);
+        }
+        vault.bootstrap{value: gross}(floors, vault.planNonce(), block.timestamp + 300);
         uint256 initialShares = vault.totalSupply();
         uint256[] memory initial = new uint256[](20);
         for (uint256 i; i < 20; ++i) {
@@ -327,26 +341,24 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             assertGt(initial[i], 0);
         }
         uint256 cashBefore = vault.freeBalance(W);
-        uint256 shares = initialShares / 2;
-        (, uint256[] memory needed) = vault.requiredContributions(shares);
-        uint256[] memory budgets = new uint256[](20);
-        for (uint256 i; i < 20; ++i) {
-            budgets[i] = seedBudget * 105 / 200;
-        }
+        uint256 joinBudget = Math.max(0.02 ether, gross * 5 / 8);
+        (uint256 shares, uint256[] memory budgets, uint256[] memory needed) = solveJoin(vault, tokens, joinBudget);
         address newcomer = address(0xBEEF);
-        vm.deal(newcomer, 1 ether);
+        vm.deal(newcomer, 100 ether);
         uint256 nonce = vault.planNonce();
         vm.prank(newcomer);
-        vault.depositExactShares{value: 0.05 ether}(shares, budgets, needed, nonce, block.timestamp + 300);
+        vault.depositExactShares{value: joinBudget}(shares, budgets, needed, nonce, block.timestamp + 300);
         for (uint256 i; i < 20; ++i) {
             assertGe(vault.freeBalance(tokens[i]) * initialShares, initial[i] * vault.totalSupply());
         }
         assertGe(vault.freeBalance(W) * initialShares, cashBefore * vault.totalSupply());
         // Partial ETH redemption first, then the rest in kind while paused.
         uint256 partialShares = shares / 2;
-        floors = vaultFloors(router, vault, tokens, sells, partialShares);
+        floors = vaultFloors(vault, newcomer, partialShares);
         uint256 minimumEth = vault.freeBalance(W) * partialShares / vault.totalSupply();
-        for (uint256 i; i < floors.length; ++i) minimumEth += floors[i];
+        for (uint256 i; i < floors.length; ++i) {
+            minimumEth += floors[i];
+        }
         nonce = vault.planNonce();
         vm.prank(newcomer);
         vault.withdraw(partialShares, minimumEth, floors, nonce, block.timestamp + 300);
@@ -357,9 +369,11 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             assertGe(vault.freeBalance(tokens[i]), initial[i]);
             assertEq(vault.claimable(newcomer, tokens[i]), 0);
         }
-        floors = vaultFloors(router, vault, tokens, sells, initialShares);
+        floors = vaultFloors(vault, address(this), initialShares);
         minimumEth = vault.freeBalance(W);
-        for (uint256 i; i < floors.length; ++i) minimumEth += floors[i];
+        for (uint256 i; i < floors.length; ++i) {
+            minimumEth += floors[i];
+        }
         vault.withdraw(initialShares, minimumEth, floors, vault.planNonce(), block.timestamp + 300);
         assertEq(vault.totalSupply(), 0);
         assertEq(vault.freeBalance(W), 0);
@@ -367,5 +381,47 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             assertEq(vault.freeBalance(tokens[i]), 0);
             assertEq(IERC20(tokens[i]).balanceOf(address(router)), 0);
         }
+    }
+
+    // Same bounded quantity-based solver as the frontend, exercised against actual pool execution.
+    function solveJoin(HoodxProportionalV3 vault, address[] memory tokens, uint256 maxEth)
+        internal
+        returns (uint256 shares, uint256[] memory budgets, uint256[] memory floors)
+    {
+        uint256 net = maxEth * 9950 / 10000;
+        uint256 cash = vault.freeBalance(W);
+        uint256 supply = vault.totalSupply();
+        uint256[] memory balances = new uint256[](tokens.length);
+        budgets = new uint256[](tokens.length);
+        for (uint256 i; i < tokens.length; ++i) {
+            balances[i] = vault.freeBalance(tokens[i]);
+            budgets[i] = net * 3 / 4 / tokens.length;
+        }
+        uint256[] memory outputs;
+        for (uint256 iteration; iteration < 4; ++iteration) {
+            outputs = buyOutputs(vault, budgets);
+            if (iteration == 3) break;
+            uint256[] memory costs = new uint256[](tokens.length);
+            uint256 total = cash;
+            for (uint256 i; i < tokens.length; ++i) {
+                assertGt(outputs[i], 0);
+                costs[i] = Math.mulDiv(balances[i], budgets[i], outputs[i], Math.Rounding.Ceil);
+                total += costs[i];
+            }
+            for (uint256 i; i < tokens.length; ++i) {
+                budgets[i] = Math.mulDiv(net, costs[i], total);
+            }
+        }
+        uint256 spent;
+        for (uint256 i; i < tokens.length; ++i) {
+            spent += budgets[i];
+        }
+        shares = Math.mulDiv(net - spent, supply, cash);
+        floors = new uint256[](tokens.length);
+        for (uint256 i; i < tokens.length; ++i) {
+            floors[i] = outputs[i] * 9700 / 10000;
+            shares = Math.min(shares, Math.mulDiv(floors[i], supply, balances[i]));
+        }
+        assertGe(shares, vault.MIN_SHARES());
     }
 }

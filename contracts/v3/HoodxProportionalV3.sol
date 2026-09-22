@@ -69,6 +69,9 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     error OnlySelf();
     error NotCreator();
     error HeldAsset();
+    error BuyQuote(uint256[] outputs);
+    error WithdrawalQuote(uint256 cash, uint256[] outputs);
+    error QuoteUnavailable();
     event Deposit(address indexed user, uint256 gross, uint256 shares, uint256 fee);
     event Withdraw(address indexed user, uint256 shares, uint256 ethOut);
     event BuyDeferred(address indexed token, uint256 wethAmount, bytes32 reasonHash);
@@ -87,7 +90,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         if (policy_.code.length == 0) revert Invalid();
         policy = IV2Policy(policy_);
         executor = IV2Executor(policy.executor());
-        if (feeModel_ != address(0) && feeModel.executor() != address(executor)) revert Invalid();
+        if (feeModel.executor() != address(executor)) revert Invalid();
         weth = executor.weth();
         initialized = true;
     }
@@ -177,6 +180,56 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         return keccak256("HOODX_PROPORTIONAL_V1");
     }
 
+    /// @notice eth_call only: ALWAYS reverts, including on success, rolling back every swap.
+    /// External failures are masked so a token cannot forge a successful quote error.
+    function quoteBuys(uint256[] calldata budgets) external payable nonReentrant {
+        try this.probeBuys(budgets, msg.value) returns (uint256[] memory outputs) {
+            revert BuyQuote(outputs);
+        } catch {
+            revert QuoteUnavailable();
+        }
+    }
+
+    function probeBuys(uint256[] calldata budgets, uint256 funding) external returns (uint256[] memory outputs) {
+        if (msg.sender != address(this)) revert OnlySelf();
+        if (!initialized || paused || budgets.length != tokens.length || funding == 0) revert Invalid();
+        uint256 total;
+        for (uint256 i; i < budgets.length; ++i) {
+            total += budgets[i];
+        }
+        if (total > funding) revert Invalid();
+        IV2Weth(weth).deposit{value: funding}();
+        outputs = new uint256[](tokens.length);
+        for (uint256 i; i < tokens.length; ++i) {
+            if (budgets[i] == 0) continue;
+            uint256 beforeBalance = freeBalance(tokens[i]);
+            this.executeBuy(tokens[i], budgets[i], 1, block.timestamp);
+            outputs[i] = freeBalance(tokens[i]) - beforeBalance;
+        }
+    }
+
+    /// @notice eth_call only. Quote the holder's actual sales, including route and transfer fees.
+    function quoteWithdrawal(uint256 shares) external nonReentrant {
+        try this.probeWithdrawal(msg.sender, shares) returns (uint256 cash, uint256[] memory outputs) {
+            revert WithdrawalQuote(cash, outputs);
+        } catch {
+            revert QuoteUnavailable();
+        }
+    }
+
+    function probeWithdrawal(address holder, uint256 shares) external returns (uint256 cash, uint256[] memory outputs) {
+        if (msg.sender != address(this)) revert OnlySelf();
+        if (shares == 0 || shares > balanceOf(holder)) revert Invalid();
+        _wrapNative(0);
+        uint256 supply = totalSupply();
+        cash = Math.mulDiv(freeBalance(weth), shares, supply);
+        outputs = new uint256[](tokens.length);
+        for (uint256 i; i < tokens.length; ++i) {
+            uint256 amount = Math.mulDiv(freeBalance(tokens[i]), shares, supply);
+            if (amount != 0) outputs[i] = _sell(tokens[i], amount, 1, block.timestamp);
+        }
+    }
+
     function requiredContributions(uint256 shares) external view returns (uint256 cash, uint256[] memory amounts) {
         uint256 supply = totalSupply();
         if (supply == 0 || shares < MIN_SHARES) revert Invalid();
@@ -188,7 +241,9 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     }
 
     function _checkPlan(uint256 nonce, uint256 deadline) private view {
-        if (nonce != planNonce || deadline < block.timestamp || deadline > block.timestamp + MAX_DEADLINE) revert Invalid();
+        if (nonce != planNonce || deadline < block.timestamp || deadline > block.timestamp + MAX_DEADLINE) {
+            revert Invalid();
+        }
     }
 
     function _credit(address user, address token, uint256 amount) private {
@@ -306,12 +361,6 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         emit Deposit(msg.sender, gross, shares, gross - spent);
     }
 
-    function executionFactor(address token, bool buying) public view returns (uint256) {
-        if (address(feeModel) == address(0)) return 1e18;
-        (,, bytes memory buy, bytes memory sell) = policy.config(configId[token]);
-        return feeModel.factor(buying ? buy : sell);
-    }
-
     function _claimMinimum(address token, uint256 amount) private view returns (uint256) {
         if (token == weth) return amount;
         uint256 factor = claimTransferFactor[token];
@@ -330,7 +379,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         returns (uint256 got)
     {
         if (amount == 0 || amount > freeBalance(input) || floor == 0 || deadline < block.timestamp) revert Invalid();
-        executionFactor(input == weth ? output : input, input == weth);
+        feeModel.factor(route);
         uint256 beforeIn = IERC20(input).balanceOf(address(this));
         uint256 beforeOut = IERC20(output).balanceOf(address(this));
         IERC20(input).forceApprove(address(executor), amount);
@@ -357,7 +406,6 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         _wrapNative(0);
         uint256 supply = totalSupply();
         uint256 cash = Math.mulDiv(freeBalance(weth), shares, supply);
-        uint256 nativeTake = Math.mulDiv(freeBalance(address(0)), shares, supply);
         uint256 proceeds;
         uint256[] memory retained = new uint256[](tokens.length);
         for (uint256 i; i < tokens.length; ++i) {
@@ -371,7 +419,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         for (uint256 i; i < tokens.length; ++i) {
             if (freeBalance(tokens[i]) != retained[i]) revert Slippage();
         }
-        net = cash + nativeTake + proceeds;
+        net = cash + proceeds;
         if (net < minEthOut) revert Slippage();
         _burn(msg.sender, shares);
         if (cash + proceeds != 0) IV2Weth(weth).withdraw(cash + proceeds);
@@ -509,9 +557,9 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         if (oracle != address(0)) revert Invalid();
         ++planNonce;
         configId[t] = id;
-        claimTransferFactor[t] = address(feeModel) == address(0) ? 1e18 : feeModel.transferFactor(buy);
-        executionFactor(t, true);
-        executionFactor(t, false);
+        claimTransferFactor[t] = feeModel.transferFactor(buy);
+        feeModel.factor(buy);
+        feeModel.factor(sell);
         tokens.push(t);
         emit ConstituentChanged(t, id);
     }
@@ -523,9 +571,9 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         executor.validateRoute(sell, t, weth);
         ++planNonce;
         configId[t] = id;
-        claimTransferFactor[t] = address(feeModel) == address(0) ? 1e18 : feeModel.transferFactor(buy);
-        executionFactor(t, true);
-        executionFactor(t, false);
+        claimTransferFactor[t] = feeModel.transferFactor(buy);
+        feeModel.factor(buy);
+        feeModel.factor(sell);
         emit ConstituentChanged(t, id);
     }
 

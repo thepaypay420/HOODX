@@ -56,8 +56,7 @@ abstract contract ProportionalV3Fixture is Test {
         HoodxFeeModelV3 fee = new HoodxFeeModelV3(address(ex), address(0), address(0));
         HoodxProportionalV3 impl = new HoodxProportionalV3(address(policy), address(fee));
         HoodxProportionalFactoryV3 factory = new HoodxProportionalFactoryV3(address(this), treasury, address(impl));
-        HoodxIndexV2.Init memory init =
-            HoodxIndexV2.Init(
+        HoodxIndexV2.Init memory init = HoodxIndexV2.Init(
             address(this), address(this), recipient, treasury, "Basket", "BASK", 40, 10, 2500, 0.02 ether, ""
         );
         uint16[] memory weights = new uint16[](2);
@@ -105,6 +104,76 @@ abstract contract ProportionalV3Fixture is Test {
 }
 
 contract ProportionalV3Test is ProportionalV3Fixture {
+    function testExternalRouteCannotForgeSuccessfulQuote() public {
+        seed();
+        uint256[] memory amounts = new uint256[](2);
+        amounts[0] = 0.01 ether;
+        amounts[1] = 0.01 ether;
+        vm.mockCallRevert(
+            address(ex),
+            abi.encodeWithSelector(ex.execute.selector),
+            abi.encodeWithSelector(HoodxProportionalV3.BuyQuote.selector, amounts)
+        );
+        vm.expectRevert(HoodxProportionalV3.QuoteUnavailable.selector);
+        vault.quoteBuys{value: 0.02 ether}(amounts);
+        uint256 shares = vault.totalSupply();
+        vm.mockCallRevert(
+            address(ex),
+            abi.encodeWithSelector(ex.execute.selector),
+            abi.encodeWithSelector(HoodxProportionalV3.WithdrawalQuote.selector, 1 ether, amounts)
+        );
+        vm.expectRevert(HoodxProportionalV3.QuoteUnavailable.selector);
+        vault.quoteWithdrawal(shares);
+    }
+
+    function testBuyQuoteAlwaysRollsBackFundsAndApprovals() public {
+        seed();
+        uint256[] memory budgets = new uint256[](2);
+        budgets[0] = 0.01 ether;
+        budgets[1] = 0.02 ether;
+        uint256 beforeA = vault.freeBalance(address(a));
+        uint256 beforeW = vault.freeBalance(address(w));
+        uint256 beforeETH = address(this).balance;
+        uint256 supply = vault.totalSupply();
+        vm.expectRevert(abi.encodeWithSelector(HoodxProportionalV3.BuyQuote.selector, budgets));
+        vault.quoteBuys{value: 0.03 ether}(budgets);
+        assertEq(address(this).balance, beforeETH);
+        assertEq(vault.freeBalance(address(a)), beforeA);
+        assertEq(vault.freeBalance(address(w)), beforeW);
+        assertEq(vault.totalSupply(), supply);
+        assertEq(w.allowance(address(vault), address(ex)), 0);
+    }
+
+    function testWithdrawalQuoteRollsBackAndWorksWhilePaused() public {
+        seed();
+        vault.setPaused(true);
+        uint256 supply = vault.totalSupply();
+        uint256[] memory outputs = new uint256[](2);
+        outputs[0] = 0.0373125 ether;
+        outputs[1] = outputs[0];
+        vm.expectRevert(abi.encodeWithSelector(HoodxProportionalV3.WithdrawalQuote.selector, 0.024875 ether, outputs));
+        vault.quoteWithdrawal(supply);
+        assertEq(vault.totalSupply(), supply);
+        assertEq(vault.freeBalance(address(a)), outputs[0]);
+        assertEq(vault.freeBalance(address(w)), 0.024875 ether);
+        assertEq(a.allowance(address(vault), address(ex)), 0);
+    }
+
+    function testQuoteCannotSpendExistingCashAndProbesArePrivate() public {
+        seed();
+        uint256[] memory budgets = new uint256[](2);
+        budgets[0] = 0.01 ether;
+        vm.expectRevert(HoodxProportionalV3.QuoteUnavailable.selector);
+        vault.quoteBuys{value: 1}(budgets);
+        vm.expectRevert(HoodxProportionalV3.OnlySelf.selector);
+        vault.probeBuys(budgets, 0.01 ether);
+        vm.expectRevert(HoodxProportionalV3.OnlySelf.selector);
+        vault.probeWithdrawal(address(this), 1);
+        vm.prank(alice);
+        vm.expectRevert(HoodxProportionalV3.QuoteUnavailable.selector);
+        vault.quoteWithdrawal(1);
+    }
+
     function testRejectedETHRefundCanBeClaimedElsewhere() public {
         seed();
         RefundRejectorV3 user = new RefundRejectorV3();

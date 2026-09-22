@@ -1,0 +1,19 @@
+{
+  "status": "simulation-only-not-deployed",
+  "chainId": 4663,
+  "rpcForkBlock": "69818223",
+  "balanceVerifiedAtRpcBlock": "69819579",
+  "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+  "deployerBalanceWei": "5229504000000",
+  "simulatedTransactions": 9,
+  "liveReceipts": 0,
+  "estimatedGasWithFoundryPadding": "17187187",
+  "estimatedMaxFeePerGasWei": "102896001",
+  "estimatedInfrastructureCostWei": "1768492810739187",
+  "infrastructureFundingShortfallWei": "1763263306739187",
+  "hookApprovalDelaySeconds": 172800,
+  "hookApprovalDelayStarted": false,
+  "includes": ["hook registry", "two delayed hook proposals", "pool executor", "routing dispatcher", "fee model", "execution policy", "vault implementation", "separate factory"],
+  "excludes": ["hook activation", "token approvals", "canary vault creation", "canary capital", "canary trading and recovery", "production vaults"],
+  "notes": ["Fees and balances must be refreshed before any signing.", "The preparation script rejects broadcast mode and the RPC relay blocks transaction-send methods.", "Simulated addresses are deliberately not published as live deployment addresses.", "The EVM block.number printed by the script is distinct from the pinned RPC block on this chain."]
+}
