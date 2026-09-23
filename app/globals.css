@@ -1410,7 +1410,7 @@ body {
 .holdings-preview>div {display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .holdings-preview>img {width:100%;height:auto;border-radius:12px;margin-bottom:18px;}
 .holdings-preview>a {display:inline-block;}
-@media(max-width:640px) {.holdings-board {padding:20px 14px;}.holdings-balance {display:none;}.holdings-table td:nth-child(2) {width:auto;}.holdings-table td small {max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.holdings-table td {font-size:11px;}.holdings-table .holdings-cap {font-size:13px;}.holdings-cash small {display:block;margin:3px 0 0;}}
+@media(max-width:640px) {.holdings-board {padding:20px 14px;}.holdings-balance {display:none;}.holdings-table td:nth-child(2) {width:auto;}.holdings-table td small {max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.holdings-table td {font-size:11px;}.holdings-table .holdings-cap {font-size:13px;}.holdings-cash small {display:block;margin:3px 0 0;}.holdings-signoff {gap:10px;}.holdings-signoff>span:first-child {flex:1 1 auto;}.holdings-signoff>span:last-child {flex:0 0 auto;white-space:nowrap;font-size:clamp(18px,5.4vw,24px);line-height:1;}}
 /* Curator workspace: compact sections, clear planning and signing boundaries. */
 #curator .vault-recovery[hidden] {display:none;}
 #curator {background:linear-gradient(155deg,#122325 0%,#0c1516 48%);}
