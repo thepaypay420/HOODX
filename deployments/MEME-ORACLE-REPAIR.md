@@ -20,4 +20,10 @@ The live MEME oracle reverted with `InvalidReference()` because pool `0x97BCdd38
 - Security review found no concrete issue for the intended direct immutable TWAP sources. Runtime hash pinning does not make arbitrary proxy sources safe; only the reviewed direct `HoodxTwapV2` deployments are permitted here.
 - Live wallet flow is limited to the curator on chain 4663, refreshes state/gas/balance per step, caps combined gas at 0.0055 ETH, verifies each transaction identity and receipt, and re-simulates Max after replacement.
 
-Production status is determined only by verified receipts recorded in `robinhood-4663-meme-oracle-repair.json`. Until all four receipts and the final Max simulation are recorded, the existing raw-assets exit remains the reliable live recovery path.
+## Live result
+
+Completed on Robinhood Chain at blocks 70257066–70257374. All four receipts succeeded and their transaction identity and post-transaction state were verified. The live 696X vault now uses configuration `0xf90d0f207b0e7381ba225c1ba16629fd4062125d195095738c85544468046f58` for MEME, backed by redundant oracle `0xd516de25ffe34997b2346d4f11754f1a31a28d0e` and secondary TWAP `0x7b19ff81c16796096292761c24971bbe6433d8c8`.
+
+Immediately after replacement, a read-only full-balance withdrawal simulation sold every held constituent through the production routes and returned `0.094163956140692426 ETH` for `1.984743868967881425` shares. The protected minimum was `0.089941309492107690 ETH`. No withdrawal was broadcast. Total gas paid for the four repair transactions was `0.000132929468008 ETH`.
+
+Verified transaction hashes and the final Max simulation are recorded in `robinhood-4663-meme-oracle-repair.json`.
