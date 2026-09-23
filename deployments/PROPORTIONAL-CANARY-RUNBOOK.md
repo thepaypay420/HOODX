@@ -1,6 +1,6 @@
 # Full-watchlist successor canary
 
-Status: preparation only. No live successor addresses are approved. Existing V2 vaults must not be called by this procedure.
+Status: infrastructure deployed and verified; hook delay pending. No successor vault exists. Existing V2 vaults must not be called by this procedure.
 
 ## Before signing
 
