@@ -41,3 +41,14 @@ At each step save transaction hash, block, status, gas paid, signer, decoded ope
 Report all canary transaction hashes, participant recovery including any in-kind tokens, trading/tax/gas costs, reserved claims, final vault balances and remaining deployer ETH. In-kind recovery is not the same as recovering ETH capital; any subsequent sale needs its own bounded quote and authorization.
 
 Do not create production vaults, activate the frontend release manifest, move existing V2 assets, or claim the watchlist is live until the canary evidence is reviewed and production release is explicitly approved.
+
+## Guarded capital stages
+
+The canary capital flow is deliberately split from hook activation, route admission and clone creation.
+
+1. `BootstrapProportionalCanaryV3.s.sol`, stage `successor-canary-bootstrap`, can spend exactly 0.02 ETH from the deployer. It first pins the factory implementation and clone runtime, every dependency and role, fees, limits, the ordered 20-token basket, route IDs, route bytes and weights. It refuses a non-empty or paused vault.
+2. Start the local canary wallet page with `HOODX_CANARY_UI=1`, then open `/successor/canary?vault=<verified-canary-address>`. The page accepts only the factory's exact `696xcanary` clone. Use the curator wallet for the second 0.02 ETH join, protected partial ETH exit, pause, remaining in-kind redemption and any deferred claims. Its pending-receipt lock prevents accidental retries.
+3. `CloseProportionalCanaryV3.s.sol`, stage `successor-canary-close`, refuses to run until the deployer owns the entire remaining supply. It requotes every live sale, applies the 3% protected floors, and closes only the deployer's position.
+4. Run `scripts/verify_proportional_canary.mjs` with `HOODX_CANARY_EXPECT=complete` and every canary transaction hash. Completion requires confirmed successful receipts from the deployer or curator to the exact registry, policy, factory or canary; zero shares; zero free balances; zero deferred claims; zero actual vault balances; and zero per-token residue in the executor and router.
+
+Each capital stage needs a fresh current-fork rehearsal, current fee and balance envelope, reviewed transaction plan and explicit authorization. The local canary page is disabled in normal builds unless `HOODX_CANARY_UI=1`; the public successor release manifest remains inactive.
