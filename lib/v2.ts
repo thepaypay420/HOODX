@@ -24,6 +24,7 @@ export const productionV2Factory: Address = "0x5e846680bf8d702072b65e1e403d07e5a
 export const productionV2Treasury: Address = "0x134d468b0bcaea6df127916f951f7938c06a37c6";
 export const v2FactoryAbi = parseAbi([
   "function bySlug(string) view returns (address)",
+  "function all(uint256) view returns (address)",
   "function create(string slug,(address curator,address creator,address recipient,address treasury,string name,string symbol,uint16 creatorFee,uint16 protocolFee,uint16 cashBps,uint256 firstDeposit,string imageURI) p,bytes32[] configs,uint16[] weights) returns (address)",
 ]);
 export const verifiedV2Vaults: Readonly<Record<string, Address>> = Object.freeze({

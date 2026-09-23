@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseAbi, parseEther, type Address } from "viem";
 import { TokenArt } from "@/components/TokenArt";
@@ -14,6 +14,8 @@ import { lookupIndexCoin } from "@/lib/lookup";
 import { saveDraft, savePayout } from "@/lib/packs";
 import { fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
+import { distribute } from "@/lib/curatorPlanner";
+import { percentBps } from "@/lib/v2Allocation";
 
 export function Forge() {
   const router = useRouter();
@@ -31,9 +33,34 @@ export function Forge() {
   const [imageSrc, setImageSrc] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [extra, setExtra] = useState<Coin[]>([]);
+  const [cash, setCash] = useState("25.00");
+  const [weights, setWeights] = useState<Record<string, string>>({});
+  const [allocationMode, setAllocationMode] = useState<"equal" | "custom">("equal");
   const live = isAddress(productionV2Factory);
   const slugOk = okUserSlug(slug);
-  const ready = picked.length >= 2 && name.trim().length >= 2 && symbol.length >= 2 && slugOk;
+  const allocation = useMemo(() => {
+    try {
+      const cashBps = percentBps(cash);
+      const weightsBps = picked.map((token) => percentBps(weights[token.toLowerCase()] || "0"));
+      return { cashBps, weightsBps, total: cashBps + weightsBps.reduce((a, b) => a + b, 0), error: "" };
+    } catch (e) {
+      return { cashBps: 0, weightsBps: [] as number[], total: 0, error: e instanceof Error ? e.message : "Invalid allocation" };
+    }
+  }, [cash, picked, weights]);
+  const ready = picked.length >= 2 && name.trim().length >= 2 && symbol.length >= 2 && slugOk && allocation.total === 10_000;
+
+  useEffect(() => {
+    if (!picked.length) return;
+    setWeights((current) => {
+      try {
+        const proposed = picked.map((token) => current[token.toLowerCase()] || "1.00");
+        const normalized = distribute(cash, proposed, proposed.map(() => false), allocationMode === "equal");
+        return Object.fromEntries(picked.map((token, i) => [token.toLowerCase(), normalized[i]]));
+      } catch {
+        return current;
+      }
+    });
+  }, [picked, cash, allocationMode]);
 
   function persist() {
     if (!slugOk) return;
@@ -44,6 +71,8 @@ export function Forge() {
       tokens: picked,
       feeBps,
       payout: payout || undefined,
+      cashBps: allocation.cashBps,
+      weightsBps: Object.fromEntries(picked.map((token, i) => [token.toLowerCase(), allocation.weightsBps[i] || 0])),
       createdAt: Date.now(),
     });
     if (payout) savePayout(slug, payout);
@@ -82,13 +111,14 @@ export function Forge() {
         }
         throw new Error("A selected asset does not yet have an approved V2 route. Choose an asset from the official baskets.");
       }));
-      const weights = tokens.map((_, i) => Math.floor(7500 / tokens.length) + (i < 7500 % tokens.length ? 1 : 0));
+      if (allocation.total !== 10_000) throw new Error("Allocation must total exactly 100%.");
+      const launchWeights = picked.map((token) => percentBps(weights[token.toLowerCase()] || "0"));
       const { request } = await publicClient.simulateContract({
         account: address,
         address: productionV2Factory,
         abi: v2FactoryAbi,
         functionName: "create",
-        args: [slug, { curator: address, creator: address, recipient, treasury: productionV2Treasury, name: name.trim(), symbol, creatorFee: feeBps, protocolFee: 10, cashBps: 2500, firstDeposit: parseEther("0.02"), imageURI: onChainImage }, configs, weights],
+        args: [slug, { curator: address, creator: address, recipient, treasury: productionV2Treasury, name: name.trim(), symbol, creatorFee: feeBps, protocolFee: 10, cashBps: allocation.cashBps, firstDeposit: parseEther("0.02"), imageURI: onChainImage }, configs, launchWeights],
         chain: robinhood,
       });
       const hash = await walletClient.writeContract(request);
@@ -120,7 +150,7 @@ export function Forge() {
         </h2>
         <p className="mt-3 max-w-xl text-[15px] leading-6 text-[var(--dim)]">
           Pick 2–24 names. Share /i/yourslug. You take {(feeBps / 100).toFixed(2)}% on each join;
-          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Only assets with approved V2 routes can be used. The basket holds 25% cash, with the rest split equally. Routes are checked
+          HOODX keeps {(PROTOCOL_FEE_BPS / 100).toFixed(2)}%. Only assets with approved routes can be used. Choose the launch allocation below; routes are checked
           before you sign.
         </p>
 
@@ -239,6 +269,62 @@ export function Forge() {
             {picked.length}/24 · {selected.map((s) => s.symbol).join(" · ") || "none yet"}
           </span>
         </div>
+
+        {picked.length > 0 && (
+          <div className="mt-5 rounded-xl border border-[var(--line)] p-4" data-testid="forge-allocation">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[12px] uppercase tracking-[0.14em] text-[var(--cyan)]">Launch allocation</p>
+                <h3 className="mt-1 text-lg font-semibold">Set the portfolio before it goes on-chain.</h3>
+              </div>
+              <div className="flex gap-2">
+                <button type="button" className="ghost px-3 py-2 text-[12px]" onClick={() => {
+                  try {
+                    setAllocationMode("equal");
+                    const next = distribute(cash, picked.map(() => "1"), picked.map(() => false), true);
+                    setWeights(Object.fromEntries(picked.map((token, i) => [token.toLowerCase(), next[i]])));
+                  } catch (e) { setErr(e instanceof Error ? e.message : "Could not equalize allocation"); }
+                }}>Equal weight</button>
+                <button type="button" className="ghost px-3 py-2 text-[12px]" onClick={() => {
+                  try {
+                    const byToken = new Map(catalog.map((coin) => [coin.token.toLowerCase(), coin]));
+                    const scores = picked.map((token) => Math.sqrt(Math.max(1, byToken.get(token.toLowerCase())?.mcapUsd || 0)));
+                    const scoreTotal = scores.reduce((sum, score) => sum + score, 0);
+                    const next = distribute(cash, scores.map((score) => ((score / scoreTotal) * 100).toFixed(2)), scores.map(() => false));
+                    setAllocationMode("custom");
+                    setWeights(Object.fromEntries(picked.map((token, i) => [token.toLowerCase(), next[i]])));
+                  } catch (e) { setErr(e instanceof Error ? e.message : "Could not weight by market cap"); }
+                }}>Mcap weight</button>
+              </div>
+            </div>
+            <label className="mt-4 block text-[12px] text-[var(--dim)]">
+              WETH reserve · {cash}%
+              <input type="range" min={20} max={50} step={1} value={Number(cash) || 25} onChange={(e) => setCash(Number(e.target.value).toFixed(2))} className="mt-2 w-full accent-[#1fd4c6]" />
+            </label>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {selected.map((coin) => (
+                <label key={coin.token} className="flex items-center justify-between gap-3 rounded-lg border border-[var(--line)] px-3 py-2 text-[13px]">
+                  <span className="font-medium">{coin.symbol}</span>
+                  <span className="flex items-center gap-1 text-[var(--dim)]">
+                    <input aria-label={`${coin.symbol} weight`} value={weights[coin.token.toLowerCase()] || "0.00"} onChange={(e) => { setAllocationMode("custom"); setWeights((current) => ({ ...current, [coin.token.toLowerCase()]: e.target.value })); }} className="field w-24 text-right tabular" inputMode="decimal" />%
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[12px]">
+              <span className={allocation.total === 10_000 ? "text-[var(--mint)]" : "text-[var(--gold)]"}>
+                Total {(allocation.total / 100).toFixed(2)}%{allocation.error ? ` · ${allocation.error}` : ""}
+              </span>
+              {allocation.total !== 10_000 && <button type="button" className="ghost px-3 py-2" onClick={() => {
+                try {
+                  const next = distribute(cash, picked.map((token) => weights[token.toLowerCase()] || "1"), picked.map(() => false));
+                  setAllocationMode("custom");
+                  setWeights(Object.fromEntries(picked.map((token, i) => [token.toLowerCase(), next[i]])));
+                } catch (e) { setErr(e instanceof Error ? e.message : "Could not normalize allocation"); }
+              }}>Normalize to 100%</button>}
+            </div>
+          </div>
+        )}
 
         <AddName
           testId="forge-add"

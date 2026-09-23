@@ -13,7 +13,7 @@ export default function CreatePage() {
         <p className="mt-3 max-w-md text-[16px] leading-7 text-[var(--dim)]">
           Choose your assets, give your basket an identity and manage it from your curator workspace. Start with an idea; review every step before it goes on-chain.
         </p>
-        <div className="curator-guide mt-8"><article><b>1 · Choose your basket</b><p>Pick 2–24 assets with approved routes. Your index starts with 25% cash and equal asset weights.</p></article><article><b>2 · Make it yours</b><p>Name your index, choose a ticker and set your creator fee. Your public vault page is built for sharing.</p></article><article><b>3 · Launch & manage</b><p>Creation includes a 0.02 ETH first deposit, plus network fees. After launch, use the workspace to plan targets and review trades.</p></article></div>
+        <div className="curator-guide mt-8"><article><b>1 · Choose your basket</b><p>Pick 2–24 assets with approved routes, then set each launch weight and the WETH reserve.</p></article><article><b>2 · Make it yours</b><p>Name your index, choose a ticker and set your creator fee. Your public vault page is built for sharing.</p></article><article><b>3 · Launch & manage</b><p>Creation includes a 0.02 ETH first deposit, plus network fees. Review the complete allocation before signing.</p></article></div>
         <div className="mt-8">
           <Forge />
         </div>
