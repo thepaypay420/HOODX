@@ -15,6 +15,12 @@ contract BootstrapProportionalCanaryV3 is Script, ProportionalCanaryGuardV3 {
         HoodxProportionalV3 vault = _verifiedCanary();
         require(vault.totalSupply() == 0 && address(vault).balance == 0, "canary not empty");
         require(vault.balanceOf(DEPLOYER) == 0 && !vault.paused(), "unexpected state");
+        require(vault.planNonce() == ProportionalWatchlistV3.count() + 1, "canary was managed");
+        require(vault.freeBalance(vault.weth()) == 0 && vault.reserved(vault.weth()) == 0, "cash already present");
+        address[] memory tokens = vault.constituents();
+        for (uint256 i; i < tokens.length; ++i) {
+            require(vault.freeBalance(tokens[i]) == 0 && vault.reserved(tokens[i]) == 0, "asset already present");
+        }
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
             require(_stage("successor-canary-bootstrap"), "wrong stage");

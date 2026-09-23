@@ -13,6 +13,7 @@ contract CloseProportionalCanaryV3 is Script, ProportionalCanaryGuardV3 {
         HoodxProportionalV3 vault = _verifiedCanary();
         uint256 shares = vault.balanceOf(DEPLOYER);
         require(shares != 0 && shares == vault.totalSupply(), "participant shares remain");
+        require(vault.paused() && vault.planNonce() == ProportionalWatchlistV3.count() + 2, "recovery stage missing");
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
             require(_stage("successor-canary-close"), "wrong stage");

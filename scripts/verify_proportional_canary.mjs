@@ -58,12 +58,12 @@ const [freeWeth,freeNative,deployerWethClaim,deployerNativeClaim,curatorWethClai
 
 const allFreeZero=rows.every(row=>row.free===0n)&&freeWeth===0n&&freeNative===0n;
 const allClaimsZero=rows.every(row=>row.deployerClaim===0n&&row.curatorClaim===0n)&&deployerWethClaim===0n&&deployerNativeClaim===0n&&curatorWethClaim===0n&&curatorNativeClaim===0n;
-if(expected==='empty') assert(supply===0n&&allFreeZero,'Canary is not empty');
-if(expected==='bootstrapped') assert(supply>0n&&deployerShares===supply&&rows.every(row=>row.free>0n)&&freeWeth>0n,'Bootstrap state mismatch');
-if(expected==='participant') assert(supply>deployerShares&&curatorShares>0n,'Participant position missing');
-if(expected==='participant-recovered') assert(curatorShares===0n&&deployerShares===supply&&paused,'Participant recovery incomplete');
+if(expected==='empty') assert(supply===0n&&allFreeZero&&nonce===21n&&!paused,'Canary is not pristine');
+if(expected==='bootstrapped') assert(supply>0n&&deployerShares===supply&&rows.every(row=>row.free>0n)&&freeWeth>0n&&nonce===21n&&!paused,'Bootstrap state mismatch');
+if(expected==='participant') assert(supply>deployerShares&&curatorShares>0n&&nonce===21n&&!paused,'Participant position missing');
+if(expected==='participant-recovered') assert(curatorShares===0n&&deployerShares===supply&&paused&&nonce===22n,'Participant recovery incomplete');
 if(expected==='complete'){
-  assert(supply===0n&&deployerShares===0n&&curatorShares===0n&&allFreeZero&&allClaimsZero,'Canary recovery incomplete');
+  assert(supply===0n&&deployerShares===0n&&curatorShares===0n&&allFreeZero&&allClaimsZero&&paused&&nonce===22n,'Canary recovery incomplete');
   assert(rows.every(row=>row.actualBalance===0n)&&actualWeth===0n&&actualNative===0n,'Vault balance remains');
   for(const token of [...tokens,addresses.weth]){
     const [atExecutor,atRouting]=await Promise.all([client.readContract({address:token,abi:erc20Abi,functionName:'balanceOf',args:[addresses.executor],blockNumber:block.number}),client.readContract({address:token,abi:erc20Abi,functionName:'balanceOf',args:[addresses.routing],blockNumber:block.number})]);

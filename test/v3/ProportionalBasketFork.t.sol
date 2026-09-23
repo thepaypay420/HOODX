@@ -261,6 +261,7 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
         vm.stopPrank();
         assertEq(vault.owner(), LIVE_CURATOR);
         assertEq(vault.creator(), LIVE_DEPLOYER);
+        assertEq(vault.planNonce(), 21);
         _exerciseLiveCanary(vault, tokens, 0.02 ether);
 
         // Any user can create a future vault from the same admitted route IDs.
@@ -306,6 +307,7 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
         }
         vm.deal(LIVE_DEPLOYER, 1 ether);
         _bootstrapAs(vault, LIVE_DEPLOYER, gross, floors);
+        assertEq(vault.planNonce(), 21);
         uint256 initialShares = vault.totalSupply();
         uint256[] memory initial = new uint256[](20);
         for (uint256 i; i < 20; ++i) {
@@ -317,6 +319,7 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
         address newcomer = address(0xBEEF);
         vm.deal(newcomer, 1 ether);
         _depositAs(vault, newcomer, shares, budgets, needed);
+        assertEq(vault.planNonce(), 21);
         for (uint256 i; i < 20; ++i) {
             assertGe(vault.freeBalance(tokens[i]) * initialShares, initial[i] * vault.totalSupply());
         }
@@ -329,10 +332,13 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
             minimumEth += floors[i];
         }
         _withdrawAs(vault, newcomer, partialShares, minimumEth, floors);
+        assertEq(vault.planNonce(), 21);
         vm.prank(LIVE_CURATOR);
         vault.setPaused(true);
+        assertEq(vault.planNonce(), 22);
         vm.prank(newcomer);
         vault.emergencyRedeemInKind(shares - partialShares, newcomer);
+        assertEq(vault.planNonce(), 22);
         for (uint256 i; i < 20; ++i) {
             assertGe(vault.freeBalance(tokens[i]), initial[i]);
             assertEq(vault.claimable(newcomer, tokens[i]), 0);
