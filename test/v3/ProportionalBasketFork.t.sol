@@ -7,7 +7,9 @@ import {HoodxProportionalPolicyV3} from "../../contracts/v3/HoodxProportionalPol
 import {HoodxFeeModelV3} from "../../contracts/v3/HoodxFeeModelV3.sol";
 import {HoodxRoutingV3} from "../../contracts/v3/HoodxRoutingV3.sol";
 import {HoodxHookRegistryV3} from "../../contracts/v3/HoodxHookRegistryV3.sol";
-import {V2Hop, V2PoolKey} from "../../contracts/v2/Types.sol";
+import {HoodxProportionalFactoryV3} from "../../contracts/v3/HoodxProportionalFactoryV3.sol";
+import {HoodxIndexV2} from "../../contracts/v2/HoodxIndexV2.sol";
+import {ProportionalWatchlistV3} from "../../script/ProportionalWatchlistV3.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
@@ -15,223 +17,8 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
     receive() external payable {}
 
-    function routeFor(uint256 i) internal view returns (address token, bytes memory buy, bytes memory sell) {
-        V2Hop memory h;
-        if (i == 0) {
-            h.tokenOut = address(bytes20(hex"39dbed3a2bd333467115de45665cc57f813c4571"));
-            h.kind = 3;
-            h.tokenIn = W;
-            h.fee = 3000;
-        }
-        if (i == 1) {
-            h.tokenOut = address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"2e8c31162b855a2ffa90f6f8634643ad6f111e18")),
-                address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
-                10000,
-                200,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 2) {
-            h.tokenOut = address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"020bfc650a365f8bb26819deaabf3e21291018b4")),
-                address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
-                2690,
-                54,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 3) {
-            h.tokenOut = address(bytes20(hex"56910d4409f3a0c78c64dd8d0545ff0705389870"));
-            h.kind = 3;
-            h.tokenIn = W;
-            h.fee = 10000;
-        }
-        if (i == 4) {
-            h.tokenOut = address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"385f4f8ae47651ce5f58f5265395a669f8281e18")),
-                address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
-                2969,
-                30,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 5) {
-            h.tokenOut = address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"e934e36a439c94017b64a3fece66af12099abf50")),
-                10000,
-                200,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 6) {
-            h.tokenOut = address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"20024e485c0b22b42855589700721b28320a7777")),
-                15000,
-                150,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 7) {
-            h.tokenOut = address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"18e674231a58c239dc7daedcffe15ec3a24cff5c")),
-                2500,
-                25,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 8) {
-            h.tokenOut = address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
-                address(bytes20(hex"e8ffd7e24187f72afb08d75b1bb13088a989a791")),
-                19900,
-                199,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 9) {
-            h.tokenOut = address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"5fc5360d0400a0fd4f2af552add042d716f1d168")),
-                address(bytes20(hex"ab093def657f15df31b33922a95e047add645b29")),
-                9000,
-                90,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 10) {
-            h.tokenOut = address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"117cc2133c37b721f49de2a7a74833232b3b4c0c")),
-                address(bytes20(hex"451b42a15100c340ca12f7c66de06fac5ea2d751")),
-                0,
-                200,
-                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
-            );
-        }
-        if (i == 11) {
-            h.tokenOut = address(bytes20(hex"57c0e45cb534413d1c20a4240955d6bb250bb4f1"));
-            h.kind = 3;
-            h.tokenIn = W;
-            h.fee = 10000;
-        }
-        if (i == 12) {
-            h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
-            h.kind = 5;
-            h.tokenIn = W;
-        }
-        if (i == 13) {
-            h.tokenOut = address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"ca9c78dd337a67f6e0077f65f5e9218719d30edf")),
-                8500,
-                85,
-                address(bytes20(hex"0000000000000000000000000000000000000000"))
-            );
-        }
-        if (i == 14) {
-            h.tokenOut = address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc")),
-                0,
-                200,
-                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
-            );
-        }
-        if (i == 15) {
-            h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
-            h.kind = 3;
-            h.tokenIn = W;
-            h.fee = 10000;
-        }
-        if (i == 16) {
-            h.tokenOut = address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"a74a94c15b95f8d5f3abdd2db00f6c7384037b55")),
-                0,
-                200,
-                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
-            );
-        }
-        if (i == 17) {
-            h.tokenOut = address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"0000000000000000000000000000000000000000")),
-                address(bytes20(hex"dee52f2ab639b6942b0d0f0565400b93b7a0fbe5")),
-                0,
-                200,
-                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
-            );
-        }
-        if (i == 18) {
-            h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
-            h.kind = 3;
-            h.tokenIn = W;
-            h.fee = 100;
-        }
-        if (i == 19) {
-            h.tokenOut = address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261"));
-            h.kind = 4;
-            h.tokenIn = address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea"));
-            h.key = V2PoolKey(
-                address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261")),
-                address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea")),
-                0,
-                200,
-                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
-            );
-        }
-        token = h.tokenOut;
-        bool multi = h.tokenIn != W && h.tokenIn != address(0);
-        V2Hop[] memory b = new V2Hop[](multi ? 2 : 1);
-        b[b.length - 1] = h;
-        if (multi) b[0] = bridge(h.tokenIn);
-        buy = abi.encode(b);
-        V2Hop[] memory r = new V2Hop[](b.length);
-        for (uint256 j; j < b.length; ++j) {
-            r[j] = b[b.length - 1 - j];
-            (r[j].tokenIn, r[j].tokenOut) = (r[j].tokenOut, r[j].tokenIn);
-        }
-        sell = abi.encode(r);
+    function routeFor(uint256 i) internal pure returns (address token, bytes memory buy, bytes memory sell) {
+        return ProportionalWatchlistV3.routeFor(i);
     }
 
     function payload(bytes memory reason, bytes4 selector) internal pure returns (bytes memory data) {
@@ -301,7 +88,7 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         for (uint256 i; i < 20; ++i) {
             bytes memory buy;
             (tokens[i], buy, sells[i]) = routeFor(i);
-            ids[i] = policy.approveRoute(tokens[i], buy, sells[i], bytes32(i + 1));
+            ids[i] = policy.approveRoute(tokens[i], buy, sells[i], ProportionalWatchlistV3.evidence());
             weights[i] = 375;
         }
         HoodxProportionalV3 impl = new HoodxProportionalV3(address(policy), address(fees));
@@ -423,5 +210,174 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             shares = Math.min(shares, Math.mulDiv(floors[i], supply, balances[i]));
         }
         assertGe(shares, vault.MIN_SHARES());
+    }
+}
+
+/// Exercises the exact live infrastructure on a disposable fork. No live transaction is sent.
+contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
+    address constant LIVE_DEPLOYER = 0xf63E63a80A25611154C5d1c06E55FD763E0cfC19;
+    address constant LIVE_CURATOR = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
+    address constant LIVE_REGISTRY = 0xa46150E972Da054f9b954D7a695476A6258A4705;
+    address constant LIVE_ROUTING = 0x0d96E749dc6eBd4Ec9E4f35BB3fa05Ab89f1C0dE;
+    address constant LIVE_POLICY = 0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21;
+    address constant LIVE_FACTORY = 0xb0a89074d2f88207698aC99f39061463eeabeC8a;
+    address constant PONS_HOOK = 0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044;
+    address constant QUOTRON_HOOK = 0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc;
+    uint256 constant READY_AT = 1790322086;
+
+    function testLiveInfrastructureCanaryAndPermissionlessFutureVault() public {
+        HoodxHookRegistryV3 registry = HoodxHookRegistryV3(LIVE_REGISTRY);
+        vm.warp(READY_AT);
+        registry.activate(PONS_HOOK);
+        registry.activate(QUOTRON_HOOK);
+
+        HoodxProportionalPolicyV3 policy = HoodxProportionalPolicyV3(LIVE_POLICY);
+        bytes32[] memory ids = new bytes32[](20);
+        uint16[] memory weights = new uint16[](20);
+        address[] memory tokens = new address[](20);
+        vm.startPrank(LIVE_DEPLOYER);
+        for (uint256 i; i < 20; ++i) {
+            bytes memory buy;
+            bytes memory sell;
+            (tokens[i], buy, sell) = routeFor(i);
+            ids[i] = policy.approveRoute(tokens[i], buy, sell, ProportionalWatchlistV3.evidence());
+            weights[i] = 375;
+        }
+        HoodxProportionalFactoryV3 factory = HoodxProportionalFactoryV3(LIVE_FACTORY);
+        HoodxIndexV2.Init memory init = HoodxIndexV2.Init(
+            LIVE_CURATOR,
+            LIVE_DEPLOYER,
+            LIVE_CURATOR,
+            LIVE_CURATOR,
+            "696X Successor Canary",
+            "696XC",
+            40,
+            10,
+            2500,
+            0.02 ether,
+            ""
+        );
+        HoodxProportionalV3 vault = HoodxProportionalV3(payable(factory.create("696xcanary", init, ids, weights)));
+        vm.stopPrank();
+        assertEq(vault.owner(), LIVE_CURATOR);
+        assertEq(vault.creator(), LIVE_DEPLOYER);
+        _exerciseLiveCanary(vault, tokens, 0.02 ether);
+
+        // Any user can create a future vault from the same admitted route IDs.
+        address futureCreator = address(0xF077);
+        bytes32[] memory futureIds = new bytes32[](2);
+        futureIds[0] = ids[0];
+        futureIds[1] = ids[1];
+        uint16[] memory futureWeights = new uint16[](2);
+        futureWeights[0] = 3750;
+        futureWeights[1] = 3750;
+        init = HoodxIndexV2.Init(
+            futureCreator,
+            futureCreator,
+            futureCreator,
+            LIVE_CURATOR,
+            "Future User Basket",
+            "FUTURE",
+            20,
+            10,
+            2500,
+            0.02 ether,
+            ""
+        );
+        vm.prank(futureCreator);
+        HoodxProportionalV3 future =
+            HoodxProportionalV3(payable(factory.create("futurebasket", init, futureIds, futureWeights)));
+        assertEq(future.owner(), futureCreator);
+        assertEq(future.creator(), futureCreator);
+        assertEq(future.constituents().length, 2);
+    }
+
+    function _exerciseLiveCanary(HoodxProportionalV3 vault, address[] memory tokens, uint256 gross) private {
+        vm.deal(address(this), 100 ether);
+        uint256 seedBudget = (gross * 9950 / 10000) * 375 / 10000;
+        uint256[] memory seedBudgets = new uint256[](20);
+        for (uint256 i; i < 20; ++i) {
+            seedBudgets[i] = seedBudget;
+        }
+        uint256[] memory floors = buyOutputs(vault, seedBudgets);
+        for (uint256 i; i < 20; ++i) {
+            floors[i] = floors[i] * 9700 / 10000;
+            assertGt(floors[i], 0);
+        }
+        vm.deal(LIVE_DEPLOYER, 1 ether);
+        _bootstrapAs(vault, LIVE_DEPLOYER, gross, floors);
+        uint256 initialShares = vault.totalSupply();
+        uint256[] memory initial = new uint256[](20);
+        for (uint256 i; i < 20; ++i) {
+            initial[i] = vault.freeBalance(tokens[i]);
+            assertGt(initial[i], 0);
+        }
+        uint256 cashBefore = vault.freeBalance(W);
+        (uint256 shares, uint256[] memory budgets, uint256[] memory needed) = solveJoin(vault, tokens, 0.02 ether);
+        address newcomer = address(0xBEEF);
+        vm.deal(newcomer, 1 ether);
+        _depositAs(vault, newcomer, shares, budgets, needed);
+        for (uint256 i; i < 20; ++i) {
+            assertGe(vault.freeBalance(tokens[i]) * initialShares, initial[i] * vault.totalSupply());
+        }
+        assertGe(vault.freeBalance(W) * initialShares, cashBefore * vault.totalSupply());
+
+        uint256 partialShares = shares / 2;
+        floors = vaultFloors(vault, newcomer, partialShares);
+        uint256 minimumEth = vault.freeBalance(W) * partialShares / vault.totalSupply();
+        for (uint256 i; i < floors.length; ++i) {
+            minimumEth += floors[i];
+        }
+        _withdrawAs(vault, newcomer, partialShares, minimumEth, floors);
+        vm.prank(LIVE_CURATOR);
+        vault.setPaused(true);
+        vm.prank(newcomer);
+        vault.emergencyRedeemInKind(shares - partialShares, newcomer);
+        for (uint256 i; i < 20; ++i) {
+            assertGe(vault.freeBalance(tokens[i]), initial[i]);
+            assertEq(vault.claimable(newcomer, tokens[i]), 0);
+        }
+        floors = vaultFloors(vault, LIVE_DEPLOYER, initialShares);
+        minimumEth = vault.freeBalance(W);
+        for (uint256 i; i < floors.length; ++i) {
+            minimumEth += floors[i];
+        }
+        _withdrawAs(vault, LIVE_DEPLOYER, initialShares, minimumEth, floors);
+        assertEq(vault.totalSupply(), 0);
+        assertEq(vault.freeBalance(W), 0);
+        for (uint256 i; i < 20; ++i) {
+            assertEq(vault.freeBalance(tokens[i]), 0);
+            assertEq(IERC20(tokens[i]).balanceOf(LIVE_ROUTING), 0);
+        }
+    }
+
+    function _bootstrapAs(HoodxProportionalV3 vault, address signer, uint256 gross, uint256[] memory floors) private {
+        uint256 nonce = vault.planNonce();
+        vm.prank(signer);
+        vault.bootstrap{value: gross}(floors, nonce, block.timestamp + 300);
+    }
+
+    function _depositAs(
+        HoodxProportionalV3 vault,
+        address signer,
+        uint256 shares,
+        uint256[] memory budgets,
+        uint256[] memory floors
+    ) private {
+        uint256 nonce = vault.planNonce();
+        vm.prank(signer);
+        vault.depositExactShares{value: 0.02 ether}(shares, budgets, floors, nonce, block.timestamp + 300);
+    }
+
+    function _withdrawAs(
+        HoodxProportionalV3 vault,
+        address signer,
+        uint256 shares,
+        uint256 minimumEth,
+        uint256[] memory floors
+    ) private {
+        uint256 nonce = vault.planNonce();
+        vm.prank(signer);
+        vault.withdraw(shares, minimumEth, floors, nonce, block.timestamp + 300);
     }
 }

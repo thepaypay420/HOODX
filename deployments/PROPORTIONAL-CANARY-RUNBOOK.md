@@ -22,6 +22,8 @@ Propose the two reviewed hooks with real evidence hashes. Read their on-chain re
 
 Approve the 20 reviewed buy/sell configurations, verify every emitted ID and read back each configuration. Rehearse again with the actual live infrastructure addresses. Any route, hook, implementation or tax change invalidates prior relevant evidence.
 
+Use the pinned manifest and three separated scripts recorded in `PROPORTIONAL-CANARY-PREPARATION.md`. Never replace its bridge fees by dynamically selecting a pool at signing time. The reviewed route fingerprint is `0x413f8092b14d21cd87e2db8b7b9c05b437ce468a2ab04aa228f5f0a03592b4d8`.
+
 ## Canary lifecycle
 
 1. Create a uniquely named canary clone in the successor factory. Verify clone bytecode, accounting mode, owner/curator, treasury, fees, all 20 constituents, configuration IDs and target sum. Keep the public release manifest inactive.
