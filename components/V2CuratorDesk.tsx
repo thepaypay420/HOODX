@@ -20,6 +20,7 @@ const abi = parseAbi([
   "function addConstituent(bytes32 id)", "function removeConstituent(address token)",
 ]);
 type Row = { token: Address; symbol: string; decimals: number; balance: bigint; held: bigint; reserved: bigint; target: string; value?: bigint; nav?: bigint };
+type PortfolioStep = { token: Address; symbol: string; buy: boolean; amount: bigint; decimals: number; minimum: bigint; estimatedValue: bigint; gas?: bigint };
 
 export function V2CuratorDesk({ vault, paused, busy, onBusy, onRefresh }: { vault: Address; paused: boolean; busy: boolean; onBusy: (value: boolean) => void; onRefresh: () => Promise<void> }) {
   const { address, chainId, walletClient, switchToRobinhood } = useWallet();
@@ -49,10 +50,15 @@ export function V2CuratorDesk({ vault, paused, busy, onBusy, onRefresh }: { vaul
   const [updated, setUpdated] = useState(0);
   const [preview, setPreview] = useState<{ key: string; at: number; fee: string }>();
   const [lastHash, setLastHash] = useState<`0x${string}`>();
+  const [portfolioPlan, setPortfolioPlan] = useState<PortfolioStep[]>([]);
+  const [portfolioStep, setPortfolioStep] = useState(0);
+  const [planGasPrice, setPlanGasPrice] = useState(0n);
   const previewKey = [vault,address,chainId,selected,buy,amount,minimum,updated].join(":");
   const baseline = JSON.stringify([savedCash, rows.map(r => [r.token.toLowerCase(),r.target])]);
   const draftKey = `hoodx:curator:1:${robinhood.id}:${vault.toLowerCase()}:${address?.toLowerCase()}`;
   const dirty = cash !== savedCash || weights.some((w,i) => w !== rows[i]?.target);
+  const portfolioContext = JSON.stringify([updated, threshold, minimumTrade, savedCash, rows.map(r=>[r.token,r.target])]);
+  const [plannedContext, setPlannedContext] = useState("");
   const load = useCallback(async () => {
     const blockNumber = await publicClient.getBlockNumber();
     const [tokens, cashBps, weth, policy, nav,creatorFee,protocolFee] = await Promise.all([
@@ -145,6 +151,56 @@ export function V2CuratorDesk({ vault, paused, busy, onBusy, onRefresh }: { vaul
       const gas=await publicClient.estimateContractGas({address:vault,abi,account:address,functionName:"rebalance",args});
       const price=await publicClient.getGasPrice();setPreview({key:previewKey,at:Date.now(),fee:formatEther(gas*price)});setMessage("Simulation passed. Review the trade below. Nothing has been signed.");
     }catch(e){setMessage(e instanceof BaseError?e.shortMessage:(e as Error).message);}finally{onBusy(false);}
+  }
+  async function protectedFloor(r: Row, isBuy: boolean, input: bigint) {
+    const policy=await publicClient.readContract({address:vault,abi,functionName:"policy"});
+    const id=await publicClient.readContract({address:vault,abi,functionName:"configId",args:[r.token]});
+    const [,oracle]=await publicClient.readContract({address:policy,abi,functionName:"config",args:[id]});
+    const value=await publicClient.readContract({address:oracle,abi,functionName:"value",args:[r.token,isBuy?10n**18n:input]});
+    if(value<=0n) throw new Error(`${r.symbol} has no valid oracle price.`);
+    const floor=(isBuy?input*10n**18n/value:value)*9700n/10000n;
+    if(floor<=0n) throw new Error(`${r.symbol} is too small to quote safely.`);
+    return floor;
+  }
+  async function buildPortfolioPlan() {
+    if (!address || busy || dirty) { if (dirty) setMessage("Save the target allocation before building its trade plan."); return; }
+    onBusy(true); setMessage(""); setPortfolioPlan([]); setPortfolioStep(0); setPlannedContext("");
+    try {
+      if (!suggestions.length) throw new Error("No priced positions exceed the selected drift and trade-size filters.");
+      const gasPrice=await publicClient.getGasPrice();
+      const deadline=BigInt(Math.floor(Date.now()/1000)+600);
+      const next: PortfolioStep[]=[];
+      for (const {r,trade} of suggestions) {
+        const minimumOut=await protectedFloor(r,trade!.buy,trade!.amount);
+        const args=[r.token,trade!.buy,trade!.amount,minimumOut,deadline] as const;
+        const gas=await publicClient.estimateContractGas({address:vault,abi,account:address,functionName:"rebalance",args}).catch(()=>undefined);
+        next.push({token:r.token,symbol:r.symbol,buy:trade!.buy,amount:trade!.amount,decimals:r.decimals,minimum:minimumOut,estimatedValue:trade!.value,gas});
+      }
+      setPlanGasPrice(gasPrice); setPortfolioPlan(next); setPlannedContext(portfolioContext);
+      setMessage(`Portfolio plan ready · ${next.filter(s=>!s.buy).length} sells, ${next.filter(s=>s.buy).length} buys. Nothing has been signed.`);
+    } catch(e) { setMessage(e instanceof BaseError?e.shortMessage:(e as Error).message); }
+    finally { onBusy(false); }
+  }
+  async function executePortfolioStep() {
+    if (!walletClient || !address || busy || portfolioStep>=portfolioPlan.length) return;
+    if (chainId!==robinhood.id) { await switchToRobinhood(); return; }
+    if (plannedContext!==portfolioContext) { setMessage("The portfolio snapshot or filters changed. Rebuild the plan before signing."); return; }
+    onBusy(true); setMessage("");
+    try {
+      const step=portfolioPlan[portfolioStep];
+      const deadline=BigInt(Math.floor(Date.now()/1000)+600);
+      const minimumOut=await protectedFloor(rows.find(r=>r.token===step.token)!,step.buy,step.amount);
+      const args=[step.token,step.buy,step.amount,minimumOut,deadline] as const;
+      const {request}=await publicClient.simulateContract({address:vault,abi,account:address,chain:robinhood,functionName:"rebalance",args});
+      const hash=await walletClient.writeContract(request); setLastHash(hash);
+      setMessage(`Step ${portfolioStep+1}/${portfolioPlan.length} submitted. Waiting for confirmation.`);
+      const receipt=await publicClient.waitForTransactionReceipt({hash});
+      if(receipt.status!=="success") throw new Error("Portfolio step reverted. Remaining steps were stopped.");
+      const next=portfolioStep+1; setPortfolioStep(next);
+      if(next===portfolioPlan.length){apply(await load());await onRefresh();setMessage("Portfolio rebalance complete. Holdings and targets refreshed.");}
+      else setMessage(`Step ${next}/${portfolioPlan.length} confirmed. Review the next protected trade in your wallet.`);
+    } catch(e) { setMessage(e instanceof BaseError?e.shortMessage:e instanceof Error?e.message:"Portfolio step failed."); }
+    finally { onBusy(false); }
   }
   const removal = rows.find(r => r.token === removeToken);
   const removalReason = !removal ? "Select a token to remove." : rows.length <= 2 ? "At least two configured assets must remain." : removal.target !== "0.00" ? "Set this token’s target to 0% and save allocations first." : removal.held > 0n ? "Sell its remaining holdings into WETH first." : removal.reserved > 0n ? "Reserved shareholder claims must be cleared first." : "Ready to remove. No holdings, targets or claims remain.";
@@ -243,6 +299,15 @@ export function V2CuratorDesk({ vault, paused, busy, onBusy, onRefresh }: { vaul
       <div hidden={tab!=="Trades"} className="vault-recovery"><h3>Make each trade count.</h3>
         <div className="curator-toolbar"><label>Drift band <select value={threshold} onChange={e=>setThreshold(Number(e.target.value))}><option value={50}>0.5 pp</option><option value={100}>1 pp</option><option value={200}>2 pp</option><option value={500}>5 pp</option></select></label><label>Minimum trade value <select value={minimumTrade} onChange={e=>setMinimumTrade(e.target.value)}><option value="0">Show all</option><option value="0.0001">0.0001 ETH</option><option value="0.001">0.001 ETH</option><option value="0.005">0.005 ETH</option></select></label><span>{dirty?"Suggestions use saved targets, not your unsaved draft.":"Suggestions use saved targets. Sells appear first."}</span></div>
         <div className="curator-suggestions">{suggestions.length?suggestions.map(({r,trade})=><button key={r.token} disabled={busy || (trade!.buy&&paused)} onClick={()=>stage(r,trade!.buy,trade!.amount)}><span><b>{trade!.buy?"Buy":"Sell"} {r.symbol}</b><small>{Math.abs(driftBps(r.value,r.nav,r.target)??0)/100} pp {trade!.buy?"below":"above"} target</small></span><span>≈ {Number(formatEther(trade!.value)).toFixed(5)} ETH <small>Prepare →</small></span></button>):<p className="vault-footnote">No priced positions exceed this band. You can still prepare a trade below.</p>}</div>
+        <div className="curator-review">
+          <p className="vault-eyebrow">PORTFOLIO REBALANCE</p><h4>Review the whole move.</h4>
+          <p>Build one ordered plan with overweight sales first and underweight buys second. Every step receives a fresh 3% protected minimum and is simulated again before signing.</p>
+          <button className="vault-button primary" disabled={busy||dirty||!suggestions.length||(paused&&suggestions.some(s=>s.trade!.buy))} onClick={()=>void buildPortfolioPlan()}>{portfolioPlan.length?"Refresh portfolio plan":"Build portfolio plan"}</button>
+          {portfolioPlan.length>0&&<div className="mt-3"><div className="vault-table-scroll"><table className="vault-table"><thead><tr><th>#</th><th>Action</th><th>Asset</th><th>Input</th><th>Protected minimum</th><th>Est. fee</th></tr></thead><tbody>{portfolioPlan.map((step,i)=><tr key={`${step.token}:${step.buy}`}><td>{i<portfolioStep?"✓":i+1}</td><td>{step.buy?"Buy":"Sell"}</td><td>{step.symbol}</td><td>{formatUnits(step.amount,step.buy?18:step.decimals)} {step.buy?"WETH":step.symbol}</td><td>{formatUnits(step.minimum,step.buy?step.decimals:18)} {step.buy?step.symbol:"WETH"}</td><td>{step.gas===undefined?"Recheck at execution":`${Number(formatEther(step.gas*planGasPrice)).toFixed(7)} ETH`}</td></tr>)}</tbody></table></div>
+          <p className="vault-footnote">Estimated trade value {Number(formatEther(portfolioPlan.reduce((sum,step)=>sum+step.estimatedValue,0n))).toFixed(5)} ETH · Estimated network total {Number(formatEther(portfolioPlan.reduce((sum,step)=>sum+(step.gas||0n),0n)*planGasPrice)).toFixed(7)} ETH. Resulting target mix: {rows.map(r=>`${r.symbol} ${r.target}%`).join(" · ")} · WETH {savedCash}%.</p>
+          <button className="vault-button primary" disabled={busy||portfolioStep>=portfolioPlan.length} onClick={()=>void executePortfolioStep()}>{portfolioStep>=portfolioPlan.length?"Rebalance complete":`Approve step ${portfolioStep+1} of ${portfolioPlan.length}`}</button>
+          <p className="vault-footnote">The live V2 vault requires one wallet approval per protected trade. HOODX stops immediately if any refreshed simulation fails.</p></div>}
+        </div>
         <p className="vault-footnote">Planning estimates exclude fees and price impact. Small trades may not justify gas. Preview each trade; refresh after every confirmation.</p><p>Vault cash: {wethBalance === undefined ? "—" : formatEther(wethBalance)} WETH. Estimated room for buys above the saved reserve: {formatEther(availableToBuy)} WETH. Buys must preserve the target cash reserve. Sales and buys retain the contract’s oracle and minimum-output protections.</p>
         <label>Asset<select className="vault-input" value={selected} disabled={busy} onChange={e => { setSelected(e.target.value); setAmount(""); setMinimum(""); }}><option value="">Choose an asset</option>{rows.map(r => <option key={r.token} value={r.token}>{r.symbol}</option>)}</select></label>
         <div className="vault-presets">{[false,true].map(value => <button className="vault-button" aria-pressed={buy===value} key={String(value)} disabled={busy} onClick={() => { setBuy(value); setAmount(""); setMinimum(""); }}>{value ? "Buy with vault WETH" : "Sell into vault WETH"}</button>)}</div>

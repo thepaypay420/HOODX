@@ -1378,13 +1378,13 @@ body {
 .vault-target-input {width:90px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#081113;text-align:right;color:var(--paper);}
 .vault-target-input:focus {outline:1px solid var(--cyan);}
 .vault-recovery summary {cursor:pointer;}
-.vault-performance {display:grid;grid-template-columns:1fr 1fr;padding:24px;gap:24px;}
+.vault-performance {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:24px;gap:24px;}
 .vault-performance strong {font-size:30px;font-weight:500;color:var(--cyan);letter-spacing:-.04em;}
 .vault-performance .vault-loss {color:var(--danger);}
 .vault-performance p:not(.vault-eyebrow) {font-size:11px;color:var(--dim);line-height:1.7;margin-top:6px;}
 .vault-performance details {grid-column:1/-1;font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:12px;}
 .vault-performance summary {cursor:pointer;}
-@media(max-width:640px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {padding:20px;gap:16px;}.vault-performance strong {font-size:25px;}}
+@media(max-width:760px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {grid-template-columns:1fr;padding:20px;gap:16px;}.vault-performance strong {font-size:25px;}}
 
 /* Compact, exportable holdings board. */
 .holdings-board {padding:24px 28px;}

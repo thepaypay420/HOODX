@@ -8,6 +8,8 @@ export type DraftPack = {
   tokens: string[];
   feeBps: number;
   payout?: string;
+  cashBps?: number;
+  weightsBps?: Record<string, number>;
   createdAt: number;
 };
 
