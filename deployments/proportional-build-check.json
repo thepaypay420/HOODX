@@ -1,6 +1,7 @@
 {
   "status": "source-matched-build-only",
   "productionReady": false,
+  "reviewedBuildFingerprint": "0x27617dede4a9e422f04e7d37322babd4120793027b7a6443178859d794661851",
   "note": "Template hashes precede constructor immutable substitutions. This check does not authorize deployment or replace receipt/runtime verification.",
   "builds": [
     {
@@ -70,6 +71,21 @@
       }
     },
     {
+      "name": "HoodxProportionalPolicyV3",
+      "runtimeBytes": 2932,
+      "creationTemplateHash": "0x59aeaa86e0167eb4e18c9f183d632c9c12844995b341ab98ac8df55995f600f0",
+      "runtimeTemplateHash": "0x3b5bbc615fbcbab2a6eba593cd5b78fad0608e6c4b76fe70697f2f14bd64151e",
+      "sourceHashes": {
+        "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
+        "contracts/v3/HoodxProportionalPolicyV3.sol": "0xc0bf77652ea49f627c6345a4551f472a1572d238665e153ff80bcadcf3b3d8a0",
+        "lib/openzeppelin-contracts/contracts/access/Ownable.sol": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+        "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol": "0xd6fa4088198f04eef10c5bce8a2f4d60554b7ec4b987f684393c01bf79b94d9f",
+        "lib/openzeppelin-contracts/contracts/utils/Context.sol": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2"
+      }
+    },
+    {
       "name": "HoodxProportionalV3",
       "runtimeBytes": 24366,
       "creationTemplateHash": "0x2aab6f4a471cd3845cc9d9998967c546ca848854096fc055ededf1827d6b51c2",
@@ -97,21 +113,6 @@
         "lib/openzeppelin-contracts/contracts/utils/math/Math.sol": "0x1225214420c83ebcca88f2ae2b50f053aaa7df7bd684c3e878d334627f2edfc6",
         "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol": "0x195533c86d0ef72bcc06456a4f66a9b941f38eb403739b00f21fd7c1abd1ae54",
         "lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol": "0xb1970fac7b64e6c09611e6691791e848d5e3fe410fa5899e7df2e0afd77a99e3"
-      }
-    },
-    {
-      "name": "HoodxProportionalPolicyV3",
-      "runtimeBytes": 2932,
-      "creationTemplateHash": "0x59aeaa86e0167eb4e18c9f183d632c9c12844995b341ab98ac8df55995f600f0",
-      "runtimeTemplateHash": "0x3b5bbc615fbcbab2a6eba593cd5b78fad0608e6c4b76fe70697f2f14bd64151e",
-      "sourceHashes": {
-        "contracts/v2/Types.sol": "0xe2110e2eb8fb33c61619ca80ea0707ab0fefea00b307ed7c6e7a78afc83392b2",
-        "contracts/v3/HoodxProportionalPolicyV3.sol": "0xc0bf77652ea49f627c6345a4551f472a1572d238665e153ff80bcadcf3b3d8a0",
-        "lib/openzeppelin-contracts/contracts/access/Ownable.sol": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
-        "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol": "0xdcad8898fda432696597752e8ec361b87d85c82cb258115427af006dacf7128c",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol": "0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2",
-        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol": "0xd6fa4088198f04eef10c5bce8a2f4d60554b7ec4b987f684393c01bf79b94d9f",
-        "lib/openzeppelin-contracts/contracts/utils/Context.sol": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2"
       }
     },
     {

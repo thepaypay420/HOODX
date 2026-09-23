@@ -18,7 +18,7 @@ Checkpoint: 2026-09-22. **Not approved for production deployment.** Existing V2 
 
 ## Validation evidence
 
-- Solidity 0.8.24, optimizer 1, via IR, Cancun: compilation succeeded. Final implementation runtime: 24,366 bytes, below EIP-170's 24,576-byte limit. Source/compiler matching passed for all seven infrastructure contracts; template fingerprints and dependency source hashes are recorded in proportional-build-check.json.
+- Solidity 0.8.24, optimizer 1, via IR, Cancun: compilation succeeded. Final implementation runtime: 24,366 bytes, below EIP-170's 24,576-byte limit. Source/compiler matching passed for all seven infrastructure contracts; the reviewed aggregate build fingerprint, template fingerprints and dependency source hashes are recorded in proportional-build-check.json.
 - 23 candidate unit/fuzz tests passed, including 1,024 randomized joins.
 - Two accounting invariants passed over 128 runs of 64 actions, 8,192 handler calls across two independently acting handler accounts, with no handler reverts. Foundry reports the combined invariant campaign as one test (24 total candidate results).
 - 66 existing V3 local regression tests passed.

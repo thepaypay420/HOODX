@@ -16,6 +16,8 @@ The proposed 0.05 ETH balance target is provisional: 0.02 ETH initial capital, u
 
 Deploy the seven separately reviewed infrastructure contracts. Verify each receipt, code, constructor dependencies and owner before continuing. Record factory treasury and implementation identity. No investor vault exists yet.
 
+Use `DeployProportionalInfrastructureV3.s.sol` only with stage `successor-canary-infrastructure`, the reviewed build fingerprint, a non-simulation review-evidence hash and the explicit live switch. The script only deploys infrastructure and proposes the two hooks; it cannot activate hooks, approve routes or create a vault.
+
 Propose the two reviewed hooks with real evidence hashes. Read their on-chain readyAt values and retain the full 172,800-second delay. After maturity, verify unchanged code and dependencies, activate, and verify receipts and approval state. Never simulate time advancement against a live RPC.
 
 Approve the 20 reviewed buy/sell configurations, verify every emitted ID and read back each configuration. Rehearse again with the actual live infrastructure addresses. Any route, hook, implementation or tax change invalidates prior relevant evidence.

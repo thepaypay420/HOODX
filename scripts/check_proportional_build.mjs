@@ -1,10 +1,10 @@
 /** Read-only artifact/source verification. No RPC, signing, or deployment capability. */
 import fs from 'node:fs';
 import path from 'node:path';
-import {keccak256, toHex} from 'viem';
+import {concat, keccak256, toHex} from 'viem';
 
 const root = process.cwd();
-const contracts = ['HoodxHookRegistryV3', 'HoodxExecutorV3', 'HoodxRoutingV3', 'HoodxFeeModelV3', 'HoodxProportionalV3', 'HoodxProportionalPolicyV3', 'HoodxProportionalFactoryV3'];
+const contracts = ['HoodxHookRegistryV3', 'HoodxExecutorV3', 'HoodxRoutingV3', 'HoodxFeeModelV3', 'HoodxProportionalPolicyV3', 'HoodxProportionalV3', 'HoodxProportionalFactoryV3'];
 const builds = [];
 for (const name of contracts) {
   const artifact = JSON.parse(fs.readFileSync(path.join(root, 'out', `${name}.sol`, `${name}.json`), 'utf8'));
@@ -22,4 +22,7 @@ for (const name of contracts) {
   if (runtimeBytes <= 0 || runtimeBytes > 24576) throw new Error(`Invalid runtime size: ${name}`);
   builds.push({name, runtimeBytes, creationTemplateHash: keccak256(artifact.bytecode.object), runtimeTemplateHash: keccak256(runtime), sourceHashes: Object.fromEntries(Object.entries(metadata.sources).map(([source, details]) => [source, details.keccak256]))});
 }
-console.log(JSON.stringify({status:'source-matched-build-only', productionReady:false, note:'Template hashes precede constructor immutable substitutions. This check does not authorize deployment or replace receipt/runtime verification.', builds}, null, 2));
+const reviewedBuildFingerprint=keccak256(concat(builds.map(build=>build.creationTemplateHash)));
+const report={status:'source-matched-build-only',productionReady:false,reviewedBuildFingerprint,note:'Template hashes precede constructor immutable substitutions. This check does not authorize deployment or replace receipt/runtime verification.',builds};
+if(process.argv.includes('--write'))fs.writeFileSync(path.join(root,'deployments','proportional-build-check.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
