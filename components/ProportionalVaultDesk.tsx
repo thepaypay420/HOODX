@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {encodeFunctionData,erc20Abi,formatEther,formatUnits,parseAbi,parseEther,zeroAddress,type Address,type Hash} from 'viem';
+import {encodeFunctionData,erc20Abi,formatEther,formatUnits,getAddress,isAddress,parseAbi,parseEther,zeroAddress,type Address,type Hash} from 'viem';
 import {publicClient,useWallet} from '@/lib/wallet';
 import {robinhood} from '@/lib/chain';
 import {verifyProportionalRelease,type ProportionalRelease} from '@/lib/proportionalRelease';
@@ -20,6 +20,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const [owner,setOwner]=useState<Address>();
   const [ethBalance,setEthBalance]=useState(0n);
   const [eth,setEth]=useState('0.02');const [percent,setPercent]=useState(100);
+  const [recoveryRecipient,setRecoveryRecipient]=useState('');
   const [review,setReview]=useState<Review>();const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');const [hash,setHash]=useState<Hash>();
   const [pending,setPending]=useState(false);
@@ -27,6 +28,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const lock=useRef(false),generation=useRef(0);
   const current=state?.account===(address??zeroAddress)&&state.vault===release.vault?state:undefined;
   const selected=current?current.walletShares*BigInt(percent)/100n:0n;
+  const recipient=isAddress(recoveryRecipient)?getAddress(recoveryRecipient):undefined;
   const ready=review&&review.state.account===address&&review.state.vault===release.vault&&clock<=review.state.timestamp+60;
   const pendingKey=`hoodx:4663:pending:${release.vault.toLowerCase()}:${address?.toLowerCase()??'disconnected'}`;
   useEffect(()=>{
@@ -61,6 +63,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
     setState(next);setAssets(rows);setOwner(curator);setEthBalance(balance);
   },[address,release]);
   useEffect(()=>{void refresh().catch(()=>setMessage('Unable to load this vault. Please retry.'));return()=>{generation.current++;};},[refresh]);
+  useEffect(()=>{setRecoveryRecipient(address??'');},[address]);
   useEffect(()=>{setClock(Math.floor(Date.now()/1000));const id=setInterval(()=>setClock(Math.floor(Date.now()/1000)),1000);return()=>clearInterval(id);},[]);
   function invalidate(){generation.current++;setReview(undefined);}
   async function preview(kind:'join'|'exit',portion=percent){
@@ -108,7 +111,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
     try{
       await checkWallet(address);await verifyProportionalRelease(publicClient,release);
       const common={address:release.vault,abi:managementAbi,account:address} as const;
-      const prepared=kind==='assets'?await publicClient.simulateContract({...common,functionName:'emergencyRedeemInKind',args:[selected,address]}):kind==='pause'?await publicClient.simulateContract({...common,functionName:'setPaused',args:[!current.paused]}):await publicClient.simulateContract({...common,functionName:'claim',args:[token!,address]});
+      if (kind!=='pause'&&!recipient) throw Error('Invalid recovery recipient');
+      const prepared=kind==='assets'?await publicClient.simulateContract({...common,functionName:'emergencyRedeemInKind',args:[selected,recipient!]}):kind==='pause'?await publicClient.simulateContract({...common,functionName:'setPaused',args:[!current.paused]}):await publicClient.simulateContract({...common,functionName:'claim',args:[token!,recipient!]});
       await checkWallet(address);
       const request=prepared.request;
       const data=request.functionName==='claim'?encodeFunctionData(request):request.functionName==='setPaused'?encodeFunctionData(request):encodeFunctionData(request);
@@ -127,8 +131,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
         <div className="vault-trade-card"><h3 className="text-xl">Withdraw ETH</h3><div className="flex gap-2 py-4">{[25,50,75,100].map(n=><button className={button} key={n} disabled={busy} aria-pressed={percent===n} onClick={()=>{invalidate();setPercent(n);if(address&&chainId===4663)void preview('exit',n);}}>{n===100?'Max':`${n}%`}</button>)}</div><p>{display(selected)} shares selected</p><label className="block py-3">Minimum ETH to receive<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" readOnly value={ready&&review?.kind==='exit'?formatEther(review.plan.minEthOut):''} placeholder="Calculated when you preview"/></label><button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n} onClick={()=>void preview('exit')}>Preview withdrawal</button></div>
       </div>
       {review&&<div className="vault-recovery"><h3 className="text-xl">Review {review.kind==='join'?'deposit':'withdrawal'}</h3><dl className="grid grid-cols-2 gap-3 py-4"><dt>Shares {review.kind==='join'?'received':'redeemed'}</dt><dd>{formatEther(review.plan.shares)}</dd>{review.kind==='join'?<><dt>Estimated ETH spent</dt><dd>{formatEther(review.plan.grossSpent)}</dd><dt>Included protocol + creator fee</dt><dd>{formatEther(review.plan.fee)} ETH</dd><dt>Estimated unused ETH returned</dt><dd>{formatEther(review.plan.ethRefund)}</dd></>:<><dt>Estimated ETH received</dt><dd>{formatEther(review.plan.quotedEth)}</dd><dt>Minimum ETH received</dt><dd>{formatEther(review.plan.minEthOut)}</dd></>}</dl>{review.kind==='join'&&<p className="text-sm opacity-70">Any extra tokens from the buys are returned separately. Transfer taxes may reduce what arrives in your wallet. Fees and refunds can change within your signed spending limit.</p>}<p className="py-3 text-sm">{ready?'Each sale or buy keeps its protected minimum.':'This quote has expired. Request a new preview.'}</p><button className={button} disabled={busy||pending||!ready} onClick={()=>void confirm()}>Confirm in wallet</button></div>}
-      <details className="vault-recovery"><summary>Receive your tokens and cash directly</summary><p className="py-3 text-sm">Redeem the selected {percent}% without selling the basket. Available while paused. Transfers that cannot complete remain claimable.</p><button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n} onClick={()=>void manage('assets')}>Redeem {percent}% as assets</button></details>
-      {assets.filter(a=>a.claim>0n).map(a=><div key={a.token} className="flex items-center justify-between py-2"><span>{a.decimals===undefined?'Balance available':formatUnits(a.claim,a.decimals)} {a.symbol} available to claim</span><button className={button} disabled={busy||pending||chainId!==4663} onClick={()=>void manage('claim',a.token)}>Claim</button></div>)}
+      <details className="vault-recovery"><summary>Receive your tokens and cash directly</summary><p className="py-3 text-sm">Redeem the selected {percent}% without selling the basket. Available while paused. Transfers that cannot complete remain claimable.</p><label className="block py-3 text-sm">Recovery recipient<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" value={recoveryRecipient} spellCheck={false} onChange={e=>setRecoveryRecipient(e.target.value.trim())}/></label>{recoveryRecipient&&!recipient&&<p className="pb-3 text-sm text-amber-300">Enter a valid recipient address.</p>}<button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n||!recipient} onClick={()=>void manage('assets')}>Redeem {percent}% as assets</button></details>
+      {assets.filter(a=>a.claim>0n).map(a=><div key={a.token} className="flex items-center justify-between py-2"><span>{a.decimals===undefined?'Balance available':formatUnits(a.claim,a.decimals)} {a.symbol} available to claim</span><button className={button} disabled={busy||pending||chainId!==4663||!recipient} onClick={()=>void manage('claim',a.token)}>Claim to recipient</button></div>)}
       {address&&owner?.toLowerCase()===address.toLowerCase()&&<button className={button} disabled={busy||pending||chainId!==4663} onClick={()=>void manage('pause')}>{current?.paused?'Resume deposits':'Pause deposits'}</button>}
       <button className={button} disabled={busy} onClick={()=>void refresh().catch(()=>setMessage('Unable to refresh balances.'))}>Refresh balances</button>
       <p className="py-3 text-sm" role="status" aria-live="polite">{busy?'Working… ':''}{message}</p>{hash&&<a className="text-sm underline" href={`https://robin.etherscan.io/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}{pending&&<button className={button} disabled={busy} onClick={()=>void checkReceipt()}>Check pending transaction</button>}

@@ -127,10 +127,13 @@ contract TransferTaxV3Test is Test {
         assertEq(t.balanceOf(address(this)), 0);
     }
 
-    function testDonationCannotBeConsumed() public {
+    function testDonationDoesNotDisableRouteOrCountAsPaidInput() public {
         w.transfer(address(pair), 1);
-        vm.expectRevert(HoodxRoutingV3.InvalidSettlement.selector);
-        routing.execute(address(w), address(t), 1 ether, 1, route(true), block.timestamp);
+        uint256 before = w.balanceOf(address(this));
+        uint256 out = routing.execute(address(w), address(t), 1 ether, 1, route(true), block.timestamp);
+        assertGt(out, 0);
+        assertEq(before - w.balanceOf(address(this)), 1 ether);
+        assertEq(t.balanceOf(address(this)), out);
     }
 
     function testFuzzNetOutputMatchesWallet(uint96 size) public {

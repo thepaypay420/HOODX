@@ -167,15 +167,17 @@ contract HoodxRoutingV3 is IV2Executor, ReentrancyGuard {
         (uint112 r0, uint112 r1,) = IPairV3(pair).getReserves();
         bool forward = IPairV3(pair).token0() == h.tokenIn;
         (uint256 rin, uint256 rout) = forward ? (uint256(r0), uint256(r1)) : (uint256(r1), uint256(r0));
-        if (
-            rin == 0 || rout == 0 || IERC20(h.tokenIn).balanceOf(pair) != rin
-                || IERC20(h.tokenOut).balanceOf(pair) != rout
-        ) revert InvalidSettlement();
+        uint256 pairInBefore = IERC20(h.tokenIn).balanceOf(pair);
+        uint256 pairOutBefore = IERC20(h.tokenOut).balanceOf(pair);
+        // Unsolicited transfers are valid V2 pair balances. Exclude them from this
+        // trade's paid amount instead of allowing dust donations to disable a route.
+        // A negative rebase below the stored reserves remains unsafe and is rejected.
+        if (rin == 0 || rout == 0 || pairInBefore < rin || pairOutBefore < rout) revert InvalidSettlement();
         uint256 beforeIn = IERC20(h.tokenIn).balanceOf(msg.sender);
         uint256 beforeOut = IERC20(h.tokenOut).balanceOf(msg.sender);
         uint256 tax = abi.decode(h.hookData, (uint256));
         IERC20(h.tokenIn).safeTransferFrom(msg.sender, pair, amount);
-        uint256 paid = IERC20(h.tokenIn).balanceOf(pair) - rin;
+        uint256 paid = IERC20(h.tokenIn).balanceOf(pair) - pairInBefore;
         if (
             beforeIn - IERC20(h.tokenIn).balanceOf(msg.sender) != amount || paid > amount || paid == 0
                 || paid < Math.mulDiv(amount, 10000 - tax, 10000, Math.Rounding.Ceil)

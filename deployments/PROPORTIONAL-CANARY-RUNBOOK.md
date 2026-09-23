@@ -4,7 +4,7 @@ Status: preparation only. No live successor addresses are approved. Existing V2 
 
 ## Before signing
 
-1. Complete economic-model/security review and browser-wallet validation. Resolve findings before deployment. Passing a fork is execution evidence, not an independent audit.
+1. Confirm the independent-review fixes remain in the reviewed build, then complete browser-wallet validation. Passing a fork or an internal independent review is execution evidence, not a third-party audit.
 2. Record the reviewed commit, seven build-template hashes, exact constructor arguments, chain 4663, deployer, role recipients, and per-stage spending caps. Verify deployed immutable-patched bytecode against those inputs after deployment.
 3. Review all 20 token addresses, proxy implementations/admin powers, transfer behavior, routes and dependencies. Record evidence hashes. Do not reuse the simulation-only evidence label from PrepareProportionalV3.
 4. Refresh the full-watchlist fork lifecycle at the current block. Require every token to have a positive bootstrap holding and successful protected sale. Preserve existing output floors.
@@ -26,7 +26,7 @@ Approve the 20 reviewed buy/sell configurations, verify every emitted ID and rea
 2. Simulate and bootstrap with 0.02 ETH, using positive protected output minima for all 20 assets. Verify receipt, actual received balances, shares, reserved fee claims and all router/executor residues.
 3. From a second controlled test participant, quote and simulate a deposit capped at 0.02 ETH. Verify exact shares, every incumbent backing inequality, actual ETH cost, refund and any reserved claims. Fund that participant only through a separately reviewed transfer if needed.
 4. Quote and execute a partial ETH withdrawal. Verify per-asset amounts, minimum outputs, aggregate ETH received, shares burned and retained backing.
-5. Pause with the actual curator; verify deposit rejection, permitted recovery behavior and configuration nonce invalidation. Recover the second participant's remaining position in kind; verify delivered assets and resolve any reserved claims before calling their recovery complete.
+5. Pause with the actual curator; verify deposit rejection, permitted recovery behavior and configuration nonce invalidation. Recover the second participant's remaining position in kind to a separately checked recipient; verify delivered assets and resolve any reserved claims before calling their recovery complete. Include a wallet that cannot receive native ETH in browser validation and prove the alternate-recipient path works.
 6. Restore the intended pause state, quote and execute the original holder's final ETH withdrawal. Verify receipt and all actual balance deltas. Do not assume an estimate proves recovery.
 7. Verify zero share supply and zero free balances for all constituents and WETH; distinguish reserved fee/failed-transfer claims from free assets. Resolve participant claims and verify no unexpected assets remain in execution contracts. Record any rounding dust explicitly.
 
