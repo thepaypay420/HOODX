@@ -35,3 +35,20 @@ export function protectedWithdrawalMinimum(result: bigint, navFloor: bigint) {
     message: `Estimated receive: ${formatEther(result)} ETH. Minimum allows up to 1% below this estimate${navFloor > 1n ? ", while retaining the NAV floor" : ""}. Rechecked before signing.`,
   };
 }
+
+export async function quoteWithdrawalWithRetry(
+  simulate: () => Promise<bigint>,
+  wait: (milliseconds: number) => Promise<void> = (milliseconds) => new Promise(resolve => setTimeout(resolve, milliseconds)),
+) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await simulate();
+    } catch (error) {
+      lastError = error;
+      if (classifyWithdrawalQuoteFailure(error) === "invalid-reference" || attempt === 2) throw error;
+      await wait(500 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}

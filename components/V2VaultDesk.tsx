@@ -10,7 +10,7 @@ import { VaultPerformance } from "@/components/VaultPerformance";
 import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
 import { withdrawalFloor } from "@/lib/withdrawMinimum";
-import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, withdrawalQuoteFailureMessage, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
+import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, quoteWithdrawalWithRetry, withdrawalQuoteFailureMessage, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
 import { rebalanceControllerAbi, resolveVaultAuthority } from "@/lib/rebalanceController";
 
 type Snapshot = { account: Address; vault: Address; owner: Address; curator: Address; controller?: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
@@ -94,7 +94,10 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     const timer = setTimeout(() => {
       // Read-only full withdrawal rehearsal, with a positive NAV protection floor.
       // The broadcast path independently simulates again with the displayed minimum.
-      void publicClient.simulateContract({ address: vault, abi: v2VaultAbi, account: address, functionName: "withdraw", args: [selected, navFloor, deadline()] }).then(({ result }) => {
+      void quoteWithdrawalWithRetry(async () => {
+        const { result } = await publicClient.simulateContract({ address: vault, abi: v2VaultAbi, account: address, functionName: "withdraw", args: [selected, navFloor, deadline()] });
+        return result;
+      }).then((result) => {
         if (!active) return;
         const protectedQuote = protectedWithdrawalMinimum(result, navFloor);
         setMinimum(protectedQuote.minimum);
@@ -108,7 +111,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       }).finally(() => { if (active) setQuoting(false); });
     }, 400);
     return () => { active = false; clearTimeout(timer); };
-  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, quoteRefresh, minimumScope]);
+  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, snap?.block, quoteRefresh, minimumScope]);
   async function transact(action: "deposit" | "withdraw" | "assets" | "claim" | "pause" | "unwind", token?: Address) {
     if (!address || !walletClient || !snap) return;
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
@@ -206,7 +209,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         <p>Sell: {formatEther(snap.shares * BigInt(percent) / 100n)} {slug.toUpperCase()}</p>
         <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} disabled={busy || quoting || withdrawalFailure === "invalid-reference"} placeholder={quoting ? "Calculating protected minimum…" : withdrawalFailure === "invalid-reference" ? "ETH exit unavailable" : "Minimum ETH"} onChange={e => { manualMinimum.current = minimumScope; setWithdrawalFailure(undefined); setMinimum(e.target.value); }} inputMode="decimal" /></label>
         <p role="status">{quoting ? "Checking the full withdrawal…" : quoteMessage}</p>
-        <button className={button} disabled={busy || quoting || !address || !snap.shares} onClick={() => { manualMinimum.current = ""; setMinimum(""); setQuoteRefresh(n => n + 1); }}>Refresh withdrawal quote</button>
+        <button className={button} disabled={busy || quoting || !address || !snap.shares} onClick={() => { manualMinimum.current = ""; setMinimum(""); void read().catch(() => {}); setQuoteRefresh(n => n + 1); }}>Refresh withdrawal quote</button>
         <p className="text-sm">Redeems the selected portion of your shares. If any required sale fails, the whole withdrawal reverts and your shares stay intact.</p>
         <button className={button} disabled={busy || quoting || !!withdrawalFailure || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>
       </div>
