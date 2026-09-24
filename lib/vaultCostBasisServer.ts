@@ -53,9 +53,15 @@ export async function readVaultCostBasis(client:PublicClient,vault:Address){
   const addresses=[...tokens,saved.weth] as Address[];
   const positions=new Map<string,BasisPosition>(saved.assets.map(a=>[a.token.toLowerCase(),restore(a)]));
   for(const token of tokens)if(!positions.has(token))positions.set(token,emptyBasis(token));
+  const balances=await Promise.all(tokens.map(token=>client.readContract({address:token,abi,functionName:"balanceOf",args:[vault],blockNumber:end})));
+  const unchanged=tokens.every((token,index)=>{const position=positions.get(token)!;return position.complete&&position.units===balances[index];});
+  if(unchanged){
+    const assets=tokens.map((token,index)=>({...positions.get(token)!,currentBalance:balances[index],reconciled:true}));
+    return {chainId:4663,vault,indexedBlock:end,transactionCount:saved.transactionCount,verified:true,assets};
+  }
   const logs=await indexedTransfers(vault,BigInt(saved.indexedBlock)).catch(()=>rpcTransfers(client,vault,addresses,from,end));
   const grouped=new Map<string,VaultTransfer[]>();for(const log of logs){const list=grouped.get(log.transactionHash)||[];list.push(log);grouped.set(log.transactionHash,list);}
   for(const transfers of [...grouped.values()].sort((a,b)=>Number(a[0].blockNumber-b[0].blockNumber)))applyReceiptTransfers(positions,transfers.sort((a,b)=>a.logIndex-b.logIndex),vault,saved.weth);
-  const assets=await Promise.all(tokens.map(async token=>{const position=positions.get(token)!;const balance=await client.readContract({address:token,abi,functionName:"balanceOf",args:[vault],blockNumber:end});return {...position,currentBalance:balance,reconciled:position.complete&&position.units===balance};}));
+  const assets=tokens.map((token,index)=>{const position=positions.get(token)!;const balance=balances[index];return {...position,currentBalance:balance,reconciled:position.complete&&position.units===balance};});
   return {chainId:4663,vault,indexedBlock:end,transactionCount:grouped.size+saved.transactionCount,verified:assets.every(a=>a.reconciled),assets};
 }
