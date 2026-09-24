@@ -16,3 +16,4 @@ tsconfig.tsbuildinfo
 
 cache/
 broadcast/
+deployments/*-broadcast-state.json
