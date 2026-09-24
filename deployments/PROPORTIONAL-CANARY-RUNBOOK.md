@@ -1,0 +1,54 @@
+# Full-watchlist successor canary
+
+Status: infrastructure deployed and verified; hook delay pending. No successor vault exists. Existing V2 vaults must not be called by this procedure.
+
+## Before signing
+
+1. Confirm the independent-review fixes remain in the reviewed build, then complete browser-wallet validation. Passing a fork or an internal independent review is execution evidence, not a third-party audit.
+2. Record the reviewed commit, seven build-template hashes, exact constructor arguments, chain 4663, deployer, role recipients, and per-stage spending caps. Verify deployed immutable-patched bytecode against those inputs after deployment.
+3. Review all 20 token addresses, proxy implementations/admin powers, transfer behavior, routes and dependencies. Record evidence hashes. Do not reuse the simulation-only evidence label from PrepareProportionalV3.
+4. Refresh the full-watchlist fork lifecycle at the current block. Require every token to have a positive bootstrap holding and successful protected sale. Preserve existing output floors.
+5. Refresh pending/latest deployer nonces, balance, current fee estimate and gas simulation for every proposed transaction. Resolve pending receipts before retrying. Obtain explicit successor canary-only broadcast authorization with the concrete transaction plan and spending limits.
+
+The proposed 0.05 ETH balance target is provisional: 0.02 ETH initial capital, up to 0.02 ETH repeat entry, 0.01 ETH reserve. It is neither a spending authorization nor a complete gas estimate. The saved infrastructure rehearsal excludes subsequent admission and trading transactions.
+
+## Infrastructure and admission
+
+Deploy the seven separately reviewed infrastructure contracts. Verify each receipt, code, constructor dependencies and owner before continuing. Record factory treasury and implementation identity. No investor vault exists yet.
+
+Use `DeployProportionalInfrastructureV3.s.sol` only with stage `successor-canary-infrastructure`, the reviewed build fingerprint, a non-simulation review-evidence hash and the explicit live switch. The script only deploys infrastructure and proposes the two hooks; it cannot activate hooks, approve routes or create a vault.
+
+Propose the two reviewed hooks with real evidence hashes. Read their on-chain readyAt values and retain the full 172,800-second delay. After maturity, verify unchanged code and dependencies, activate, and verify receipts and approval state. Never simulate time advancement against a live RPC.
+
+Approve the 20 reviewed buy/sell configurations, verify every emitted ID and read back each configuration. Rehearse again with the actual live infrastructure addresses. Any route, hook, implementation or tax change invalidates prior relevant evidence.
+
+Use the pinned manifest and three separated scripts recorded in `PROPORTIONAL-CANARY-PREPARATION.md`. Never replace its bridge fees by dynamically selecting a pool at signing time. The reviewed route fingerprint is `0x413f8092b14d21cd87e2db8b7b9c05b437ce468a2ab04aa228f5f0a03592b4d8`.
+
+## Canary lifecycle
+
+1. Create a uniquely named canary clone in the successor factory. Verify clone bytecode, accounting mode, owner/curator, treasury, fees, all 20 constituents, configuration IDs and target sum. Keep the public release manifest inactive.
+2. Simulate and bootstrap with 0.02 ETH, using positive protected output minima for all 20 assets. Verify receipt, actual received balances, shares, reserved fee claims and all router/executor residues.
+3. From a second controlled test participant, quote and simulate a deposit capped at 0.02 ETH. Verify exact shares, every incumbent backing inequality, actual ETH cost, refund and any reserved claims. Fund that participant only through a separately reviewed transfer if needed.
+4. Quote and execute a partial ETH withdrawal. Verify per-asset amounts, minimum outputs, aggregate ETH received, shares burned and retained backing.
+5. Pause with the actual curator; verify deposit rejection, permitted recovery behavior and configuration nonce invalidation. Recover the second participant's remaining position in kind to a separately checked recipient; verify delivered assets and resolve any reserved claims before calling their recovery complete. Include a wallet that cannot receive native ETH in browser validation and prove the alternate-recipient path works.
+6. Restore the intended pause state, quote and execute the original holder's final ETH withdrawal. Verify receipt and all actual balance deltas. Do not assume an estimate proves recovery.
+7. Verify zero share supply and zero free balances for all constituents and WETH; distinguish reserved fee/failed-transfer claims from free assets. Resolve participant claims and verify no unexpected assets remain in execution contracts. Record any rounding dust explicitly.
+
+At each step save transaction hash, block, status, gas paid, signer, decoded operation and before/after balances. A reverted or unknown transaction stops the sequence until its receipt and state are reconciled; never blindly resubmit.
+
+## Stop and report
+
+Report all canary transaction hashes, participant recovery including any in-kind tokens, trading/tax/gas costs, reserved claims, final vault balances and remaining deployer ETH. In-kind recovery is not the same as recovering ETH capital; any subsequent sale needs its own bounded quote and authorization.
+
+Do not create production vaults, activate the frontend release manifest, move existing V2 assets, or claim the watchlist is live until the canary evidence is reviewed and production release is explicitly approved.
+
+## Guarded capital stages
+
+The canary capital flow is deliberately split from hook activation, route admission and clone creation.
+
+1. `BootstrapProportionalCanaryV3.s.sol`, stage `successor-canary-bootstrap`, can spend exactly 0.02 ETH from the deployer. It first pins the factory implementation and clone runtime, every dependency and role, fees, limits, the ordered 20-token basket, route IDs, route bytes and weights. It refuses a non-empty or paused vault.
+2. Start the local canary wallet page with `HOODX_CANARY_UI=1`, then open `/successor/canary?vault=<verified-canary-address>`. The page accepts only the factory's exact `696xcanary` clone. Use the curator wallet for the second 0.02 ETH join, protected partial ETH exit, pause, remaining in-kind redemption and any deferred claims. Its pending-receipt lock prevents accidental retries.
+3. `CloseProportionalCanaryV3.s.sol`, stage `successor-canary-close`, refuses to run until the deployer owns the entire remaining supply. It requotes every live sale, applies the 3% protected floors, and closes only the deployer's position.
+4. Run `scripts/verify_proportional_canary.mjs` with `HOODX_CANARY_EXPECT=complete` and every canary transaction hash. Completion requires confirmed successful receipts from the deployer or curator to the exact registry, policy, factory or canary; zero shares; zero free balances; zero deferred claims; zero actual vault balances; and zero per-token residue in the executor and router.
+
+Each capital stage needs a fresh current-fork rehearsal, current fee and balance envelope, reviewed transaction plan and explicit authorization. The local canary page is disabled in normal builds unless `HOODX_CANARY_UI=1`; the public successor release manifest remains inactive.

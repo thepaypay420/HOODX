@@ -1,0 +1,90 @@
+{
+  "chainId": 4663,
+  "block": "68903983",
+  "timestamp": "1790004445",
+  "releaseApproved": false,
+  "v3": [
+    {
+      "symbol": "PRISM",
+      "token": "0x20024e485c0b22b42855589700721b28320a7777",
+      "pool": "0xF1D6b8eCAF2271233BED626FB1962BC0c39Cb1f3",
+      "liquidity": "347815142061690044664",
+      "cardinality": 1,
+      "cardinalityNext": 1,
+      "observationAgeSeconds": "39",
+      "ethPerRawTokenX18": "4179569212577"
+    },
+    {
+      "symbol": "ZEAL",
+      "token": "0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc",
+      "pool": "0xF1Bef60E5Cf6C00e7E1308d3710811dad71f4B6C",
+      "liquidity": "7668210664725484672756",
+      "cardinality": 1,
+      "cardinalityNext": 1,
+      "observationAgeSeconds": "10",
+      "ethPerRawTokenX18": "1247693542160"
+    },
+    {
+      "symbol": "QUOTRON",
+      "token": "0x5a86828efd322bfb16d93cfed16ee9bc14940d7f",
+      "pool": "0xdf63749e93D443Ed548186a351ae6B37d8914Ac3",
+      "liquidity": "327158978125584427",
+      "cardinality": 1,
+      "cardinalityNext": 1,
+      "observationAgeSeconds": "2168562",
+      "ethPerRawTokenX18": "855292971634934036"
+    },
+    {
+      "symbol": "QUOTRON",
+      "token": "0x5a86828efd322bfb16d93cfed16ee9bc14940d7f",
+      "pool": "0x05711C6D6ccbC6992eb2543D538a599Bf1F939f5",
+      "liquidity": "3556641962892839",
+      "cardinality": 1,
+      "cardinalityNext": 1,
+      "observationAgeSeconds": "2181035",
+      "ethPerRawTokenX18": "841017070873349700"
+    }
+  ],
+  "v2": [
+    {
+      "symbol": "PRISM",
+      "token": "0x20024e485c0b22b42855589700721b28320a7777",
+      "pair": "0x126a9f6Ee2e4BE592c3520579BA9b48327a3d5e0",
+      "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "startBlock": "68886017",
+      "windowSeconds": "1800",
+      "quotePerRawTokenX18": "4225503798023",
+      "spotQuotePerRawTokenX18": "4179049130460",
+      "startTokenReserve": "21985732249020319280880021",
+      "endTokenReserve": "22274026997463416822950924",
+      "startQuoteReserve": "94300633189465614290",
+      "endQuoteReserve": "93084253155595748612",
+      "lastReserveAgeSeconds": "94"
+    },
+    {
+      "symbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "pair": "0x59F95461E68e0c77605299791E1449f175165B54",
+      "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "startBlock": "68886017",
+      "windowSeconds": "1800",
+      "quotePerRawTokenX18": "672428613257632929",
+      "spotQuotePerRawTokenX18": "688544016753899976",
+      "startTokenReserve": "492564577717",
+      "endTokenReserve": "474169586504",
+      "startQuoteReserve": "314051739187",
+      "endQuoteReserve": "326486631714",
+      "lastReserveAgeSeconds": "20"
+    }
+  ],
+  "limitations": [
+    "V2 endpoint observations do not prove historical liquidity depth.",
+    "Spot comparisons diagnose disagreement; spot is not a minting oracle.",
+    "Observation freshness can reflect liquidity operations, not necessarily trading."
+  ],
+  "quotronV4": {
+    "pool": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
+    "ethPerRawTokenX18": "1760079009328458501",
+    "feeFlag": 8388608
+  }
+}

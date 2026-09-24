@@ -1,0 +1,105 @@
+{
+  "chainId": 4663,
+  "block": "68999254",
+  "at": "1790013979",
+  "approved": false,
+  "source": "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
+  "limitations": [
+    "Token identity and multiplier compatibility not approved.",
+    "NFLX feed not found in directory.",
+    "Robinhood sequencer uptime feed not listed in Chainlink supported network directory."
+  ],
+  "feeds": [
+    {
+      "symbol": "GOOGL",
+      "token": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
+      "feed": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
+      "feed_description": "Robinhood GOOGL / USD",
+      "feed_decimals": 8,
+      "feed_latestRoundData": [
+        "18446744073709552424",
+        "35680918059",
+        "1790005516",
+        "1790005529",
+        "18446744073709552424"
+      ],
+      "token_symbol": "GOOGL",
+      "token_decimals": 18,
+      "token_oraclePaused": false,
+      "token_uiMultiplier": "1000193924414112587",
+      "ageSeconds": "8450"
+    },
+    {
+      "symbol": "AMZN",
+      "token": "0x12f190a9F9d7D37a250758b26824B97CE941bF54",
+      "feed": "0xD5a1508ceD74c084eBf3cBe853e2C968fB2a651C",
+      "feed_description": "Robinhood AMZN / USD",
+      "feed_decimals": 8,
+      "feed_latestRoundData": [
+        "18446744073709552417",
+        "25829255000",
+        "1790008608",
+        "1790008621",
+        "18446744073709552417"
+      ],
+      "token_symbol": "AMZN",
+      "token_decimals": 18,
+      "token_oraclePaused": false,
+      "token_uiMultiplier": "1000000000000000000",
+      "ageSeconds": "5358"
+    },
+    {
+      "symbol": "AAPL",
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "feed": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
+      "feed_description": "Robinhood AAPL / USD",
+      "feed_decimals": 8,
+      "feed_latestRoundData": [
+        "18446744073709552266",
+        "33924192943",
+        "1790008978",
+        "1790008990",
+        "18446744073709552266"
+      ],
+      "token_symbol": "AAPL",
+      "token_decimals": 18,
+      "token_oraclePaused": false,
+      "token_uiMultiplier": "1000566080061092436",
+      "ageSeconds": "4989"
+    },
+    {
+      "symbol": "META",
+      "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "feed": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
+      "feed_description": "Robinhood META / USD",
+      "feed_decimals": 8,
+      "feed_latestRoundData": [
+        "18446744073709552863",
+        "74428813407",
+        "1790012704",
+        "1790012716",
+        "18446744073709552863"
+      ],
+      "token_symbol": "META",
+      "token_decimals": 18,
+      "token_oraclePaused": false,
+      "token_uiMultiplier": "1000541459879451635",
+      "ageSeconds": "1263"
+    },
+    {
+      "symbol": "ETH",
+      "token": null,
+      "feed": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9",
+      "feed_description": "ETH / USD",
+      "feed_decimals": 8,
+      "feed_latestRoundData": [
+        "18446744073709553966",
+        "273557000000",
+        "1790013316",
+        "1790013329",
+        "18446744073709553966"
+      ],
+      "ageSeconds": "650"
+    }
+  ]
+}

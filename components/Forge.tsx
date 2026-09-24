@@ -16,6 +16,7 @@ import { fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenIma
 import { publicClient, useWallet } from "@/lib/wallet";
 import { distribute } from "@/lib/curatorPlanner";
 import { percentBps } from "@/lib/v2Allocation";
+import { atomicFactoryAbi, atomicFactoryAddress } from "@/lib/atomicFactory";
 
 export function Forge() {
   const router = useRouter();
@@ -36,7 +37,8 @@ export function Forge() {
   const [cash, setCash] = useState("25.00");
   const [weights, setWeights] = useState<Record<string, string>>({});
   const [allocationMode, setAllocationMode] = useState<"equal" | "custom">("equal");
-  const live = isAddress(productionV2Factory);
+  const launchFactory = atomicFactoryAddress ?? productionV2Factory;
+  const live = isAddress(launchFactory);
   const slugOk = okUserSlug(slug);
   const allocation = useMemo(() => {
     try {
@@ -103,25 +105,47 @@ export function Forge() {
       const onChainImage = walletImageUri(imageUrl) || "";
       if (chainId !== robinhood.id) throw new Error("Switch your wallet to Robinhood Chain.");
       if (new TextEncoder().encode(onChainImage).length > 256) throw new Error("Use an HTTPS or IPFS image URL of at most 256 bytes.");
-      const configAbi = parseAbi(["function configId(address) view returns (bytes32)"]);
-      const configs = await Promise.all(tokens.map(async token => {
-        for (const vault of Object.values(verifiedV2Vaults)) {
-          const id = await publicClient.readContract({ address: vault, abi: configAbi, functionName: "configId", args: [token] });
-          if (id !== `0x${"0".repeat(64)}`) return id;
-        }
-        throw new Error("A selected asset does not yet have an approved V2 route. Choose an asset from the official baskets.");
-      }));
+      const zeroConfig = `0x${"0".repeat(64)}`;
+      const atomicFactory = atomicFactoryAddress;
+      const configs = atomicFactory
+        ? await Promise.all(tokens.map(async token => {
+            const id = await publicClient.readContract({ address: atomicFactory, abi: atomicFactoryAbi, functionName: "configIdByToken", args: [token] });
+            if (id === zeroConfig) throw new Error("A selected asset does not yet have a reviewed successor route.");
+            return id;
+          }))
+        : await Promise.all(tokens.map(async token => {
+            const configAbi = parseAbi(["function configId(address) view returns (bytes32)"]);
+            for (const vault of Object.values(verifiedV2Vaults)) {
+              const id = await publicClient.readContract({ address: vault, abi: configAbi, functionName: "configId", args: [token] });
+              if (id !== zeroConfig) return id;
+            }
+            throw new Error("A selected asset does not yet have an approved route.");
+          }));
       if (allocation.total !== 10_000) throw new Error("Allocation must total exactly 100%.");
       const launchWeights = picked.map((token) => percentBps(weights[token.toLowerCase()] || "0"));
-      const { request } = await publicClient.simulateContract({
-        account: address,
-        address: productionV2Factory,
-        abi: v2FactoryAbi,
-        functionName: "create",
-        args: [slug, { curator: address, creator: address, recipient, treasury: productionV2Treasury, name: name.trim(), symbol, creatorFee: feeBps, protocolFee: 10, cashBps: allocation.cashBps, firstDeposit: parseEther("0.02"), imageURI: onChainImage }, configs, launchWeights],
-        chain: robinhood,
-      });
-      const hash = await walletClient.writeContract(request);
+      const init = { curator: address, creator: address, recipient, treasury: productionV2Treasury, name: name.trim(), symbol, creatorFee: feeBps, protocolFee: 10, cashBps: allocation.cashBps, firstDeposit: parseEther("0.02"), imageURI: onChainImage };
+      let hash: `0x${string}`;
+      if (atomicFactory) {
+        const { request } = await publicClient.simulateContract({
+          account: address,
+          address: atomicFactory,
+          abi: atomicFactoryAbi,
+          functionName: "createAtomic",
+          args: [slug, init, configs, launchWeights],
+          chain: robinhood,
+        });
+        hash = await walletClient.writeContract(request);
+      } else {
+        const { request } = await publicClient.simulateContract({
+          account: address,
+          address: productionV2Factory,
+          abi: v2FactoryAbi,
+          functionName: "create",
+          args: [slug, init, configs, launchWeights],
+          chain: robinhood,
+        });
+        hash = await walletClient.writeContract(request);
+      }
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       if (receipt.status !== "success") throw new Error("Index creation reverted.");
       router.push(`/i/${slug}`);

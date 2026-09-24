@@ -1,0 +1,86 @@
+{
+  "status": "simulation-only-not-deployed",
+  "chainId": 4663,
+  "rpcForkBlock": "70338902",
+  "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+  "deployerBalanceWei": "50005229504000000",
+  "liveNonce": "90",
+  "simulatedTransactions": 9,
+  "liveReceipts": 0,
+  "gasUsed": "13364239",
+  "estimatedGasWithPadding": "16705302",
+  "gasPriceWei": "54678000",
+  "estimatedMaxFeePerGasWei": "109356000",
+  "estimatedInfrastructureCostWei": "1826825005512000",
+  "estimatedInfrastructureCostEth": "0.001826825005512",
+  "hookApprovalDelaySeconds": 172800,
+  "hookApprovalDelayStarted": false,
+  "simulatedAddresses": {
+    "registry": "0xa46150e972da054f9b954d7a695476a6258a4705",
+    "executor": "0xb45ac99c355898eacb3cdff2c0b94f6c9a77a750",
+    "routing": "0x0d96e749dc6ebd4ec9e4f35bb3fa05ab89f1c0de",
+    "fees": "0xe274bc33c5dcd3ee1dd603a3e08509e46c2b3dfb",
+    "policy": "0x93e3d62d50eafad5d5de38c55da33cc9db839b21",
+    "implementation": "0xddc4084055ae4d56f9fa618a1ccd962737f1aef7",
+    "factory": "0xb0a89074d2f88207698ac99f39061463eeabec8a"
+  },
+  "transactions": [
+    {
+      "label": "deploy registry",
+      "gasEstimate": "429406",
+      "gasUsed": "429406",
+      "contractAddress": "0xa46150e972da054f9b954d7a695476a6258a4705"
+    },
+    {
+      "label": "propose PONS hook",
+      "gasEstimate": "95849",
+      "gasUsed": "95849"
+    },
+    {
+      "label": "propose QUOTRON hook",
+      "gasEstimate": "95837",
+      "gasUsed": "95837"
+    },
+    {
+      "label": "deploy executor",
+      "gasEstimate": "2703288",
+      "gasUsed": "2703288",
+      "contractAddress": "0xb45ac99c355898eacb3cdff2c0b94f6c9a77a750"
+    },
+    {
+      "label": "deploy routing",
+      "gasEstimate": "2183988",
+      "gasUsed": "2183988",
+      "contractAddress": "0x0d96e749dc6ebd4ec9e4f35bb3fa05ab89f1c0de"
+    },
+    {
+      "label": "deploy fee model",
+      "gasEstimate": "892901",
+      "gasUsed": "892901",
+      "contractAddress": "0xe274bc33c5dcd3ee1dd603a3e08509e46c2b3dfb"
+    },
+    {
+      "label": "deploy policy",
+      "gasEstimate": "720326",
+      "gasUsed": "720326",
+      "contractAddress": "0x93e3d62d50eafad5d5de38c55da33cc9db839b21"
+    },
+    {
+      "label": "deploy implementation",
+      "gasEstimate": "5418528",
+      "gasUsed": "5418528",
+      "contractAddress": "0xddc4084055ae4d56f9fa618a1ccd962737f1aef7"
+    },
+    {
+      "label": "deploy factory",
+      "gasEstimate": "824116",
+      "gasUsed": "824116",
+      "contractAddress": "0xb0a89074d2f88207698ac99f39061463eeabec8a"
+    }
+  ],
+  "notes": [
+    "Private RPC was exposed only to a localhost read-only relay.",
+    "All nine transactions executed only on a disposable Anvil fork.",
+    "Addresses are nonce-derived rehearsal addresses and are not live deployments."
+  ]
+}

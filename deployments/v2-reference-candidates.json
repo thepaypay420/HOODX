@@ -1,0 +1,72 @@
+{
+  "block": "69389159",
+  "timestamp": "1790053207",
+  "approved": false,
+  "factory": "0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f",
+  "assets": [
+    {
+      "symbol": "QUOTRON",
+      "pairs": [
+        {
+          "pair": "0xBF674B5c8922205Cc79e3Ea0C429633346461996",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "token1": "0x5a86828Efd322bfb16d93cFeD16EE9BC14940D7F",
+          "factory": "0x8bcEaA40B9AcdfAedF85AdF4FF01F5Ad6517937f",
+          "getReserves": [
+            "13710288986955",
+            "10193961243218",
+            1789557696
+          ],
+          "price0CumulativeLast": "885250373939626335638499052039231822685931",
+          "price1CumulativeLast": "19074368968288737390349111538513474115914"
+        }
+      ]
+    },
+    {
+      "symbol": "NET",
+      "pairs": [
+        {
+          "pair": "0x3d862596a58688470bA38D3452Ff0337aBCf4eb3",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "token0": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+          "factory": "0x8bcEaA40B9AcdfAedF85AdF4FF01F5Ad6517937f",
+          "getReserves": [
+            "4354782594022246",
+            "20570511",
+            1790052374
+          ],
+          "price0CumulativeLast": "36251403896256080114318415030289",
+          "price1CumulativeLast": "4367965531007291636788334185415349854227458353659"
+        },
+        {
+          "pair": "0x59F95461E68e0c77605299791E1449f175165B54",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "token0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "token1": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+          "factory": "0x8bcEaA40B9AcdfAedF85AdF4FF01F5Ad6517937f",
+          "getReserves": [
+            "324095748745",
+            "486349903502",
+            1790053120
+          ],
+          "price0CumulativeLast": "326292980177308960290115900914709249524596",
+          "price1CumulativeLast": "13762264324210140345214886462207938718922"
+        }
+      ]
+    },
+    {
+      "symbol": "Aria",
+      "pairs": []
+    },
+    {
+      "symbol": "HARMONIC",
+      "pairs": []
+    },
+    {
+      "symbol": "PROMETHEUS",
+      "pairs": []
+    }
+  ]
+}
