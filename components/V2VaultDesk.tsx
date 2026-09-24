@@ -28,7 +28,8 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   const [quoting, setQuoting] = useState(false);
   const [withdrawalFailure, setWithdrawalFailure] = useState<WithdrawalQuoteFailure>();
   const [recipient, setRecipient] = useState<Address>();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [curatorOpen, setCuratorOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [unwindToken, setUnwindToken] = useState<Address>();
   const [unwindAmount, setUnwindAmount] = useState("");
@@ -191,7 +192,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets ?? snap?.quoteAssets} quoteTime={snap?.quoteTime} valuationFailed={snap?.valuationFailed} supply={snap?.supply} paused={snap?.paused} connected={!!address} curator={!!address && address.toLowerCase() === snap?.curator.toLowerCase()}>
     <VaultPerformance estimated={snap?.quoteAssets !== undefined} valuationFailed={snap?.valuationFailed && snap?.quoteAssets === undefined} vault={vault} account={address} assets={snap?.assets ?? snap?.quoteAssets} shares={snap?.shares} supply={snap?.quoteSupply ?? snap?.supply} block={snap?.block} />
     </VaultOverview>
-    {snap && address?.toLowerCase() === snap.curator.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel"><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary><V2CuratorDesk key={`${vault}:${address}:${snap.controller ?? "direct"}`} vault={vault} controller={snap.controller} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} /></details>}
+    {snap && address?.toLowerCase() === snap.curator.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel" open={curatorOpen} onToggle={event=>setCuratorOpen(event.currentTarget.open)}><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary>{curatorOpen&&<V2CuratorDesk key={`${vault}:${address}:${snap.controller ?? "direct"}`} vault={vault} controller={snap.controller} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} />}</details>}
     <div id="wallet-actions" className="vault-actions desk">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">YOUR POSITION</p><h2>Make your next move.</h2></div><span className="vault-tag">{slug.toUpperCase()}</span></div>
 
