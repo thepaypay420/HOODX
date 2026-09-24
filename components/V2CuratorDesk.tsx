@@ -60,6 +60,8 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const [atomicGas, setAtomicGas] = useState<bigint>();
   const [plannedAllocation, setPlannedAllocation] = useState<{ cashBps: number; weights: number[]; basketHash: Hex; minCashAfter: bigint }>();
   const [playbook,setPlaybook]=useState<AtomicPlaybook>("restore");
+  const [activeCard,setActiveCard]=useState<AtomicPlaybook>();
+  const [planRequest,setPlanRequest]=useState<{kind:AtomicPlaybook;nonce:number}>();
   const [costBasis,setCostBasis]=useState<CostBasis>();
   const previewKey = [vault,address,chainId,selected,buy,amount,minimum,updated].join(":");
   const baseline = JSON.stringify([savedCash, rows.map(r => [r.token.toLowerCase(),r.target])]);
@@ -130,14 +132,8 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const portfolioSuggestions = playbook==="deploy-cash"
     ? capBuyPlan(filteredSuggestions.map(item=>({...item,amount:item.trade!.amount,value:item.trade!.value})),availableToBuy*98n/100n).map(item=>({...item,trade:{...item.trade!,amount:item.amount,value:item.value}}))
     : filteredSuggestions;
-  const playbookCopy:Record<AtomicPlaybook,{eyebrow:string;title:string;body:string}>={
-    restore:{eyebrow:"RESTORE TARGETS",title:"Bring the basket back into shape.",body:"Sell leaders first, then refill lagging sleeves while preserving the saved WETH reserve."},
-    harvest:{eyebrow:"HARVEST VERIFIED GAINS",title:"Move gains into reserve.",body:"Only assets with reconciled average cost and enough unrealized profit are trimmed."},
-    "deploy-cash":{eyebrow:"DEPLOY RESERVE",title:"Put excess WETH back to work.",body:"Buy underweight assets using up to 98% of cash above the saved reserve. No assets are sold."},
-    custom:{eyebrow:"CUSTOM PLAN",title:"Move to your reviewed allocation.",body:"The atomic plan follows your draft targets, with sells ordered before buys and the final reserve enforced."},
-  };
   function stage(r: Row, isBuy: boolean, input: bigint) {
-    setSelected(r.token); setBuy(isBuy); setAmount(formatUnits(input,isBuy?18:r.decimals)); setMinimum(""); setPreview(undefined); setTab("Trades");
+    setSelected(r.token); setBuy(isBuy); setAmount(formatUnits(input,isBuy?18:r.decimals)); setMinimum(""); setPreview(undefined); setTab("Manual");
     setMessage("Trade staged. Calculate its protected minimum, then preview before signing.");
   }
   async function refreshSnapshot() {
@@ -179,19 +175,34 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       const price=await publicClient.getGasPrice();setPreview({key:previewKey,at:Date.now(),fee:formatEther(gas*price)});setMessage("Simulation passed. Review the trade below. Nothing has been signed.");
     }catch(e){setMessage(e instanceof BaseError?e.shortMessage:(e as Error).message);}finally{onBusy(false);}
   }
-  function chooseRestore(){setCash(savedCash);setWeights(rows.map(r=>r.target));setPlaybook("restore");setPortfolioPlan([]);setTab("Trades");setMessage("Restore-targets playbook selected. Review the drift and build one atomic plan.");}
+  function chooseRestore(){setCash(savedCash);setWeights(rows.map(r=>r.target));setPlaybook("restore");setPortfolioPlan([]);setMessage("Restore targets selected. Building a protected atomic simulation.");}
   function chooseDeploy(){
     if(valuationUnavailable){setMessage("A complete valuation is required before excess cash can be deployed.");return;}
     if(availableToBuy<=0n){setMessage("There is no WETH above the saved reserve to deploy.");return;}
-    setCash(savedCash);setWeights(rows.map(r=>r.target));setPlaybook("deploy-cash");setPortfolioPlan([]);setTab("Trades");setMessage("Deploy-reserve playbook selected. HOODX will leave a 2% buffer in the available excess cash.");
+    setCash(savedCash);setWeights(rows.map(r=>r.target));setPlaybook("deploy-cash");setPortfolioPlan([]);setMessage("Deploy reserve selected. Building a protected atomic simulation.");
   }
   function chooseHarvest(){
     if(!harvestPreview){setMessage("No verified gains are currently available to harvest safely.");return;}
     try{
-      setCash(harvestPreview.cash);setWeights(harvestPreview.weights);setPlaybook("harvest");setPortfolioPlan([]);setTab("Trades");
-      setMessage(`Verified-gain plan ready. ${harvestPreview.assets.length} profitable asset${harvestPreview.assets.length===1?"":"s"} can lift reserve by ${(harvestPreview.liftBps/100).toFixed(2)}%.`);
+      setCash(harvestPreview.cash);setWeights(harvestPreview.weights);setPlaybook("harvest");setPortfolioPlan([]);
+      setMessage(`Harvest Gains selected. Building a protected atomic simulation from ${harvestPreview.assets.length} profitable asset${harvestPreview.assets.length===1?"":"s"}.`);
     }catch(e){setMessage((e as Error).message);}
   }
+  function prepareAction(kind:AtomicPlaybook){
+    if(kind==="custom"&&!dirty){setTab("Allocation");setMessage("Set your custom targets, then return to simulate the complete atomic move.");return;}
+    if(kind==="restore")chooseRestore();
+    else if(kind==="harvest")chooseHarvest();
+    else if(kind==="deploy-cash")chooseDeploy();
+    else {setPlaybook("custom");setPortfolioPlan([]);setMessage("Custom allocation selected. Building a protected atomic simulation.");}
+    setActiveCard(kind);setPlanRequest({kind,nonce:Date.now()});
+  }
+  useEffect(()=>{
+    if(!planRequest||planRequest.kind!==playbook)return;
+    setPlanRequest(undefined);
+    void buildPortfolioPlan();
+  // The request is created in the same React batch as its selected draft.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[planRequest,playbook]);
   async function protectedFloor(r: Row, isBuy: boolean, input: bigint) {
     const policy=await publicClient.readContract({address:vault,abi,functionName:"policy"});
     const id=await publicClient.readContract({address:vault,abi,functionName:"configId",args:[r.token]});
@@ -354,31 +365,49 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   }
   const totalBasis=rowCosts.reduce<bigint>((sum,cost)=>sum+(cost??0n),0n);
   const gainPercent=unrealizedGain!==undefined&&totalBasis>0n?Number(unrealizedGain*10000n/totalBasis)/100:undefined;
-  const recommendation=!costBasis?"sync":harvestPreview?"harvest":drifted.length?"restore":availableToBuy>tradeFloor?"deploy":"steady";
+  const recommendation:AtomicPlaybook|"sync"|"steady"=!costBasis?"sync":harvestPreview?"harvest":drifted.length?"restore":availableToBuy>tradeFloor?"deploy-cash":"steady";
   const recommendationCopy={
-    sync:{eyebrow:"VERIFYING HISTORY",title:"Reading the confirmed ledger.",body:"HOODX is reconciling every settled acquisition and exit before suggesting a move.",action:"Please wait"},
-    harvest:{eyebrow:"RECOMMEND",title:"Harvest Gains",body:`Raise the WETH reserve by up to ${((harvestPreview?.liftBps??0)/100).toFixed(2)} points from profitable assets.`,action:"Review Harvest"},
-    restore:{eyebrow:"RECOMMENDED",title:"Bring the basket back to plan.",body:`${drifted.length} asset${drifted.length===1?" is":"s are"} outside your drift band. Sell first, buy second, and preserve reserve.`,action:"Review rebalance"},
-    deploy:{eyebrow:"CASH AVAILABLE",title:"Put excess reserve to work.",body:"Refill underweight sleeves while leaving a protected execution buffer.",action:"Review deployment"},
-    steady:{eyebrow:"ON PLAN",title:"No action needed.",body:"The basket is inside its drift band and the reserve is where you set it.",action:"Portfolio is steady"},
+    sync:{title:"Reading the confirmed ledger.",body:"Cost basis is being reconciled before HOODX recommends a move."},
+    harvest:{title:"Harvest Gains",body:`Raise reserve by up to ${((harvestPreview?.liftBps??0)/100).toFixed(2)} points from verified gains.`},
+    restore:{title:"Restore targets",body:`${drifted.length} asset${drifted.length===1?" is":"s are"} outside your drift band.`},
+    "deploy-cash":{title:"Deploy reserve",body:"Refill underweight assets from excess WETH while preserving the reserve floor."},
+    custom:{title:"Custom mix",body:"Move the basket to your drafted allocation in one transaction."},
+    steady:{title:"Hold steady",body:"The basket is inside its drift band and reserve is on plan."},
   }[recommendation];
-  const chooseRecommendation=()=>{if(recommendation==="harvest")chooseHarvest();else if(recommendation==="restore")chooseRestore();else if(recommendation==="deploy")chooseDeploy();};
+  const actionCards:Array<{kind:AtomicPlaybook;title:string;body:string;meta:string;disabled:boolean;button:string;target:number}>=[
+    {kind:"restore",title:"Restore targets",body:"Sell overweight assets first, buy underweight assets second, and finish at your saved reserve.",meta:`${drifted.length} outside drift band`,disabled:valuationUnavailable||!controller||drifted.length===0,button:"Simulate rebalance",target:Number(savedCash)},
+    {kind:"harvest",title:"Harvest Gains",body:"Trim only reconciled unrealized gains and move the proceeds into WETH reserve.",meta:harvestPreview?`${harvestPreview.assets.length} profitable · +${(harvestPreview.liftBps/100).toFixed(2)} pts reserve`:"No verified gains ready",disabled:!harvestPreview||!controller,button:"Simulate harvest",target:Number(harvestPreview?.cash??savedCash)},
+    {kind:"deploy-cash",title:"Deploy reserve",body:"Use excess WETH to refill underweight assets with a protected execution buffer.",meta:`${Number(formatEther(availableToBuy)).toFixed(5)} WETH available`,disabled:valuationUnavailable||availableToBuy<=0n||paused||!controller,button:"Simulate deployment",target:Number(savedCash)},
+    {kind:"custom",title:"Custom mix",body:"Set the allocation you want, then preview every sell, buy, cost, and resulting weight together.",meta:dirty?"Draft ready to simulate":"Edit targets to begin",disabled:!controller,button:dirty?"Simulate custom mix":"Edit allocation",target:Number(cash)},
+  ];
+  const orderedCards=[...actionCards].sort((a,b)=>Number(b.kind===recommendation)-Number(a.kind===recommendation));
+  const planValue=portfolioPlan.reduce((sum,step)=>sum+step.estimatedValue,0n);
+  const planFee=(controller?atomicGas??0n:portfolioPlan.reduce((sum,step)=>sum+(step.gas||0n),0n))*planGasPrice;
   return <section id="curator" className="vault-actions holo">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">CURATOR WORKSPACE</p><h2>Your conviction. In control.</h2></div><span className="vault-tag">Curator access</span></div>
     <p className="vault-footnote">Portfolio overview and actions.</p>
     {!loaded ? <p>Loading curator tools…</p> : <>
-      {tab!=="Overview"&&<div className="curator-flow-nav"><button onClick={()=>setTab("Overview")}>← Curator home</button><span>{tab==="Trades"?"Atomic review":tab==="Allocation"?"Allocation":"Basket management"}</span></div>}
+      {tab!=="Overview"&&<div className="curator-flow-nav"><button onClick={()=>setTab("Overview")}>← Curator home</button><span>{tab==="Manual"?"Manual trade":tab==="Allocation"?"Allocation":"Basket management"}</span></div>}
       {tab==="Overview"&&<div className="curator-overview curator-simple">
         <div className="curator-metrics simple"><div><span>Vault value</span><strong>{nav===undefined?"—":`${Number(formatEther(nav)).toFixed(5)} ETH`}</strong><small>Live oracle value</small></div><div><span>Unrealized gain</span><strong className={unrealizedGain!==undefined&&unrealizedGain<0n?"vault-loss":""}>{gainPercent===undefined?"—":`${gainPercent>=0?"+":""}${gainPercent.toFixed(2)}%`}</strong><small>{costBasis?.verified?`${Number(formatEther(unrealizedGain??0n)).toFixed(5)} ETH · reconciled basis`:costBasis?"History needs review":"Verifying confirmed history"}</small></div><div><span>Cash reserve</span><strong>{currentCash===undefined?"—":`${currentCash.toFixed(2)}%`}</strong><small>{savedCash}% saved target</small></div></div>
-        <div className={`curator-focus curator-signature ${recommendation}`}>
-          <div className="curator-focus-copy"><p className="vault-eyebrow"><span className="curator-status-dot" />{recommendationCopy.eyebrow}</p><h3>{recommendationCopy.title}</h3><p>{recommendationCopy.body}</p>
-            <div className="curator-decision"><button className="vault-button primary curator-focus-action" disabled={busy||recommendation==="sync"||recommendation==="steady"||!controller} onClick={chooseRecommendation}>{recommendationCopy.action}<span aria-hidden="true">↗</span></button><span>{controller?"One signature. All or nothing.":"Controller required to execute."}</span></div>
-          </div>
-          <CuratorReserveVisual current={currentCash} target={recommendation==="harvest"&&harvestPreview?Number(harvestPreview.cash):Number(savedCash)} active={recommendation!=="sync"&&recommendation!=="steady"} />
-          <div className="curator-assurance"><span>{costBasis?.verified?"✓ Verified cost basis":"Cost basis pending"}</span></div>
+        {(recommendation==="sync"||recommendation==="steady")&&<div className="curator-action-card featured status-only"><div><p className="vault-eyebrow"><span className="curator-status-dot" />RECOMMEND</p><h3>{recommendationCopy.title}</h3><p>{recommendationCopy.body}</p></div><CuratorReserveVisual current={currentCash} target={Number(savedCash)} active={false}/></div>}
+        <div className="curator-action-grid">
+          {orderedCards.map((card,index)=>{const featured=card.kind===recommendation;const selectedCard=activeCard===card.kind;return <article key={card.kind} className={`curator-action-card ${featured?"featured":""} ${selectedCard?"selected":""}`}>
+            <div className="curator-card-head"><div><p className="vault-eyebrow">{featured?"RECOMMEND":`0${index+1} · ATOMIC ACTION`}</p><h3>{card.title}</h3><p>{card.body}</p><span className="curator-card-meta">{card.meta}</span></div>{featured&&<CuratorReserveVisual current={currentCash} target={card.target} active={!card.disabled}/>}</div>
+            <button className={`vault-button ${featured?"primary":""} curator-card-action`} disabled={busy||card.disabled} onClick={()=>prepareAction(card.kind)}>{selectedCard&&portfolioPlan.length?"Refresh simulation":card.button}<span aria-hidden="true">→</span></button>
+            {selectedCard&&<div className="curator-inline-preview" aria-live="polite">
+              {planRequest||(busy&&!portfolioPlan.length)?<p className="curator-preview-loading"><i/>Simulating every route and protection…</p>:portfolioPlan.length?<>
+                <p className="vault-eyebrow">SIMULATION PASSED · VALID 10 MINUTES</p>
+                <div className="curator-preview-stats"><span><b>{portfolioPlan.filter(s=>!s.buy).length}</b> sells</span><span><b>{portfolioPlan.filter(s=>s.buy).length}</b> buys</span><span><b>{Number(formatEther(planValue)).toFixed(5)}</b> ETH moved</span><span><b>{Number(formatEther(planFee)).toFixed(7)}</b> ETH network</span></div>
+                <ol>{portfolioPlan.slice(0,4).map((step,i)=><li key={`${step.token}:${step.buy}`}><span>{i+1}. {step.buy?"Buy":"Sell"} <b>{step.symbol}</b></span><small>minimum {Number(formatUnits(step.minimum,step.buy?step.decimals:18)).toLocaleString(undefined,{maximumFractionDigits:6})} {step.buy?step.symbol:"WETH"}</small></li>)}{portfolioPlan.length>4&&<li className="more"><span>+ {portfolioPlan.length-4} more protected legs</span></li>}</ol>
+                <div className="curator-preview-result"><span>Result</span><b>{cash}% WETH reserve</b></div>
+                <button className="vault-button primary curator-sign" disabled={busy||portfolioStep>=portfolioPlan.length} onClick={()=>void executePortfolioStep()}>Approve atomic action</button>
+                <p className="vault-footnote">One signature. If any route, minimum, deadline, basket hash, or reserve check fails, nothing changes.</p>
+              </>:<p className="vault-footnote">{message||"No protected trades are available for this action."}</p>}
+            </div>}
+          </article>})}
         </div>
-        <details className="curator-choices"><summary>Choose a different move</summary><div><button disabled={busy||valuationUnavailable||!controller} onClick={chooseRestore}><b>Restore targets</b><span>Return to the saved mix</span></button><button disabled={busy||!harvestPreview||!controller} onClick={chooseHarvest}><b>Harvest gains</b><span>Move verified profit to WETH</span></button><button disabled={busy||valuationUnavailable||availableToBuy<=0n||paused||!controller} onClick={chooseDeploy}><b>Deploy reserve</b><span>Buy underweight sleeves</span></button></div></details>
-        <details className="curator-manage"><summary>Manage allocation and basket</summary><div><button onClick={()=>setTab("Allocation")}><b>Allocation</b><span>Edit targets and saved groups</span></button><button onClick={()=>setTab("Basket")}><b>Basket</b><span>Add, replace, or remove assets</span></button><button onClick={()=>setTab("Trades")}><b>Manual trade</b><span>Prepare one protected trade</span></button></div></details>
+        <div className="curator-tool-cards"><button onClick={()=>setTab("Allocation")}><span>Allocation</span><small>Edit targets and asset groups</small><b>→</b></button><button onClick={()=>setTab("Basket")}><span>Basket</span><small>Add, replace, or remove assets</small><b>→</b></button><button onClick={()=>setTab("Manual")}><span>Manual trade</span><small>Prepare one protected trade</small><b>→</b></button></div>
         <div className="curator-toolbar compact"><span>{updated?`Snapshot ${new Date(updated).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`:"Loading"} · Cost basis block {costBasis?.indexedBlock||"—"}</span><button className="vault-button" disabled={busy} onClick={()=>void refreshSnapshot()}>Refresh</button></div>
       </div>}
       <div hidden={tab!=="Allocation"} className="vault-recovery"><h3>Shape your allocation.</h3><p className="vault-footnote">Lock the weights you want to keep. Distribute the rest with exact rounding.</p>
@@ -394,22 +423,8 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
         {dirty&&<details className="curator-help" open><summary>Changes to review</summary><p>Cash: {savedCash}% → {cash}%</p>{rows.map((r,i)=>weights[i]!==r.target&&<p key={r.token}>{r.symbol}: {r.target}% → {weights[i]||"—"}%</p>)}<p>Saving targets does not trade existing holdings.</p></details>}
         <button className="vault-button" disabled={busy || !valid || !dirty} onClick={() => void submit("targets")}>Review and save targets</button>
       </div>
-      <div hidden={tab!=="Trades"} className="vault-recovery curator-atomic-desk">
-        <div className="curator-atomic-heading"><div><p className="vault-eyebrow">ONE-SIGNATURE REBALANCE</p><h3>Atomic desk.</h3></div><span className={`curator-live ${controller?"":"off"}`}>{controller?"● Live controller":"Controller required"}</span></div>
-        <div className="curator-active-playbook"><div><p className="vault-eyebrow">{playbookCopy[playbook].eyebrow}</p><h4>{playbookCopy[playbook].title}</h4><p>{playbookCopy[playbook].body}</p></div><div className="curator-active-stats"><span><b>{portfolioSuggestions.filter(s=>!s.trade!.buy).length}</b> sells</span><span><b>{portfolioSuggestions.filter(s=>s.trade!.buy).length}</b> buys</span><span><b>{cash}%</b> final cash</span></div></div>
-        <details className="curator-execution-settings"><summary>Execution preferences</summary><div className="curator-toolbar"><label>Drift band <select value={threshold} onChange={e=>setThreshold(Number(e.target.value))}><option value={50}>0.5 pp</option><option value={100}>1 pp</option><option value={200}>2 pp</option><option value={500}>5 pp</option></select></label><label>Minimum trade <select value={minimumTrade} onChange={e=>setMinimumTrade(e.target.value)}><option value="0">Show all</option><option value="0.0001">0.0001 ETH</option><option value="0.001">0.001 ETH</option><option value="0.005">0.005 ETH</option></select></label></div></details>
-        <div className="curator-suggestions">{portfolioSuggestions.length?portfolioSuggestions.map(({r,trade})=><button key={r.token} disabled={busy || (trade!.buy&&paused)} onClick={()=>stage(r,trade!.buy,trade!.amount)}><span><b>{trade!.buy?"Buy":"Sell"} {r.symbol}</b><small>{Math.abs(driftBps(r.value,r.nav,r.target)??0)/100} pp {trade!.buy?"below":"above"} planned target</small></span><span>≈ {Number(formatEther(trade!.value)).toFixed(5)} ETH <small>Inspect →</small></span></button>):<p className="vault-footnote">No priced position meets this playbook’s drift and trade-size rules.</p>}</div>
-        <div className="curator-review curator-atomic-review">
-          <div className="curator-settlement-rail" aria-label="Atomic settlement order"><span><i>1</i>Lock targets</span><span><i>2</i>Sell first</span><span><i>3</i>Buy second</span><span><i>4</i>Check cash</span></div>
-          <p className="vault-eyebrow">REVIEW THE WHOLE MOVE</p><h4>Everything settles—or nothing does.</h4>
-          <p>Every route gets a fresh 3% protected minimum. The basket hash, deadline and final WETH floor are checked on-chain in the same transaction.</p>
-          <button className="vault-button primary" disabled={busy||(!controller&&dirty)||!portfolioSuggestions.length||(paused&&portfolioSuggestions.some(s=>s.trade!.buy))} onClick={()=>void buildPortfolioPlan()}>{portfolioPlan.length?"Refresh atomic plan":"Build atomic plan"}</button>
-          {portfolioPlan.length>0&&<div className="curator-plan"><div className="curator-plan-summary"><span><b>{portfolioPlan.length}</b> protected legs</span><span><b>{Number(formatEther(portfolioPlan.reduce((sum,step)=>sum+step.estimatedValue,0n))).toFixed(5)}</b> ETH moved</span><span><b>{Number(formatEther((controller?atomicGas??0n:portfolioPlan.reduce((sum,step)=>sum+(step.gas||0n),0n))*planGasPrice)).toFixed(7)}</b> ETH est. network</span></div><div className="vault-table-scroll"><table className="vault-table"><thead><tr><th>#</th><th>Action</th><th>Asset</th><th>Input</th><th>Protected minimum</th></tr></thead><tbody>{portfolioPlan.map((step,i)=><tr key={`${step.token}:${step.buy}`}><td>{i<portfolioStep?"✓":i+1}</td><td><span className={`curator-action ${step.buy?"buy":"sell"}`}>{step.buy?"Buy":"Sell"}</span></td><td>{step.symbol}</td><td>{formatUnits(step.amount,step.buy?18:step.decimals)} {step.buy?"WETH":step.symbol}</td><td>{formatUnits(step.minimum,step.buy?step.decimals:18)} {step.buy?step.symbol:"WETH"}</td></tr>)}</tbody></table></div>
-          <details className="curator-plan-targets"><summary>Resulting target mix</summary><p>{rows.map((r,i)=>`${r.symbol} ${weights[i]??r.target}%`).join(" · ")} · WETH {cash}%</p></details>
-          <button className="vault-button primary curator-sign" disabled={busy||portfolioStep>=portfolioPlan.length} onClick={()=>void executePortfolioStep()}>{portfolioStep>=portfolioPlan.length?"Rebalance complete":controller?"Review one atomic transaction":"Continue protected rebalance"}</button>
-          <p className="vault-footnote">{controller?"A stale basket, expired quote, failed route or cash-floor breach reverts every target and trade.":"This vault still requires one wallet approval per trade and stops on the first failed simulation."}</p></div>}
-        </div>
-        <details className="curator-help curator-manual"><summary>Advanced · prepare one manual trade</summary><p>Use this when a playbook is not the right move. Manual trades retain the same oracle and minimum-output protections.</p><p>Vault cash: {wethBalance === undefined ? "—" : formatEther(wethBalance)} WETH · Room above the saved reserve: {formatEther(availableToBuy)} WETH.</p>
+      <div hidden={tab!=="Manual"} className="vault-recovery curator-manual-desk">
+        <p className="vault-eyebrow">MANUAL ACTION</p><h3>One protected trade.</h3><p className="vault-footnote">Use this only when the portfolio actions are not the right move. The same oracle and minimum-output protections apply.</p><p>Vault cash: {wethBalance === undefined ? "—" : formatEther(wethBalance)} WETH · Room above saved reserve: {formatEther(availableToBuy)} WETH.</p>
           <label>Asset<select className="vault-input" value={selected} disabled={busy} onChange={e => { setSelected(e.target.value); setAmount(""); setMinimum(""); }}><option value="">Choose an asset</option>{rows.map(r => <option key={r.token} value={r.token}>{r.symbol}</option>)}</select></label>
           <div className="vault-presets">{[false,true].map(value => <button className="vault-button" aria-pressed={buy===value} key={String(value)} disabled={busy} onClick={() => { setBuy(value); setAmount(""); setMinimum(""); }}>{value ? "Buy with vault WETH" : "Sell into vault WETH"}</button>)}</div>
           <label>Amount ({buy ? "WETH" : row?.symbol ?? "tokens"})<input className="vault-input" value={amount} disabled={busy} inputMode="decimal" onChange={e => setAmount(e.target.value)} /></label>
@@ -417,7 +432,6 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
           <label>Minimum output ({buy ? row?.symbol ?? "tokens" : "WETH"})<input className="vault-input" value={minimum} disabled={busy} inputMode="decimal" onChange={e => setMinimum(e.target.value)} /></label>
           <div className="vault-presets"><button className="vault-button" disabled={busy||!row||!amount} onClick={()=>void protectedMinimum()}>Fill protected minimum</button><button className="vault-button primary" disabled={busy || !row || !amount || !minimum || (buy && paused)} onClick={() => void previewTrade()}>Preview trade</button></div>
           {preview?.key===previewKey&&<div className="curator-review"><p className="vault-eyebrow">SIMULATION PASSED · VALID FOR ONE MINUTE</p><h4>{buy?"Buy":"Sell"} {row?.symbol}</h4><p>Spend <b>{amount} {buy?"WETH":row?.symbol}</b> · Receive at least <b>{minimum} {buy?row?.symbol:"WETH"}</b></p><p>Estimated network fee: {Number(preview.fee).toFixed(8)} ETH. Your wallet shows the final fee. All proceeds remain in the vault.</p><button className="vault-button primary" disabled={busy} onClick={()=>void submit("trade")}>Review in wallet</button></div>}
-        </details>
       </div>
       <div hidden={tab!=="Basket"} className="vault-recovery"><h3>Build a basket worth following.</h3><p className="vault-footnote">{24-rows.length} spaces available. An approved route is required for every new asset.</p>
         <p>Configured tokens remain in the curator planner even when their balance is zero. Adding a token does not buy it automatically.</p>
