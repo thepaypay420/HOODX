@@ -120,7 +120,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       await checkWallet(address);
       const request=prepared.request;
       const data=request.functionName==='claim'?encodeFunctionData(request):request.functionName==='setPaused'?encodeFunctionData(request):encodeFunctionData(request);
-      const tx=await walletClient.sendTransaction({to:release.vault,data,account:address,chain:robinhood});remember(tx);setMessage('Submitted. Waiting for confirmation…');
+      const tx=await walletClient.sendTransaction({to:request.address,data,account:address,chain:robinhood});remember(tx);setMessage('Submitted. Waiting for confirmation…');
       const receipt=await publicClient.waitForTransactionReceipt({hash:tx});resolved();if(receipt.status!=='success')throw Error('Reverted');
       await refresh();setMessage('Confirmed. Balances refreshed.');
     }catch{setMessage('Action not confirmed. Check any transaction link before retrying.');}

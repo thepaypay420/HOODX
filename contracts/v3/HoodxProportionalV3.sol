@@ -71,7 +71,6 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     error HeldAsset();
     error BuyQuote(uint256[] outputs);
     error WithdrawalQuote(uint256 cash, uint256[] outputs);
-    error RebalanceQuote(uint256 output);
     error QuoteUnavailable();
     event Deposit(address indexed user, uint256 gross, uint256 shares, uint256 fee);
     event Withdraw(address indexed user, uint256 shares, uint256 ethOut);
@@ -229,35 +228,6 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
             uint256 amount = Math.mulDiv(freeBalance(tokens[i]), shares, supply);
             if (amount != 0) outputs[i] = _sell(tokens[i], amount, 1, block.timestamp);
         }
-    }
-
-    /// @notice eth_call only: quotes one exact rebalance leg and always rolls the swap back.
-    /// @dev A buy must carry exactly `amount` native ETH for isolated funding. A sale uses the
-    /// vault's existing free token balance. External failures are converted to QuoteUnavailable.
-    function quoteRebalance(address token, bool buy, uint256 amount) external payable nonReentrant {
-        try this.probeRebalance(token, buy, amount, msg.value) returns (uint256 output) {
-            revert RebalanceQuote(output);
-        } catch {
-            revert QuoteUnavailable();
-        }
-    }
-
-    function probeRebalance(address token, bool buy, uint256 amount, uint256 funding)
-        external
-        returns (uint256 output)
-    {
-        if (msg.sender != address(this) || amount == 0 || configId[token] == 0) revert Invalid();
-        if (buy) {
-            if (paused || funding != amount) revert Invalid();
-            IV2Weth(weth).deposit{value: funding}();
-            uint256 beforeBalance = freeBalance(token);
-            this.executeBuy(token, amount, 1, block.timestamp);
-            output = freeBalance(token) - beforeBalance;
-        } else {
-            if (funding != 0 || amount > freeBalance(token)) revert Invalid();
-            output = _sell(token, amount, 1, block.timestamp);
-        }
-        if (output == 0) revert Invalid();
     }
 
     function requiredContributions(uint256 shares) external view returns (uint256 cash, uint256[] memory amounts) {

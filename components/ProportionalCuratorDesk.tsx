@@ -6,7 +6,7 @@ import {publicClient,useWallet} from '@/lib/wallet';
 import {robinhood} from '@/lib/chain';
 import {allocation} from '@/lib/v2Allocation';
 import {proportionalAbi,quoteProportionalRebalance,readProportionalState,type ProportionalState} from '@/lib/proportionalQuote';
-import {rebalanceControllerV3Abi} from '@/lib/rebalanceController';
+import {protectedRebalanceMinimum,rebalanceControllerV3Abi} from '@/lib/rebalanceController';
 
 const curatorAbi=parseAbi([
   'function cashTargetBps() view returns(uint16)',
@@ -44,21 +44,21 @@ export function ProportionalCuratorDesk({vault,controller,state,busy,onBusy,onRe
     try{
       const draft=allocation(cash,weights);const fresh=await readProportionalState(publicClient,vault,address);
       if(fresh.nonce!==state.nonce||fresh.blockNumber-state.blockNumber>20n)throw Error('Vault state changed. Refresh before planning.');
-      const values=await Promise.all(rows.map((r,i)=>fresh.balances[i]===0n?Promise.resolve(0n):quoteProportionalRebalance(publicClient,fresh,r.token,false,fresh.balances[i])));
+      const values=await Promise.all(rows.map((r,i)=>fresh.balances[i]===0n?Promise.resolve(0n):quoteProportionalRebalance(publicClient,fresh,controller,r.token,false,fresh.balances[i])));
       const total=fresh.cash+values.reduce((sum,v)=>sum+v,0n);if(total===0n)throw Error('The basket has no quotable value.');
       const minimumTrade=100_000_000_000_000n;const sells:Step[]=[];const buyInputs:{row:Row;amount:bigint;value:bigint}[]=[];
       for(let i=0;i<rows.length;i++){
         const desired=total*BigInt(draft.weights[i])/10000n,current=values[i];
         if(current>desired&&current-desired>=minimumTrade&&fresh.balances[i]>0n){
           const amount=fresh.balances[i]*(current-desired)/current;if(amount===0n)continue;
-          const output=await quoteProportionalRebalance(publicClient,fresh,rows[i].token,false,amount);
-          sells.push({token:rows[i].token,symbol:rows[i].symbol,decimals:rows[i].decimals,buy:false,amount,minOut:output*97n/100n,value:output});
+          const output=await quoteProportionalRebalance(publicClient,fresh,controller,rows[i].token,false,amount);
+          sells.push({token:rows[i].token,symbol:rows[i].symbol,decimals:rows[i].decimals,buy:false,amount,minOut:protectedRebalanceMinimum(output),value:output});
         }else if(desired>current&&desired-current>=minimumTrade)buyInputs.push({row:rows[i],amount:desired-current,value:desired-current});
       }
       const minCashAfter=total*BigInt(draft.cashBps)/10000n;
       const sellCash=sells.reduce((sum,s)=>sum+s.value,0n);const available=fresh.cash+sellCash>minCashAfter?fresh.cash+sellCash-minCashAfter:0n;
       const requested=buyInputs.reduce((sum,b)=>sum+b.amount,0n);const buys:Step[]=[];
-      for(const item of buyInputs){const amount=requested>available&&requested>0n?item.amount*available/requested:item.amount;if(amount<minimumTrade)continue;const output=await quoteProportionalRebalance(publicClient,fresh,item.row.token,true,amount);buys.push({token:item.row.token,symbol:item.row.symbol,decimals:item.row.decimals,buy:true,amount,minOut:output*97n/100n,value:amount});}
+      for(const item of buyInputs){const amount=requested>available&&requested>0n?item.amount*available/requested:item.amount;if(amount<minimumTrade)continue;const output=await quoteProportionalRebalance(publicClient,fresh,controller,item.row.token,true,amount);buys.push({token:item.row.token,symbol:item.row.symbol,decimals:item.row.decimals,buy:true,amount,minOut:protectedRebalanceMinimum(output),value:amount});}
       const steps=[...sells,...buys];if(!steps.length)throw Error('No position is large enough to rebalance at the current targets.');
       const basketHash=keccak256(encodeAbiParameters([{type:'address[]'}],[fresh.tokens]));const deadline=BigInt(Math.floor(Date.now()/1000)+300);
       const args=[draft.cashBps,draft.weights,steps.map(({token,buy,amount,minOut})=>({token,buy,amount,minOut})),basketHash,fresh.nonce,minCashAfter,deadline] as const;
@@ -72,7 +72,7 @@ export function ProportionalCuratorDesk({vault,controller,state,busy,onBusy,onRe
     try{
       if(Date.now()-plan.at>60_000)throw Error('Plan expired. Build a fresh plan.');const fresh=await readProportionalState(publicClient,vault,address);
       const basketHash=keccak256(encodeAbiParameters([{type:'address[]'}],[fresh.tokens]));if(fresh.nonce!==plan.nonce||basketHash!==plan.basketHash)throw Error('The basket changed. Refresh and rebuild.');
-      const steps=[] as {token:Address;buy:boolean;amount:bigint;minOut:bigint}[];for(const step of plan.steps){const output=await quoteProportionalRebalance(publicClient,fresh,step.token,step.buy,step.amount);steps.push({token:step.token,buy:step.buy,amount:step.amount,minOut:output*97n/100n});}
+      const steps=[] as {token:Address;buy:boolean;amount:bigint;minOut:bigint}[];for(const step of plan.steps){const output=await quoteProportionalRebalance(publicClient,fresh,controller,step.token,step.buy,step.amount);steps.push({token:step.token,buy:step.buy,amount:step.amount,minOut:protectedRebalanceMinimum(output)});}
       const deadline=BigInt(Math.floor(Date.now()/1000)+300);const args=[plan.cashBps,plan.weights,steps,plan.basketHash,plan.nonce,plan.minCashAfter,deadline] as const;
       const {request}=await publicClient.simulateContract({address:controller,abi:rebalanceControllerV3Abi,account:address,chain:robinhood,functionName:'atomicRebalance',args});const tx=await walletClient.writeContract(request);setHash(tx);setMessage('Atomic rebalance submitted. Waiting for confirmation…');
       const receipt=await publicClient.waitForTransactionReceipt({hash:tx});if(receipt.status!=='success')throw Error('The transaction reverted; no target or trade changed.');setPlan(undefined);await onRefresh();setMessage('Atomic rebalance complete. Every target and trade settled together.');

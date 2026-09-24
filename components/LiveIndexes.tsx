@@ -6,6 +6,7 @@ import { formatEther, parseAbi, parseAbiItem, type Address } from "viem";
 import { TokenArt } from "@/components/TokenArt";
 import { publicClient } from "@/lib/wallet";
 import { productionV2Factory, verifiedV2Vaults } from "@/lib/v2";
+import { atomicFactoryAddress, atomicFactoryStartBlock } from "@/lib/atomicFactory";
 
 const identityAbi = parseAbi([
   "function name() view returns (string)",
@@ -19,35 +20,43 @@ let rowsCache: { at: number; rows: Row[] } | undefined;
 const factoryStartBlock = 67761602n;
 const createdEvent = parseAbiItem("event Created(address indexed vault,string slug,address curator,address creator)");
 
-async function loadCreated() {
+async function loadFactoryCreated(address: Address, start: bigint) {
   const latest = await publicClient.getBlockNumber();
   try {
-    return await publicClient.getLogs({ address: productionV2Factory, event: createdEvent, fromBlock: factoryStartBlock, toBlock: latest });
+    return await publicClient.getLogs({ address, event: createdEvent, fromBlock: start, toBlock: latest });
   } catch {
     const logs = [];
-    for (let from = factoryStartBlock; from <= latest; from += 10_000n) {
-      logs.push(...await publicClient.getLogs({ address: productionV2Factory, event: createdEvent, fromBlock: from, toBlock: from + 9_999n > latest ? latest : from + 9_999n }));
+    for (let from = start; from <= latest; from += 10_000n) {
+      logs.push(...await publicClient.getLogs({ address, event: createdEvent, fromBlock: from, toBlock: from + 9_999n > latest ? latest : from + 9_999n }));
     }
     return logs;
   }
 }
 
+async function loadCreated() {
+  const legacy = await loadFactoryCreated(productionV2Factory, factoryStartBlock);
+  if (!atomicFactoryAddress) return legacy;
+  const atomic = await loadFactoryCreated(atomicFactoryAddress, atomicFactoryStartBlock);
+  return [...legacy, ...atomic];
+}
+
 async function loadRows(): Promise<Row[]> {
   if (rowsCache && Date.now() - rowsCache.at < 60_000) return rowsCache.rows;
   const created = await loadCreated();
-  const slugs = new Map(created.flatMap((log) => log.args.vault && log.args.slug ? [[log.args.vault.toLowerCase(), log.args.slug] as const] : []));
+  const createdByAddress = new Map(created.flatMap((log) => log.args.vault && log.args.slug && log.args.curator ? [[log.args.vault.toLowerCase(), { slug: log.args.slug, curator: log.args.curator }] as const] : []));
   const addresses = [...new Set(created.flatMap((log) => log.args.vault ? [log.args.vault] : []))];
   if (!addresses.length) throw new Error("Factory history unavailable");
   const officialByAddress = new Map(Object.entries(verifiedV2Vaults).map(([slug, address]) => [address.toLowerCase(), slug]));
   const rows = await Promise.all(addresses.map(async (vault) => {
+    const createdIdentity = createdByAddress.get(vault.toLowerCase());
     const [name, symbol, curator, assets] = await Promise.all([
       publicClient.readContract({ address: vault, abi: identityAbi, functionName: "name" }).catch(() => "Untitled index"),
       publicClient.readContract({ address: vault, abi: identityAbi, functionName: "symbol" }).catch(() => "INDEX"),
-      publicClient.readContract({ address: vault, abi: identityAbi, functionName: "owner" }),
+      createdIdentity ? Promise.resolve(createdIdentity.curator) : publicClient.readContract({ address: vault, abi: identityAbi, functionName: "owner" }),
       publicClient.readContract({ address: vault, abi: identityAbi, functionName: "totalAssets" }).catch(() => undefined),
     ]);
     const knownSlug = officialByAddress.get(vault.toLowerCase());
-    return { vault, slug: knownSlug || slugs.get(vault.toLowerCase()) || vault.toLowerCase(), name, symbol, curator, assets, official: Boolean(knownSlug) };
+    return { vault, slug: knownSlug || createdIdentity?.slug || vault.toLowerCase(), name, symbol, curator, assets, official: Boolean(knownSlug) };
   }));
   rows.sort((a, b) => Number(b.official) - Number(a.official) || Number((b.assets || 0n) - (a.assets || 0n)));
   rowsCache = { at: Date.now(), rows };

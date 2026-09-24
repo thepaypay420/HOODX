@@ -23,8 +23,16 @@ export const rebalanceControllerV3Abi = parseAbi([
   "function replaceConfig(bytes32 id)",
   "function removeConstituent(address token)",
   "function emergencyUnwind(address token,uint256 amount,uint256 minOut,uint256 deadline) returns (uint256)",
+  "function quoteRebalance(address token,bool buy,uint256 amount) payable",
+  "error RebalanceQuote(uint256 output)",
+  "error QuoteUnavailable()",
+  "error ExecutionFloor(uint256 provided,uint256 required)",
   "function atomicRebalance(uint16 cashBps,uint16[] weights,(address token,bool buy,uint256 amount,uint256 minOut)[] steps,bytes32 expectedConstituentsHash,uint256 expectedPlanNonce,uint256 minCashAfter,uint256 deadline)",
 ]);
+
+export function protectedRebalanceMinimum(output: bigint): bigint {
+  return (output * 97n + 99n) / 100n;
+}
 
 export type VaultAuthority = { curator: Address; controller?: Address };
 

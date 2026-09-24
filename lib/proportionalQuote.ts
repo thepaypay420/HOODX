@@ -1,6 +1,7 @@
 import {BaseError, ContractFunctionRevertedError, keccak256, parseAbi, toHex, zeroAddress, type Address, type PublicClient} from 'viem';
 import {buildProportionalWithdrawal, type ProportionalSnapshot} from './proportionalPlan';
 import {solveProportionalDeposit} from './proportionalSolver';
+import {rebalanceControllerV3Abi} from './rebalanceController';
 
 export const proportionalAbi = parseAbi([
   'function accountingMode() pure returns(bytes32)', 'function totalSupply() view returns(uint256)',
@@ -9,8 +10,7 @@ export const proportionalAbi = parseAbi([
   'function planNonce() view returns(uint256)', 'function creatorFeeBps() view returns(uint16)',
   'function protocolFeeBps() view returns(uint16)', 'function paused() view returns(bool)',
   'function quoteBuys(uint256[] budgets) payable', 'function quoteWithdrawal(uint256 shares)',
-  'function quoteRebalance(address token,bool buy,uint256 amount) payable',
-  'error BuyQuote(uint256[] outputs)', 'error WithdrawalQuote(uint256 cash,uint256[] outputs)', 'error RebalanceQuote(uint256 output)', 'error QuoteUnavailable()',
+  'error BuyQuote(uint256[] outputs)', 'error WithdrawalQuote(uint256 cash,uint256[] outputs)', 'error QuoteUnavailable()',
   'function depositExactShares(uint256 shares,uint256[] budgets,uint256[] floors,uint256 nonce,uint256 deadline) payable returns(uint256 refund)',
   'function withdraw(uint256 shares,uint256 minEthOut,uint256[] floors,uint256 nonce,uint256 deadline) returns(uint256 net)',
 ]);
@@ -46,6 +46,7 @@ function quoteResult(error: unknown, name: 'BuyQuote' | 'WithdrawalQuote' | 'Reb
 export async function quoteProportionalRebalance(
   client: PublicClient,
   state: ProportionalState,
+  controller: Address,
   token: Address,
   buy: boolean,
   amount: bigint,
@@ -53,8 +54,8 @@ export async function quoteProportionalRebalance(
   if (amount <= 0n || !state.tokens.some(t => t.toLowerCase() === token.toLowerCase())) throw new Error('Invalid rebalance leg');
   try {
     await client.simulateContract({
-      address: state.vault,
-      abi: proportionalAbi,
+      address: controller,
+      abi: rebalanceControllerV3Abi,
       account: state.account,
       functionName: 'quoteRebalance',
       args: [token, buy, amount],
