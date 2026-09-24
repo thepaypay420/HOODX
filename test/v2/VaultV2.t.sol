@@ -63,6 +63,8 @@ contract TestExecutorV2 is IV2Executor {
     bool public broken;
     bool public lie;
     uint256 public outputBps = 10_000;
+    bytes32 public brokenRoute;
+    bytes32 public gasBurnRoute;
 
     constructor(address w) {
         weth = w;
@@ -79,13 +81,25 @@ contract TestExecutorV2 is IV2Executor {
     function setOutput(uint256 bps) external {
         outputBps = bps;
     }
+
+    function setBrokenRoute(bytes calldata route) external {
+        brokenRoute = keccak256(route);
+    }
+
+    function setGasBurnRoute(bytes calldata route) external {
+        gasBurnRoute = keccak256(route);
+    }
     function validateRoute(bytes calldata, address, address) external pure {}
 
-    function execute(address i, address o, uint256 a, uint256 m, bytes calldata, uint256)
+    function execute(address i, address o, uint256 a, uint256 m, bytes calldata route, uint256)
         external
         returns (uint256 got)
     {
         require(!broken, "router");
+        require(brokenRoute == bytes32(0) || brokenRoute != keccak256(route), "route");
+        if (gasBurnRoute == keccak256(route)) {
+            assembly { invalid() }
+        }
         if (lie) return m;
         TestTokenV2(i).transferFrom(msg.sender, address(this), a);
         got = a * outputBps / 10_000;
@@ -98,6 +112,8 @@ contract TestPolicyV2 is IV2Policy {
     address public immutable executor;
     address public immutable oracle;
     mapping(bytes32 => address) public entries;
+    mapping(bytes32 => address) public oracleById;
+    uint256 private nonce;
 
     constructor(address e, address o) {
         executor = e;
@@ -107,11 +123,18 @@ contract TestPolicyV2 is IV2Policy {
     function add(address token) external returns (bytes32 id) {
         id = bytes32(uint256(uint160(token)));
         entries[id] = token;
+        oracleById[id] = oracle;
+    }
+
+    function addWithOracle(address token, address selectedOracle) external returns (bytes32 id) {
+        id = keccak256(abi.encode(token, selectedOracle, ++nonce));
+        entries[id] = token;
+        oracleById[id] = selectedOracle;
     }
 
     function config(bytes32 id) external view returns (address, address, bytes memory, bytes memory) {
         require(entries[id] != address(0));
-        return (entries[id], oracle, hex"01", hex"02");
+        return (entries[id], oracleById[id], hex"01", hex"02");
     }
 }
 

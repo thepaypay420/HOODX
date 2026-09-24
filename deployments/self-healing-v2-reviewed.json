@@ -1,0 +1,41 @@
+{
+  "chainId": 4663,
+  "stage": "self-healing-v2-controllers",
+  "reviewedBuild": "0x01a716ad159729482bb0156c0190c6781573b5b39893c7154e7a04325de98140",
+  "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+  "curator": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "vaults": {
+    "696X": "0x531832cD20d33Ee974AFEE7BA5720b8f3F2C9292",
+    "FAANGX": "0xCb40b8D79ff6f4c5db15bD8A9692B934b52cB0b0"
+  },
+  "creationCodeHash": "0x8f1c4b3a415e994aad66029bc513489a8b5d69a414a74cc6b9c9b4d26664a405",
+  "initCodeHashes": {
+    "696X": "0x90e8561e119b348011be086a36bef1753e44ae324679ea37338bf6799197aa2d",
+    "FAANGX": "0xc64d00da834850a1e42cc5c6fbc5c7074d24a1bba055e5e0acc63cbebbd29303"
+  },
+  "deployerNonceBefore": 101,
+  "transactions": 2,
+  "predictedControllers": {
+    "696X": "0x32d806935f5118a60bB90137e699B81a0348e643",
+    "FAANGX": "0xB0Db61D7AeE1714A285e52f92a7b971bf28bc783"
+  },
+  "runtimeCodeHashes": {
+    "696X": "0x41e8567f1112ae11771d45e7039cb263620bcb5d70a4175c8a7ebde925dccaef",
+    "FAANGX": "0xcedd2d454f08a23716da753e9a06a57db911cc3f5d7e45129333a0412e9ed17b"
+  },
+  "estimatedGas": 10454947,
+  "transactionGasLimitTotal": 10454947,
+  "maxFeePerGasWei": 60000000,
+  "maximumCombinedFeeEth": "0.00062729682",
+  "deploymentEffect": "Deploys two inert controllers. It does not move vault ownership or assets.",
+  "activation": {
+    "wallet": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+    "calls": 4,
+    "valuePerCallEth": "0",
+    "effect": "Each current controller nominates its replacement; each replacement accepts ownership and records current plus reviewed historical recovery configurations."
+  },
+  "futureVaultStatus": {
+    "successorHookReadyAtUtc": "2026-09-25T07:41:26Z",
+    "reason": "The immutable hook review delay must elapse before the audited proportional successor factory can be deployed."
+  }
+}

@@ -12,6 +12,10 @@ import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IV2Policy, IV2Executor, IV2Weth} from "../v2/Types.sol";
 
+interface IProportionalRoutePolicyV3 is IV2Policy {
+    function configsFor(address token) external view returns (bytes32[] memory);
+}
+
 /// @notice Candidate proportional-accounting vault. Separate opt-in deployment; never upgrades existing vaults.
 contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -41,6 +45,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     uint256 public planNonce;
     uint256 public constant MAX_DEADLINE = 300;
     uint256 public constant BPS = 10_000;
+    uint256 private constant ROUTE_GAS_LIMIT = 1_500_000;
     address[] private tokens;
     mapping(address => bytes32) public configId;
     mapping(address => uint16) public targetBps;
@@ -72,6 +77,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     error BuyQuote(uint256[] outputs);
     error WithdrawalQuote(uint256 cash, uint256[] outputs);
     error QuoteUnavailable();
+    error RoutesUnavailable();
     event Deposit(address indexed user, uint256 gross, uint256 shares, uint256 fee);
     event Withdraw(address indexed user, uint256 shares, uint256 ethOut);
     event BuyDeferred(address indexed token, uint256 wethAmount, bytes32 reasonHash);
@@ -203,7 +209,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         for (uint256 i; i < tokens.length; ++i) {
             if (budgets[i] == 0) continue;
             uint256 beforeBalance = freeBalance(tokens[i]);
-            this.executeBuy(tokens[i], budgets[i], 1, block.timestamp);
+            this.executeTrade(tokens[i], true, budgets[i], 1, block.timestamp);
             outputs[i] = freeBalance(tokens[i]) - beforeBalance;
         }
     }
@@ -299,7 +305,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
                 continue;
             }
             if (budget < MIN_SLEEVE || floors[i] == 0) revert Invalid();
-            this.executeBuy(t, budget, floors[i], deadline);
+            this.executeTrade(t, true, budget, floors[i], deadline);
         }
         // Genesis denomination only, not a representation of oracle-valued NAV.
         shares = net * 25;
@@ -342,7 +348,9 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         if (spent == 0 || gross > msg.value) revert Invalid();
         IV2Weth(weth).deposit{value: msg.value}();
         for (uint256 i; i < tokens.length; ++i) {
-            if (needed[i] != 0) this.executeBuy(tokens[i], budgets[i], Math.max(needed[i], floors[i]), deadline);
+            if (needed[i] != 0) {
+                this.executeTrade(tokens[i], true, budgets[i], Math.max(needed[i], floors[i]), deadline);
+            }
         }
         for (uint256 i; i < tokens.length; ++i) {
             uint256 requiredBalance = beforeBalances[i] + needed[i];
@@ -368,10 +376,12 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         return Math.mulDiv(amount, factor, 1e18, Math.Rounding.Ceil);
     }
 
-    function executeBuy(address token, uint256 amount, uint256 floor, uint256 deadline) external {
+    function executeTrade(address token, bool buy, uint256 amount, uint256 floor, uint256 deadline)
+        external
+        returns (uint256)
+    {
         if (msg.sender != address(this)) revert OnlySelf();
-        (,, bytes memory buy,) = policy.config(configId[token]);
-        _trade(weth, token, amount, floor, buy, deadline);
+        return _executeRoutes(token, buy, amount, floor, deadline);
     }
 
     function _trade(address input, address output, uint256 amount, uint256 floor, bytes memory route, uint256 deadline)
@@ -390,8 +400,41 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
     }
 
     function _sell(address token, uint256 amount, uint256 minOut, uint256 deadline) internal returns (uint256) {
-        (,,, bytes memory sell) = policy.config(configId[token]);
-        return _trade(token, weth, amount, minOut, sell, deadline);
+        return this.executeTrade(token, false, amount, minOut, deadline);
+    }
+
+    function _executeRoutes(address token, bool buy, uint256 amount, uint256 floor, uint256 deadline)
+        private
+        returns (uint256)
+    {
+        bytes32 preferred = configId[token];
+        try this.executeRoute{gas: ROUTE_GAS_LIMIT}(token, preferred, buy, amount, floor, deadline) returns (
+            uint256 got
+        ) {
+            return got;
+        } catch {}
+        bytes32[] memory alternatives = IProportionalRoutePolicyV3(address(policy)).configsFor(token);
+        for (uint256 i; i < alternatives.length; ++i) {
+            if (alternatives[i] == preferred) continue;
+            try this.executeRoute{gas: ROUTE_GAS_LIMIT}(token, alternatives[i], buy, amount, floor, deadline) returns (
+                uint256 got
+            ) {
+                return got;
+            } catch {}
+        }
+        revert RoutesUnavailable();
+    }
+
+    /// @dev Each candidate has its own rollback boundary. Exact input/output deltas prevent redirection.
+    function executeRoute(address token, bytes32 id, bool buy, uint256 amount, uint256 floor, uint256 deadline)
+        external
+        returns (uint256)
+    {
+        if (msg.sender != address(this)) revert OnlySelf();
+        (address configuredToken, address oracle, bytes memory buyRoute, bytes memory sellRoute) = policy.config(id);
+        if (configuredToken != token || oracle != address(0)) revert Invalid();
+        if (feeModel.transferFactor(buyRoute) != claimTransferFactor[token]) revert Invalid();
+        return _trade(buy ? weth : token, buy ? token : weth, amount, floor, buy ? buyRoute : sellRoute, deadline);
     }
 
     function withdraw(uint256 shares, uint256 minEthOut, uint256[] calldata floors, uint256 nonce, uint256 deadline)
@@ -513,7 +556,7 @@ contract HoodxProportionalV3 is ERC20, Ownable2Step, ReentrancyGuard {
         _checkPlan(nonce, deadline);
         if (configId[token] == 0 || minOut == 0 || (buy && paused)) revert Invalid();
         _wrapNative(0);
-        if (buy) this.executeBuy(token, amount, minOut, deadline);
+        if (buy) this.executeTrade(token, true, amount, minOut, deadline);
         else _sell(token, amount, minOut, deadline);
         if (freeBalance(weth) < minCashAfter) revert Invalid();
         ++planNonce;

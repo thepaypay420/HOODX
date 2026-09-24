@@ -36,11 +36,24 @@ abstract contract ProportionalV3Fixture is Test {
     receive() external payable {}
 
     function route(address token, bool buy) internal view returns (bytes memory) {
+        return route(address(token), buy, 3000);
+    }
+
+    function route(address token, bool buy, uint24 fee) internal view returns (bytes memory) {
         V2Hop[] memory h = new V2Hop[](1);
         h[0].kind = 3;
-        h[0].fee = 3000;
+        h[0].fee = fee;
         h[0].tokenIn = buy ? address(w) : token;
         h[0].tokenOut = buy ? token : address(w);
+        return abi.encode(h);
+    }
+
+    function taxRoute(address token, bool buy, uint256 taxBps) internal view returns (bytes memory) {
+        V2Hop[] memory h = new V2Hop[](1);
+        h[0].kind = 6;
+        h[0].tokenIn = buy ? address(w) : token;
+        h[0].tokenOut = buy ? token : address(w);
+        h[0].hookData = abi.encode(taxBps);
         return abi.encode(h);
     }
 
@@ -104,6 +117,118 @@ abstract contract ProportionalV3Fixture is Test {
 }
 
 contract ProportionalV3Test is ProportionalV3Fixture {
+    function testApprovedFallbackRouteHealsBuyAndWithdrawal() public {
+        bytes memory buyFallback = route(address(a), true, 500);
+        bytes memory sellFallback = route(address(a), false, 500);
+        bytes32 fallbackId = policy.approveRoute(address(a), buyFallback, sellFallback, bytes32(uint256(99)));
+        bytes32[] memory candidates = policy.configsFor(address(a));
+        assertEq(candidates.length, 2);
+        assertEq(candidates[1], fallbackId);
+
+        ex.setBrokenRoute(route(address(a), true));
+        seed();
+        assertGt(vault.freeBalance(address(a)), 0);
+
+        ex.setBrokenRoute(route(address(a), false));
+        uint256 shares = vault.balanceOf(address(this));
+        uint256[] memory floors = new uint256[](2);
+        floors[0] = 1;
+        floors[1] = 1;
+        vault.withdraw(shares, 1, floors, vault.planNonce(), block.timestamp + 300);
+        assertEq(vault.balanceOf(address(this)), 0);
+        assertEq(a.allowance(address(vault), address(ex)), 0);
+    }
+
+    function testAllFallbacksFailAtomically() public {
+        policy.approveRoute(
+            address(a), route(address(a), true, 500), route(address(a), false, 500), bytes32(uint256(99))
+        );
+        seed();
+        uint256 shares = vault.balanceOf(address(this));
+        uint256 tokenBefore = vault.freeBalance(address(a));
+        uint256 cashBefore = vault.freeBalance(address(w));
+        ex.setBroken(true);
+        uint256[] memory floors = new uint256[](2);
+        floors[0] = 1;
+        floors[1] = 1;
+        uint256 nonce = vault.planNonce();
+        vm.expectRevert(HoodxProportionalV3.RoutesUnavailable.selector);
+        vault.withdraw(shares, 1, floors, nonce, block.timestamp + 300);
+        assertEq(vault.balanceOf(address(this)), shares);
+        assertEq(vault.freeBalance(address(a)), tokenBefore);
+        assertEq(vault.freeBalance(address(w)), cashBefore);
+        assertEq(a.allowance(address(vault), address(ex)), 0);
+    }
+
+    function testFallbackCannotBypassSignedMinimum() public {
+        policy.approveRoute(
+            address(a), route(address(a), true, 500), route(address(a), false, 500), bytes32(uint256(99))
+        );
+        seed();
+        ex.setOutput(5000);
+        uint256[] memory floors = new uint256[](2);
+        floors[0] = vault.freeBalance(address(a));
+        floors[1] = 1;
+        uint256 nonce = vault.planNonce();
+        uint256 shares = vault.balanceOf(address(this));
+        vm.expectRevert(HoodxProportionalV3.RoutesUnavailable.selector);
+        vault.withdraw(shares, 1, floors, nonce, block.timestamp + 300);
+    }
+
+    function testRouteCandidatesAreBounded() public {
+        policy.approveRoute(
+            address(a), route(address(a), true, 500), route(address(a), false, 500), bytes32(uint256(10))
+        );
+        policy.approveRoute(
+            address(a), route(address(a), true, 501), route(address(a), false, 501), bytes32(uint256(11))
+        );
+        policy.approveRoute(
+            address(a), route(address(a), true, 502), route(address(a), false, 502), bytes32(uint256(12))
+        );
+        bytes32 fifth = policy.approveRoute(
+            address(a), route(address(a), true, 503), route(address(a), false, 503), bytes32(uint256(13))
+        );
+        bytes32[] memory active = policy.configsFor(address(a));
+        assertEq(active.length, 4);
+        bytes32[] memory replacement = new bytes32[](2);
+        replacement[0] = active[0];
+        replacement[1] = fifth;
+        policy.setActiveRoutes(address(a), replacement);
+        active = policy.configsFor(address(a));
+        assertEq(active.length, 2);
+        assertEq(active[1], fifth);
+    }
+
+    function testGasBurningPreferredRouteCannotBlockHealthyFallback() public {
+        policy.approveRoute(
+            address(a), route(address(a), true, 500), route(address(a), false, 500), bytes32(uint256(99))
+        );
+        ex.setGasBurnRoute(route(address(a), true));
+        seed();
+        assertGt(vault.freeBalance(address(a)), 0);
+
+        ex.setGasBurnRoute(route(address(a), false));
+        uint256[] memory floors = new uint256[](2);
+        floors[0] = 1;
+        floors[1] = 1;
+        vault.withdraw(vault.balanceOf(address(this)), 1, floors, vault.planNonce(), block.timestamp + 300);
+        assertEq(vault.balanceOf(address(this)), 0);
+        assertEq(a.allowance(address(vault), address(ex)), 0);
+    }
+
+    function testFallbackCannotSilentlyWeakenClaimTransferProtection() public {
+        policy.approveRoute(
+            address(a), taxRoute(address(a), true, 1000), taxRoute(address(a), false, 1000), bytes32(uint256(99))
+        );
+        ex.setBrokenRoute(route(address(a), true));
+        uint256[] memory floors = new uint256[](2);
+        floors[0] = 0.037 ether;
+        floors[1] = 0.037 ether;
+        uint256 nonce = vault.planNonce();
+        vm.expectRevert(HoodxProportionalV3.RoutesUnavailable.selector);
+        vault.bootstrap{value: 0.1 ether}(floors, nonce, block.timestamp + 300);
+    }
+
     function testExternalRouteCannotForgeSuccessfulQuote() public {
         seed();
         uint256[] memory amounts = new uint256[](2);
