@@ -1621,7 +1621,7 @@ body {
 .curator-status-dot {display:inline-block;width:5px;height:5px;margin-right:9px;border-radius:50%;background:#79e8d3;box-shadow:0 0 12px #79e8d344;}
 .curator-decision {display:flex;align-items:flex-start;flex-direction:column;gap:11px;margin-top:24px;}
 .curator-decision>span {font-size:10px;color:#91aaa5;}
-.curator-decision .curator-focus-action {display:flex;align-items:center;justify-content:space-between;gap:32px;min-width:210px;border-radius:10px;padding:15px 18px;box-shadow:0 5px 24px #4bcfc213;transition:box-shadow .25s,transform .25s;}
+.curator-decision .curator-focus-action {display:flex;align-items:center;justify-content:space-between;gap:32px;min-width:210px;border-radius:10px;padding:16px 18px;font-size:14px;box-shadow:0 5px 24px #4bcfc213;transition:box-shadow .25s,transform .25s;}
 .curator-decision .curator-focus-action:not(:disabled):hover {transform:translateY(-2px);box-shadow:0 8px 30px #4bcfc22b;}
 .curator-decision .curator-focus-action>span {font-size:18px;transition:transform .25s;}
 .curator-decision .curator-focus-action:hover>span {transform:translate(2px,-2px);}

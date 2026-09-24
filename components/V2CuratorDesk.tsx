@@ -357,7 +357,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const recommendation=!costBasis?"sync":harvestPreview?"harvest":drifted.length?"restore":availableToBuy>tradeFloor?"deploy":"steady";
   const recommendationCopy={
     sync:{eyebrow:"VERIFYING HISTORY",title:"Reading the confirmed ledger.",body:"HOODX is reconciling every settled acquisition and exit before suggesting a move.",action:"Please wait"},
-    harvest:{eyebrow:"YOUR NEXT MOVE",title:"Give your gains a home.",body:`Harvest from profitable assets and lift your WETH target by up to ${((harvestPreview?.liftBps??0)/100).toFixed(2)} percentage points. Your capital stays in the basket.`,action:"Review gain harvest"},
+    harvest:{eyebrow:"RECOMMEND",title:"Harvest Gains",body:`Raise the WETH reserve by up to ${((harvestPreview?.liftBps??0)/100).toFixed(2)} points from profitable assets.`,action:"Review Harvest"},
     restore:{eyebrow:"RECOMMENDED",title:"Bring the basket back to plan.",body:`${drifted.length} asset${drifted.length===1?" is":"s are"} outside your drift band. Sell first, buy second, and preserve reserve.`,action:"Review rebalance"},
     deploy:{eyebrow:"CASH AVAILABLE",title:"Put excess reserve to work.",body:"Refill underweight sleeves while leaving a protected execution buffer.",action:"Review deployment"},
     steady:{eyebrow:"ON PLAN",title:"No action needed.",body:"The basket is inside its drift band and the reserve is where you set it.",action:"Portfolio is steady"},
@@ -365,7 +365,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const chooseRecommendation=()=>{if(recommendation==="harvest")chooseHarvest();else if(recommendation==="restore")chooseRestore();else if(recommendation==="deploy")chooseDeploy();};
   return <section id="curator" className="vault-actions holo">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">CURATOR WORKSPACE</p><h2>Your conviction. In control.</h2></div><span className="vault-tag">Curator access</span></div>
-    <p className="vault-footnote">A considered next move. Entirely in your hands.</p>
+    <p className="vault-footnote">Portfolio overview and actions.</p>
     {!loaded ? <p>Loading curator tools…</p> : <>
       {tab!=="Overview"&&<div className="curator-flow-nav"><button onClick={()=>setTab("Overview")}>← Curator home</button><span>{tab==="Trades"?"Atomic review":tab==="Allocation"?"Allocation":"Basket management"}</span></div>}
       {tab==="Overview"&&<div className="curator-overview curator-simple">
@@ -375,7 +375,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
             <div className="curator-decision"><button className="vault-button primary curator-focus-action" disabled={busy||recommendation==="sync"||recommendation==="steady"||!controller} onClick={chooseRecommendation}>{recommendationCopy.action}<span aria-hidden="true">↗</span></button><span>{controller?"One signature. All or nothing.":"Controller required to execute."}</span></div>
           </div>
           <CuratorReserveVisual current={currentCash} target={recommendation==="harvest"&&harvestPreview?Number(harvestPreview.cash):Number(savedCash)} active={recommendation!=="sync"&&recommendation!=="steady"} />
-          <div className="curator-assurance"><span>{costBasis?.verified?"✓ Cost basis reconciled":"Cost basis pending"}</span><span>Review every trade before signing</span></div>
+          <div className="curator-assurance"><span>{costBasis?.verified?"✓ Verified cost basis":"Cost basis pending"}</span></div>
         </div>
         <details className="curator-choices"><summary>Choose a different move</summary><div><button disabled={busy||valuationUnavailable||!controller} onClick={chooseRestore}><b>Restore targets</b><span>Return to the saved mix</span></button><button disabled={busy||!harvestPreview||!controller} onClick={chooseHarvest}><b>Harvest gains</b><span>Move verified profit to WETH</span></button><button disabled={busy||valuationUnavailable||availableToBuy<=0n||paused||!controller} onClick={chooseDeploy}><b>Deploy reserve</b><span>Buy underweight sleeves</span></button></div></details>
         <details className="curator-manage"><summary>Manage allocation and basket</summary><div><button onClick={()=>setTab("Allocation")}><b>Allocation</b><span>Edit targets and saved groups</span></button><button onClick={()=>setTab("Basket")}><b>Basket</b><span>Add, replace, or remove assets</span></button><button onClick={()=>setTab("Trades")}><b>Manual trade</b><span>Prepare one protected trade</span></button></div></details>
