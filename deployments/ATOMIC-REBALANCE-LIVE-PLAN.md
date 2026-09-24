@@ -1,16 +1,16 @@
 # Atomic rebalance live deployment plan
 
-Prepared 2026-09-23 for Robinhood Chain 4663. Status: awaiting explicit live deployment authorization. No transaction in this plan has been broadcast.
+Prepared 2026-09-23 for Robinhood Chain 4663. Controller deployment and curator activation completed and were verified on 2026-09-24. No rebalance was executed during deployment or activation.
 
 ## Reviewed build
 
-- Build fingerprint: `0x741b2aa3228fcd9c4389af5274edec1eead900f68a4bef3dfde9b708d26cb853`
+- Build fingerprint: `0xbfd17fb8967d8e4fefc8884e231f457a0a1316455bde4b1031f8ff24d49e517a`
 - Deployer: `0xf63E63a80A25611154C5d1c06E55FD763E0cfC19`
 - Curator: `0x134D468B0bcaeA6DF127916f951F7938c06A37C6`
-- Current deployer nonce: 99; recompute immediately before signing.
-- Current deployer balance: 0.049277497024832 ETH; recompute immediately before signing.
+- Pre-deployment deployer nonce: 99.
+- Pre-deployment deployer balance: 0.049277497024832 ETH.
 
-If nonce 99 remains current, the expected controller addresses are:
+The deployed controller addresses are:
 
 1. 696X controller: `0x5A732854bD6A4EEa6e5bA9ED9D897bC089f58767`
 2. FAANGX controller: `0xB5bCe75EB8761BF084F1abC71650b88311C9f4fb`
