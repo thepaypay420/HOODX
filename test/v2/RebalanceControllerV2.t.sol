@@ -208,6 +208,11 @@ contract RebalanceControllerV2Test is Test {
         controller.setPaused(true);
         assertTrue(vault.paused());
 
+        bytes32 replacement = policy.add(address(tokenA));
+        vm.prank(curator);
+        controller.replaceConfig(replacement);
+        assertEq(vault.configId(address(tokenA)), replacement);
+
         vm.prank(curator);
         controller.proposeCurator(nextCurator);
         vm.prank(nextCurator);

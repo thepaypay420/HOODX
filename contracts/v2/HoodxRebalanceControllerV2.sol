@@ -15,6 +15,7 @@ interface IControlledVaultV2 {
     function rebalance(address token, bool buy, uint256 amount, uint256 minOut, uint256 deadline) external;
     function setPaused(bool value) external;
     function addConstituent(bytes32 id) external;
+    function replaceConfig(bytes32 id) external;
     function removeConstituent(address token) external;
     function emergencyUnwind(address token, uint256 amount, uint256 minOut, uint256 deadline)
         external
@@ -151,6 +152,10 @@ contract HoodxRebalanceControllerV2 is ReentrancyGuard {
 
     function addConstituent(bytes32 id) external onlyCurator nonReentrant {
         vault.addConstituent(id);
+    }
+
+    function replaceConfig(bytes32 id) external onlyCurator nonReentrant {
+        vault.replaceConfig(id);
     }
 
     function removeConstituent(address token) external onlyCurator nonReentrant {

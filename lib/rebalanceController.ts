@@ -7,6 +7,7 @@ export const rebalanceControllerAbi = parseAbi([
   "function setTargets(uint16 cashBps,uint16[] weights)",
   "function rebalance(address token,bool buy,uint256 amount,uint256 minOut,uint256 deadline)",
   "function addConstituent(bytes32 id)",
+  "function replaceConfig(bytes32 id)",
   "function removeConstituent(address token)",
   "function emergencyUnwind(address token,uint256 amount,uint256 minOut,uint256 deadline) returns (uint256)",
   "function atomicRebalance(uint16 cashBps,uint16[] weights,(address token,bool buy,uint256 amount,uint256 minOut)[] steps,bytes32 expectedConstituentsHash,uint256 minCashAfter,uint256 deadline)",
