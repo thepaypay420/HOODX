@@ -32,6 +32,63 @@ export function plannedTrade(balance: bigint, value: bigint | undefined, nav: bi
   return amount > 0n ? { buy, amount, value: delta } : undefined;
 }
 
+// Raises the cash sleeve by reducing only assets that are currently above their
+// saved target. "Leader" is deliberately relative to target; it is not a
+// tax-lot or cost-basis profit claim.
+export function raiseCashFromLeaders(
+  cash: string,
+  weights: string[],
+  currentBps: Array<number | undefined>,
+  increase: string,
+) {
+  if (weights.length !== currentBps.length) throw new Error("Refresh the basket before raising cash.");
+  const reserve = percentBps(cash), lift = percentBps(increase), values = weights.map(percentBps);
+  const nextReserve = reserve + lift;
+  if (lift <= 0 || nextReserve > 5000) throw new Error("The cash target must stay at or below 50%.");
+  const leaders = values.map((target, i) => ({
+    i,
+    capacity: target,
+    score: Math.max(0, (currentBps[i] ?? target) - target),
+  })).filter(x => x.score > 0 && x.capacity > 0);
+  if (!leaders.length) throw new Error("No priced asset is currently above its saved target.");
+  if (leaders.reduce((sum, x) => sum + x.capacity, 0) < lift) throw new Error("Current leaders cannot fund that cash target.");
+
+  let remaining = lift;
+  const removed = Array(values.length).fill(0);
+  while (remaining > 0) {
+    const eligible = leaders.filter(x => removed[x.i] < x.capacity);
+    if (!eligible.length) throw new Error("Current leaders cannot fund that cash target.");
+    const scoreTotal = eligible.reduce((sum, x) => sum + x.score, 0);
+    let moved = 0;
+    for (const leader of eligible) {
+      const room = leader.capacity - removed[leader.i];
+      const share = Math.min(room, Math.floor(remaining * leader.score / scoreTotal));
+      if (share > 0) { removed[leader.i] += share; moved += share; }
+    }
+    if (moved === 0) {
+      const leader = eligible.sort((a, b) => b.score - a.score || a.i - b.i)[0];
+      removed[leader.i]++; moved = 1;
+    }
+    remaining -= moved;
+  }
+  return {
+    cash: (nextReserve / 100).toFixed(2),
+    weights: values.map((value, i) => ((value - removed[i]) / 100).toFixed(2)),
+    leaders: leaders.map(x => x.i),
+  };
+}
+
+export function capBuyPlan<T extends { amount: bigint; value: bigint }>(trades: T[], budget: bigint): T[] {
+  if (budget <= 0n) return [];
+  const total = trades.reduce((sum, trade) => sum + trade.value, 0n);
+  if (total <= budget) return trades;
+  return trades.map(trade => ({
+    ...trade,
+    amount: trade.amount * budget / total,
+    value: trade.value * budget / total,
+  })).filter(trade => trade.amount > 0n && trade.value > 0n);
+}
+
 export type AllocationGroup = "Core" | "Discovery" | "Excluded";
 export function skippedAtMinimumDeposit(weight: string, feesBps: number) {
   const bps=percentBps(weight);

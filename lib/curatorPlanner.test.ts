@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { distribute, plannedTrade, restorePlan, driftBps, groupedAllocation, skippedAtMinimumDeposit } from "./curatorPlanner";
+import { capBuyPlan, distribute, plannedTrade, raiseCashFromLeaders, restorePlan, driftBps, groupedAllocation, skippedAtMinimumDeposit } from "./curatorPlanner";
 import { allocation } from "./v2Allocation";
 describe("curator planning", () => {
   it("flags only nonzero sleeves below the exact minimum after fees",()=>{
@@ -34,5 +34,20 @@ describe("curator planning", () => {
     expect(restorePlan(raw,["0xAA"],"a").weights).toEqual(["75"]);
     expect(()=>restorePlan(raw,["0xbb"],"a")).toThrow();
     expect(()=>restorePlan(raw,["0xaa"],"b")).toThrow();
+  });
+  it("raises cash only from assets currently leading their targets", () => {
+    const result=raiseCashFromLeaders("25",["20","20","20","15"],[2300,1800,2200,1400],"5");
+    expect(result.cash).toBe("30.00");
+    expect(result.leaders).toEqual([0,2]);
+    expect(result.weights[1]).toBe("20.00");
+    expect(result.weights[3]).toBe("15.00");
+    expect(allocation(result.cash,result.weights).weights.reduce((a,b)=>a+b,0)).toBe(7000);
+    expect(()=>raiseCashFromLeaders("25",["25","25","25"],[2500,2400,2300],"5")).toThrow(/above/);
+    expect(()=>raiseCashFromLeaders("48",["52"],[6000],"5")).toThrow(/50%/);
+  });
+  it("caps a deploy-cash plan without changing trade proportions",()=>{
+    const capped=capBuyPlan([{amount:100n,value:100n},{amount:300n,value:300n}],200n);
+    expect(capped).toEqual([{amount:50n,value:50n},{amount:150n,value:150n}]);
+    expect(capBuyPlan([{amount:1n,value:1n}],0n)).toEqual([]);
   });
 });
