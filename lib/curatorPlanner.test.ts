@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { capBuyPlan, distribute, plannedTrade, raiseCashFromLeaders, restorePlan, driftBps, groupedAllocation, skippedAtMinimumDeposit } from "./curatorPlanner";
+import { capBuyPlan, distribute, harvestProfitPlan, plannedTrade, raiseCashFromLeaders, restorePlan, driftBps, groupedAllocation, skippedAtMinimumDeposit } from "./curatorPlanner";
 import { allocation } from "./v2Allocation";
 describe("curator planning", () => {
   it("flags only nonzero sleeves below the exact minimum after fees",()=>{
@@ -49,5 +49,11 @@ describe("curator planning", () => {
     const capped=capBuyPlan([{amount:100n,value:100n},{amount:300n,value:300n}],200n);
     expect(capped).toEqual([{amount:50n,value:50n},{amount:150n,value:150n}]);
     expect(capBuyPlan([{amount:1n,value:1n}],0n)).toEqual([]);
+  });
+  it("harvests only verified profit that remains after restoring overweight drift",()=>{
+    const result=harvestProfitPlan("25",["25","25","25"],[2700,2500,2300],[140n,120n,100n],[100n,130n,80n],1000n,"5");
+    expect(result).toMatchObject({cash:"27.00",liftBps:200,assets:[0]});
+    expect(result.weights).toEqual(["23.00","25.00","25.00"]);
+    expect(()=>harvestProfitPlan("25",["25"],[2600],[110n],[100n],1000n,"5")).toThrow(/No verified gains/);
   });
 });
