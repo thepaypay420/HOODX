@@ -1371,6 +1371,21 @@ body {
 .vault-presets {display:flex;gap:8px;flex-wrap:wrap;}
 .vault-trade-card .vault-presets .vault-button {flex:none;margin:0;background:transparent;color:var(--paper);border:1px solid var(--line);padding:8px 12px;font-weight:400;}
 .vault-presets .vault-button[aria-pressed="true"] {border-color:var(--cyan);color:var(--cyan);background:#1fd4c614;}
+.wallet-trade-grid {align-items:stretch;}
+.wallet-trade-card {display:grid;grid-template-rows:auto auto auto auto minmax(20px,1fr) auto;gap:13px;padding:23px;}
+.wallet-card-head {min-height:65px;}
+.wallet-card-head .vault-eyebrow {margin:0 0 10px;}
+.wallet-card-head h3 {margin:0;font-size:26px;letter-spacing:-.04em;}
+.wallet-balance {display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0;padding-bottom:2px;}
+.wallet-balance span {color:var(--dim);font-size:10px;}
+.wallet-balance b {color:#cfe0dc;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums;text-align:right;}
+.wallet-primary-field {align-self:start;}
+.wallet-primary-field .vault-input {height:66px;margin-top:8px;font-variant-numeric:tabular-nums;}
+.wallet-trade-card .vault-presets {align-self:start;min-height:36px;}
+.wallet-helper {align-self:start;min-height:18px;margin:0!important;color:#78958e!important;font-size:10px!important;line-height:1.5!important;}
+.wallet-helper.error {color:#dba98f!important;}
+.wallet-trade-card .wallet-card-action {align-self:end;width:100%;min-height:48px;margin-top:0;font-size:13px;}
+@media(max-width:640px){.wallet-trade-card{display:flex;min-height:0;padding:18px;}.wallet-card-head{min-height:0}.wallet-primary-field .vault-input{height:60px}.wallet-trade-card .vault-presets,.wallet-helper{min-height:0}}
 .vault-curator-panel {border:1px solid #1fd4c633;border-radius:20px;overflow:hidden;background:#101a1b;}
 .vault-curator-panel>summary {cursor:pointer;padding:22px;font-size:16px;}
 .vault-curator-panel>summary span {font-size:11px;color:var(--dim);margin-left:16px;}

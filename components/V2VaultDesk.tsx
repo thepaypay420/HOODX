@@ -10,7 +10,7 @@ import { VaultPerformance } from "@/components/VaultPerformance";
 import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
 import { withdrawalFloor } from "@/lib/withdrawMinimum";
-import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, quoteWithdrawalWithRetry, withdrawalQuoteFailureMessage, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
+import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, quoteWithdrawalWithRetry, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
 import { rebalanceControllerAbi, resolveVaultAuthority } from "@/lib/rebalanceController";
 
 type Snapshot = { account: Address; vault: Address; owner: Address; curator: Address; controller?: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
@@ -24,12 +24,9 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   const [eth, setEth] = useState("0.02");
   const [minimum, setMinimum] = useState("");
   const [percent, setPercent] = useState(100);
-  const [quoteRefresh, setQuoteRefresh] = useState(0);
   const [quoteMessage, setQuoteMessage] = useState("");
   const [quoting, setQuoting] = useState(false);
   const [withdrawalFailure, setWithdrawalFailure] = useState<WithdrawalQuoteFailure>();
-  const manualMinimum = useRef("");
-  const minimumScope = `${address}:${vault}:${percent}:${snap?.shares}`;
   const [recipient, setRecipient] = useState<Address>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -80,7 +77,6 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   useEffect(() => { if (!address) return; const timer = setInterval(() => { if (!busy) void read().catch(() => {}); }, 30000); return () => clearInterval(timer); }, [address, busy, read]);
   useEffect(() => {
     let active = true;
-    if (manualMinimum.current === minimumScope) return;
     setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setQuoting(false);
     const shares = snap?.shares, assets = snap?.assets, supply = snap?.supply;
     if (!address || !shares || !supply) return;
@@ -107,11 +103,11 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         if (!active) return;
         const failure = classifyWithdrawalQuoteFailure(error);
         setWithdrawalFailure(failure);
-        setQuoteMessage(withdrawalQuoteFailureMessage(failure));
+        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : "Route unavailable · try again");
       }).finally(() => { if (active) setQuoting(false); });
     }, 400);
     return () => { active = false; clearTimeout(timer); };
-  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, snap?.block, quoteRefresh, minimumScope]);
+  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, snap?.block]);
   async function transact(action: "deposit" | "withdraw" | "assets" | "claim" | "pause" | "unwind", token?: Address) {
     if (!address || !walletClient || !snap) return;
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
@@ -148,26 +144,46 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         const { request } = await publicClient.simulateContract({ ...common, functionName: "deposit", args: [floor, deadline()], value });
         hash = await walletClient.writeContract(request);
       } else if (action === "withdraw") {
-        if (withdrawalFailure) throw new Error(withdrawalQuoteFailureMessage(withdrawalFailure));
+        const latestBlock = await publicClient.getBlockNumber();
+        const [latestShares, latestSupply, latestAssets] = await Promise.all([
+          publicClient.readContract({ ...common, blockNumber: latestBlock, functionName: "balanceOf", args: [address] }),
+          publicClient.readContract({ ...common, blockNumber: latestBlock, functionName: "totalSupply" }),
+          publicClient.readContract({ ...common, blockNumber: latestBlock, functionName: "totalAssets" }).catch(() => undefined),
+        ]);
+        const freshShares = latestShares * BigInt(percent) / 100n;
+        if (freshShares <= 0n) throw new Error("Choose shares to withdraw.");
+        const navFloor = latestAssets === undefined ? 1n : withdrawalFloor(latestAssets, latestShares, latestSupply, percent).floor;
+        if (navFloor <= 0n) throw new Error("This withdrawal is too small to protect.");
+        const result = await quoteWithdrawalWithRetry(async () => {
+          const rehearsal = await publicClient.simulateContract({ ...common, blockNumber: latestBlock, functionName: "withdraw", args: [freshShares, navFloor, deadline()] });
+          return rehearsal.result;
+        });
+        const protectedQuote = protectedWithdrawalMinimum(result, navFloor);
+        setMinimum(protectedQuote.minimum); setQuoteMessage(""); setWithdrawalFailure(undefined);
         await preflightV2Routes(vault);
-        const minOut = parseEther(minimum);
-        if (minOut <= 0n) throw new Error("Enter the minimum ETH you will accept.");
-        const { request } = await publicClient.simulateContract({ ...common, functionName: "withdraw", args: [selectedShares, minOut, deadline()] });
+        const { request } = await publicClient.simulateContract({ ...common, functionName: "withdraw", args: [freshShares, protectedQuote.floor, deadline()] });
         hash = await walletClient.writeContract(request);
       } else if (action === "assets") {
         const { request } = await publicClient.simulateContract({ ...common, functionName: "emergencyRedeemInKind", args: [selectedShares, address] });
         hash = await walletClient.writeContract(request);
-      } else {
+      } else {
         if (!token || !recipient || !/^0x[0-9a-fA-F]{40}$/.test(recipient)) throw new Error("Enter a valid claim recipient.");
         const { request } = await publicClient.simulateContract({ ...common, functionName: "claim", args: [token, recipient] });
         hash = await walletClient.writeContract(request);
-      }
+      }
       setMessage("Transaction submitted. Waiting for confirmation.");
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       if (receipt.status !== "success") throw new Error("Transaction reverted. No completed exit was recorded.");
       await read(); setMessage("Transaction confirmed.");
     } catch (error) {
-      setMessage(error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : "Transaction failed.");
+      if (action === "withdraw") {
+        const failure = classifyWithdrawalQuoteFailure(error);
+        setWithdrawalFailure(failure);
+        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : "Route unavailable · try again");
+        setMessage("Withdrawal was not submitted. Your shares are unchanged.");
+      } else {
+        setMessage(error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : "Transaction failed.");
+      }
     } finally { setBusy(false); }
   }
   const button = "vault-button";
@@ -193,30 +209,26 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         <label className="block">Minimum WETH received by vault <input className="vault-input" value={unwindMinimum} onChange={e => setUnwindMinimum(e.target.value)} inputMode="decimal" /></label>
         <button className={button} disabled={busy || !unwindToken || !unwindAmount || !unwindMinimum} onClick={() => void transact("unwind")}>Review emergency unwind</button>
       </div>}
-      <div className="vault-trade-grid"><div className="vault-trade-card">
-        <p className="vault-eyebrow">01 / JOIN THE BASKET</p><h3>Deposit</h3>
-        <p>Wallet: {address ? (snap.walletEth === undefined ? "Balance unavailable" : `${formatEther(snap.walletEth)} ETH`) : "Connect wallet"}</p>
-        <label className="block">Deposit ETH <input aria-label="Deposit ETH" className="vault-input" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
-        <div className="vault-presets">{["0.02", "0.05", "0.08", "0.1"].map(value => <button className="vault-button" key={value} disabled={busy || parseEther(value) < (snap.supply === 0n ? snap.firstMinimum : parseEther("0.02")) || (snap.walletEth !== undefined && parseEther(value) > snap.walletEth)} onClick={() => setEth(value)}>{value} ETH</button>)}</div>
-        <p className="text-sm">Minimum deposit: {formatEther(snap.supply === 0n ? snap.firstMinimum : parseEther("0.02"))} ETH.</p>
-        <p className="text-sm">Up to 1% fewer shares than the current preview. Your wallet shows the transaction before signing.</p>
-        <button className={button} disabled={busy || !address || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>Deposit ETH</button>
-      </div>
-      <div className="vault-trade-card">
-        <p className="vault-eyebrow">02 / TAKE YOUR SHARE</p><h3>Withdraw</h3>
-        <p>Wallet: {formatEther(snap.shares)} {slug.toUpperCase()}</p>
-        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => { manualMinimum.current = ""; setMinimum(""); setWithdrawalFailure(undefined); setPercent(value); setQuoteRefresh(n => n + 1); }}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
-        <p>Sell: {formatEther(snap.shares * BigInt(percent) / 100n)} {slug.toUpperCase()}</p>
-        <label className="block">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} disabled={busy || quoting || withdrawalFailure === "invalid-reference"} placeholder={quoting ? "Calculating protected minimum…" : withdrawalFailure === "invalid-reference" ? "ETH exit unavailable" : "Minimum ETH"} onChange={e => { manualMinimum.current = minimumScope; setWithdrawalFailure(undefined); setMinimum(e.target.value); }} inputMode="decimal" /></label>
-        <p role="status">{quoting ? "Checking the full withdrawal…" : quoteMessage}</p>
-        <button className={button} disabled={busy || quoting || !address || !snap.shares} onClick={() => { manualMinimum.current = ""; setMinimum(""); void read().catch(() => {}); setQuoteRefresh(n => n + 1); }}>Refresh withdrawal quote</button>
-        <p className="text-sm">Redeems the selected portion of your shares. If any required sale fails, the whole withdrawal reverts and your shares stay intact.</p>
-        <button className={button} disabled={busy || quoting || !!withdrawalFailure || !address || snap.shares === 0n || !minimum} onClick={() => void transact("withdraw")}>Withdraw {percent}% as ETH</button>
-      </div>
-      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => { manualMinimum.current = ""; setMinimum(""); setPercent(Number(e.target.value)); }} /></label>
+      <div className="vault-trade-grid wallet-trade-grid"><div className="vault-trade-card wallet-trade-card">
+        <div className="wallet-card-head"><p className="vault-eyebrow">01 / JOIN</p><h3>Deposit</h3></div>
+        <p className="wallet-balance"><span>Available</span><b>{address ? (snap.walletEth === undefined ? "—" : `${Number(formatEther(snap.walletEth)).toLocaleString(undefined,{maximumFractionDigits:6})} ETH`) : "Connect wallet"}</b></p>
+        <label className="block wallet-primary-field">Deposit ETH <input aria-label="Deposit ETH" className="vault-input" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
+        <div className="vault-presets">{["0.02", "0.05", "0.08", "0.1"].map(value => <button className="vault-button" key={value} disabled={busy || parseEther(value) < (snap.supply === 0n ? snap.firstMinimum : parseEther("0.02")) || (snap.walletEth !== undefined && parseEther(value) > snap.walletEth)} onClick={() => setEth(value)}>{value} ETH</button>)}</div>
+        <p className="wallet-helper">Minimum {formatEther(snap.supply === 0n ? snap.firstMinimum : parseEther("0.02"))} ETH</p>
+        <button className={`${button} wallet-card-action`} disabled={busy || !address || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>Deposit ETH</button>
+      </div>
+      <div className="vault-trade-card wallet-trade-card">
+        <div className="wallet-card-head"><p className="vault-eyebrow">02 / EXIT</p><h3>Withdraw</h3></div>
+        <p className="wallet-balance"><span>Available</span><b>{Number(formatEther(snap.shares)).toLocaleString(undefined,{maximumFractionDigits:6})} {slug.toUpperCase()}</b></p>
+        <label className="block wallet-primary-field">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} readOnly placeholder={quoting ? "Calculating…" : withdrawalFailure === "invalid-reference" ? "Unavailable" : "Calculated securely"} inputMode="decimal" /></label>
+        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(value); }}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
+        <p className={`wallet-helper ${withdrawalFailure?"error":""}`} role="status">{quoting ? "Checking routes…" : withdrawalFailure ? quoteMessage : minimum ? `${percent}% selected · protected minimum` : `${percent}% selected`}</p>
+        <button className={`${button} wallet-card-action`} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("withdraw")}>{busy ? "Preparing withdrawal…" : `Withdraw ${percent}% as ETH`}</button>
+      </div>
+      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(Number(e.target.value)); }} /></label>
       <div className="vault-recovery">
         <h2 className="text-lg">Receive assets directly</h2>
-        <p>Redeem the selected portion of your shares for your proportional tokens and cash without selling through a router. This works while paused and does not need prices. Any token that cannot transfer remains separately claimable by you.</p>
+        <p>Exit without swaps. Receive your share of every asset and the cash reserve.</p>
         <button className={button} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("assets")}>{withdrawalFailure === "invalid-reference" ? `Exit ${percent}% safely as tokens and cash` : `Redeem ${percent}% as tokens and cash`}</button>
       </div>
       {snap.claims.some(c => c.amount > 0n) && <div className="space-y-2">
