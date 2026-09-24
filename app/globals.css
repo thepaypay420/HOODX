@@ -1393,13 +1393,17 @@ body {
 .vault-target-input {width:90px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#081113;text-align:right;color:var(--paper);}
 .vault-target-input:focus {outline:1px solid var(--cyan);}
 .vault-recovery summary {cursor:pointer;}
-.vault-performance {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:24px;gap:24px;}
+.vault-performance {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:24px;gap:0;overflow:hidden;}
+.performance-reading{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 125px;align-items:center;min-height:126px;padding:8px 28px 8px 0;overflow:hidden}.performance-reading+ .performance-reading{padding-left:30px;border-left:1px solid var(--line)}
+.performance-glyph{width:120px;color:var(--cyan);opacity:.42;filter:drop-shadow(0 0 13px #53d7c02b)}.performance-glyph circle,.performance-glyph path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.performance-glyph>circle:first-child{stroke-dasharray:4 6;animation:performance-orbit 14s linear infinite}.performance-glyph .glyph-pulse{fill:#d6bd66;stroke:none;animation:performance-pulse 2.4s ease-in-out infinite}
 .vault-performance strong {font-size:30px;font-weight:500;color:var(--cyan);letter-spacing:-.04em;}
 .vault-performance .vault-loss {color:var(--danger);}
 .vault-performance p:not(.vault-eyebrow) {font-size:11px;color:var(--dim);line-height:1.7;margin-top:6px;}
 .vault-performance details {grid-column:1/-1;font-size:11px;color:var(--dim);border-top:1px solid var(--line);padding-top:12px;}
 .vault-performance summary {cursor:pointer;}
-@media(max-width:760px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {grid-template-columns:1fr;padding:20px;gap:16px;}.vault-performance strong {font-size:25px;}}
+@keyframes performance-orbit{to{transform:rotate(360deg);transform-origin:61px 45px}}@keyframes performance-pulse{0%,100%{opacity:.35}50%{opacity:1;filter:drop-shadow(0 0 5px #d6bd66)}}
+@media(max-width:760px) {.vault-curator-panel>summary span {display:block;margin:8px 0 0;}.vault-performance {grid-template-columns:1fr;padding:20px;gap:0;}.performance-reading{grid-template-columns:minmax(0,1fr) 90px;min-height:105px;padding:4px 0}.performance-reading+ .performance-reading{padding:16px 0 0;border-left:0;border-top:1px solid var(--line)}.performance-glyph{width:88px}.vault-performance strong {font-size:25px;}}
+@media(prefers-reduced-motion:reduce){.performance-glyph *{animation:none!important}}
 
 /* Compact, exportable holdings board. */
 .holdings-board {padding:24px 28px;}

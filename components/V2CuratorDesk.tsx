@@ -115,7 +115,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     setFees(data.fees); setRows(data.list); setGroups(data.list.map(r=>r.target==="0.00"?"Excluded":"Core")); setLocked([]); setWeights(data.list.map(r => r.target)); setCash(data.cash); setSavedCash(data.cash); setWethBalance(data.balance); setLoaded(true); setUpdated(Date.now()); setPreview(undefined);
   };
   useEffect(() => { let active = true; setLoaded(false); void load().then(data => { if (active) apply(data); }).catch(() => { if (active) setMessage("Unable to read curator data. Reload this page to retry."); }); return () => { active = false; }; }, [load]);
-  useEffect(()=>{let active=true;setCostBasis(undefined);void fetch(`/api/vault-cost-basis?vault=${vault}`).then(async response=>{if(!response.ok)throw new Error();return response.json() as Promise<CostBasis>;}).then(data=>{if(active)setCostBasis(data);}).catch(()=>{if(active)setCostBasis({verified:false,indexedBlock:"",assets:[]});});return()=>{active=false;};},[vault,updated]);
+  useEffect(()=>{let active=true;setCostBasis(undefined);void fetch(`/api/vault-cost-basis?vault=${vault}`,{signal:AbortSignal.timeout(12000)}).then(async response=>{if(!response.ok)throw new Error();return response.json() as Promise<CostBasis>;}).then(data=>{if(active)setCostBasis(data);}).catch(()=>{if(active)setCostBasis({verified:false,indexedBlock:"",assets:[]});});return()=>{active=false;};},[vault,updated]);
   useEffect(() => {
     if(!dirty) return;
     const warn=(event: BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};
@@ -198,7 +198,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     if(!controller)return "Atomic controller unavailable.";
     if(valuationUnavailable)return "Waiting for a complete valuation.";
     if(kind==="restore"&&drifted.length===0)return "Every asset is inside the drift band.";
-    if(kind==="harvest"&&!harvestPreview)return costBasis?.verified?"No verified gains to harvest.":"Verifying cost basis.";
+    if(kind==="harvest"&&!harvestPreview)return costBasis===undefined?"Verifying cost basis.":costBasis.verified?"No verified gains to harvest.":"Cost basis is temporarily unavailable. Refresh to retry.";
     if(kind==="deploy-cash"&&(availableToBuy<=0n||paused))return paused?"Resume deposits to deploy reserve.":"Reserve is already on plan.";
     if(kind==="custom"&&!dirty)return "Set a new allocation to prepare this action.";
     return "";
@@ -253,8 +253,8 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     }
   }
   useEffect(()=>{
-    if(!loaded||!address||costBasis===undefined)return;
-    const key=JSON.stringify([portfolioContext,address,controller,costBasis.indexedBlock,costBasis.verified]);
+    if(!loaded||!address)return;
+    const key=JSON.stringify([portfolioContext,address,controller,costBasis?.indexedBlock,costBasis?.verified]);
     if(simulatedContext.current===key)return;
     simulatedContext.current=key;
     void simulateActionCards();
