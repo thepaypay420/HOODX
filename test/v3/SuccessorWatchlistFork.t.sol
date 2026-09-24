@@ -152,6 +152,11 @@ contract SuccessorWatchlistForkTest is Test {
         if (needsBridge) assertEq(IERC20(assetHop.tokenIn).balanceOf(address(ex)), 0);
     }
 
+    function runExternal(V2Hop calldata assetHop, uint256 amount) external {
+        require(msg.sender == address(this), "self only");
+        run(assetHop, amount);
+    }
+
     function testPONSSmall() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"39dbed3a2bd333467115de45665cc57f813c4571"));
@@ -638,7 +643,9 @@ contract SuccessorWatchlistForkTest is Test {
         run(h, 0.005 ether);
     }
 
-    function testQUOTRONSmall() public {
+    /// QUOTRON's hooked V4 pool no longer permits generic direct-router custody. The production
+    /// manifest deliberately uses HoodxRoutingV3 kind 5, exercised by the complete basket tests.
+    function testDirectQUOTRONSmallRejected() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
         h.kind = 4;
@@ -650,10 +657,11 @@ contract SuccessorWatchlistForkTest is Test {
             60,
             address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
         );
-        run(h, 0.0001 ether);
+        vm.expectRevert();
+        this.runExternal(h, 0.0001 ether);
     }
 
-    function testQUOTRONMedium() public {
+    function testDirectQUOTRONMediumRejected() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
         h.kind = 4;
@@ -665,10 +673,11 @@ contract SuccessorWatchlistForkTest is Test {
             60,
             address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
         );
-        run(h, 0.001 ether);
+        vm.expectRevert();
+        this.runExternal(h, 0.001 ether);
     }
 
-    function testQUOTRONLarge() public {
+    function testDirectQUOTRONLargeRejected() public {
         V2Hop memory h;
         h.tokenOut = address(bytes20(hex"5a86828efd322bfb16d93cfed16ee9bc14940d7f"));
         h.kind = 4;
@@ -680,7 +689,8 @@ contract SuccessorWatchlistForkTest is Test {
             60,
             address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc"))
         );
-        run(h, 0.005 ether);
+        vm.expectRevert();
+        this.runExternal(h, 0.005 ether);
     }
 
     function testNETSmall() public {

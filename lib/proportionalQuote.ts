@@ -9,7 +9,8 @@ export const proportionalAbi = parseAbi([
   'function planNonce() view returns(uint256)', 'function creatorFeeBps() view returns(uint16)',
   'function protocolFeeBps() view returns(uint16)', 'function paused() view returns(bool)',
   'function quoteBuys(uint256[] budgets) payable', 'function quoteWithdrawal(uint256 shares)',
-  'error BuyQuote(uint256[] outputs)', 'error WithdrawalQuote(uint256 cash,uint256[] outputs)', 'error QuoteUnavailable()',
+  'function quoteRebalance(address token,bool buy,uint256 amount) payable',
+  'error BuyQuote(uint256[] outputs)', 'error WithdrawalQuote(uint256 cash,uint256[] outputs)', 'error RebalanceQuote(uint256 output)', 'error QuoteUnavailable()',
   'function depositExactShares(uint256 shares,uint256[] budgets,uint256[] floors,uint256 nonce,uint256 deadline) payable returns(uint256 refund)',
   'function withdraw(uint256 shares,uint256 minEthOut,uint256[] floors,uint256 nonce,uint256 deadline) returns(uint256 net)',
 ]);
@@ -35,10 +36,37 @@ export async function readProportionalState(client: PublicClient, vault: Address
 }
 
 /** Decode only the typed, deliberately reverted result from the verified candidate ABI. */
-function quoteResult(error: unknown, name: 'BuyQuote' | 'WithdrawalQuote') {
+function quoteResult(error: unknown, name: 'BuyQuote' | 'WithdrawalQuote' | 'RebalanceQuote') {
   const reverted = error instanceof BaseError ? error.walk(e => e instanceof ContractFunctionRevertedError) : undefined;
   if (!(reverted instanceof ContractFunctionRevertedError) || reverted.data?.errorName !== name || !reverted.data.args) throw new Error('This basket could not be quoted. No transaction was submitted.');
   return reverted.data.args;
+}
+
+/** Exact-output observation for one curator rebalance leg. The simulated swap always rolls back. */
+export async function quoteProportionalRebalance(
+  client: PublicClient,
+  state: ProportionalState,
+  token: Address,
+  buy: boolean,
+  amount: bigint,
+) {
+  if (amount <= 0n || !state.tokens.some(t => t.toLowerCase() === token.toLowerCase())) throw new Error('Invalid rebalance leg');
+  try {
+    await client.simulateContract({
+      address: state.vault,
+      abi: proportionalAbi,
+      account: state.account,
+      functionName: 'quoteRebalance',
+      args: [token, buy, amount],
+      value: buy ? amount : 0n,
+      blockNumber: state.blockNumber,
+    });
+  } catch (error) {
+    const [output] = quoteResult(error, 'RebalanceQuote');
+    if (typeof output !== 'bigint' || output <= 0n) throw new Error('Invalid rebalance quote');
+    return output;
+  }
+  throw new Error('Quote simulation unexpectedly succeeded');
 }
 
 export async function quoteProportionalDeposit(client: PublicClient, state: ProportionalState, maxEth: bigint, now = () => Math.floor(Date.now()/1000)) {

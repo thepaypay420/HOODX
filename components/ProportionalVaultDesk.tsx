@@ -5,6 +5,8 @@ import {publicClient,useWallet} from '@/lib/wallet';
 import {robinhood} from '@/lib/chain';
 import {verifyProportionalRelease,type ProportionalRelease} from '@/lib/proportionalRelease';
 import {readProportionalState,quoteProportionalDeposit,quoteProportionalWithdrawal,prepareProportionalDeposit,prepareProportionalWithdrawal,type ProportionalState} from '@/lib/proportionalQuote';
+import {rebalanceControllerV3Abi,resolveVaultAuthority} from '@/lib/rebalanceController';
+import {ProportionalCuratorDesk} from '@/components/ProportionalCuratorDesk';
 const managementAbi=parseAbi(['function owner() view returns(address)','function weth() view returns(address)','function claimable(address,address) view returns(uint256)','function claim(address,address)','function emergencyRedeemInKind(uint256,address)','function setPaused(bool)']);
 type JoinPlan=Awaited<ReturnType<typeof quoteProportionalDeposit>>;
 type ExitPlan=Awaited<ReturnType<typeof quoteProportionalWithdrawal>>;
@@ -18,6 +20,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const [state,setState]=useState<ProportionalState>();
   const [assets,setAssets]=useState<Asset[]>([]);
   const [owner,setOwner]=useState<Address>();
+  const [controller,setController]=useState<Address>();
   const [ethBalance,setEthBalance]=useState(0n);
   const [eth,setEth]=useState('0.02');const [percent,setPercent]=useState(100);
   const [recoveryRecipient,setRecoveryRecipient]=useState('');
@@ -50,7 +53,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
     await verifyProportionalRelease(publicClient,release);
     const next=await readProportionalState(publicClient,release.vault,address??zeroAddress);
     const common={address:release.vault,abi:managementAbi,blockNumber:next.blockNumber} as const;
-    const [curator,weth,balance]=await Promise.all([publicClient.readContract({...common,functionName:'owner'}),publicClient.readContract({...common,functionName:'weth'}),address?publicClient.getBalance({address,blockNumber:next.blockNumber}):Promise.resolve(0n)]);
+    const [vaultOwner,weth,balance]=await Promise.all([publicClient.readContract({...common,functionName:'owner'}),publicClient.readContract({...common,functionName:'weth'}),address?publicClient.getBalance({address,blockNumber:next.blockNumber}):Promise.resolve(0n)]);
+    const authority=await resolveVaultAuthority(publicClient,release.vault,vaultOwner,next.blockNumber);
     const rows=await Promise.all([...next.tokens,weth,zeroAddress].map(async(token,index)=>{
       const [symbol,decimals,claim]=await Promise.all([
         token===zeroAddress?Promise.resolve('ETH'):publicClient.readContract({address:token,abi:erc20Abi,functionName:'symbol',blockNumber:next.blockNumber}).catch(()=>token.slice(0,6)+'…'+token.slice(-4)),
@@ -60,7 +64,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       return {token,symbol,decimals,balance:index<next.tokens.length?next.balances[index]:0n,claim};
     }));
     if(ticket!==generation.current)return;
-    setState(next);setAssets(rows);setOwner(curator);setEthBalance(balance);
+    setState(next);setAssets(rows);setOwner(authority.curator);setController(authority.controller);setEthBalance(balance);
   },[address,release]);
   useEffect(()=>{void refresh().catch(()=>setMessage('Unable to load this vault. Please retry.'));return()=>{generation.current++;};},[refresh]);
   useEffect(()=>{setRecoveryRecipient(address??'');},[address]);
@@ -112,7 +116,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       await checkWallet(address);await verifyProportionalRelease(publicClient,release);
       const common={address:release.vault,abi:managementAbi,account:address} as const;
       if (kind!=='pause'&&!recipient) throw Error('Invalid recovery recipient');
-      const prepared=kind==='assets'?await publicClient.simulateContract({...common,functionName:'emergencyRedeemInKind',args:[selected,recipient!]}):kind==='pause'?await publicClient.simulateContract({...common,functionName:'setPaused',args:[!current.paused]}):await publicClient.simulateContract({...common,functionName:'claim',args:[token!,recipient!]});
+      const prepared=kind==='assets'?await publicClient.simulateContract({...common,functionName:'emergencyRedeemInKind',args:[selected,recipient!]}):kind==='pause'&&controller?await publicClient.simulateContract({address:controller,abi:rebalanceControllerV3Abi,account:address,chain:robinhood,functionName:'setPaused',args:[!current.paused]}):kind==='pause'?await publicClient.simulateContract({...common,functionName:'setPaused',args:[!current.paused]}):await publicClient.simulateContract({...common,functionName:'claim',args:[token!,recipient!]});
       await checkWallet(address);
       const request=prepared.request;
       const data=request.functionName==='claim'?encodeFunctionData(request):request.functionName==='setPaused'?encodeFunctionData(request):encodeFunctionData(request);
@@ -134,6 +138,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       <details className="vault-recovery"><summary>Receive your tokens and cash directly</summary><p className="py-3 text-sm">Redeem the selected {percent}% without selling the basket. Available while paused. Transfers that cannot complete remain claimable.</p><label className="block py-3 text-sm">Recovery recipient<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" value={recoveryRecipient} spellCheck={false} onChange={e=>setRecoveryRecipient(e.target.value.trim())}/></label>{recoveryRecipient&&!recipient&&<p className="pb-3 text-sm text-amber-300">Enter a valid recipient address.</p>}<button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n||!recipient} onClick={()=>void manage('assets')}>Redeem {percent}% as assets</button></details>
       {assets.filter(a=>a.claim>0n).map(a=><div key={a.token} className="flex items-center justify-between py-2"><span>{a.decimals===undefined?'Balance available':formatUnits(a.claim,a.decimals)} {a.symbol} available to claim</span><button className={button} disabled={busy||pending||chainId!==4663||!recipient} onClick={()=>void manage('claim',a.token)}>Claim to recipient</button></div>)}
       {address&&owner?.toLowerCase()===address.toLowerCase()&&<button className={button} disabled={busy||pending||chainId!==4663} onClick={()=>void manage('pause')}>{current?.paused?'Resume deposits':'Pause deposits'}</button>}
+      {address&&current&&owner?.toLowerCase()===address.toLowerCase()&&<ProportionalCuratorDesk vault={release.vault} controller={controller} state={current} busy={busy} onBusy={setBusy} onRefresh={refresh}/>}
       <button className={button} disabled={busy} onClick={()=>void refresh().catch(()=>setMessage('Unable to refresh balances.'))}>Refresh balances</button>
       <p className="py-3 text-sm" role="status" aria-live="polite">{busy?'Working… ':''}{message}</p>{hash&&<a className="text-sm underline" href={`https://robin.etherscan.io/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}{pending&&<button className={button} disabled={busy} onClick={()=>void checkReceipt()}>Check pending transaction</button>}
     </section>

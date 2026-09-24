@@ -11,8 +11,9 @@ import { VaultOverview } from "@/components/VaultOverview";
 import { v2VaultAbi } from "@/lib/v2";
 import { withdrawalFloor } from "@/lib/withdrawMinimum";
 import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, withdrawalQuoteFailureMessage, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
+import { rebalanceControllerAbi, resolveVaultAuthority } from "@/lib/rebalanceController";
 
-type Snapshot = { account: Address; vault: Address; owner: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
+type Snapshot = { account: Address; vault: Address; owner: Address; curator: Address; controller?: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
 const deadline = () => BigInt(Math.floor(Date.now() / 1000) + 600);
 
 export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
@@ -50,12 +51,14 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "owner" }),
       address ? publicClient.getBalance({ address, blockNumber: block }).catch(() => undefined) : Promise.resolve(undefined),
     ]);
-    const claimTokens = [zeroAddress, weth, ...tokens];
+    const claimTokens = [zeroAddress, weth, ...tokens];
+
+    const authority = await resolveVaultAuthority(publicClient, vault, owner, block);
     const amounts = await Promise.all(claimTokens.map(token => publicClient.readContract({
       address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "claimable", args: [account, token],
     })));
     if (ticket !== generation.current) return;
-    setSnap({ account, vault, owner, walletEth, block, firstMinimum, shares, supply, paused, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
+    setSnap({ account, vault, owner, curator: authority.curator, controller: authority.controller, walletEth, block, firstMinimum, shares, supply, paused, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
     const assets = await publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "totalAssets" }).catch(() => undefined);
     let quoteAssets: bigint | undefined, quoteSupply: bigint | undefined, quoteTime: number | undefined;
     if (assets === undefined) {
@@ -68,7 +71,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       } catch { /* Never substitute a partial or stale valuation. */ }
     }
     if (ticket !== generation.current) return;
-    setSnap({ account, vault, owner, walletEth, block, firstMinimum, shares, supply, paused, assets, quoteAssets, quoteSupply, quoteTime, valuationFailed: assets === undefined, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
+    setSnap({ account, vault, owner, curator: authority.curator, controller: authority.controller, walletEth, block, firstMinimum, shares, supply, paused, assets, quoteAssets, quoteSupply, quoteTime, valuationFailed: assets === undefined, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
   }, [address, vault]);
   useEffect(() => { let cancelled = false; setSnap(undefined); setRecipient(address); read().catch(() => { if (!cancelled) setMessage("Unable to read vault balances. Retry before transacting."); }); return () => { cancelled = true; generation.current++; }; }, [read, address]);
   useEffect(() => {
@@ -111,20 +114,25 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
     setBusy(true); setMessage("");
     try {
-      const common = { address: vault, abi: v2VaultAbi, account: address, chain: robinhood } as const;
-      const selectedShares = snap.shares * BigInt(percent) / 100n;
+      const common = { address: vault, abi: v2VaultAbi, account: address, chain: robinhood } as const;
+      const selectedShares = snap.shares * BigInt(percent) / 100n;
       let hash: `0x${string}`;
       if (action === "unwind") {
-        if (address.toLowerCase() !== snap.owner.toLowerCase() || !snap.paused) throw new Error("The curator must pause deposits first.");
+        if (address.toLowerCase() !== snap.curator.toLowerCase() || !snap.paused) throw new Error("The curator must pause deposits first.");
         if (!unwindToken || !snap.tokens.includes(unwindToken)) throw new Error("Select a constituent.");
         const decimals = await publicClient.readContract({ address: unwindToken, abi: erc20Abi, functionName: "decimals" });
         const amount = parseUnits(unwindAmount, decimals), floor = parseEther(unwindMinimum);
         if (amount <= 0n || floor <= 0n) throw new Error("Enter a positive token amount and minimum WETH output.");
-        const { request } = await publicClient.simulateContract({ ...common, functionName: "emergencyUnwind", args: [unwindToken, amount, floor, deadline()] });
+        const unwindArgs=[unwindToken,amount,floor,deadline()] as const;
+        const { request } = snap.controller
+          ? await publicClient.simulateContract({address:snap.controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"emergencyUnwind",args:unwindArgs})
+          : await publicClient.simulateContract({...common,functionName:"emergencyUnwind",args:unwindArgs});
         hash = await walletClient.writeContract(request);
       } else if (action === "pause") {
-        if (address.toLowerCase() !== snap.owner.toLowerCase()) throw new Error("Only the curator can pause deposits.");
-        const { request } = await publicClient.simulateContract({ ...common, functionName: "setPaused", args: [!snap.paused] });
+        if (address.toLowerCase() !== snap.curator.toLowerCase()) throw new Error("Only the curator can pause deposits.");
+        const { request } = snap.controller
+          ? await publicClient.simulateContract({address:snap.controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"setPaused",args:[!snap.paused]})
+          : await publicClient.simulateContract({...common,functionName:"setPaused",args:[!snap.paused]});
         hash = await walletClient.writeContract(request);
       } else if (action === "deposit") {
         const checks = await preflightV2Routes(vault);
@@ -161,10 +169,10 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   }
   const button = "vault-button";
   return <section className="vault-dashboard">
-    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets ?? snap?.quoteAssets} quoteTime={snap?.quoteTime} valuationFailed={snap?.valuationFailed} supply={snap?.supply} paused={snap?.paused} connected={!!address} curator={!!address && address.toLowerCase() === snap?.owner.toLowerCase()}>
+    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets ?? snap?.quoteAssets} quoteTime={snap?.quoteTime} valuationFailed={snap?.valuationFailed} supply={snap?.supply} paused={snap?.paused} connected={!!address} curator={!!address && address.toLowerCase() === snap?.curator.toLowerCase()}>
     <VaultPerformance estimated={snap?.quoteAssets !== undefined} valuationFailed={snap?.valuationFailed && snap?.quoteAssets === undefined} vault={vault} account={address} assets={snap?.assets ?? snap?.quoteAssets} shares={snap?.shares} supply={snap?.quoteSupply ?? snap?.supply} block={snap?.block} />
     </VaultOverview>
-    {snap && address?.toLowerCase() === snap.owner.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel"><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary><V2CuratorDesk key={`${vault}:${address}`} vault={vault} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} /></details>}
+    {snap && address?.toLowerCase() === snap.curator.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel"><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary><V2CuratorDesk key={`${vault}:${address}:${snap.controller ?? "direct"}`} vault={vault} controller={snap.controller} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} /></details>}
     <div id="wallet-actions" className="vault-actions desk">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">YOUR POSITION</p><h2>Make your next move.</h2></div><span className="vault-tag">{slug.toUpperCase()}</span></div>
 
@@ -173,8 +181,8 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
 
       {snap.assets === undefined && <p className="vault-notice">Pricing is unavailable. Direct asset redemption remains available.</p>}
       {snap.paused && <p>Deposits are paused. You can still withdraw.</p>}
-      {address?.toLowerCase() === snap.owner.toLowerCase() && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}
-      {address?.toLowerCase() === snap.owner.toLowerCase() && snap.paused && <div className="vault-recovery">
+      {address?.toLowerCase() === snap.curator.toLowerCase() && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}
+      {address?.toLowerCase() === snap.curator.toLowerCase() && snap.paused && <div className="vault-recovery">
         <h2>Curator emergency unwind</h2>
         <p>Sell a constituent into WETH kept inside the vault. This does not send shareholder assets to your wallet. Oracle and output protections still apply.</p>
         <label className="block">Constituent <select className="w-full bg-black" value={unwindToken ?? ""} onChange={e => setUnwindToken(e.target.value as Address)}><option value="">Select an asset</option>{snap.tokens.map(token => <option key={token} value={token}>{token}</option>)}</select></label>
