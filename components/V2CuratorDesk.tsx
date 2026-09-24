@@ -5,7 +5,7 @@ import { BaseError, encodeAbiParameters, formatEther, formatUnits, keccak256, pa
 import { publicClient, useWallet } from "@/lib/wallet";
 import { robinhood } from "@/lib/chain";
 import { allocation } from "@/lib/v2Allocation";
-import { capBuyPlan, distribute, driftBps, plannedTrade, raiseCashFromLeaders, restorePlan, skippedAtMinimumDeposit, groupedAllocation, type AllocationGroup } from "@/lib/curatorPlanner";
+import { capBuyPlan, distribute, driftBps, harvestProfitPlan, plannedTrade, restorePlan, skippedAtMinimumDeposit, groupedAllocation, type AllocationGroup } from "@/lib/curatorPlanner";
 import { rebalanceControllerAbi } from "@/lib/rebalanceController";
 
 const abi = parseAbi([
@@ -22,7 +22,8 @@ const abi = parseAbi([
 ]);
 type Row = { token: Address; symbol: string; decimals: number; balance: bigint; held: bigint; reserved: bigint; target: string; value?: bigint; nav?: bigint };
 type PortfolioStep = { token: Address; symbol: string; buy: boolean; amount: bigint; decimals: number; minimum: bigint; estimatedValue: bigint; gas?: bigint };
-type AtomicPlaybook = "restore" | "raise-cash" | "deploy-cash" | "custom";
+type AtomicPlaybook = "restore" | "harvest" | "deploy-cash" | "custom";
+type CostBasis = { verified:boolean; indexedBlock:string; assets:Array<{token:Address;units:string;costWei:string;realizedPnlWei:string;reconciled:boolean}> };
 
 export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefresh }: { vault: Address; controller?: Address; paused: boolean; busy: boolean; onBusy: (value: boolean) => void; onRefresh: () => Promise<void> }) {
   const { address, chainId, walletClient, switchToRobinhood } = useWallet();
@@ -58,6 +59,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const [atomicGas, setAtomicGas] = useState<bigint>();
   const [plannedAllocation, setPlannedAllocation] = useState<{ cashBps: number; weights: number[]; basketHash: Hex; minCashAfter: bigint }>();
   const [playbook,setPlaybook]=useState<AtomicPlaybook>("restore");
+  const [costBasis,setCostBasis]=useState<CostBasis>();
   const previewKey = [vault,address,chainId,selected,buy,amount,minimum,updated].join(":");
   const baseline = JSON.stringify([savedCash, rows.map(r => [r.token.toLowerCase(),r.target])]);
   const draftKey = `hoodx:curator:1:${robinhood.id}:${vault.toLowerCase()}:${address?.toLowerCase()}`;
@@ -98,6 +100,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     setFees(data.fees); setRows(data.list); setGroups(data.list.map(r=>r.target==="0.00"?"Excluded":"Core")); setLocked([]); setWeights(data.list.map(r => r.target)); setCash(data.cash); setSavedCash(data.cash); setWethBalance(data.balance); setPlaybook("restore"); setLoaded(true); setUpdated(Date.now()); setPreview(undefined);
   };
   useEffect(() => { let active = true; setLoaded(false); void load().then(data => { if (active) apply(data); }).catch(() => { if (active) setMessage("Unable to read curator data. Reload this page to retry."); }); return () => { active = false; }; }, [load]);
+  useEffect(()=>{let active=true;setCostBasis(undefined);void fetch(`/api/vault-cost-basis?vault=${vault}`).then(async response=>{if(!response.ok)throw new Error();return response.json() as Promise<CostBasis>;}).then(data=>{if(active)setCostBasis(data);}).catch(()=>{if(active)setCostBasis({verified:false,indexedBlock:"",assets:[]});});return()=>{active=false;};},[vault,updated]);
   useEffect(() => {
     if(!dirty) return;
     const warn=(event: BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};
@@ -112,18 +115,23 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
   const valuationUnavailable = !nav || missingPrices>0;
   const smallTargets = weights.flatMap((w,i)=>{try{return skippedAtMinimumDeposit(w,fees)?[rows[i].symbol]:[];}catch{return [];}});
   const drifted = rows.filter(r => Math.abs(driftBps(r.value,r.nav,r.target) ?? 0) >= threshold);
+  const basisByToken=new Map(costBasis?.assets.map(asset=>[asset.token.toLowerCase(),asset])??[]);
+  const rowCosts=rows.map(r=>{const basis=basisByToken.get(r.token.toLowerCase());if(!basis?.reconciled)return undefined;const units=BigInt(basis.units);return units>0n?BigInt(basis.costWei)*r.balance/units:0n;});
+  const unrealizedGain=costBasis?.verified?rows.reduce((sum,r,i)=>sum+(r.value!==undefined&&rowCosts[i]!==undefined?r.value-rowCosts[i]!:0n),0n):undefined;
+  let harvestPreview:ReturnType<typeof harvestProfitPlan>|undefined;
+  if(costBasis?.verified&&nav)try{harvestPreview=harvestProfitPlan(savedCash,rows.map(r=>r.target),rows.map(r=>r.value===undefined?undefined:Number(r.value*10000n/nav)),rows.map(r=>r.value),rowCosts,nav,"5");}catch{}
   let tradeFloor = 0n; try { tradeFloor = parseUnits(minimumTrade,18); } catch {}
   const draftSuggestions = rows.map((r,i) => {
     const planned = {...r, target: weights[i] ?? r.target};
-    return {r:planned, trade:plannedTrade(planned.balance,planned.value,planned.nav,planned.target)};
+    return {r:planned, i, trade:plannedTrade(planned.balance,planned.value,planned.nav,planned.target)};
   }).filter(({r,trade}) => trade && trade.value >= tradeFloor && Math.abs(driftBps(r.value,r.nav,r.target) ?? 0) >= threshold).sort((a,b) => Number(a.trade!.buy)-Number(b.trade!.buy) || (a.trade!.value>b.trade!.value?-1:1));
-  const filteredSuggestions = draftSuggestions.filter(({trade})=>playbook==="raise-cash"?!trade!.buy:playbook==="deploy-cash"?trade!.buy:true);
+  const filteredSuggestions = draftSuggestions.filter(({trade,i})=>playbook==="harvest"?!trade!.buy&&!!harvestPreview?.assets.includes(i):playbook==="deploy-cash"?trade!.buy:true);
   const portfolioSuggestions = playbook==="deploy-cash"
     ? capBuyPlan(filteredSuggestions.map(item=>({...item,amount:item.trade!.amount,value:item.trade!.value})),availableToBuy*98n/100n).map(item=>({...item,trade:{...item.trade!,amount:item.amount,value:item.value}}))
     : filteredSuggestions;
   const playbookCopy:Record<AtomicPlaybook,{eyebrow:string;title:string;body:string}>={
     restore:{eyebrow:"RESTORE TARGETS",title:"Bring the basket back into shape.",body:"Sell leaders first, then refill lagging sleeves while preserving the saved WETH reserve."},
-    "raise-cash":{eyebrow:"RAISE CASH",title:"Trim leaders into reserve.",body:"Only assets above their saved target are sold. Relative leadership is not a cost-basis profit claim."},
+    harvest:{eyebrow:"HARVEST VERIFIED GAINS",title:"Move gains into reserve.",body:"Only assets with reconciled average cost and enough unrealized profit are trimmed."},
     "deploy-cash":{eyebrow:"DEPLOY RESERVE",title:"Put excess WETH back to work.",body:"Buy underweight assets using up to 98% of cash above the saved reserve. No assets are sold."},
     custom:{eyebrow:"CUSTOM PLAN",title:"Move to your reviewed allocation.",body:"The atomic plan follows your draft targets, with sells ordered before buys and the final reserve enforced."},
   };
@@ -176,13 +184,11 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     if(availableToBuy<=0n){setMessage("There is no WETH above the saved reserve to deploy.");return;}
     setCash(savedCash);setWeights(rows.map(r=>r.target));setPlaybook("deploy-cash");setPortfolioPlan([]);setTab("Trades");setMessage("Deploy-reserve playbook selected. HOODX will leave a 2% buffer in the available excess cash.");
   }
-  function chooseRaise(increase:string){
-    if(valuationUnavailable||!nav){setMessage("A complete valuation is required before leaders can be identified.");return;}
+  function chooseHarvest(){
+    if(!harvestPreview){setMessage("No verified gains are currently available to harvest safely.");return;}
     try{
-      const current=rows.map(r=>r.value===undefined?undefined:Number(r.value*10000n/nav));
-      const next=raiseCashFromLeaders(savedCash,rows.map(r=>r.target),current,increase);
-      setCash(next.cash);setWeights(next.weights);setPlaybook("raise-cash");setPortfolioPlan([]);setTab("Trades");
-      setMessage(`Raise-cash playbook selected. ${next.leaders.length} relative leader${next.leaders.length===1?"":"s"} fund a ${increase}% larger reserve target.`);
+      setCash(harvestPreview.cash);setWeights(harvestPreview.weights);setPlaybook("harvest");setPortfolioPlan([]);setTab("Trades");
+      setMessage(`Verified-gain plan ready. ${harvestPreview.assets.length} profitable asset${harvestPreview.assets.length===1?"":"s"} can lift reserve by ${(harvestPreview.liftBps/100).toFixed(2)}%.`);
     }catch(e){setMessage((e as Error).message);}
   }
   async function protectedFloor(r: Row, isBuy: boolean, input: bigint) {
@@ -345,22 +351,32 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     } catch (e) { setMessage(e instanceof BaseError ? e.shortMessage : e instanceof Error ? e.message : "Transaction failed."); }
     finally { onBusy(false); }
   }
+  const totalBasis=rowCosts.reduce<bigint>((sum,cost)=>sum+(cost??0n),0n);
+  const gainPercent=unrealizedGain!==undefined&&totalBasis>0n?Number(unrealizedGain*10000n/totalBasis)/100:undefined;
+  const recommendation=!costBasis?"sync":harvestPreview?"harvest":drifted.length?"restore":availableToBuy>tradeFloor?"deploy":"steady";
+  const recommendationCopy={
+    sync:{eyebrow:"VERIFYING HISTORY",title:"Reading the confirmed ledger.",body:"HOODX is reconciling every settled acquisition and exit before suggesting a move.",action:"Please wait"},
+    harvest:{eyebrow:"RECOMMENDED",title:"Harvest verified gains.",body:`Move up to ${(harvestPreview?.liftBps??0)/100}% into WETH from profitable sleeves, with one atomic signature.`,action:"Review gain harvest"},
+    restore:{eyebrow:"RECOMMENDED",title:"Bring the basket back to plan.",body:`${drifted.length} asset${drifted.length===1?" is":"s are"} outside your drift band. Sell first, buy second, and preserve reserve.`,action:"Review rebalance"},
+    deploy:{eyebrow:"CASH AVAILABLE",title:"Put excess reserve to work.",body:"Refill underweight sleeves while leaving a protected execution buffer.",action:"Review deployment"},
+    steady:{eyebrow:"ON PLAN",title:"No action needed.",body:"The basket is inside its drift band and the reserve is where you set it.",action:"Portfolio is steady"},
+  }[recommendation];
+  const chooseRecommendation=()=>{if(recommendation==="harvest")chooseHarvest();else if(recommendation==="restore")chooseRestore();else if(recommendation==="deploy")chooseDeploy();};
   return <section id="curator" className="vault-actions holo">
     <div className="vault-section-heading"><div><p className="vault-eyebrow">CURATOR WORKSPACE</p><h2>Your conviction. In control.</h2></div><span className="vault-tag">Curator access</span></div>
     <p className="vault-footnote">A clear view of your basket. A considered next move. Plan freely; every on-chain change stays yours to review.</p>
     {!loaded ? <p>Loading curator tools…</p> : <>
-      <nav className="curator-tabs" aria-label="Curator workspace sections">{["Overview","Allocation","Trades","Basket"].map(t=><button key={t} aria-current={tab===t?"page":undefined} onClick={()=>setTab(t)}>{t==="Trades"?"Atomic rebalance":t}{t==="Allocation"&&dirty&&<span aria-label="Unsaved changes"> •</span>}</button>)}</nav>
-      <div className="curator-toolbar"><span>{updated ? `Snapshot ${new Date(updated).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}` : "Loading"} · Refresh before acting</span><button className="vault-button" disabled={busy} title="Refresh holdings and preserve a compatible allocation draft" onClick={()=>void refreshSnapshot()}>Refresh snapshot</button></div>
-      {tab==="Overview"&&<div className="curator-overview">
-        <div className="curator-metrics"><div><span>Vault value</span><strong>{nav===undefined?"—":`${Number(formatEther(nav)).toFixed(5)} ETH`}</strong><small>Oracle valuation</small></div><div><span>Cash reserve</span><strong>{currentCash===undefined?"—":`${currentCash.toFixed(2)}%`}</strong><small>{savedCash}% saved target</small></div><div><span>Actionable drift</span><strong>{drifted.length}<em> / {rows.length}</em></strong><small>{(threshold/100).toFixed(1)} percentage-point band</small></div><div><span>Atomic control</span><strong>{controller?"Live":"Off"}</strong><small>{controller?"One signature · all or nothing":"Controller required"}</small></div></div>
-        <div className="curator-command"><div className="curator-command-copy"><p className="vault-eyebrow">ATOMIC COMMAND</p><h3>One decision. One signature.</h3><p>Choose the outcome. HOODX orders sales before purchases, refreshes every protected minimum and enforces the final WETH floor. If one leg fails, nothing changes.</p><div className="curator-command-badges"><span>{controller?"● Controller live":"Controller unavailable"}</span><span>3% protected floors</span><span>10-minute plan</span></div></div><div className="curator-orbit" aria-hidden="true"><span className="curator-orbit-core">HOODX</span><i/><i/><i/><b>SELL</b><b>CASH</b><b>BUY</b></div></div>
-        <div className="curator-strategy-heading"><div><p className="vault-eyebrow">ATOMIC PLAYBOOKS</p><h3>Choose the outcome.</h3></div><p>Three clear moves cover the work curators repeat most. You still review every route, minimum and fee before signing.</p></div>
-        <div className="curator-strategies">
-          <article><div className="curator-strategy-mark restore" aria-hidden="true"><i/><i/><i/></div><span>01 · DISCIPLINE</span><h4>Restore targets</h4><p>Trim overweight sleeves and refill underweights. Best when drift crosses your chosen band.</p><button disabled={busy||valuationUnavailable||!controller} onClick={chooseRestore}>Review restore →</button></article>
-          <article className="featured"><div className="curator-strategy-mark harvest" aria-hidden="true"><i/><i/><i/></div><span>02 · TAKE PROFIT</span><h4>Raise cash</h4><p>Sell current leaders into WETH and lift the reserve. “Leader” means above target, not cost-basis profit.</p><div className="curator-strategy-actions"><button disabled={busy||valuationUnavailable||!controller} onClick={()=>chooseRaise("5")}>+5% cash</button><button disabled={busy||valuationUnavailable||!controller} onClick={()=>chooseRaise("10")}>+10%</button></div></article>
-          <article><div className="curator-strategy-mark deploy" aria-hidden="true"><i/><i/><i/></div><span>03 · OPPORTUNITY</span><h4>Deploy reserve</h4><p>Use excess WETH to refill underweight sleeves. Keeps a small execution buffer and sells nothing.</p><button disabled={busy||valuationUnavailable||availableToBuy<=0n||paused||!controller} onClick={chooseDeploy}>Review deployment →</button></article>
+      {tab!=="Overview"&&<div className="curator-flow-nav"><button onClick={()=>setTab("Overview")}>← Curator home</button><span>{tab==="Trades"?"Atomic review":tab==="Allocation"?"Allocation":"Basket management"}</span></div>}
+      {tab==="Overview"&&<div className="curator-overview curator-simple">
+        <div className="curator-metrics simple"><div><span>Vault value</span><strong>{nav===undefined?"—":`${Number(formatEther(nav)).toFixed(5)} ETH`}</strong><small>Live oracle value</small></div><div><span>Unrealized gain</span><strong className={unrealizedGain!==undefined&&unrealizedGain<0n?"vault-loss":""}>{gainPercent===undefined?"—":`${gainPercent>=0?"+":""}${gainPercent.toFixed(2)}%`}</strong><small>{costBasis?.verified?`${Number(formatEther(unrealizedGain??0n)).toFixed(5)} ETH · reconciled basis`:costBasis?"History needs review":"Verifying confirmed history"}</small></div><div><span>Cash reserve</span><strong>{currentCash===undefined?"—":`${currentCash.toFixed(2)}%`}</strong><small>{savedCash}% saved target</small></div></div>
+        <div className={`curator-focus ${recommendation}`}>
+          <div className="curator-focus-copy"><p className="vault-eyebrow">{recommendationCopy.eyebrow}</p><h3>{recommendationCopy.title}</h3><p>{recommendationCopy.body}</p><div className="curator-focus-meta"><span>{controller?"● Atomic controller live":"Controller required"}</span><span>{costBasis?.verified?"Basis verified":"Basis pending"}</span><span>{drifted.length} outside band</span></div></div>
+          <div className="curator-pulse" aria-hidden="true"><i/><i/><b>{recommendation==="harvest"?"GAIN":recommendation==="restore"?"ALIGN":recommendation==="deploy"?"DEPLOY":"HOODX"}</b></div>
+          <button className="vault-button primary curator-focus-action" disabled={busy||recommendation==="sync"||recommendation==="steady"||!controller} onClick={chooseRecommendation}>{recommendationCopy.action} →</button>
         </div>
-        <details className="curator-help"><summary>What can I safely do here?</summary><p>Drafts, filtering, exports and previews do not move funds. {controller?"The atomic controller saves the reviewed targets and executes every protected trade with one wallet signature; any failed leg reverts the entire plan.":"Saving targets, trading, adding and removing assets each require a wallet signature. Every trade is a separate transaction until this vault adopts the atomic controller."} A successful preview cannot guarantee execution if prices change.</p><p>{paused?"The vault is paused: buys and additions are blocked; protected sales remain available.":"The vault is open. Purchases must preserve its cash reserve."} Tokens with shareholder claims cannot be removed.</p></details>
+        <details className="curator-choices"><summary>Choose a different move</summary><div><button disabled={busy||valuationUnavailable||!controller} onClick={chooseRestore}><b>Restore targets</b><span>Return to the saved mix</span></button><button disabled={busy||!harvestPreview||!controller} onClick={chooseHarvest}><b>Harvest gains</b><span>Move verified profit to WETH</span></button><button disabled={busy||valuationUnavailable||availableToBuy<=0n||paused||!controller} onClick={chooseDeploy}><b>Deploy reserve</b><span>Buy underweight sleeves</span></button></div></details>
+        <details className="curator-manage"><summary>Manage allocation and basket</summary><div><button onClick={()=>setTab("Allocation")}><b>Allocation</b><span>Edit targets and saved groups</span></button><button onClick={()=>setTab("Basket")}><b>Basket</b><span>Add, replace, or remove assets</span></button><button onClick={()=>setTab("Trades")}><b>Manual trade</b><span>Prepare one protected trade</span></button></div></details>
+        <div className="curator-toolbar compact"><span>{updated?`Snapshot ${new Date(updated).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`:"Loading"} · Cost basis block {costBasis?.indexedBlock||"—"}</span><button className="vault-button" disabled={busy} onClick={()=>void refreshSnapshot()}>Refresh</button></div>
       </div>}
       <div hidden={tab!=="Allocation"} className="vault-recovery"><h3>Shape your allocation.</h3><p className="vault-footnote">Lock the weights you want to keep. Distribute the rest with exact rounding.</p>
         <label>Cash reserve (%)<input className="vault-input" inputMode="decimal" value={cash} disabled={busy} onChange={e => {setCash(e.target.value);setPlaybook("custom");}} /></label>
@@ -377,9 +393,8 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       </div>
       <div hidden={tab!=="Trades"} className="vault-recovery curator-atomic-desk">
         <div className="curator-atomic-heading"><div><p className="vault-eyebrow">ONE-SIGNATURE REBALANCE</p><h3>Atomic desk.</h3></div><span className={`curator-live ${controller?"":"off"}`}>{controller?"● Live controller":"Controller required"}</span></div>
-        <div className="curator-playbook-switch" aria-label="Atomic playbook"><button aria-pressed={playbook==="restore"} onClick={chooseRestore}>Restore</button><button aria-pressed={playbook==="raise-cash"} onClick={()=>chooseRaise("5")}>Raise cash</button><button aria-pressed={playbook==="deploy-cash"} onClick={chooseDeploy}>Deploy reserve</button><button aria-pressed={playbook==="custom"} onClick={()=>{setPlaybook("custom");setTab("Allocation");}}>Custom</button></div>
         <div className="curator-active-playbook"><div><p className="vault-eyebrow">{playbookCopy[playbook].eyebrow}</p><h4>{playbookCopy[playbook].title}</h4><p>{playbookCopy[playbook].body}</p></div><div className="curator-active-stats"><span><b>{portfolioSuggestions.filter(s=>!s.trade!.buy).length}</b> sells</span><span><b>{portfolioSuggestions.filter(s=>s.trade!.buy).length}</b> buys</span><span><b>{cash}%</b> final cash</span></div></div>
-        <div className="curator-toolbar"><label>Act when drift reaches <select value={threshold} onChange={e=>setThreshold(Number(e.target.value))}><option value={50}>0.5 pp</option><option value={100}>1 pp</option><option value={200}>2 pp</option><option value={500}>5 pp</option></select></label><label>Ignore trades below <select value={minimumTrade} onChange={e=>setMinimumTrade(e.target.value)}><option value="0">Show all</option><option value="0.0001">0.0001 ETH</option><option value="0.001">0.001 ETH</option><option value="0.005">0.005 ETH</option></select></label><span>Snapshot and quotes refresh before signing.</span></div>
+        <details className="curator-execution-settings"><summary>Execution preferences</summary><div className="curator-toolbar"><label>Drift band <select value={threshold} onChange={e=>setThreshold(Number(e.target.value))}><option value={50}>0.5 pp</option><option value={100}>1 pp</option><option value={200}>2 pp</option><option value={500}>5 pp</option></select></label><label>Minimum trade <select value={minimumTrade} onChange={e=>setMinimumTrade(e.target.value)}><option value="0">Show all</option><option value="0.0001">0.0001 ETH</option><option value="0.001">0.001 ETH</option><option value="0.005">0.005 ETH</option></select></label></div></details>
         <div className="curator-suggestions">{portfolioSuggestions.length?portfolioSuggestions.map(({r,trade})=><button key={r.token} disabled={busy || (trade!.buy&&paused)} onClick={()=>stage(r,trade!.buy,trade!.amount)}><span><b>{trade!.buy?"Buy":"Sell"} {r.symbol}</b><small>{Math.abs(driftBps(r.value,r.nav,r.target)??0)/100} pp {trade!.buy?"below":"above"} planned target</small></span><span>≈ {Number(formatEther(trade!.value)).toFixed(5)} ETH <small>Inspect →</small></span></button>):<p className="vault-footnote">No priced position meets this playbook’s drift and trade-size rules.</p>}</div>
         <div className="curator-review curator-atomic-review">
           <div className="curator-settlement-rail" aria-label="Atomic settlement order"><span><i>1</i>Lock targets</span><span><i>2</i>Sell first</span><span><i>3</i>Buy second</span><span><i>4</i>Check cash</span></div>

@@ -78,6 +78,34 @@ export function raiseCashFromLeaders(
   };
 }
 
+// Raises the reserve only from verified unrealized gains. An asset must already
+// be at or above its saved target, and the resulting sale may not exceed its
+// remaining average-cost profit. The returned lift can be smaller than asked.
+export function harvestProfitPlan(
+  cash: string,
+  weights: string[],
+  currentBps: Array<number | undefined>,
+  valuesWei: Array<bigint | undefined>,
+  costsWei: Array<bigint | undefined>,
+  navWei: bigint,
+  requestedIncrease = "5",
+) {
+  if (!navWei || [currentBps,valuesWei,costsWei].some(list=>list.length!==weights.length)) throw new Error("Refresh verified cost basis before harvesting gains.");
+  const reserve=percentBps(cash), requested=percentBps(requestedIncrease), targets=weights.map(percentBps);
+  const room=Math.max(0,5000-reserve);
+  const candidates=targets.map((target,i)=>{
+    const current=currentBps[i], value=valuesWei[i], cost=costsWei[i];
+    if(current===undefined||value===undefined||cost===undefined||value<=cost||current<target)return {i,capacity:0};
+    const profitBps=Number((value-cost)*10000n/navWei);
+    return {i,capacity:Math.max(0,Math.min(target,profitBps-(current-target)))};
+  }).filter(x=>x.capacity>0);
+  const lift=Math.min(requested,room,candidates.reduce((sum,x)=>sum+x.capacity,0));
+  if(lift<=0)throw new Error("No verified gains are currently available above saved targets.");
+  const removed=Array(targets.length).fill(0);let left=lift;
+  while(left>0){const active=candidates.filter(x=>removed[x.i]<x.capacity);if(!active.length)break;const total=active.reduce((sum,x)=>sum+(x.capacity-removed[x.i]),0);let moved=0;for(const x of active){const room=x.capacity-removed[x.i];const share=Math.min(room,Math.floor(left*room/total));if(share){removed[x.i]+=share;moved+=share;}}if(!moved){removed[active[0].i]++;moved=1;}left-=moved;}
+  return {cash:((reserve+lift)/100).toFixed(2),weights:targets.map((v,i)=>((v-removed[i])/100).toFixed(2)),liftBps:lift,assets:candidates.filter(x=>removed[x.i]>0).map(x=>x.i)};
+}
+
 export function capBuyPlan<T extends { amount: bigint; value: bigint }>(trades: T[], budget: bigint): T[] {
   if (budget <= 0n) return [];
   const total = trades.reduce((sum, trade) => sum + trade.value, 0n);
