@@ -1657,27 +1657,9 @@ body {
 .studio-home .landing-orbit::after {content:"";width:5px;height:5px;border-radius:50%;background:#b3f9df;box-shadow:0 0 12px #70ffe4;position:absolute;left:50%;top:-3px;}
 .studio-home .landing-orbit-b::after {width:3px;height:3px;opacity:.5;}
 .studio-orbit-third {position:absolute;inset:20% 4% 30%;border:1px solid #80e5d322;transform:rotate(-35deg);border-radius:50%;z-index:-1;}
-.studio-solar-system {position:absolute;inset:0;z-index:1;pointer-events:none;overflow:visible;filter:drop-shadow(0 4px 5px #0008);}
-.studio-planet-track {position:absolute;left:52%;top:52%;width:90%;height:78%;display:block;animation:studio-planet-orbit 39s linear infinite;will-change:transform;}
-.studio-planet {position:absolute;left:50%;top:0;width:14px;height:14px;display:block;border-radius:50%;overflow:visible;box-shadow:inset 2px 2px 3px #fff5,inset -3px -2px 5px #00101899,0 0 9px #79e2d52b;animation:studio-planet-counter 39s linear infinite;will-change:transform;}
-.studio-planet::before,.studio-planet::after {content:"";position:absolute;pointer-events:none;}
-.studio-planet-mercury {width:10px;height:10px;background:radial-gradient(circle at 68% 65%,#5d5f5e 0 9%,transparent 10%),radial-gradient(circle at 32% 38%,#777b78 0 10%,transparent 11%),radial-gradient(circle at 35% 25%,#d5d0c4,#858783 48%,#464b4a 80%);}
-.studio-planet-mercury::before {inset:2px;border-radius:50%;background:radial-gradient(circle at 72% 28%,#4f5351 0 12%,transparent 14%);opacity:.9;}
-.studio-planet-venus {width:13px;height:13px;background:repeating-linear-gradient(168deg,#f3d28a 0 2px,#c98342 2px 3px,#e8b766 3px 5px);}
-.studio-planet-venus::before {inset:1px;border-radius:50%;background:linear-gradient(110deg,#fff6 0 18%,transparent 35% 70%,#55240d55);mix-blend-mode:screen;}
-.studio-planet-earth {width:14px;height:14px;background:radial-gradient(ellipse at 62% 67%,#7ebc72 0 10%,transparent 11%),radial-gradient(ellipse at 35% 38%,#62b873 0 17%,transparent 18%),radial-gradient(circle at 35% 28%,#89d9ff,#247eb2 52%,#0d355e 82%);}
-.studio-planet-earth::before {left:1px;right:2px;top:5px;height:2px;border-radius:50%;background:#e9ffffaa;transform:rotate(-14deg);filter:blur(.2px);}
-.studio-planet-mars {width:11px;height:11px;background:radial-gradient(circle at 65% 63%,#6b2419 0 12%,transparent 13%),radial-gradient(circle at 32% 27%,#f7af79,#b64b30 48%,#63271f 82%);}
-.studio-planet-mars::before {width:5px;height:2px;left:3px;top:2px;border-radius:50%;background:#f7e3d5cc;transform:rotate(-12deg);}
-.studio-planet-jupiter {width:20px;height:20px;background:repeating-linear-gradient(180deg,#ead7b4 0 3px,#a66a45 3px 5px,#d9b07d 5px 7px,#744a39 7px 8px);box-shadow:inset 3px 2px 4px #fff6,inset -4px -2px 7px #3b1d1799,0 0 11px #ddbb7b33;overflow:hidden;}
-.studio-planet-jupiter::before {width:5px;height:3px;right:2px;top:11px;border-radius:50%;background:#9b3f29;box-shadow:0 0 2px #f0b384;}
-.studio-planet-saturn {width:16px;height:16px;background:repeating-linear-gradient(180deg,#f5dda2 0 2px,#c89e59 2px 4px,#ead198 4px 6px);box-shadow:inset 3px 2px 4px #fff6,inset -3px -2px 5px #553a1899,0 0 10px #e8cd7c33;}
-.studio-planet-saturn::before {left:-7px;top:5px;width:30px;height:7px;border:2px solid #d8bd7b;border-left-color:#87683f;border-right-color:#f0dc9c;border-radius:50%;transform:rotate(-17deg);box-shadow:0 0 3px #0008;}
-.studio-planet-saturn::after {inset:0;border-radius:50%;background:linear-gradient(107deg,transparent 0 48%,#59401f88 52% 100%);}
-.studio-planet-uranus {width:13px;height:13px;background:radial-gradient(circle at 35% 25%,#d8ffff,#69d4d1 52%,#277f88 82%);}
-.studio-planet-uranus::before {left:-4px;top:4px;width:21px;height:5px;border:1px solid #9ce7dfaa;border-radius:50%;transform:rotate(23deg);}
-.studio-planet-neptune {width:14px;height:14px;background:linear-gradient(176deg,transparent 36%,#9fc9ff88 39% 47%,transparent 50%),radial-gradient(circle at 35% 25%,#79b5ff,#285bc1 50%,#182c78 82%);}
-.studio-planet-neptune::before {left:2px;right:2px;top:8px;height:1px;background:#bad8ffbb;border-radius:50%;transform:rotate(-8deg);}
+.studio-solar-system {position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 4px 5px #0007);}
+.studio-solar-rings ellipse {fill:none;stroke:#78dfcd;stroke-width:.7;vector-effect:non-scaling-stroke;}
+.studio-svg-planet {transform-box:view-box;transform-origin:center;}
 .studio-home .landing-float-chip {animation:studio-chip-drift 12s ease-in-out infinite;padding:10px 15px;background:linear-gradient(140deg,#1e3535ee,#101c1dee);border-color:#89d6c92b;box-shadow:0 10px 25px #0004,inset 0 1px #ffffff09;backdrop-filter:none;font-weight:500;}
 .studio-home .landing-float-chip:nth-of-type(5) {animation-direction:reverse;}
 .studio-stage-caption {position:absolute;top:0;left:4%;font-size:8px;letter-spacing:.2em;color:#83b6aa;}
@@ -1704,15 +1686,13 @@ body {
 @keyframes studio-coin-turn {0%,100%{transform:perspective(900px) rotateY(-12deg) rotateX(6deg) rotateZ(-8deg);}50%{transform:perspective(900px) rotateY(8deg) rotateX(-4deg) rotateZ(-4deg);}}
 @keyframes studio-light-pass {0%,25%{transform:translateX(-65%) rotate(-8deg);}65%,100%{transform:translateX(65%) rotate(-8deg);}}
 @keyframes studio-orbit {to{transform:rotate(335deg);}}
-@keyframes studio-planet-orbit {from{transform:translate(-50%,-50%) scaleY(.87) rotate(0)}to{transform:translate(-50%,-50%) scaleY(.87) rotate(360deg)}}
-@keyframes studio-planet-counter {from{transform:translate(-50%,-50%) scaleY(1.15) rotate(0)}to{transform:translate(-50%,-50%) scaleY(1.15) rotate(-360deg)}}
 @keyframes studio-chip-drift {0%,100%{transform:translate(0,0);}50%{transform:translate(4px,-6px);}}
 @keyframes studio-flow {to{stroke-dashoffset:-1;}}
 @keyframes studio-wave {0%,100%{transform:translateY(3px) scaleY(.94);}50%{transform:translateY(-3px) scaleY(1.04);}}
 @keyframes studio-stack {0%,100%{transform:perspective(400px) rotateX(58deg) translateY(0);filter:brightness(1);}45%{transform:perspective(400px) rotateX(48deg) translateY(-8px);filter:brightness(1.5);}}
 @keyframes studio-atmosphere {0%,100%{opacity:.65;transform:scale(.97);}50%{opacity:1;transform:scale(1.03);}}
-@media(max-width:639px) {.studio-home .landing-stage{min-height:350px;max-width:400px;}.studio-home .landing-coin{width:170px;height:170px;}.studio-home .landing-float-chip{font-size:9px;padding:8px 10px;}.studio-home .landing-script{bottom:0;}.studio-planet-track{left:50%;top:51%;width:88%;height:76%}.studio-planet-jupiter{width:18px;height:18px}.studio-planet-saturn{width:14px;height:14px}}
-@media(prefers-reduced-motion:reduce) {.studio-home *,.studio-home *::after{animation:none!important;transition:none!important;}.studio-title-line,.studio-home .landing-lede,.studio-home .landing-cta-row{opacity:1;transform:none;}.studio-home .landing-coin{transform:rotate(-6deg);}.studio-planet-track{transform:translate(-50%,-50%) scaleY(.87) rotate(var(--planet-angle))}.studio-planet{transform:translate(-50%,-50%) scaleY(1.15) rotate(calc(-1 * var(--planet-angle)))}}
+@media(max-width:639px) {.studio-home .landing-stage{min-height:350px;max-width:400px;}.studio-home .landing-coin{width:170px;height:170px;}.studio-home .landing-float-chip{font-size:9px;padding:8px 10px;}.studio-home .landing-script{bottom:0;}}
+@media(prefers-reduced-motion:reduce) {.studio-home *,.studio-home *::after{animation:none!important;transition:none!important;}.studio-title-line,.studio-home .landing-lede,.studio-home .landing-cta-row{opacity:1;transform:none;}.studio-home .landing-coin{transform:rotate(-6deg);}.studio-svg-planet{display:none}}
 
 /* Agent connection kit: compact desktop action, full mobile story card. */
 .landing-llm-hero { display:none; }
