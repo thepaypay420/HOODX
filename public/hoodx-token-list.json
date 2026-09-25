@@ -1,0 +1,40 @@
+{
+  "name": "HOODX Official Vaults",
+  "timestamp": "2026-09-24T23:59:00.000Z",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "keywords": [
+    "hoodx",
+    "index",
+    "robinhood-chain"
+  ],
+  "tokens": [
+    {
+      "chainId": 4663,
+      "address": "0x531832cD20d33Ee974AFEE7BA5720b8f3F2C9292",
+      "name": "696x",
+      "symbol": "696X",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/696x.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/696x",
+        "slug": "696x"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xCb40b8D79ff6f4c5db15bD8A9692B934b52cB0b0",
+      "name": "FAANG X",
+      "symbol": "FAANGX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/faangx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/faangx",
+        "slug": "faangx"
+      }
+    }
+  ]
+}

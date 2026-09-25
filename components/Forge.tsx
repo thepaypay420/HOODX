@@ -12,11 +12,12 @@ import { CREATOR_FEE_BPS, PROTOCOL_FEE_BPS } from "@/lib/config";
 import { fmtUsd, isAddress, okUserSlug, toSlug } from "@/lib/format";
 import { lookupIndexCoin } from "@/lib/lookup";
 import { saveDraft, savePayout } from "@/lib/packs";
-import { fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
+import { DEFAULT_VAULT_WALLET_IMAGE, fileToTokenImage, saveTokenImage, walletImageUri } from "@/lib/tokenImage";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { distribute } from "@/lib/curatorPlanner";
 import { percentBps } from "@/lib/v2Allocation";
 import { atomicFactoryAbi, atomicFactoryAddress } from "@/lib/atomicFactory";
+import { addVaultAssetToWallet } from "@/lib/walletAsset";
 
 export function Forge() {
   const router = useRouter();
@@ -102,7 +103,9 @@ export function Forge() {
       }
       const tokens = coins.map((c) => c.token as Address);
       const recipient = payout && isAddress(payout) ? (payout as Address) : address;
-      const onChainImage = walletImageUri(imageUrl) || "";
+      // Every index token launches with wallet-safe image metadata. Curators can
+      // provide custom HTTPS/IPFS artwork; the HOODX mark is the stable fallback.
+      const onChainImage = walletImageUri(imageUrl) || DEFAULT_VAULT_WALLET_IMAGE;
       if (chainId !== robinhood.id) throw new Error("Switch your wallet to Robinhood Chain.");
       if (new TextEncoder().encode(onChainImage).length > 256) throw new Error("Use an HTTPS or IPFS image URL of at most 256 bytes.");
       const zeroConfig = `0x${"0".repeat(64)}`;
@@ -148,6 +151,17 @@ export function Forge() {
       }
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       if (receipt.status !== "success") throw new Error("Index creation reverted.");
+      const launchedVault = await publicClient.readContract({
+        address: atomicFactory || productionV2Factory,
+        abi: atomicFactory ? atomicFactoryAbi : v2FactoryAbi,
+        functionName: "bySlug",
+        args: [slug],
+      });
+      await addVaultAssetToWallet({
+        address: launchedVault,
+        symbol,
+        image: onChainImage || undefined,
+      });
       router.push(`/i/${slug}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message.slice(0, 220) : "mint failed");

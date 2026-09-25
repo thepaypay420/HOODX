@@ -38,7 +38,7 @@ type WalletState = {
 const Ctx = createContext<WalletState | null>(null);
 
 type Ethereum = {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  request: (args: { method: string; params?: unknown }) => Promise<unknown>;
   on?: (ev: string, fn: (...a: never[]) => void) => void;
   removeListener?: (ev: string, fn: (...a: never[]) => void) => void;
 };

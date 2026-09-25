@@ -21,7 +21,8 @@ export function walletImageUri(raw: string): string | null {
   return null;
 }
 
-export const GEN0_WALLET_IMAGE = "https://www.xhoodindex.com/curators/696_eth.jpg";
+export const GEN0_WALLET_IMAGE = "https://www.xhoodindex.com/vaults/696x.png";
+export const DEFAULT_VAULT_WALLET_IMAGE = "https://www.xhoodindex.com/icon.png";
 
 export function loadTokenImage(slug: string): string {
   const stock = stockTokenImage(slug);
