@@ -66,6 +66,34 @@ contract HoodxAtomicFactoryV3 is Ownable2Step {
         bytes32[] calldata configs,
         uint16[] calldata weights
     ) external returns (address vault, address controller) {
+        return _createAtomic(slug, p, configs, weights);
+    }
+
+    /// @notice Creates a reviewed official collection in one owner transaction.
+    /// @dev Each member still passes the same creator, route, slug and initialization checks.
+    function createAtomicBatch(
+        string[] calldata slugs,
+        HoodxIndexV2.Init[] calldata params,
+        bytes32[][] calldata configs,
+        uint16[][] calldata weights
+    ) external onlyOwner returns (address[] memory vaults, address[] memory controllers) {
+        uint256 length = slugs.length;
+        if (length == 0 || length > 12 || params.length != length || configs.length != length || weights.length != length) {
+            revert Invalid();
+        }
+        vaults = new address[](length);
+        controllers = new address[](length);
+        for (uint256 i; i < length; ++i) {
+            (vaults[i], controllers[i]) = _createAtomic(slugs[i], params[i], configs[i], weights[i]);
+        }
+    }
+
+    function _createAtomic(
+        string calldata slug,
+        HoodxIndexV2.Init calldata p,
+        bytes32[] calldata configs,
+        uint16[] calldata weights
+    ) private returns (address vault, address controller) {
         bytes32 hash = keccak256(bytes(slug));
         if (hash == keccak256("696x") || hash == keccak256("faangx") || hash == keccak256("hoodx")) {
             if (msg.sender != owner()) revert Invalid();

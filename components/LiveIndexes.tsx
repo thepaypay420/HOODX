@@ -66,12 +66,13 @@ async function loadRows(): Promise<Row[]> {
 export function LiveIndexes() {
   const [rows, setRows] = useState<Row[]>(() => Object.entries(verifiedV2Vaults).map(([slug, vault]) => ({ vault, slug, name: slug.toUpperCase(), symbol: slug.toUpperCase(), curator: "0x0000000000000000000000000000000000000000" as Address, official: true })));
   useEffect(() => { let active = true; void loadRows().then((next) => { if (active) setRows(next); }).catch(() => {}); return () => { active = false; }; }, []);
-  if (!rows.length) return null;
+  const community = rows.filter((row) => !row.official);
+  if (!community.length) return null;
   return <section className="mt-14">
-    <p className="text-[13px] text-[var(--dim)]">Live</p>
-    <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">On chain</h2>
+    <p className="text-[13px] text-[var(--dim)]">Community</p>
+    <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Built on HOODX</h2>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-      {rows.map((row) => <Link key={row.vault} href={`/i/${row.slug}`} data-testid={`live-${row.slug}`} className="holo rounded-xl p-4">
+      {community.map((row) => <Link key={row.vault} href={`/i/${row.slug}`} data-testid={`live-${row.slug}`} className="holo rounded-xl p-4">
         <div className="flex items-center justify-between gap-3"><p className="text-[12px] text-[var(--dim)]">{row.official ? "HOODX official" : "Community index"}</p><span className="text-[11px] text-[var(--cyan)]">Live on-chain</span></div>
         <div className="mt-2 flex items-center gap-3"><TokenArt slug={row.slug} size="sm" /><div className="min-w-0"><h3 className="truncate text-xl font-semibold tracking-[-0.03em]">${row.symbol}</h3><p className="truncate text-[12px] text-[var(--dim)]">{row.name}</p></div></div>
         <div className="mt-4 flex items-center justify-between border-t border-[var(--line)] pt-3 text-[12px] text-[var(--dim)]"><span>{row.assets === undefined ? "Reading on-chain value…" : `${Number(formatEther(row.assets)).toLocaleString(undefined, { maximumFractionDigits: 4 })} ETH`}</span><span>{row.curator === "0x0000000000000000000000000000000000000000" ? "Reading curator…" : `${row.curator.slice(0, 6)}…${row.curator.slice(-4)}`}</span></div>

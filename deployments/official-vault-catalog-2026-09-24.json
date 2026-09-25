@@ -1,0 +1,2077 @@
+{
+  "chainId": 4663,
+  "block": "71790487",
+  "sampledAt": "2026-09-25T00:14:19.550Z",
+  "status": "route-and-fork-lifecycle-qualified-pending-live-admission",
+  "sources": {
+    "canonicalAssets": "https://api.robinhood.com/ncw/v1/assets",
+    "routes": "https://api.dexscreener.com/token-pairs/v1/robinhood/{token}",
+    "weeklyMethod": "last six available adjusted closes from Yahoo Finance; indicative underlier backtest, not live vault return",
+    "marketCaps": "https://companiesmarketcap.com/?download=csv",
+    "etfAum": "https://companiesmarketcap.com/etfs/largest-etfs-by-marketcap/?download=csv"
+  },
+  "assumptions": {
+    "cashTargetBps": 2500,
+    "assetSleeveBps": 7500,
+    "ethReturn7dUsd": 2.1044,
+    "weighting": "square-root market cap with bounded concentration",
+    "minimumAssetBps": 750,
+    "maximumAssetBps": 2500,
+    "roundingBps": 5,
+    "initialEntryUsesTargetWeights": true
+  },
+  "limitations": [
+    "DEX display liquidity is screening data, not a safety guarantee.",
+    "Pinned routes passed buy, sell, deposit and full ETH withdrawal tests on a current fork; production admission remains a separate signed action.",
+    "Pre-launch performance is an indicative underlier model, not realized vault performance."
+  ],
+  "assets": [
+    {
+      "symbol": "MSTR",
+      "name": "Strategy Inc. • Robinhood Token",
+      "token": "0xec262a75e413fAfD0dF80480274532C79D42da09",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xec262a75e413fafd0df80480274532c79d42da09.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "MSTR",
+      "decimals": 18,
+      "return7dUsd": 28.54651811376554,
+      "route": {
+        "version": 3,
+        "pool": "0x17578C0e0D15da44f31677263114F71aE76653EA",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 595424.35,
+        "volume24hUsd": 315494.68,
+        "fee": 10000,
+        "activeLiquidity": "452366203993160053",
+        "history1800": true
+      },
+      "marketCapUsd": 64204689408,
+      "marketCapSourceSymbol": "MSTR",
+      "marketCapSourceName": "Strategy \n (MicroStrategy)",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "COIN",
+      "name": "Coinbase • Robinhood Token",
+      "token": "0x6330D8C3178a418788dF01a47479c0ce7CCF450b",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x6330d8c3178a418788df01a47479c0ce7ccf450b.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "COIN",
+      "decimals": 18,
+      "return7dUsd": 20.436454621958866,
+      "route": {
+        "version": 3,
+        "pool": "0x6707aeAc7D0e519B083219d27BB427364363183A",
+        "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+        "displayLiquidityUsd": 581218.56,
+        "volume24hUsd": 584384.63,
+        "fee": 3000,
+        "activeLiquidity": "12504158870019276434605",
+        "history1800": true
+      },
+      "marketCapUsd": 52558954496,
+      "marketCapSourceSymbol": "COIN",
+      "marketCapSourceName": "Coinbase",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "CRCL",
+      "name": "Circle Internet Group • Robinhood Token",
+      "token": "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "CRCL",
+      "decimals": 18,
+      "return7dUsd": 14.00870689866096,
+      "route": {
+        "version": 3,
+        "pool": "0x654E4143e82a5824445Ade0824351C2A9ACD95a8",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 2049670.96,
+        "volume24hUsd": 2808484.98,
+        "fee": 3000,
+        "activeLiquidity": "1790677460183083525",
+        "history1800": true
+      },
+      "marketCapUsd": 25351251968,
+      "marketCapSourceSymbol": "CRCL",
+      "marketCapSourceName": "Circle Internet Group",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "GLXY",
+      "name": "Galaxy Digital Inc. • Robinhood Token",
+      "token": "0x2D427692E928fa156ec22acfaBaFA0447C5805B7",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x2d427692e928fa156ec22acfabafa0447c5805b7.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "GLXY",
+      "decimals": 18,
+      "return7dUsd": 15.702107923925123,
+      "route": {
+        "version": 3,
+        "pool": "0xC67C2D200E0b7E5D99F4CFBede8CB09B48892f2c",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 162125.36,
+        "volume24hUsd": 177010.19,
+        "fee": 3000,
+        "activeLiquidity": "289982715616165157",
+        "history1800": true
+      },
+      "marketCapUsd": 7887111260,
+      "marketCapSourceSymbol": "7LX.F",
+      "marketCapSourceName": "Galaxy Digital Holdings",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA • Robinhood Token",
+      "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec.png",
+      "multiplier": "1.000775159164630595",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "NVDA",
+      "decimals": 18,
+      "return7dUsd": 5.427770426197465,
+      "route": {
+        "version": 3,
+        "pool": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 5640167.39,
+        "volume24hUsd": 18998262.51,
+        "fee": 500,
+        "activeLiquidity": "12094823367682307626",
+        "history1800": true
+      },
+      "marketCapUsd": 5422933082112,
+      "marketCapSourceSymbol": "NVDA",
+      "marketCapSourceName": "NVIDIA",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "AMD",
+      "name": "AMD • Robinhood Token",
+      "token": "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x86923f96303d656e4aa86d9d42d1e57ad2023fdc.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "AMD",
+      "decimals": 18,
+      "return7dUsd": 19.923899580792682,
+      "route": {
+        "version": 3,
+        "pool": "0x48D284A2A4d3DC1b3Da08231Fe44317e7e7Aa51f",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 161469.21,
+        "volume24hUsd": 128151.67,
+        "fee": 3000,
+        "activeLiquidity": "27042002161999464",
+        "history1800": true
+      },
+      "marketCapUsd": 1027251240960,
+      "marketCapSourceSymbol": "AMD",
+      "marketCapSourceName": "AMD",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "INTC",
+      "name": "Intel • Robinhood Token",
+      "token": "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xc72b96e0e48ecd4dc75e1e45396e26300bc39681.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "INTC",
+      "decimals": 18,
+      "return7dUsd": 21.32607102577262,
+      "route": {
+        "version": 3,
+        "pool": "0x2e5a92f5013a64661A49312111be2e8aBd33F56a",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 188557.2,
+        "volume24hUsd": 177004.94,
+        "fee": 3000,
+        "activeLiquidity": "35153027744483988",
+        "history1800": true
+      },
+      "marketCapUsd": 673396948992,
+      "marketCapSourceSymbol": "INTC",
+      "marketCapSourceName": "Intel",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "TSM",
+      "name": "Taiwan Semiconductor Manufacturing • Robinhood Token",
+      "token": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x58ffe4a942d3885baa22d7520691f611ef09e7aa.png",
+      "multiplier": "1.001463024159690554",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "TSM",
+      "decimals": 18,
+      "return7dUsd": 6.9065417071739965,
+      "route": {
+        "version": 3,
+        "pool": "0x07e8Ea83D4C1340774c8965125e26e12bf943bf1",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 133461.94,
+        "volume24hUsd": 14070.37,
+        "fee": 10000,
+        "activeLiquidity": "65245976622161481",
+        "history1800": true
+      },
+      "marketCapUsd": 2339877683200,
+      "marketCapSourceSymbol": "TSM",
+      "marketCapSourceName": "TSMC",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "MU",
+      "name": "Micron Technology • Robinhood Token",
+      "token": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xff080c8ce2e5feadaca0da81314ae59d232d4afd.png",
+      "multiplier": "1.000074823219171086",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "MU",
+      "decimals": 18,
+      "return7dUsd": 15.68507031509634,
+      "route": {
+        "version": 3,
+        "pool": "0xd057B1Bc54917855BBee58eAd58647f47caB35E5",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 901396.62,
+        "volume24hUsd": 577836.19,
+        "fee": 3000,
+        "activeLiquidity": "225222238711817206",
+        "history1800": true
+      },
+      "marketCapUsd": 1220343234560,
+      "marketCapSourceSymbol": "MU",
+      "marketCapSourceName": "Micron Technology",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "AVGO",
+      "name": "Broadcom • Robinhood Token",
+      "token": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x156e175dd063a8ce274c50654ef40e0032b3fbcf.png",
+      "multiplier": "1.001257318662278132",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "AVGO",
+      "decimals": 18,
+      "return7dUsd": 4.749900561403697,
+      "route": {
+        "version": 3,
+        "pool": "0x5B7C404f1d7d77F9f3885aB13d7764F8a173028c",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 154455.86,
+        "volume24hUsd": 16605.69,
+        "fee": 3000,
+        "activeLiquidity": "54138654233846221",
+        "history1800": true
+      },
+      "marketCapUsd": 1672488943616,
+      "marketCapSourceSymbol": "AVGO",
+      "marketCapSourceName": "Broadcom",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "META",
+      "name": "Meta Platforms • Robinhood Token",
+      "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xc0d6457c16cc70d6790dd43521c899c87ce02f35.png",
+      "multiplier": "1.000541459879451635",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "META",
+      "decimals": 18,
+      "return7dUsd": 10.600942844711492,
+      "route": {
+        "version": 3,
+        "pool": "0xa4BdB396a69617eb7F70E2cc1EF526f7340b1B0d",
+        "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+        "displayLiquidityUsd": 507505.5,
+        "volume24hUsd": 1624079.64,
+        "fee": 3000,
+        "activeLiquidity": "9256612332621661454589",
+        "history1800": true
+      },
+      "marketCapUsd": 1980915384320,
+      "marketCapSourceSymbol": "META",
+      "marketCapSourceName": "Meta Platforms (Facebook)",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "PLTR",
+      "name": "Palantir Technologies • Robinhood Token",
+      "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "PLTR",
+      "decimals": 18,
+      "return7dUsd": 10.009175929097825,
+      "route": {
+        "version": 3,
+        "pool": "0x851680416A4f4E1c463d45171d61ACDdBc8554c0",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 102296.24,
+        "volume24hUsd": 206806.07,
+        "fee": 3000,
+        "activeLiquidity": "184907366316153190",
+        "history1800": true
+      },
+      "marketCapUsd": 462805008384,
+      "marketCapSourceSymbol": "PLTR",
+      "marketCapSourceName": "Palantir",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "MSFT",
+      "name": "Microsoft • Robinhood Token",
+      "token": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xe93237c50d904957cf27e7b1133b510c669c2e74.png",
+      "multiplier": "1.000412952576205964",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "MSFT",
+      "decimals": 18,
+      "return7dUsd": 2.0987168674511336,
+      "route": {
+        "version": 3,
+        "pool": "0xeb60bCD1D920ad6E102690CCFC6fB488899E1510",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 811652.32,
+        "volume24hUsd": 336886.46,
+        "fee": 3000,
+        "activeLiquidity": "1109772194549655724",
+        "history1800": true
+      },
+      "marketCapUsd": 3697401921536,
+      "marketCapSourceSymbol": "MSFT",
+      "marketCapSourceName": "Microsoft",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "GOOGL",
+      "name": "Alphabet Class A • Robinhood Token",
+      "token": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3.png",
+      "multiplier": "1.000193924414112587",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "GOOGL",
+      "decimals": 18,
+      "return7dUsd": -1.469947390176063,
+      "route": {
+        "version": 3,
+        "pool": "0x34D0dC122CF9A8Eb296fC5e0D3A233625D7d19b7",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 958693.61,
+        "volume24hUsd": 3374633.16,
+        "fee": 500,
+        "activeLiquidity": "972381810221362453",
+        "history1800": true
+      },
+      "marketCapUsd": 4146070290432,
+      "marketCapSourceSymbol": "GOOG",
+      "marketCapSourceName": "Alphabet (Google)",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "GME",
+      "name": "GameStop • Robinhood Token",
+      "token": "0x1b0E319c6A659F002271B69dB8A7df2F911c153E",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x1b0e319c6a659f002271b69db8a7df2f911c153e.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "GME",
+      "decimals": 18,
+      "return7dUsd": 10.100096755858502,
+      "route": {
+        "version": 3,
+        "pool": "0xE9713f453aDB9245B19559790c96F470a18F2fDF",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 780813.76,
+        "volume24hUsd": 342270.01,
+        "fee": 10000,
+        "activeLiquidity": "2717966494071951606",
+        "history1800": true
+      },
+      "marketCapUsd": 12622615552,
+      "marketCapSourceSymbol": "GME",
+      "marketCapSourceName": "GameStop",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "AMC",
+      "name": "AMC Entertainment • Robinhood Token",
+      "token": "0x05a3d1Cd21d0C88145E82600E62e7E496e0F222B",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x05a3d1cd21d0c88145e82600e62e7e496e0f222b.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "AMC",
+      "decimals": 18,
+      "return7dUsd": 7.894729058356886,
+      "route": {
+        "version": 3,
+        "pool": "0xaA34feA710a1A737840329051D81D3B0B7C564d5",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 472878.69,
+        "volume24hUsd": 398445.33,
+        "fee": 3000,
+        "activeLiquidity": "989456851635601581",
+        "history1800": true
+      },
+      "marketCapUsd": 2597479424,
+      "marketCapSourceSymbol": "AMC",
+      "marketCapSourceName": "AMC Entertainment",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "RDDT",
+      "name": "Reddit • Robinhood Token",
+      "token": "0x05b37Fb53A299a1b874A619e1c4C404D52C36F4C",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x05b37fb53a299a1b874a619e1c4c404d52c36f4c.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "RDDT",
+      "decimals": 18,
+      "return7dUsd": -4.792337857089879,
+      "route": {
+        "version": 3,
+        "pool": "0xa8744E76aED23B05F0126335E7BD38f7935D19fe",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 1190970.16,
+        "volume24hUsd": 79921.45,
+        "fee": 10000,
+        "activeLiquidity": "1129735586504764469",
+        "history1800": true
+      },
+      "marketCapUsd": 29382795264,
+      "marketCapSourceSymbol": "RDDT",
+      "marketCapSourceName": "Reddit",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "DJT",
+      "name": "Trump Media & Technology Group • Robinhood Token",
+      "token": "0x1D11f0496982706C5e14A514D4E79F2e6BdE4516",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x1d11f0496982706c5e14a514d4e79f2e6bde4516.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "DJT",
+      "decimals": 18,
+      "return7dUsd": 5.594411423995815,
+      "route": {
+        "version": 3,
+        "pool": "0x31a89afd92F9397465649AD03226c52292fc1ae5",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 390422.24,
+        "volume24hUsd": 138767.35,
+        "fee": 10000,
+        "activeLiquidity": "1866407728066937583",
+        "history1800": true
+      },
+      "marketCapUsd": 2529265664,
+      "marketCapSourceSymbol": "DJT",
+      "marketCapSourceName": "Trump Media &amp; Technology Group",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "BB",
+      "name": "Blackberry • Robinhood Token",
+      "token": "0x48E39E56aCdbA37b09020C0b734A613C9a2f100A",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x48e39e56acdba37b09020c0b734a613c9a2f100a.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "BB",
+      "decimals": 18,
+      "return7dUsd": 9.685867289101434,
+      "route": {
+        "version": 4,
+        "pool": "0xc250650901b49785b18443a0b1bfee10b98f5c20f11988635252030e5283a288",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 65825.49,
+        "volume24hUsd": 155255.56,
+        "key": {
+          "currency0": "0x48E39E56aCdbA37b09020C0b734A613C9a2f100A",
+          "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "fee": 7100,
+          "tickSpacing": 71,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "identityMatches": true,
+        "activeLiquidity": "83937829786565548",
+        "hookFree": true
+      },
+      "marketCapUsd": 5124789248,
+      "marketCapSourceSymbol": "BB",
+      "marketCapSourceName": "BlackBerry",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "RBLX",
+      "name": "Roblox • Robinhood Token",
+      "token": "0xF0C4BF4C582cb3836e98394b1d4e7B7281101bE8",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xf0c4bf4c582cb3836e98394b1d4e7b7281101be8.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "RBLX",
+      "decimals": 18,
+      "return7dUsd": 3.28906043275059,
+      "route": {
+        "version": 3,
+        "pool": "0x6d25417718A8D6c529130a8ccC4BfBf0a18219D3",
+        "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+        "displayLiquidityUsd": 238960.28,
+        "volume24hUsd": 175695.69,
+        "fee": 3000,
+        "activeLiquidity": "3080562623121416775353",
+        "history1800": true
+      },
+      "marketCapUsd": 34882977792,
+      "marketCapSourceSymbol": "RBLX",
+      "marketCapSourceName": "Roblox",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "MRNA",
+      "name": "Moderna • Robinhood Token",
+      "token": "0x43B07D15cE533bEc5476d70C22a78a1B2B662155",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x43b07d15ce533bec5476d70c22a78a1b2b662155.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "MRNA",
+      "decimals": 18,
+      "return7dUsd": 25.058375715367088,
+      "route": {
+        "version": 3,
+        "pool": "0xA34d0667334074DF2d5BfD259e79E6B9cf1fA8Bf",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 97408.55,
+        "volume24hUsd": 69853.65,
+        "fee": 10000,
+        "activeLiquidity": "14147707436568404",
+        "history1800": true
+      },
+      "marketCapUsd": 77779140608,
+      "marketCapSourceSymbol": "MRNA",
+      "marketCapSourceName": "Moderna",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "LLY",
+      "name": "Eli Lilly • Robinhood Token",
+      "token": "0x8005d266423c7ea827372c9c864491e5786600ea",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x8005d266423c7ea827372c9c864491e5786600ea.png",
+      "multiplier": "1.000002288774375687",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "LLY",
+      "decimals": 18,
+      "return7dUsd": 1.3097327789270308,
+      "route": {
+        "version": 3,
+        "pool": "0xF212D02146a897F5F686E9d629F6A73da534324a",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 332066.32,
+        "volume24hUsd": 815246.66,
+        "fee": 500,
+        "activeLiquidity": "245639239667939598",
+        "history1800": true
+      },
+      "marketCapUsd": 1053486022656,
+      "marketCapSourceSymbol": "LLY",
+      "marketCapSourceName": "Eli Lilly",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "HIMS",
+      "name": "Hims & Hers Health • Robinhood Token",
+      "token": "0xCceE82fE024c36fA15E1005edE3E9e4787e23D09",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xccee82fe024c36fa15e1005ede3e9e4787e23d09.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "HIMS",
+      "decimals": 18,
+      "return7dUsd": 1.3928549630301434,
+      "route": {
+        "version": 3,
+        "pool": "0xC8C90d3a1c1a24967E773ac2aD0d456BA3E31F64",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 1083733.95,
+        "volume24hUsd": 1425857.14,
+        "fee": 3000,
+        "activeLiquidity": "3043362464630246491",
+        "history1800": true
+      },
+      "marketCapUsd": 6831416832,
+      "marketCapSourceSymbol": "HIMS",
+      "marketCapSourceName": "Hims &amp; Hers Health",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "PFE",
+      "name": "Pfizer • Robinhood Token",
+      "token": "0x7066A64c24e4206CD62E83bf198c1E7EB361F51e",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x7066a64c24e4206cd62e83bf198c1e7eb361f51e.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "PFE",
+      "decimals": 18,
+      "return7dUsd": 2.286755301494714,
+      "route": {
+        "version": 3,
+        "pool": "0xC7d573Fcda6D2107C97fb582ae18411F9Db32E7f",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 97661.1,
+        "volume24hUsd": 68996.51,
+        "fee": 3000,
+        "activeLiquidity": "473558531096492249",
+        "history1800": true
+      },
+      "marketCapUsd": 161927725056,
+      "marketCapSourceSymbol": "PFE",
+      "marketCapSourceName": "Pfizer",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "JNJ",
+      "name": "Johnson & Johnson • Robinhood Token",
+      "token": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x03dfbbe0ac4e7bcdafd08ed41a400326b77d8c80.png",
+      "multiplier": "1.000021490286701962",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "JNJ",
+      "decimals": 18,
+      "return7dUsd": 0.7372758722693273,
+      "route": {
+        "version": 3,
+        "pool": "0x7F0aCE18D1dCEd47063CF26e649bc8AB14D09e67",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 57819.85,
+        "volume24hUsd": 42356.54,
+        "fee": 3000,
+        "activeLiquidity": "128981245880526396",
+        "history1800": true
+      },
+      "marketCapUsd": 652311330816,
+      "marketCapSourceSymbol": "JNJ",
+      "marketCapSourceName": "Johnson & Johnson",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "SHOP",
+      "name": "Shopify • Robinhood Token",
+      "token": "0xF53F66751B1Eff985311b693531E3290F600c410",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xf53f66751b1eff985311b693531e3290f600c410.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SHOP",
+      "decimals": 18,
+      "return7dUsd": 9.525999526362327,
+      "route": {
+        "version": 4,
+        "pool": "0x8baff387b51c50e2747e85bcddf87da78fee6efb45629743e1af4dfb07ad13ee",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 44938.82,
+        "volume24hUsd": 27453.32,
+        "key": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0xF53F66751B1Eff985311b693531E3290F600c410",
+          "fee": 10000,
+          "tickSpacing": 100,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "identityMatches": true,
+        "activeLiquidity": "65713140370234546",
+        "hookFree": true
+      },
+      "marketCapUsd": 186769244160,
+      "marketCapSourceSymbol": "SHOP",
+      "marketCapSourceName": "Shopify",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "NET",
+      "name": "Cloudflare, Inc. Class A common stock • Robinhood Token",
+      "token": "0x116F00968269B7bfbaD4109cE591d6E74c0601d4",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x116f00968269b7bfbad4109ce591d6e74c0601d4.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "NET",
+      "decimals": 18,
+      "return7dUsd": 7.670438145413927,
+      "route": {
+        "version": 3,
+        "pool": "0xA9Caebb1b2fB2b954F192572b309aEf1cAf6a330",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 88274.3,
+        "volume24hUsd": 121389.22,
+        "fee": 3000,
+        "activeLiquidity": "26032303151725421",
+        "history1800": true
+      },
+      "marketCapUsd": 127768526848,
+      "marketCapSourceSymbol": "NET",
+      "marketCapSourceName": "Cloudflare",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "SNOW",
+      "name": "Snowflake • Robinhood Token",
+      "token": "0xBa0CAB75495255d0cB58E22B648bFED4ECD1F47E",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xba0cab75495255d0cb58e22b648bfed4ecd1f47e.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SNOW",
+      "decimals": 18,
+      "return7dUsd": 3.6627612142741572,
+      "route": {
+        "version": 4,
+        "pool": "0xac720e95589b7124f0affbdb9e66c7ec6e824c68eae00dc54f9e11b0b294bac8",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 94772.66,
+        "volume24hUsd": 8458.19,
+        "key": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0xBa0CAB75495255d0cB58E22B648bFED4ECD1F47E",
+          "fee": 10000,
+          "tickSpacing": 200,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "identityMatches": true,
+        "activeLiquidity": "80286757529402518",
+        "hookFree": true
+      },
+      "marketCapUsd": 117835202560,
+      "marketCapSourceSymbol": "SNOW",
+      "marketCapSourceName": "Snowflake",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "ORCL",
+      "name": "Oracle • Robinhood Token",
+      "token": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xb0992820e760d836549ba69bc7598b4af75dee03.png",
+      "multiplier": "1.002210914971013375",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "ORCL",
+      "decimals": 18,
+      "return7dUsd": 0.9779225067559238,
+      "route": {
+        "version": 4,
+        "pool": "0xc2ce4784e1e72cf0221b51b30c8aaadf6c0b12863cf03ab3687854fb7b1d850a",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 123883.31,
+        "volume24hUsd": 41272.22,
+        "key": {
+          "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "currency1": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
+          "fee": 10000,
+          "tickSpacing": 200,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "identityMatches": true,
+        "activeLiquidity": "62099778036347103",
+        "hookFree": true
+      },
+      "marketCapUsd": 421932105728,
+      "marketCapSourceSymbol": "ORCL",
+      "marketCapSourceName": "Oracle",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "GLD",
+      "name": "SPDR Gold Trust • Robinhood Token",
+      "token": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xc9a981fee1f9dec688bb123ccdecc63d0debfc4e.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "GLD",
+      "decimals": 18,
+      "return7dUsd": 0.29101308951262617,
+      "route": {
+        "version": 3,
+        "pool": "0x7A6A053eCCf1446A2633E05aA6D40D09381997ec",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 3320852.14,
+        "volume24hUsd": 799676.39,
+        "fee": 3000,
+        "activeLiquidity": "2325804448949602943",
+        "history1800": true
+      },
+      "marketCapUsd": 150879000000,
+      "marketCapSourceSymbol": "GLD",
+      "marketCapSourceName": "SPDR Gold Shares",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "SLV",
+      "name": "iShares Silver Trust • Robinhood Token",
+      "token": "0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x411efb0e7f985935daec3d4c3ebaea0d0ad7d89f.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SLV",
+      "decimals": 18,
+      "return7dUsd": 1.9456627961363493,
+      "route": {
+        "version": 3,
+        "pool": "0x8cB787e6c315D464775289BaD00FDD67d53Ecb3D",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 461483.09,
+        "volume24hUsd": 157617.42,
+        "fee": 3000,
+        "activeLiquidity": "1003060474655389176",
+        "history1800": true
+      },
+      "marketCapUsd": 31526800000,
+      "marketCapSourceSymbol": "SLV",
+      "marketCapSourceName": "iShares Silver Trust",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "USO",
+      "name": "United States Oil Fund • Robinhood Token",
+      "token": "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "USO",
+      "decimals": 18,
+      "return7dUsd": -4.700004113434253,
+      "route": {
+        "version": 3,
+        "pool": "0x02175608F1b5E6b5ed221cCFdC7Be197D111D915",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 1892491.79,
+        "volume24hUsd": 3493502.87,
+        "fee": 3000,
+        "activeLiquidity": "3210493480824726249",
+        "history1800": true
+      },
+      "marketCapUsd": 2100950000,
+      "marketCapSourceSymbol": "USO",
+      "marketCapSourceName": "United States Oil Fund, LP",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "USAR",
+      "name": "USA Rare Earth • Robinhood Token",
+      "token": "0xd917B029C761D264c6A312BBbcDA868658eF86a6",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xd917b029c761d264c6a312bbbcda868658ef86a6.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "USAR",
+      "decimals": 18,
+      "return7dUsd": 4.834433932413429,
+      "route": {
+        "version": 3,
+        "pool": "0x04391780F519B7d3ba59c9590459D76e23d225C4",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 71976.1,
+        "volume24hUsd": 53462.06,
+        "fee": 3000,
+        "activeLiquidity": "161237700879821960",
+        "history1800": true
+      },
+      "marketCapUsd": 5773540352,
+      "marketCapSourceSymbol": "USAR",
+      "marketCapSourceName": "USA Rare Earth",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "SPY",
+      "name": "SPDR S&P 500 ETF Trust • Robinhood Token",
+      "token": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x117cc2133c37b721f49de2a7a74833232b3b4c0c.png",
+      "multiplier": "1.001717991187472003",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SPY",
+      "decimals": 18,
+      "return7dUsd": 2.0776625432203932,
+      "route": {
+        "version": 3,
+        "pool": "0xDDCBBa3666f578E3F09516f21Ff85BFee859AB5e",
+        "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+        "displayLiquidityUsd": 1720212.42,
+        "volume24hUsd": 5841271.78,
+        "fee": 500,
+        "activeLiquidity": "13544649470395259245425",
+        "history1800": true
+      },
+      "marketCapUsd": 796816000000,
+      "marketCapSourceSymbol": "SPY",
+      "marketCapSourceName": "SPDR S&P 500 ETF",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "QQQ",
+      "name": "Invesco QQQ • Robinhood Token",
+      "token": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xd5f3879160bc7c32ebb4dc785f8a4f505888de68.png",
+      "multiplier": "1.000700791241405425",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "QQQ",
+      "decimals": 18,
+      "return7dUsd": 5.287550069953362,
+      "route": {
+        "version": 3,
+        "pool": "0xD60A5d14dB690B7Afad71F76B108071D7175597d",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 1343722.58,
+        "volume24hUsd": 1342636.08,
+        "fee": 500,
+        "activeLiquidity": "1374211591625028357",
+        "history1800": true
+      },
+      "marketCapUsd": 494388000000,
+      "marketCapSourceSymbol": "QQQ",
+      "marketCapSourceName": "Invesco QQQ Trust",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "SGOV",
+      "name": "iShares 0-3 Month Treasury Bond • Robinhood Token",
+      "token": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x92fd66527192e3e61d4ddd13322aa222de86f9b5.png",
+      "multiplier": "1.005101770003214918",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SGOV",
+      "decimals": 18,
+      "return7dUsd": 0.06961680029804462,
+      "route": {
+        "version": 3,
+        "pool": "0xfAb520051f96F4D2a32c22B6a3dD7fFfdf231bFe",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 2374479.07,
+        "volume24hUsd": 139938.86,
+        "fee": 3000,
+        "activeLiquidity": "63761099386694884890",
+        "history1800": true
+      },
+      "marketCapUsd": 111185000000,
+      "marketCapSourceSymbol": "SGOV",
+      "marketCapSourceName": "iShares 0-3 Month Treasury Bond ETF",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "VTI",
+      "name": "Vanguard Morningstar Total Stock Market ETF • Robinhood Token",
+      "token": "0x0594134DF3f171a354D9C85eBD65b7A6148F6D09",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x0594134df3f171a354d9c85ebd65b7a6148f6d09.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "VTI",
+      "decimals": 18,
+      "return7dUsd": 1.4456642799536734,
+      "route": {
+        "version": 3,
+        "pool": "0xb78DD1A97fa544c65d7D1f12453EcaAF1e05c36d",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 71688.24,
+        "volume24hUsd": 1032.96,
+        "fee": 10000,
+        "activeLiquidity": "146793029958898708",
+        "history1800": true
+      },
+      "marketCapUsd": 690148000000,
+      "marketCapSourceSymbol": "VTI",
+      "marketCapSourceName": "Vanguard Total Stock Market Index Fund ETF Shares",
+      "marketCapMeasure": "ETF AUM"
+    },
+    {
+      "symbol": "SPCX",
+      "name": "Space Exploration Technologies Corp. Class A Common Stock • Robinhood Token",
+      "token": "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "SPCX",
+      "decimals": 18,
+      "return7dUsd": -1.6702042622666946,
+      "route": {
+        "version": 3,
+        "pool": "0xc61284332117c3FB23A2A56cceFFD07F7aF60029",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 2581900.03,
+        "volume24hUsd": 13890084.68,
+        "fee": 500,
+        "activeLiquidity": "6365504001428305074",
+        "history1800": true
+      },
+      "marketCapUsd": 1950174937088,
+      "marketCapSourceSymbol": "SPCX",
+      "marketCapSourceName": "SpaceX",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "TSLA",
+      "name": "Tesla • Robinhood Token",
+      "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x322f0929c4625ed5bad873c95208d54e1c003b2d.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "TSLA",
+      "decimals": 18,
+      "return7dUsd": 6.155051768154007,
+      "route": {
+        "version": 3,
+        "pool": "0xf4ACdAEEB7022862A763C9B1B885e11191c889E3",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 628666.9,
+        "volume24hUsd": 328495.83,
+        "fee": 3000,
+        "activeLiquidity": "392626357595785280",
+        "history1800": true
+      },
+      "marketCapUsd": 1492691976192,
+      "marketCapSourceSymbol": "TSLA",
+      "marketCapSourceName": "Tesla",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "BA",
+      "name": "Boeing • Robinhood Token",
+      "token": "0x4D21483a44Bf67a86b77E3dA301411880797D452",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x4d21483a44bf67a86b77e3da301411880797d452.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "BA",
+      "decimals": 18,
+      "return7dUsd": -1.0051564520702438,
+      "route": {
+        "version": 3,
+        "pool": "0xc6517047b189c72D3bAa9eF37D1d28F27a63638a",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 118355.78,
+        "volume24hUsd": 103342.45,
+        "fee": 3000,
+        "activeLiquidity": "185030830831129822",
+        "history1800": true
+      },
+      "marketCapUsd": 155431174144,
+      "marketCapSourceSymbol": "BA",
+      "marketCapSourceName": "Boeing",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "LMT",
+      "name": "Lockheed • Robinhood Token",
+      "token": "0x329fcACEb9AD6F9580DD5F643fed0646900D043c",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x329fcaceb9ad6f9580dd5f643fed0646900d043c.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "LMT",
+      "decimals": 18,
+      "return7dUsd": -1.6458645325300614,
+      "route": {
+        "version": 4,
+        "pool": "0x0b118d2480ebdb11374d3ad2ea1b935e9458a9f704222004b3b8de07bc98f1eb",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 203590.48,
+        "volume24hUsd": 50440.6,
+        "key": {
+          "currency0": "0x329fcACEb9AD6F9580DD5F643fed0646900D043c",
+          "currency1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "fee": 5000,
+          "tickSpacing": 50,
+          "hooks": "0x0000000000000000000000000000000000000000"
+        },
+        "identityMatches": true,
+        "activeLiquidity": "233677957171767299",
+        "hookFree": true
+      },
+      "marketCapUsd": 120865120256,
+      "marketCapSourceSymbol": "LMT",
+      "marketCapSourceName": "Lockheed Martin",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "RCAT",
+      "name": "Red Cat • Robinhood Token",
+      "token": "0xFDE6b5d9BB419B10C23268c74e369AbFF39C0460",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xfde6b5d9bb419b10c23268c74e369abff39c0460.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "RCAT",
+      "decimals": 18,
+      "return7dUsd": -7.117683615747062,
+      "route": {
+        "version": 3,
+        "pool": "0x64710a70839585Af718e1B1FAEf9E7f1665F1116",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 45475.94,
+        "volume24hUsd": 9671.6,
+        "fee": 10000,
+        "activeLiquidity": "111349610841828179",
+        "history1800": true
+      },
+      "marketCapUsd": 1038457728,
+      "marketCapSourceSymbol": "RCAT",
+      "marketCapSourceName": "Red Cat Holdings",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "AAPL",
+      "name": "Apple • Robinhood Token",
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xaf3d76f1834a1d425780943c99ea8a608f8a93f9.png",
+      "multiplier": "1.000566080061092436",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "AAPL",
+      "decimals": 18,
+      "return7dUsd": 1.386837129080054,
+      "route": {
+        "version": 3,
+        "pool": "0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 455978.89,
+        "volume24hUsd": 1587663.84,
+        "fee": 500,
+        "activeLiquidity": "890691447517136968",
+        "history1800": true
+      },
+      "marketCapUsd": 4902477103104,
+      "marketCapSourceSymbol": "AAPL",
+      "marketCapSourceName": "Apple",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "AMZN",
+      "name": "Amazon • Robinhood Token",
+      "token": "0x12f190a9F9d7D37a250758b26824B97CE941bF54",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x12f190a9f9d7d37a250758b26824b97ce941bf54.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "AMZN",
+      "decimals": 18,
+      "return7dUsd": 1.3457462466425874,
+      "route": {
+        "version": 3,
+        "pool": "0x8AC92DA74AB5F3b1d024Dc1943Ad7e15Dc4179Ef",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 858314.12,
+        "volume24hUsd": 290584.52,
+        "fee": 3000,
+        "activeLiquidity": "1514971926594314252",
+        "history1800": true
+      },
+      "marketCapUsd": 2689890779136,
+      "marketCapSourceSymbol": "AMZN",
+      "marketCapSourceName": "Amazon",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "COST",
+      "name": "Costco • Robinhood Token",
+      "token": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x4ea005168d7f09a7a0ba9d1def21a479950e44c2.png",
+      "multiplier": "1.000612040296259656",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "COST",
+      "decimals": 18,
+      "return7dUsd": 0.3716687981176303,
+      "route": {
+        "version": 3,
+        "pool": "0x0a2121A50A09eD0796ae81F9c53fF9398355a398",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 617306.46,
+        "volume24hUsd": 365161.4,
+        "fee": 3000,
+        "activeLiquidity": "395726245936460006",
+        "history1800": true
+      },
+      "marketCapUsd": 397569884160,
+      "marketCapSourceSymbol": "COST",
+      "marketCapSourceName": "Costco",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "NFLX",
+      "name": "Netflix • Robinhood Token",
+      "token": "0xE0444EF8BF4eD74f74FD73686e2ddF4C1c5591E8",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "NFLX",
+      "decimals": 18,
+      "return7dUsd": -6.6090862579843535,
+      "route": {
+        "version": 3,
+        "pool": "0x59895C0302F41aEaa129D2fa2442CEc01E7eF45E",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 203633.57,
+        "volume24hUsd": 85377.25,
+        "fee": 3000,
+        "activeLiquidity": "265504445594619069",
+        "history1800": true
+      },
+      "marketCapUsd": 298637754368,
+      "marketCapSourceSymbol": "NFLX",
+      "marketCapSourceName": "Netflix",
+      "marketCapMeasure": "company market cap"
+    },
+    {
+      "symbol": "LULU",
+      "name": "Lululemon • Robinhood Token",
+      "token": "0x4e62068525Ab11FE768e29dfD00ef909B9803016",
+      "logoUrl": "https://cdn.robinhood.com/ncw_assets/logos/0x4e62068525ab11fe768e29dfd00ef909b9803016.png",
+      "multiplier": "1.000000000000000000",
+      "capabilities": {
+        "market": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "extended": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        },
+        "overnight": {
+          "whole": "TRADING_STATUS_TRADABLE",
+          "fractional": "TRADING_STATUS_TRADABLE"
+        }
+      },
+      "onchainSymbol": "LULU",
+      "decimals": 18,
+      "return7dUsd": 6.563862473451532,
+      "route": {
+        "version": 3,
+        "pool": "0x0F4227D27082B3BCA6818381b9ea6460275e49f4",
+        "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "displayLiquidityUsd": 134163.66,
+        "volume24hUsd": 94297.36,
+        "fee": 3000,
+        "activeLiquidity": "191483562793035096",
+        "history1800": true
+      },
+      "marketCapUsd": 11252567040,
+      "marketCapSourceSymbol": "LULU",
+      "marketCapSourceName": "lululemon athletica",
+      "marketCapMeasure": "company market cap"
+    }
+  ],
+  "vaults": [
+    {
+      "slug": "chainfin",
+      "symbol": "CHAINX",
+      "assets": [
+        "MSTR",
+        "COIN",
+        "CRCL",
+        "GLXY"
+      ],
+      "weightsBps": [
+        2500,
+        2500,
+        1750,
+        750
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 16.401024985491155,
+      "model7dEth": 14.001967579743035,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "siliconx",
+      "symbol": "CHIPX",
+      "assets": [
+        "NVDA",
+        "AMD",
+        "INTC",
+        "TSM",
+        "MU",
+        "AVGO"
+      ],
+      "weightsBps": [
+        2160,
+        940,
+        760,
+        1415,
+        1025,
+        1200
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 8.347109796842823,
+      "model7dEth": 6.114045816676672,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "aistack",
+      "symbol": "AIX",
+      "assets": [
+        "NVDA",
+        "META",
+        "PLTR",
+        "MSFT",
+        "GOOGL"
+      ],
+      "weightsBps": [
+        2045,
+        1235,
+        750,
+        1685,
+        1785
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 3.7872318711806767,
+      "model7dEth": 1.6481482396259794,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "retailx",
+      "symbol": "CULTX",
+      "assets": [
+        "GME",
+        "AMC",
+        "RDDT",
+        "DJT",
+        "BB",
+        "RBLX"
+      ],
+      "weightsBps": [
+        1255,
+        750,
+        1910,
+        750,
+        750,
+        2085
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 3.3022202952436337,
+      "model7dEth": 1.1731328867743418,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "healthx",
+      "symbol": "HLTHX",
+      "assets": [
+        "MRNA",
+        "LLY",
+        "HIMS",
+        "PFE",
+        "JNJ"
+      ],
+      "weightsBps": [
+        1000,
+        2500,
+        750,
+        750,
+        2500
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 3.8196605041751623,
+      "model7dEth": 1.6799085095012156,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "cloudx",
+      "symbol": "CLOUDX",
+      "assets": [
+        "SHOP",
+        "NET",
+        "SNOW",
+        "ORCL",
+        "MSFT"
+      ],
+      "weightsBps": [
+        1400,
+        750,
+        750,
+        2100,
+        2500
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 3.4397728289488594,
+      "model7dEth": 1.3078504246132772,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "realx",
+      "symbol": "REALX",
+      "assets": [
+        "GLD",
+        "SLV",
+        "USO",
+        "USAR"
+      ],
+      "weightsBps": [
+        2500,
+        2500,
+        750,
+        1750
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 1.5787946010770249,
+      "model7dEth": -0.5147725258881963,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "corex",
+      "symbol": "COREX",
+      "assets": [
+        "SPY",
+        "QQQ",
+        "SGOV",
+        "GLD",
+        "VTI"
+      ],
+      "weightsBps": [
+        2125,
+        1675,
+        795,
+        925,
+        1980
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 2.1719627009859614,
+      "model7dEth": 0.06617021498187547,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "frontierx",
+      "symbol": "EDGE",
+      "assets": [
+        "SPCX",
+        "TSLA",
+        "BA",
+        "LMT",
+        "RCAT",
+        "USAR"
+      ],
+      "weightsBps": [
+        2500,
+        2000,
+        750,
+        750,
+        750,
+        750
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 0.9694889879690824,
+      "model7dEth": -1.1115201813349018,
+      "weighting": "square-root market cap"
+    },
+    {
+      "slug": "consumerx",
+      "symbol": "ICONX",
+      "assets": [
+        "AAPL",
+        "AMZN",
+        "COST",
+        "META",
+        "NFLX",
+        "LULU"
+      ],
+      "weightsBps": [
+        2500,
+        1480,
+        750,
+        1270,
+        750,
+        750
+      ],
+      "cashTargetBps": 2500,
+      "model7dUsd": 2.4427828440703365,
+      "model7dEth": 0.33140867981236166,
+      "weighting": "square-root market cap"
+    }
+  ]
+}
