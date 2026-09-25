@@ -9,13 +9,16 @@ export const proportionalAbi = parseAbi([
   'function freeBalance(address) view returns(uint256)', 'function balanceOf(address) view returns(uint256)',
   'function planNonce() view returns(uint256)', 'function creatorFeeBps() view returns(uint16)',
   'function protocolFeeBps() view returns(uint16)', 'function paused() view returns(bool)',
+  'function owner() view returns(address)', 'function creator() view returns(address)',
+  'function minFirstDeposit() view returns(uint256)', 'function targetBps(address) view returns(uint16)',
   'function quoteBuys(uint256[] budgets) payable', 'function quoteWithdrawal(uint256 shares)',
   'error BuyQuote(uint256[] outputs)', 'error WithdrawalQuote(uint256 cash,uint256[] outputs)', 'error QuoteUnavailable()',
+  'function bootstrap(uint256[] floors,uint256 nonce,uint256 deadline) payable returns(uint256 shares)',
   'function depositExactShares(uint256 shares,uint256[] budgets,uint256[] floors,uint256 nonce,uint256 deadline) payable returns(uint256 refund)',
   'function withdraw(uint256 shares,uint256 minEthOut,uint256[] floors,uint256 nonce,uint256 deadline) returns(uint256 net)',
 ]);
 const MODE = keccak256(toHex('HOODX_PROPORTIONAL_V1'));
-export type ProportionalState = ProportionalSnapshot & {vault: Address; account: Address; tokens: readonly Address[]; walletShares: bigint; paused: boolean};
+export type ProportionalState = ProportionalSnapshot & {vault: Address; account: Address; tokens: readonly Address[]; walletShares: bigint; paused: boolean; owner: Address; creator: Address; minFirstDeposit: bigint; targetBps: readonly number[]};
 
 export async function readProportionalState(client: PublicClient, vault: Address, account: Address): Promise<ProportionalState> {
   if (await client.getChainId() !== 4663) throw new Error('Switch to Robinhood Chain');
@@ -23,16 +26,21 @@ export async function readProportionalState(client: PublicClient, vault: Address
   const common = {address: vault, abi: proportionalAbi, blockNumber: block.number} as const;
   const mode = await client.readContract({...common, functionName: 'accountingMode'});
   if (mode !== MODE) throw new Error('This vault does not support proportional deposits');
-  const [tokens, weth, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused] = await Promise.all([
+  const [tokens, weth, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused, owner, creator, minFirstDeposit] = await Promise.all([
     client.readContract({...common, functionName:'constituents'}), client.readContract({...common, functionName:'weth'}),
     client.readContract({...common, functionName:'totalSupply'}), client.readContract({...common, functionName:'planNonce'}),
     client.readContract({...common, functionName:'creatorFeeBps'}), client.readContract({...common, functionName:'protocolFeeBps'}),
     client.readContract({...common, functionName:'balanceOf', args:[account]}), client.readContract({...common, functionName:'paused'}),
+    client.readContract({...common, functionName:'owner'}), client.readContract({...common, functionName:'creator'}),
+    client.readContract({...common, functionName:'minFirstDeposit'}),
   ]);
   if (tokens.length < 2 || tokens.length > 24 || new Set(tokens.map(t => t.toLowerCase())).size !== tokens.length) throw new Error('Invalid basket');
-  const balances = await Promise.all([...tokens, weth, zeroAddress].map(token => client.readContract({...common, functionName:'freeBalance', args:[token]})));
+  const [balances,targetBps] = await Promise.all([
+    Promise.all([...tokens, weth, zeroAddress].map(token => client.readContract({...common, functionName:'freeBalance', args:[token]}))),
+    Promise.all(tokens.map(token => client.readContract({...common, functionName:'targetBps', args:[token]}))),
+  ]);
   return {vault, account, tokens, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused,
-    balances:balances.slice(0,tokens.length), cash:balances[tokens.length]+balances[tokens.length+1], blockNumber:block.number, timestamp:Number(block.timestamp)};
+    owner,creator,minFirstDeposit,targetBps,balances:balances.slice(0,tokens.length), cash:balances[tokens.length]+balances[tokens.length+1], blockNumber:block.number, timestamp:Number(block.timestamp)};
 }
 
 /** Decode only the typed, deliberately reverted result from the verified candidate ABI. */
@@ -84,6 +92,26 @@ export async function quoteProportionalDeposit(client: PublicClient, state: Prop
   }, now);
 }
 
+/** The official curator's first deposit establishes the configured smart-weight basket. */
+export async function quoteProportionalBootstrap(client: PublicClient, state: ProportionalState, maxEth: bigint, now = () => Math.floor(Date.now()/1000)) {
+  const at=now();
+  if(state.paused||state.supply!==0n||maxEth<state.minFirstDeposit||at<state.timestamp||at-state.timestamp>60)throw new Error('First deposit is unavailable');
+  if(state.account.toLowerCase()!==state.owner.toLowerCase()&&state.account.toLowerCase()!==state.creator.toLowerCase())throw new Error('Only the curator can make the first deposit');
+  const feeBps=state.creatorFeeBps+state.protocolFeeBps;
+  if(feeBps<0||feeBps>100||state.targetBps.length!==state.tokens.length)throw new Error('Invalid vault configuration');
+  const net=maxEth*BigInt(10000-feeBps)/10000n;
+  const budgets=state.targetBps.map(weight=>net*BigInt(weight)/10000n);
+  if(budgets.some((budget,index)=>(state.targetBps[index]>0&&budget<100000000000000n)||(state.targetBps[index]===0&&budget!==0n)))throw new Error('First deposit is too small for this basket');
+  let outputs:readonly bigint[]=[];
+  try{
+    await client.simulateContract({address:state.vault,abi:proportionalAbi,account:state.account,functionName:'quoteBuys',args:[budgets],value:budgets.reduce((sum,value)=>sum+value,0n),blockNumber:state.blockNumber});
+  }catch(error){const [quoted]=quoteResult(error,'BuyQuote');if(Array.isArray(quoted)&&quoted.every(value=>typeof value==='bigint'))outputs=quoted as bigint[];else throw error;}
+  if(outputs.length!==budgets.length||outputs.some((output,index)=>budgets[index]>0n&&output<=0n))throw new Error('Incomplete first-deposit quote');
+  const floors=outputs.map((output,index)=>budgets[index]===0n?0n:output*9700n/10000n);
+  if(floors.some((floor,index)=>budgets[index]>0n&&floor===0n))throw new Error('First-deposit output is too small');
+  return {bootstrap:true as const,shares:net*25n,budgets,floors,nonce:state.nonce,deadline:BigInt(at+180),value:maxEth,grossSpent:maxEth,fee:maxEth-net,ethRefund:0n,surplusTokens:outputs.map(()=>0n)};
+}
+
 export async function quoteProportionalWithdrawal(client: PublicClient, state: ProportionalState, shares: bigint, now = () => Math.floor(Date.now()/1000)) {
   if (shares <= 0n || shares > state.walletShares) throw new Error('Invalid withdrawal amount');
   try {
@@ -105,6 +133,10 @@ export async function quoteProportionalWithdrawal(client: PublicClient, state: P
 export async function prepareProportionalDeposit(client: PublicClient, state: ProportionalState, plan: Awaited<ReturnType<typeof quoteProportionalDeposit>>) {
   await validateFresh(client,state,plan.deadline);
   return client.simulateContract({address:state.vault, abi:proportionalAbi, account:state.account, functionName:'depositExactShares', args:[plan.shares,plan.budgets,plan.floors,plan.nonce,plan.deadline], value:plan.value});
+}
+export async function prepareProportionalBootstrap(client: PublicClient,state:ProportionalState,plan:Awaited<ReturnType<typeof quoteProportionalBootstrap>>){
+  await validateFresh(client,state,plan.deadline);
+  return client.simulateContract({address:state.vault,abi:proportionalAbi,account:state.account,functionName:'bootstrap',args:[plan.floors,plan.nonce,plan.deadline],value:plan.value});
 }
 export async function prepareProportionalWithdrawal(client: PublicClient, state: ProportionalState, plan: Awaited<ReturnType<typeof quoteProportionalWithdrawal>>) {
   await validateFresh(client,state,plan.deadline);
