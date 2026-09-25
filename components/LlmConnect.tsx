@@ -2,13 +2,25 @@
 
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
-import { BrandMark } from "@/components/BrandMark";
 import { HOODX_AGENT_PROMPT, HOODX_AGENT_REFERENCE } from "@/lib/llmConnect";
+
+function RobotFace() {
+  return (
+    <svg className="llm-robot" viewBox="0 0 48 48" fill="none">
+      <path className="llm-robot-antenna" d="M24 12V7M24 7l5-3" />
+      <circle className="llm-robot-signal" cx="30" cy="3.5" r="2.5" />
+      <rect x="8" y="13" width="32" height="25" rx="9" />
+      <path d="M8 24H4M44 24h-4M16 32c5 3 11 3 16 0" />
+      <circle className="llm-robot-eye eye-left" cx="18" cy="24" r="2.7" />
+      <circle className="llm-robot-eye eye-right" cx="30" cy="24" r="2.7" />
+    </svg>
+  );
+}
 
 function AgentGlyph() {
   return (
     <div className="llm-agent-glyph" aria-hidden="true">
-      <span className="llm-agent-core"><BrandMark size={42} /></span>
+      <span className="llm-agent-core"><RobotFace /></span>
       <span className="llm-agent-orbit orbit-one"><i /></span>
       <span className="llm-agent-orbit orbit-two"><i /></span>
       <span className="llm-agent-packet packet-one">READ</span>
