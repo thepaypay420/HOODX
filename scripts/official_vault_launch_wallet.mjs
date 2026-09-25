@@ -77,6 +77,7 @@ const params = catalog.vaults.map((vault, index) => ({
 }));
 const vaultConfigs = catalog.vaults.map((vault) => vault.assets.map((symbol) => ids[assetIndex.get(symbol)]));
 const vaultWeights = catalog.vaults.map((vault) => vault.weightsBps);
+const vaultBatches = [[0, 2], [2, 4], [4, 6], [6, 8], [8, 10]];
 
 function save() { fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + "\n"); }
 function addressReady(value) { return value && /^0x[0-9a-fA-F]{40}$/.test(value); }
@@ -91,7 +92,10 @@ const stages = [
   { label: "Admit official routes 21–40", signer: ADMIN },
   { label: "Admit official routes 41–47", signer: ADMIN },
   { label: "Deploy official atomic factory", signer: ADMIN },
-  { label: "Create ten empty smart-weight vaults", signer: ADMIN },
+  ...vaultBatches.map(([start, end]) => ({
+    label: `Create empty smart-weight vaults ${start + 1}–${end}`,
+    signer: ADMIN,
+  })),
 ];
 
 async function done(index) {
@@ -107,9 +111,10 @@ async function done(index) {
     return (await Promise.all(ids.slice(start, end).map(policyConfigExists))).every(Boolean);
   }
   if (index === 6) return hasCode(state.factory);
-  if (index === 7) {
+  if (index >= 7 && index < stages.length) {
     if (!await hasCode(state.factory)) return false;
-    const vaults = await Promise.all(slugs.map((slug) => client.readContract({ address: state.factory, abi: factoryAbi, functionName: "bySlug", args: [slug] })));
+    const [start, end] = vaultBatches[index - 7];
+    const vaults = await Promise.all(slugs.slice(start, end).map((slug) => client.readContract({ address: state.factory, abi: factoryAbi, functionName: "bySlug", args: [slug] })));
     return vaults.every((vault) => vault !== "0x0000000000000000000000000000000000000000");
   }
   return false;
@@ -125,9 +130,10 @@ async function transaction(index) {
     return { from: ADMIN, to: state.routeAdmin, data: encodeFunctionData({ abi: adminAbi, functionName: "approveRoutes", args: [subset.map((route) => route.token), subset.map((route) => route.buy), subset.map((route) => route.sell), evidence] }), value: 0n };
   }
   if (index === 6) return { from: ADMIN, data: encodeDeployData({ abi: factoryArtifact.abi, bytecode: factoryArtifact.bytecode.object, args: [ADMIN, ADMIN, IMPLEMENTATION, ids] }), value: 0n };
-  if (index === 7) {
+  if (index >= 7 && index < stages.length) {
     if (!await hasCode(state.factory)) throw new Error("Atomic factory has not been deployed");
-    return { from: ADMIN, to: state.factory, data: encodeFunctionData({ abi: factoryAbi, functionName: "createAtomicBatch", args: [slugs, params, vaultConfigs, vaultWeights] }), value: 0n };
+    const [start, end] = vaultBatches[index - 7];
+    return { from: ADMIN, to: state.factory, data: encodeFunctionData({ abi: factoryAbi, functionName: "createAtomicBatch", args: [slugs.slice(start, end), params.slice(start, end), vaultConfigs.slice(start, end), vaultWeights.slice(start, end)] }), value: 0n };
   }
   throw new Error("Unknown stage");
 }
@@ -155,14 +161,14 @@ async function verifyReceipt(index, hash) {
   state.transactions[index] = hash;
   save();
   if (!await done(index)) throw new Error("Receipt succeeded but the expected state was not found");
-  if (index === 7) {
+  if (index === stages.length - 1) {
     state.vaults = Object.fromEntries(await Promise.all(slugs.map(async (slug) => [slug, await client.readContract({ address: state.factory, abi: factoryAbi, functionName: "bySlug", args: [slug] })])));
     save();
   }
   return { confirmed: true, label: stages[index].label, feeEth: formatEther(receipt.gasUsed * receipt.effectiveGasPrice) };
 }
 
-const html = `<!doctype html><meta charset="utf-8"><title>HOODX · Launch official collections</title><style>body{background:#07110f;color:#ecf8f5;font:17px system-ui;max-width:900px;margin:32px auto;padding:24px}h1{font-size:38px}button{background:#50d5c8;border:0;border-radius:12px;padding:16px 20px;margin:6px 0;font:700 17px system-ui;cursor:pointer}button:disabled{opacity:.35}.step{border:1px solid #24423d;border-radius:16px;padding:12px 16px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:16px}.step small{color:#9cb6b0}pre{white-space:pre-wrap;overflow-wrap:anywhere;color:#b8d0ca;border:1px solid #24423d;border-radius:14px;padding:16px}.tag{color:#50d5c8;text-transform:uppercase;font-size:12px;letter-spacing:.12em}</style><p class="tag">Reviewed official launch</p><h1>Ten collections. Smart from entry one.</h1><p>Square-root market-cap weights, 25% WETH reserve, 47 fork-tested routes, and the official curator wallet on every vault. The vaults launch empty.</p><p>Eight gas-only setup transactions. No token approvals, swaps, deposits, seed funds, or investor asset movement.</p><p><button id="connect">Connect Rabby</button></p>${stages.map((stage,index)=>`<div class="step"><div><strong>${index + 1}. ${stage.label}</strong><br><small>${stage.signer === ADMIN ? "Official curator" : "Infrastructure deployer"}</small></div><button id="stage-${index}" disabled>Sign</button></div>`).join("")}<pre id="status">Open this page in Brave. Connect Rabby and review each exact transaction.</pre><script src="/wallet.js"></script>`;
+const html = `<!doctype html><meta charset="utf-8"><title>HOODX · Launch official collections</title><style>body{background:#07110f;color:#ecf8f5;font:17px system-ui;max-width:900px;margin:32px auto;padding:24px}h1{font-size:38px}button{background:#50d5c8;border:0;border-radius:12px;padding:16px 20px;margin:6px 0;font:700 17px system-ui;cursor:pointer}button:disabled{opacity:.35}.step{border:1px solid #24423d;border-radius:16px;padding:12px 16px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:16px}.step small{color:#9cb6b0}pre{white-space:pre-wrap;overflow-wrap:anywhere;color:#b8d0ca;border:1px solid #24423d;border-radius:14px;padding:16px}.tag{color:#50d5c8;text-transform:uppercase;font-size:12px;letter-spacing:.12em}</style><p class="tag">Reviewed official launch</p><h1>Ten collections. Smart from entry one.</h1><p>Square-root market-cap weights, 25% WETH reserve, 47 fork-tested routes, and the official curator wallet on every vault. The vaults launch empty.</p><p>Seven gas-only setup transactions followed by five bounded two-vault creation transactions. No token approvals, swaps, deposits, seed funds, or investor asset movement.</p><p><button id="connect">Connect Rabby</button></p>${stages.map((stage,index)=>`<div class="step"><div><strong>${index + 1}. ${stage.label}</strong><br><small>${stage.signer === ADMIN ? "Official curator" : "Infrastructure deployer"}</small></div><button id="stage-${index}" disabled>Sign</button></div>`).join("")}<pre id="status">Open this page in Brave. Connect Rabby and review each exact transaction.</pre><script src="/wallet.js"></script>`;
 const js = `let provider;const providers=[];const status=document.querySelector('#status');const stages=${JSON.stringify(stages)};window.addEventListener('eip6963:announceProvider',e=>{if(!providers.some(p=>p.info.uuid===e.detail.info.uuid))providers.push(e.detail)});const request=()=>window.dispatchEvent(new Event('eip6963:requestProvider'));request();const wait=ms=>new Promise(r=>setTimeout(r,ms));async function next(){let found=stages.length;for(let i=0;i<stages.length;i++){const r=await fetch('/prepare?i='+i),p=await r.json();if(!p.done){found=i;break}}stages.forEach((_,i)=>document.querySelector('#stage-'+i).disabled=i!==found);return found}document.querySelector('#connect').onclick=async()=>{try{status.textContent='Finding Rabby…';request();await wait(350);provider=providers.find(p=>/rabby/i.test(p.info.name))?.provider||window.rabby||window.ethereum?.providers?.find(p=>p.isRabby)||(window.ethereum?.isRabby?window.ethereum:null);if(!provider)throw Error('Rabby not detected. Enable Rabby for this Brave tab and retry.');await provider.request({method:'eth_requestAccounts'});if(BigInt(await provider.request({method:'eth_chainId'}))!==4663n)await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x1237'}]});const i=await next();status.textContent=i<stages.length?'Connected. Step '+(i+1)+' is ready. Rabby may ask you to select the signer shown beside that step.':'Launch already complete.'}catch(e){status.textContent=e.message||String(e)}};for(let i=0;i<stages.length;i++)document.querySelector('#stage-'+i).onclick=async()=>{let submitted=false;const button=document.querySelector('#stage-'+i);button.disabled=true;try{if(!provider)throw Error('Connect Rabby first');const p=await(await fetch('/prepare?i='+i)).json();if(p.done){await next();status.textContent=p.label+' already verified.';return}const accounts=await provider.request({method:'eth_accounts'});if(accounts[0]?.toLowerCase()!==p.signer.toLowerCase())throw Error('Switch Rabby to '+p.signer+' for this step, then reconnect.');status.textContent='Review '+p.label+' in Rabby. Value: 0 ETH. Maximum gas reserve: '+p.cap+' ETH.';const hash=await provider.request({method:'eth_sendTransaction',params:[p.tx]});submitted=true;status.textContent='Submitted '+hash+' — verifying…';for(let n=0;n<120;n++){try{const v=await(await fetch('/receipt?i='+i+'&hash='+hash)).json();if(v.confirmed){status.textContent=v.label+' confirmed.\\n'+hash+'\\nGas paid: '+v.feeEth+' ETH';await next();return}if(v.error)throw Error(v.error)}catch(e){if(!/not found|pending/i.test(e.message||''))throw e}await wait(3000)}status.textContent='Still pending: '+hash+'. Do not submit again.'}catch(e){button.disabled=submitted;status.textContent=(e.message||String(e))+(submitted?'\\nCheck the receipt before retrying.':'\\nNo transaction was submitted.')}};`;
 
 // Fail before opening the signer if the generated browser bundle is invalid.
