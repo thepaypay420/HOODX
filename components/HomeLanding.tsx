@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { LandingMotion } from "@/components/LandingMotion";
+import { LlmConnectButton, LlmConnectMobileCard } from "@/components/LlmConnect";
 
 /** Right-side chips zigzag on x (in/out) so labels don’t stack on one column. */
 const FLOAT_TOKENS = [
@@ -67,6 +68,7 @@ export function HomeLanding() {
               <Link href="#create" className="landing-btn-secondary">
                 Create an index
               </Link>
+              <LlmConnectButton className="landing-btn-secondary landing-llm-hero" />
             </div>
           </div>
 
@@ -148,6 +150,7 @@ export function HomeLanding() {
               Create an index <span aria-hidden>→</span>
             </span>
           </Link>
+          <LlmConnectMobileCard />
         </div>
       </section>
 
