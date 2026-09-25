@@ -7,7 +7,7 @@ describe("HOODX agent connection reference", () => {
     expect(HOODX_LLM_REFERENCE).toContain("0x29349c79863b58e7ab470865f7c6df0b31dc7c17");
   });
   it("covers holder, curator, atomic, and launch actions", () => {
-    for (const action of ["depositExactShares", "emergencyRedeemInKind", "atomicRebalance", "createAtomic", "addConstituent", "claim(address token,address recipient)"]) expect(HOODX_LLM_REFERENCE).toContain(action);
+    for (const action of ["depositExactShares", "emergencyRedeemInKind", "atomicRebalance", "createAtomic", "addConstituent", "claim(address token,address recipient)", "proposeCurator", "releaseVault", "setImageURI", "transferFrom"]) expect(HOODX_LLM_REFERENCE).toContain(action);
   });
   it("requires simulation and keeps signing with the user", () => {
     expect(HOODX_AGENT_PROMPT).toContain("simulate");

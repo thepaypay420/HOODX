@@ -100,11 +100,16 @@ quoteBuys and quoteWithdrawal deliberately revert with typed BuyQuote and Withdr
 
 Factory reads:
 bySlug(string) returns (address)
+all(uint256) returns (address)
 implementation() returns (address)
+treasury() returns (address)
+routePolicy() returns (address)
 configIdByToken(address) returns (bytes32)
 
 Factory write:
 createAtomic(string slug,(address curator,address creator,address recipient,address treasury,string name,string symbol,uint16 creatorFee,uint16 protocolFee,uint16 cashBps,uint256 firstDeposit,string imageURI) init,bytes32[] configs,uint16[] weights) returns (address vault,address controller)
+
+Protocol-owner-only factory administration also exposes registerConfigs(bytes32[] ids) and createAtomicBatch(...). Ordinary users and agents must use createAtomic and must never assume access to either owner-only function.
 
 Launch rules:
 - slug must be unused and normalized for the HOODX UI.
@@ -122,6 +127,8 @@ Launch rules:
 
 controller.vault() returns (address)
 controller.curator() returns (address)
+controller.pendingCurator() returns (address)
+controller.constituentsHash() returns (bytes32)
 setPaused(bool value)
 setTargets(uint16 cashBps,uint16[] weights)
 addConstituent(bytes32 configId)
@@ -129,8 +136,15 @@ replaceConfig(bytes32 configId)
 removeConstituent(address token)
 emergencyUnwind(address token,uint256 amount,uint256 minOut,uint256 deadline) returns (uint256)
 quoteRebalance(address token,bool buy,uint256 amount) payable
+probeRebalance(address token,bool buy,uint256 amount,uint256 funding) returns (uint256 output)
+probeExistingRebalance(address token,bool buy,uint256 amount)
 rebalance(address token,bool buy,uint256 amount,uint256 minOut,uint256 minCashAfter,uint256 nonce,uint256 deadline)
 atomicRebalance(uint16 cashBps,uint16[] weights,(address token,bool buy,uint256 amount,uint256 minOut)[] steps,bytes32 expectedConstituentsHash,uint256 expectedPlanNonce,uint256 minCashAfter,uint256 deadline)
+setImageURI(string uri)
+proposeCurator(address next)
+acceptCurator()
+releaseVault(address nextOwner)
+cancelVaultRelease()
 
 Curator combinations:
 - set a new cash reserve and all asset weights without trading.
@@ -140,10 +154,15 @@ Curator combinations:
 - harvest gains: sell only reconciled profitable sleeves into WETH.
 - build a custom atomic plan with any valid sequence of sells followed by buys.
 - pause/resume deposits, emergency-unwind one token, add an approved constituent, replace its route config, or remove a zero-balance constituent.
+- update the index image, hand curation to a nominated wallet with propose/accept, or deliberately release vault ownership after showing the user the permanent control change.
 
 For atomicRebalance, quote every leg at the same block. Order sells before buys. Use the exact current constituent order for weights. expectedConstituentsHash is keccak256(abi.encode(constituents)); expectedPlanNonce must equal the vault's latest planNonce. Set per-leg minimums, a final minCashAfter, and a short deadline. Simulate the complete atomic call. One failed route, stale nonce, changed basket, missed minimum, missed cash floor, or deadline failure must revert the entire action.
 
 Only controller.curator() may use curator writes. Curators cannot transfer arbitrary user assets or bypass holder redemption rights. Do not call implementation, executor, policy, route-admin, ownership-transfer, or rescue functions unless the user explicitly requests protocol administration and the deployed role is independently verified.
+
+## Standard share-token and metadata actions
+
+All vault shares support balanceOf, allowance, approve, transfer and transferFrom. Use contractURI() for ERC-7572 metadata where available. A creator may update their allowed recipient and fee only through the deployed creator-economics function and within the protocol cap; discover and simulate the exact ABI for the vault version before offering that action. Never confuse share approval with approval of a basket constituent.
 
 ## Required transaction checklist
 
