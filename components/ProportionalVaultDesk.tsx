@@ -7,6 +7,8 @@ import {verifyProportionalRelease,type ProportionalRelease} from '@/lib/proporti
 import {readProportionalState,quoteProportionalDeposit,quoteProportionalWithdrawal,prepareProportionalDeposit,prepareProportionalWithdrawal,type ProportionalState} from '@/lib/proportionalQuote';
 import {rebalanceControllerV3Abi,resolveVaultAuthority} from '@/lib/rebalanceController';
 import {ProportionalCuratorDesk} from '@/components/ProportionalCuratorDesk';
+import {TokenArt} from '@/components/TokenArt';
+import {vaultMeta} from '@/lib/vaults';
 const managementAbi=parseAbi(['function owner() view returns(address)','function weth() view returns(address)','function claimable(address,address) view returns(uint256)','function claim(address,address)','function emergencyRedeemInKind(uint256,address)','function setPaused(bool)']);
 type JoinPlan=Awaited<ReturnType<typeof quoteProportionalDeposit>>;
 type ExitPlan=Awaited<ReturnType<typeof quoteProportionalWithdrawal>>;
@@ -16,6 +18,7 @@ const display=(value:bigint)=>Number(formatEther(value)).toLocaleString(undefine
 const button='rounded-xl border border-teal-400/30 px-4 py-3 text-sm disabled:opacity-40';
 
 export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
+  const meta=vaultMeta(release.slug);
   const {address,walletClient,chainId,connect,switchToRobinhood}=useWallet();
   const [state,setState]=useState<ProportionalState>();
   const [assets,setAssets]=useState<Asset[]>([]);
@@ -31,6 +34,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const lock=useRef(false),generation=useRef(0);
   const current=state?.account===(address??zeroAddress)&&state.vault===release.vault?state:undefined;
   const selected=current?current.walletShares*BigInt(percent)/100n:0n;
+  const heldCount=current?.balances.filter(balance=>balance>0n).length??0;
   const recipient=isAddress(recoveryRecipient)?getAddress(recoveryRecipient):undefined;
   const ready=review&&review.state.account===address&&review.state.vault===release.vault&&clock<=review.state.timestamp+60;
   const pendingKey=`hoodx:4663:pending:${release.vault.toLowerCase()}:${address?.toLowerCase()??'disconnected'}`;
@@ -127,7 +131,13 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
     finally{lock.current=false;setBusy(false);}
   }
   return <div className="space-y-6">
-    <section className="vault-actions desk"><p className="vault-eyebrow">696X / BROADER BASKET</p><h1 className="text-4xl">The whole conviction list.</h1><p>Deposit ETH for a proportional share of every asset held. Unspent ETH and extra tokens remain yours.</p><a href="/i/696x" className="text-sm underline">Your original 696X vault remains available →</a></section>
+    <section className="vault-actions desk">
+      <div className="flex items-center gap-5">
+        {meta&&<TokenArt slug={meta.slug} src={meta.image} alt={`${meta.symbol} vault`} priority/>}
+        <div><p className="vault-eyebrow">{meta?`${meta.symbol} / ROBINHOOD CHAIN`:'HOODX / ROBINHOOD CHAIN'}</p><h1 className="text-4xl">{meta?.name??'Community basket'}</h1><p>{meta?.thesis??'Deposit ETH for a proportional share of every asset held.'}</p></div>
+      </div>
+      {meta&&<p className="pt-4 text-sm opacity-70">Smart market-cap weights · {meta.cashTarget}% WETH target · {meta.assets.length} assets</p>}
+    </section>
     <section className="vault-actions desk"><div className="flex flex-wrap justify-between gap-4"><div><p className="vault-eyebrow">YOUR POSITION</p><h2 className="text-2xl">Join. Hold. Exit.</h2></div><div className="text-sm">Wallet: {display(ethBalance)} ETH<br/>{current?display(current.walletShares):'—'} shares</div></div>
       {!address?<button className={button} onClick={()=>void connect()}>Connect wallet</button>:chainId!==4663?<button className={button} onClick={()=>void switchToRobinhood()}>Switch to Robinhood Chain</button>:null}
       <div className="grid gap-5 py-6 md:grid-cols-2">
@@ -142,6 +152,6 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       <button className={button} disabled={busy} onClick={()=>void refresh().catch(()=>setMessage('Unable to refresh balances.'))}>Refresh balances</button>
       <p className="py-3 text-sm" role="status" aria-live="polite">{busy?'Working… ':''}{message}</p>{hash&&<a className="text-sm underline" href={`https://robin.etherscan.io/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}{pending&&<button className={button} disabled={busy} onClick={()=>void checkReceipt()}>Check pending transaction</button>}
     </section>
-    <section className="vault-actions desk"><p className="vault-eyebrow">THE BASKET</p><h2 className="text-2xl">{current?.balances.filter(b=>b>0n).length??'—'} assets held</h2><div className="divide-y divide-white/10">{assets.filter(a=>a.balance>0n).map((a,i)=><div key={a.token} className="flex justify-between gap-4 py-3 text-sm"><span className="truncate">{i+1}. {a.symbol}</span><span>{a.decimals===undefined?'—':Number(formatUnits(a.balance,a.decimals)).toLocaleString(undefined,{maximumFractionDigits:5})}</span></div>)}</div><p className="pt-3 text-sm opacity-70">{current?display(current.cash):'—'} ETH / WETH cash reserve. Reserved claims are excluded.</p><details className="pt-4 text-sm"><summary>How this basket works</summary><p className="py-3">Deposits copy the assets actually held, rather than target allocations. Curators choose and rebalance the basket using quoted trading limits. This successor does not use an independent price oracle to limit curator trades. Market losses, route failures and token restrictions remain possible.</p></details></section>
+    <section className="vault-actions desk"><p className="vault-eyebrow">THE BASKET</p><h2 className="text-2xl">{current?(heldCount>0?`${heldCount} assets held`:`${meta?.assets.length??current.tokens.length} assets configured`):'Loading basket…'}</h2>{heldCount>0?<div className="divide-y divide-white/10">{assets.filter(a=>a.balance>0n).map((a,i)=><div key={a.token} className="flex justify-between gap-4 py-3 text-sm"><span className="truncate">{i+1}. {a.symbol}</span><span>{a.decimals===undefined?'—':Number(formatUnits(a.balance,a.decimals)).toLocaleString(undefined,{maximumFractionDigits:5})}</span></div>)}</div>:meta&&<div className="flex flex-wrap gap-2 py-4">{meta.assets.map(asset=><span key={asset} className="rounded-full border border-white/10 px-3 py-2 text-sm">{asset}</span>)}</div>}<p className="pt-3 text-sm opacity-70">{current?display(current.cash):'—'} ETH / WETH cash reserve. Reserved claims are excluded.</p><details className="pt-4 text-sm"><summary>How this basket works</summary><p className="py-3">Deposits follow the assets actually held. Curators rebalance with protected, atomic routes. Market losses, route failures and token restrictions remain possible.</p></details></section>
   </div>;
 }
