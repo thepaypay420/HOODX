@@ -7,6 +7,7 @@ import { TokenArt } from "@/components/TokenArt";
 import { publicClient } from "@/lib/wallet";
 import { productionV2Factory, verifiedV2Vaults } from "@/lib/v2";
 import { atomicFactoryAddress, atomicFactoryStartBlock } from "@/lib/atomicFactory";
+import { LIVE_OFFICIAL_VAULTS } from "@/lib/vaults";
 
 const identityAbi = parseAbi([
   "function name() view returns (string)",
@@ -46,7 +47,7 @@ async function loadRows(): Promise<Row[]> {
   const createdByAddress = new Map(created.flatMap((log) => log.args.vault && log.args.slug && log.args.curator ? [[log.args.vault.toLowerCase(), { slug: log.args.slug, curator: log.args.curator }] as const] : []));
   const addresses = [...new Set(created.flatMap((log) => log.args.vault ? [log.args.vault] : []))];
   if (!addresses.length) throw new Error("Factory history unavailable");
-  const officialByAddress = new Map(Object.entries(verifiedV2Vaults).map(([slug, address]) => [address.toLowerCase(), slug]));
+  const officialByAddress = new Map(Object.entries({ ...verifiedV2Vaults, ...LIVE_OFFICIAL_VAULTS }).map(([slug, address]) => [address.toLowerCase(), slug]));
   const rows = await Promise.all(addresses.map(async (vault) => {
     const createdIdentity = createdByAddress.get(vault.toLowerCase());
     const [name, symbol, curator, assets] = await Promise.all([

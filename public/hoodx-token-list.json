@@ -1,9 +1,9 @@
 {
   "name": "HOODX Official Vaults",
-  "timestamp": "2026-09-24T23:59:00.000Z",
+  "timestamp": "2026-09-25T03:15:50.788Z",
   "version": {
     "major": 1,
-    "minor": 0,
+    "minor": 1,
     "patch": 0
   },
   "keywords": [
@@ -34,6 +34,126 @@
       "extensions": {
         "website": "https://www.xhoodindex.com/i/faangx",
         "slug": "faangx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xF77fb0e5cE0682B8D8064e754cF99d7F3EC643d2",
+      "name": "On-chain Finance",
+      "symbol": "CHAINX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/chainx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/chainfin",
+        "slug": "chainfin"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xb70dD77B61ad2d2D70d14d1e74591fd173f2FBBE",
+      "name": "Silicon Stack",
+      "symbol": "CHIPX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/chipx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/siliconx",
+        "slug": "siliconx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0x5B0a7D7e596fc7E627716945644B3cEe738c82E7",
+      "name": "AI Stack",
+      "symbol": "AIX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/aix.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/aistack",
+        "slug": "aistack"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xB8C2F95238A9076E73D60273C22724360a7A052b",
+      "name": "Retail Pulse",
+      "symbol": "CULTX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/cultx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/retailx",
+        "slug": "retailx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0x8b53F25665e0fE8A860A1120A0A08d0007570166",
+      "name": "Health Frontier",
+      "symbol": "HLTHX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/hlthx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/healthx",
+        "slug": "healthx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0x649be0E6396778Cf58cd5bdfD347cbe83508a3ec",
+      "name": "Cloud Layer",
+      "symbol": "CLOUDX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/cloudx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/cloudx",
+        "slug": "cloudx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0x1a396BfE4f79b1d12a27524217C4DED677BEF1b9",
+      "name": "Real Assets",
+      "symbol": "REALX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/realx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/realx",
+        "slug": "realx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xD6b3ba50aFf684df5B53bAD77CA697F64F076789",
+      "name": "Core and Carry",
+      "symbol": "COREX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/corex.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/corex",
+        "slug": "corex"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xaabFc490682AD036b421458F10E14dFc105E3AdC",
+      "name": "Frontier Systems",
+      "symbol": "EDGE",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/edge.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/frontierx",
+        "slug": "frontierx"
+      }
+    },
+    {
+      "chainId": 4663,
+      "address": "0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15",
+      "name": "Consumer Icons",
+      "symbol": "ICONX",
+      "decimals": 18,
+      "logoURI": "https://www.xhoodindex.com/vaults/iconx.png",
+      "extensions": {
+        "website": "https://www.xhoodindex.com/i/consumerx",
+        "slug": "consumerx"
       }
     }
   ]

@@ -1,0 +1,44 @@
+{
+  "chainId": 4663,
+  "status": "live-empty-verified",
+  "curator": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+  "routeAdmin": "0x49bae4eb7b7a7567f67a600ca8752027e9d12fa3",
+  "factory": "0x29349c79863b58e7ab470865f7c6df0b31dc7c17",
+  "factoryStartBlock": 71893730,
+  "transactions": [
+    "0x617c53fb73b287ab959fa9fae5f29258d82267d06615095220a85f5623d962e0",
+    "0xadd63f0ff7e971534b4d8b8b916300cdd15726a7ae656bd2820a2ae1b32d5c63",
+    "0xf68783f579b2d3bb2ca589a430dd42c4114eb980c90f50ff0f6ae9b40db13d52",
+    "0x97cfcc7e9cee8b19f5f772eaf52483ac9d30a1407edd8a3c13ec2f159df847ea",
+    "0x68f92d72ab56c517654eca321f0c181baea02917825ba211a5edfd91da3abecc",
+    "0x8aa5c117e0803922b80505b8bcf7804c169b1298c67de509f85cc8936dd7288e",
+    "0xf2eb5254235136b31fdb3cd48076b5b9c79a1eb83507086a691f39abc1bee421",
+    "0xce5052a9a0681be3260aa112761957495cf828ab5e64e4fdb794d1260dc2f73a",
+    "0x9d2fbfdf525487a7d3efd2af386c240103bfe6c7409999ba47b4a7baa621fbaf",
+    "0x84b6490dfdf5cbb8c78ebc58a496a9c440643d9b88d468bb74fa6727da2afa49",
+    "0x8c0dcd06e1498f7fb67a7e4dd482fb8c424dcc41587d0e313647864cb5922b53",
+    "0x029e7fcbb061e1e0637c9e29d92f0661ec8e88377d1d7d97d3c6942a1fbdf261"
+  ],
+  "vaults": {
+    "chainfin": { "symbol": "CHAINX", "vault": "0xF77fb0e5cE0682B8D8064e754cF99d7F3EC643d2", "controller": "0xE5937bf01F103Dc3A381B3624F6DBEf2DE1f4aeB" },
+    "siliconx": { "symbol": "CHIPX", "vault": "0xb70dD77B61ad2d2D70d14d1e74591fd173f2FBBE", "controller": "0x3A70ef29aF553613F2FAe19c6BFfb93a17730806" },
+    "aistack": { "symbol": "AIX", "vault": "0x5B0a7D7e596fc7E627716945644B3cEe738c82E7", "controller": "0xdF118f5140F2F7ea71A14E9Dc232c85779146159" },
+    "retailx": { "symbol": "CULTX", "vault": "0xB8C2F95238A9076E73D60273C22724360a7A052b", "controller": "0xD00858b006e6cC8542b774355c78eA0863263535" },
+    "healthx": { "symbol": "HLTHX", "vault": "0x8b53F25665e0fE8A860A1120A0A08d0007570166", "controller": "0x864619CEa25f1C96Cd29277791F7AB044ea064CA" },
+    "cloudx": { "symbol": "CLOUDX", "vault": "0x649be0E6396778Cf58cd5bdfD347cbe83508a3ec", "controller": "0x772dF006B40693D834bc29714a56Ff40eE1BE13c" },
+    "realx": { "symbol": "REALX", "vault": "0x1a396BfE4f79b1d12a27524217C4DED677BEF1b9", "controller": "0x6f7e7078551A48897076a6394eFF0fB4ce0B909d" },
+    "corex": { "symbol": "COREX", "vault": "0xD6b3ba50aFf684df5B53bAD77CA697F64F076789", "controller": "0x560807D879a94be7b2f734C667b6944244b45cA1" },
+    "frontierx": { "symbol": "EDGE", "vault": "0xaabFc490682AD036b421458F10E14dFc105E3AdC", "controller": "0xfabb838417CAB614b6fEc493d216fC2e24bec0ad" },
+    "consumerx": { "symbol": "ICONX", "vault": "0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15", "controller": "0xa7c50B5a9Eb0B6D9B6e844EE2c97cc6aD7268CE6" }
+  },
+  "verification": {
+    "emptySupply": true,
+    "factoryMappings": true,
+    "controllerOwnership": true,
+    "officialCurator": true,
+    "roles": true,
+    "smartWeights": true,
+    "cashTargets": true,
+    "walletImages": true
+  }
+}
