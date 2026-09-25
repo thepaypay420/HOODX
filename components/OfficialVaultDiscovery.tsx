@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { BrandMark } from "@/components/BrandMark";
 import { TokenArt } from "@/components/TokenArt";
 import { FEATURED_VAULTS, type VaultCategory, type VaultMeta } from "@/lib/vaults";
 import { publicClient } from "@/lib/wallet";
@@ -28,6 +29,13 @@ function Card({ vault, featured = false, liveReturn }: { vault: VaultMeta; featu
     <div className="discovery-card-foot"><div className="discovery-tokens" aria-label={`${vault.assets.length} assets: ${vault.assets.join(", ")}`}>{vault.assets.slice(0, 6).map((asset) => <b key={asset}>{asset.slice(0, 2)}</b>)}</div><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
   </Link>;
 }
+function CreateCard() {
+  return <Link href="/create" className="discovery-card is-create" style={{"--vault-accent":"#4fd7cb"} as CSSProperties}>
+    <div className="discovery-card-top"><span className="discovery-create-mark"><BrandMark size={48}/></span><span className="discovery-create-note">Your idea</span></div>
+    <div className="discovery-card-copy"><p>Create · Curate</p><h3>Make your own index</h3><span>Choose 2–24 assets, set your weights and launch one token for your thesis.</span></div>
+    <div className="discovery-card-foot"><span className="discovery-create-caption">Built on Robinhood Chain</span><span>Start building <i aria-hidden>→</i></span></div>
+  </Link>;
+}
 
 export function OfficialVaultDiscovery() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["value"]>("all");
@@ -46,7 +54,7 @@ export function OfficialVaultDiscovery() {
     <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a point of view.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
     <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div>
     {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
-    <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}</div>
+    <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>
     <p className="discovery-footnote">696X shows live per-share return since launch. FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
   </section>;
 }
