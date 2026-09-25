@@ -1699,7 +1699,7 @@ body {
   .landing-path-agents { display:block; min-height:280px; background:radial-gradient(circle at 78% 42%,rgba(79,215,203,.13),transparent 35%),linear-gradient(165deg,rgba(20,30,32,.98),rgba(8,14,16,.99)); }
   .landing-path-agents .landing-path-copy { max-width:18ch; }
 }
-.llm-agent-glyph { position:absolute; right:10px; bottom:24px; width:138px; height:118px; pointer-events:none; }
+.llm-agent-glyph { position:absolute; right:10px; bottom:110px; width:138px; height:118px; pointer-events:none; }
 .llm-agent-core { position:absolute; left:43px; top:34px; z-index:3; display:grid; place-items:center; width:54px; height:54px; border-radius:50%; background:radial-gradient(circle at 35% 25%,#8cf2db55,transparent 45%),#102e2e; border:1px solid #68dbc755; box-shadow:0 0 35px #44d9c52a,inset 0 1px #ffffff20; animation:llm-core 4.5s ease-in-out infinite; }
 .llm-robot { width:36px; height:36px; overflow:visible; stroke:#84ecda; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 8px #5be0cb55); }
 .llm-robot rect { fill:#0c2022; }
