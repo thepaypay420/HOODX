@@ -3,7 +3,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { formatEther, formatUnits, parseAbi, type Address } from "viem";
 import { HoldingsBoard } from "@/components/HoldingsBoard";
-import { TokenArt } from "@/components/TokenArt";
+import { TokenArt } from "@/components/TokenArt";
+
+import { VaultRecentActivity } from "@/components/VaultRecentActivity";
 import { publicClient } from "@/lib/wallet";
 
 import { addVaultAssetToWallet } from "@/lib/walletAsset";
@@ -54,7 +56,10 @@ export function VaultOverview({ vault, slug, shares, assets, quoteTime, valuatio
   return <>
     <div className="vault-breadcrumb"><a href="/explore">Explore indexes</a><span>/</span><span>{slug.toUpperCase()}</span></div>
     <header className="vault-hero desk">
-      <div className="vault-identity"><TokenArt slug={slug} priority /><div><p className="vault-eyebrow">HOODX / ROBINHOOD CHAIN</p><h1>{slug.toUpperCase()}<span>INDEX</span></h1><p className="vault-subtitle">{slug === "696x" ? "The culture. The conviction. One basket." : slug === "faangx" ? "Big tech conviction, held together." : "Your community. One shared basket."}</p></div></div>
+      <div className="vault-hero-main">
+        <div className="vault-identity"><TokenArt slug={slug} priority /><div><p className="vault-eyebrow">HOODX / ROBINHOOD CHAIN</p><h1>{slug.toUpperCase()}<span>INDEX</span></h1><p className="vault-subtitle">{slug === "696x" ? "The culture. The conviction. One basket." : slug === "faangx" ? "Big tech conviction, held together." : "Your community. One shared basket."}</p></div></div>
+        <VaultRecentActivity slug={slug} />
+      </div>
       <div className="vault-hero-footer"><span className="vault-tag"><i />{paused === undefined ? "Reading vault" : paused ? "Deposits paused" : "Open for deposits"}</span><a href={`https://robin.etherscan.io/address/${vault}`} target="_blank" rel="noreferrer">View contract {short(vault)} ↗</a><button type="button" onClick={async()=>{if(!current)return;setWalletLabel(await addVaultAssetToWallet({address:vault,symbol:current.symbol,image:current.image})?"Added to wallet ✓":"Wallet will index it automatically");}}>{walletLabel}</button><a href="#wallet-actions">Your wallet ↓</a>{curator && <a href="#curator-workspace">Manage vault ↓</a>}<span className="vault-version">V2</span></div>
     </header>
     <div className="vault-stats">

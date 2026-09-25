@@ -8,6 +8,7 @@ import {proportionalAbi,readProportionalState,quoteProportionalBootstrap,quotePr
 import {rebalanceControllerV3Abi,resolveVaultAuthority} from '@/lib/rebalanceController';
 import {ProportionalCuratorDesk} from '@/components/ProportionalCuratorDesk';
 import {TokenArt} from '@/components/TokenArt';
+import {VaultRecentActivity} from '@/components/VaultRecentActivity';
 import {vaultMeta} from '@/lib/vaults';
 const managementAbi=parseAbi(['function owner() view returns(address)','function weth() view returns(address)','function claimable(address,address) view returns(uint256)','function claim(address,address)','function emergencyRedeemInKind(uint256,address)','function setPaused(bool)']);
 type JoinPlan=Awaited<ReturnType<typeof quoteProportionalDeposit>>|Awaited<ReturnType<typeof quoteProportionalBootstrap>>;
@@ -147,9 +148,12 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   }
   return <div className="space-y-6">
     <section className="vault-actions desk">
+      <div className="vault-hero-main">
       <div className="flex items-center gap-5">
         {meta&&<TokenArt slug={meta.slug} src={meta.image} alt={`${meta.symbol} vault`} priority/>}
         <div><p className="vault-eyebrow">{meta?`${meta.symbol} / ROBINHOOD CHAIN`:'HOODX / ROBINHOOD CHAIN'}</p><h1 className="text-4xl">{meta?.name??'Community basket'}</h1><p>{meta?.thesis??'Deposit ETH for a proportional share of every asset held.'}</p></div>
+      </div>
+      <VaultRecentActivity slug={release.slug}/>
       </div>
       {meta&&<p className="pt-4 text-sm opacity-70">Smart market-cap weights · {meta.cashTarget}% WETH target · {meta.assets.length} assets</p>}
     </section>
