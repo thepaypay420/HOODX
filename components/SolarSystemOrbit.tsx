@@ -23,8 +23,9 @@ function positionAt(angle: number) {
 
 function PlanetArt({ name }: { name: PlanetName }) {
   const id = name.toLowerCase();
+  const viewBox = name === "Saturn" ? "-11 -7 22 14" : name === "Uranus" ? "-7 -7 14 14" : name === "Jupiter" ? "-6 -6 12 12" : "-5 -5 10 10";
   return (
-    <svg viewBox="-11 -11 22 22" aria-hidden>
+    <svg viewBox={viewBox} aria-hidden>
       <defs>
         <radialGradient id={`${id}-shade`} cx="28%" cy="20%">
           <stop stopColor={name === "Earth" ? "#a8e8ff" : name === "Mars" ? "#ffc093" : name === "Neptune" ? "#8fc5ff" : name === "Uranus" ? "#e5ffff" : name === "Mercury" ? "#dad6cb" : "#fff0c2"}/>
