@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { BrandMark } from "@/components/BrandMark";
 import { LandingMotion } from "@/components/LandingMotion";
 import { LlmConnectButton, LlmConnectMobileCard } from "@/components/LlmConnect";
@@ -12,6 +13,17 @@ const FLOAT_TOKENS = [
   { label: "HOOKR", right: "2%", y: "50%", delay: "1.6s" },
   { label: "696X", x: "62%", y: "62%", delay: "1s" },
 ];
+
+const SOLAR_PLANETS = [
+  { name: "Mercury", className: "mercury", delay: "-1.5s", angle: "14deg" },
+  { name: "Venus", className: "venus", delay: "-6.2s", angle: "58deg" },
+  { name: "Earth", className: "earth", delay: "-10.9s", angle: "101deg" },
+  { name: "Mars", className: "mars", delay: "-15.6s", angle: "145deg" },
+  { name: "Jupiter", className: "jupiter", delay: "-20.3s", angle: "188deg" },
+  { name: "Saturn", className: "saturn", delay: "-25s", angle: "232deg" },
+  { name: "Uranus", className: "uranus", delay: "-29.7s", angle: "275deg" },
+  { name: "Neptune", className: "neptune", delay: "-34.4s", angle: "319deg" },
+] as const;
 
 const VALUE_PROPS = [
   {
@@ -76,6 +88,21 @@ export function HomeLanding() {
             <div className="landing-stage-glow" aria-hidden />
             <div className="landing-orbit landing-orbit-a" aria-hidden />
             <div className="landing-orbit landing-orbit-b" aria-hidden /><div className="studio-orbit-third" aria-hidden />
+            <div className="studio-solar-system" aria-hidden>
+              {SOLAR_PLANETS.map((planet) => (
+                <span
+                  key={planet.name}
+                  className="studio-planet-track"
+                  style={{ animationDelay: planet.delay, "--planet-angle": planet.angle } as CSSProperties}
+                >
+                  <i
+                    className={`studio-planet studio-planet-${planet.className}`}
+                    style={{ animationDelay: planet.delay }}
+                    title={planet.name}
+                  />
+                </span>
+              ))}
+            </div>
             {FLOAT_TOKENS.map((t) => (
               <div
                 key={t.label}
