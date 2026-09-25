@@ -12,6 +12,17 @@ describe("V2 withdrawal quote handling", () => {
     expect(protectedWithdrawalMinimum(1000n, 1n).floor).toBe(990n);
   });
 
+  it("decodes the executor floor failure and does not retry it", async () => {
+    expect(classifyWithdrawalQuoteFailure(new Error('reverted with signature: "0x2c5211c6"'))).toBe("protected-floor");
+    expect(withdrawalQuoteFailureMessage("protected-floor")).toContain("protected on-chain sale floor");
+    let attempts = 0;
+    await expect(quoteWithdrawalWithRetry(async () => {
+      attempts++;
+      throw new Error("0x2c5211c6");
+    }, async () => {})).rejects.toThrow("0x2c5211c6");
+    expect(attempts).toBe(1);
+  });
+
   it("recovers from a transient route rehearsal failure", async () => {
     let attempts = 0;
     const waits: number[] = [];

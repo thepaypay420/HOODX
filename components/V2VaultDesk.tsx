@@ -104,7 +104,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         if (!active) return;
         const failure = classifyWithdrawalQuoteFailure(error);
         setWithdrawalFailure(failure);
-        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : "Route unavailable · try again");
+        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
       }).finally(() => { if (active) setQuoting(false); });
     }, 400);
     return () => { active = false; clearTimeout(timer); };
@@ -180,7 +180,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       if (action === "withdraw") {
         const failure = classifyWithdrawalQuoteFailure(error);
         setWithdrawalFailure(failure);
-        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : "Route unavailable · try again");
+        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
         setMessage("Withdrawal was not submitted. Your shares are unchanged.");
       } else {
         setMessage(error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : "Transaction failed.");

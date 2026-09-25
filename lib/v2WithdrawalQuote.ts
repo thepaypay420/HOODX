@@ -1,6 +1,6 @@
 import { BaseError, formatEther } from "viem";
 
-export type WithdrawalQuoteFailure = "invalid-reference" | "route-failure";
+export type WithdrawalQuoteFailure = "invalid-reference" | "protected-floor" | "route-failure";
 
 function errorText(error: unknown) {
   if (error instanceof BaseError) {
@@ -13,14 +13,17 @@ function errorText(error: unknown) {
 
 export function classifyWithdrawalQuoteFailure(error: unknown): WithdrawalQuoteFailure {
   const text = errorText(error).toLowerCase();
-  return text.includes("0x5f41ff92") || text.includes("invalidreference")
-    ? "invalid-reference"
-    : "route-failure";
+  if (text.includes("0x5f41ff92") || text.includes("invalidreference")) return "invalid-reference";
+  if (text.includes("0x2c5211c6") || text.includes("invalidamount")) return "protected-floor";
+  return "route-failure";
 }
 
 export function withdrawalQuoteFailureMessage(failure: WithdrawalQuoteFailure) {
   if (failure === "invalid-reference") {
     return "ETH withdrawal is temporarily unavailable because a required on-chain price reference is invalid. Changing the minimum cannot fix it. Redeem as tokens and cash below; that path does not use prices or swaps.";
+  }
+  if (failure === "protected-floor") {
+    return "A held asset cannot currently clear its protected on-chain sale floor. No transaction was submitted. Redeem as tokens and cash below while the route is repaired.";
   }
   return "The complete ETH withdrawal could not be simulated. Refresh once; if it still fails, redeem as tokens and cash so your shares are not trapped behind a sale route.";
 }
@@ -46,7 +49,7 @@ export async function quoteWithdrawalWithRetry(
       return await simulate();
     } catch (error) {
       lastError = error;
-      if (classifyWithdrawalQuoteFailure(error) === "invalid-reference" || attempt === 2) throw error;
+      if (classifyWithdrawalQuoteFailure(error) !== "route-failure" || attempt === 2) throw error;
       await wait(500 * (attempt + 1));
     }
   }

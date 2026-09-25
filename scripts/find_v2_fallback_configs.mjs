@@ -5,6 +5,7 @@ if (!rpc) throw new Error("ROBINHOOD_RPC_URL is required");
 const client = createPublicClient({ transport: http(rpc, { timeout: 30_000, retryCount: 2 }) });
 const policy = "0x8e36fb11545fc1683f35a079d3f9f1a715dbec70";
 const assets = {
+  AI: "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
   AMZN: "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
   GOOGL: "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
 };
