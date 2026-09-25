@@ -4,36 +4,43 @@ import { applyReceiptTransfers, emptyBasis, type BasisPosition, type VaultTransf
 
 const abi=parseAbi(["function constituents() view returns(address[])","function weth() view returns(address)","function balanceOf(address) view returns(uint256)"]);
 const transferEvent=parseAbiItem("event Transfer(address indexed from,address indexed to,uint256 value)");
+const MAX_INDEXER_PAGES=12;
+const MAX_RPC_CHUNKS=48;
 type SavedAsset={token:Address;symbol:string;decimals:number;units:string;costWei:string;realizedPnlWei:string;acquiredUnits:string;acquiredCostWei:string;disposedUnits:string;proceedsWei:string;complete:boolean};
 type SavedVault={slug:string;vault:Address;weth:Address;indexedBlock:string;transactionCount:number;assets:SavedAsset[]};
 type BlockscoutTransfer={block_number:number;transaction_hash:string;log_index:number;from:{hash:string};to:{hash:string};token:{address_hash:string};total:{value:string}};
 
 function restore(asset:SavedAsset):BasisPosition{return {token:asset.token,units:BigInt(asset.units),costWei:BigInt(asset.costWei),realizedPnlWei:BigInt(asset.realizedPnlWei),acquiredUnits:BigInt(asset.acquiredUnits),acquiredCostWei:BigInt(asset.acquiredCostWei),disposedUnits:BigInt(asset.disposedUnits),proceedsWei:BigInt(asset.proceedsWei),complete:asset.complete};}
 
-async function indexedTransfers(vault:Address,fromBlock:bigint):Promise<VaultTransfer[]> {
+async function indexedTransfers(vault:Address,fromBlock:bigint,tracked:Set<string>):Promise<VaultTransfer[]> {
   const logs:VaultTransfer[]=[];
   let cursor:Record<string,string|number|null>|undefined;
-  for(let page=0;page<100;page++){
+  let complete=false;
+  for(let page=0;page<MAX_INDEXER_PAGES;page++){
     const url=new URL(`https://robinhoodchain.blockscout.com/api/v2/addresses/${vault}/token-transfers`);
     url.searchParams.set("type","ERC-20");
     if(cursor)for(const [key,value] of Object.entries(cursor))if(value!==null)url.searchParams.set(key,String(value));
     const response=await fetch(url,{headers:{accept:"application/json"},signal:AbortSignal.timeout(8000)});
     if(!response.ok)throw new Error("Indexed transfer history unavailable");
     const body=await response.json() as {items:BlockscoutTransfer[];next_page_params?:Record<string,string|number|null>|null};
+    if(!Array.isArray(body.items)||body.items.length>1000)throw new Error("Indexer page budget exceeded");
     let reachedSnapshot=false;
     for(const item of body.items){
       const blockNumber=BigInt(item.block_number);
       if(blockNumber<=fromBlock){reachedSnapshot=true;continue;}
-      logs.push({token:item.token.address_hash as Address,from:item.from.hash as Address,to:item.to.hash as Address,amount:BigInt(item.total.value),blockNumber,transactionHash:item.transaction_hash as `0x${string}`,logIndex:item.log_index});
+      if(tracked.has(item.token.address_hash.toLowerCase()))logs.push({token:item.token.address_hash as Address,from:item.from.hash as Address,to:item.to.hash as Address,amount:BigInt(item.total.value),blockNumber,transactionHash:item.transaction_hash as `0x${string}`,logIndex:item.log_index});
     }
-    if(reachedSnapshot||!body.next_page_params)break;
+    if(reachedSnapshot||!body.next_page_params){complete=true;break;}
     cursor=body.next_page_params;
   }
+  if(!complete)throw new Error("Indexer history budget exceeded");
   return logs;
 }
 
 async function rpcTransfers(client:PublicClient,vault:Address,addresses:Address[],from:bigint,end:bigint):Promise<VaultTransfer[]> {
   const logs:VaultTransfer[]=[];const seen=new Set<string>();
+  const chunks=from>end?0:Number((end-from)/10000n)+1;
+  if(chunks>MAX_RPC_CHUNKS)throw new Error("RPC history budget exceeded");
   for(let start=from;start<=end;start+=10000n){const stop=start+9999n>end?end:start+9999n;
     const parts=await Promise.all([
       client.getLogs({address:addresses,event:transferEvent,args:{from:vault},fromBlock:start,toBlock:stop}),
@@ -59,7 +66,8 @@ export async function readVaultCostBasis(client:PublicClient,vault:Address){
     const assets=tokens.map((token,index)=>({...positions.get(token)!,currentBalance:balances[index],reconciled:true}));
     return {chainId:4663,vault,indexedBlock:end,transactionCount:saved.transactionCount,verified:true,assets};
   }
-  const logs=await indexedTransfers(vault,BigInt(saved.indexedBlock)).catch(()=>rpcTransfers(client,vault,addresses,from,end));
+  const tracked=new Set(addresses.map(address=>address.toLowerCase()));
+  const logs=await indexedTransfers(vault,BigInt(saved.indexedBlock),tracked).catch(()=>rpcTransfers(client,vault,addresses,from,end));
   const grouped=new Map<string,VaultTransfer[]>();for(const log of logs){const list=grouped.get(log.transactionHash)||[];list.push(log);grouped.set(log.transactionHash,list);}
   for(const transfers of [...grouped.values()].sort((a,b)=>Number(a[0].blockNumber-b[0].blockNumber)))applyReceiptTransfers(positions,transfers.sort((a,b)=>a.logIndex-b.logIndex),vault,saved.weth);
   const assets=tokens.map((token,index)=>{const position=positions.get(token)!;const balance=balances[index];return {...position,currentBalance:balance,reconciled:position.complete&&position.units===balance};});

@@ -47,13 +47,19 @@ contract TestWethV2 is TestTokenV2("WETH") {
 
 contract TestOracleV2 is IV2Oracle {
     bool public broken;
+    uint256 public zeroBelow;
 
     function setBroken(bool b) external {
         broken = b;
     }
 
+    function setZeroBelow(uint256 value) external {
+        zeroBelow = value;
+    }
+
     function value(address, uint256 a) external view returns (uint256) {
         require(!broken, "oracle");
+        if (a < zeroBelow) return 0;
         return a;
     }
 }
@@ -418,6 +424,31 @@ contract VaultV2Test is Test {
         basket.emergencyRedeemInKind(bs, bob);
         emit log_named_uint("24 asset direct redemption", gasStart - gasleft());
         assertEq(basket.totalAssets(), 0);
+    }
+
+    function testDustDonationCanBlockPricedExitButNotInKindRecovery() public {
+        uint256 shares = deposit(alice, 1 ether);
+        vm.prank(curator);
+        vault.setPaused(true);
+        uint256 amount = a.balanceOf(address(vault));
+        vm.prank(curator);
+        vault.emergencyUnwind(address(a), amount, 1, block.timestamp);
+        assertEq(a.balanceOf(address(vault)), 0);
+        a.mint(address(vault), 1);
+        oracle.setZeroBelow(2);
+
+        vm.expectRevert(HoodxIndexV2.Invalid.selector);
+        vault.totalAssets();
+        vm.prank(alice);
+        vm.expectRevert(HoodxIndexV2.Invalid.selector);
+        vault.withdraw(shares, 1, block.timestamp);
+        assertEq(vault.balanceOf(alice), shares);
+
+        vm.prank(alice);
+        vault.emergencyRedeemInKind(shares, alice);
+        assertEq(vault.balanceOf(alice), 0);
+        assertEq(a.balanceOf(alice), 1);
+        assertGt(b.balanceOf(alice), 0);
     }
 }
 

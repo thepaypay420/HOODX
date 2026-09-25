@@ -43,7 +43,7 @@ export function VaultOverview({ vault, slug, shares, assets, quoteTime, valuatio
           isCash ? Promise.resolve(cash) : publicClient.readContract({ address: vault, abi, functionName: "targetBps", args: [token] }),
           publicClient.readContract({ address: vault, abi, functionName: "freeBalance", args: [token] }),
         ]);
-        return { token, symbol, weight, cash: isCash, rawBalance: balance, balance: decimals === undefined ? "Unavailable" : Number(formatUnits(balance, decimals)).toLocaleString(undefined, { maximumFractionDigits: 5 }) };
+        return { token, symbol: String(symbol).slice(0,24), weight, cash: isCash, rawBalance: balance, balance: decimals === undefined ? "Unavailable" : Number(formatUnits(balance, decimals)).toLocaleString(undefined, { maximumFractionDigits: 5 }) };
       }));
       if (active) setData({ vault, rows, fee: (creator + protocol) / 100, symbol: vaultSymbol, image: imageURI || vaultImage(slug) });
     }
