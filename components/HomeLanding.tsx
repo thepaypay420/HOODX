@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { LandingMotion } from "@/components/LandingMotion";
 import { LlmConnectButton, LlmConnectMobileCard } from "@/components/LlmConnect";
-import { SolarSystemOrbit } from "@/components/SolarSystemOrbit";
+import { OrbitPlanets } from "@/components/SolarSystemOrbit";
 
 /** Right-side chips zigzag on x (in/out) so labels don’t stack on one column. */
 const FLOAT_TOKENS = [
@@ -75,9 +75,9 @@ export function HomeLanding() {
 
           <div className="landing-stage" data-motion>
             <div className="landing-stage-glow" aria-hidden />
-            <div className="landing-orbit landing-orbit-a" aria-hidden />
-            <div className="landing-orbit landing-orbit-b" aria-hidden /><div className="studio-orbit-third" aria-hidden />
-            <SolarSystemOrbit />
+            <div className="landing-orbit landing-orbit-a" aria-hidden><OrbitPlanets track="a" /></div>
+            <div className="landing-orbit landing-orbit-b" aria-hidden><OrbitPlanets track="b" /></div>
+            <div className="studio-orbit-third" aria-hidden />
             {FLOAT_TOKENS.map((t) => (
               <div
                 key={t.label}

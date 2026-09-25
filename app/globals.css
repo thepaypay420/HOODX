@@ -1657,9 +1657,9 @@ body {
 .studio-home .landing-orbit::after {content:"";width:5px;height:5px;border-radius:50%;background:#b3f9df;box-shadow:0 0 12px #70ffe4;position:absolute;left:50%;top:-3px;}
 .studio-home .landing-orbit-b::after {width:3px;height:3px;opacity:.5;}
 .studio-orbit-third {position:absolute;inset:20% 4% 30%;border:1px solid #80e5d322;transform:rotate(-35deg);border-radius:50%;z-index:-1;}
-.studio-solar-system {position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 4px 5px #0007);}
-.studio-solar-rings ellipse {fill:none;stroke:#78dfcd;stroke-width:.7;vector-effect:non-scaling-stroke;}
-.studio-svg-planet {transform-box:view-box;transform-origin:center;}
+.studio-line-planet {position:absolute;left:var(--planet-x);top:var(--planet-y);width:10px;height:10px;display:block;translate:-50% -50%;z-index:2;filter:drop-shadow(0 3px 4px #0009);}
+.studio-line-planet svg {display:block;width:100%;height:100%;overflow:visible;}
+.studio-line-mercury {width:6px;height:6px}.studio-line-venus,.studio-line-mars {width:7px;height:7px}.studio-line-earth,.studio-line-uranus,.studio-line-neptune {width:8px;height:8px}.studio-line-jupiter {width:10px;height:10px}.studio-line-saturn {width:13px;height:10px}
 .studio-home .landing-float-chip {animation:studio-chip-drift 12s ease-in-out infinite;padding:10px 15px;background:linear-gradient(140deg,#1e3535ee,#101c1dee);border-color:#89d6c92b;box-shadow:0 10px 25px #0004,inset 0 1px #ffffff09;backdrop-filter:none;font-weight:500;}
 .studio-home .landing-float-chip:nth-of-type(5) {animation-direction:reverse;}
 .studio-stage-caption {position:absolute;top:0;left:4%;font-size:8px;letter-spacing:.2em;color:#83b6aa;}
@@ -1692,7 +1692,7 @@ body {
 @keyframes studio-stack {0%,100%{transform:perspective(400px) rotateX(58deg) translateY(0);filter:brightness(1);}45%{transform:perspective(400px) rotateX(48deg) translateY(-8px);filter:brightness(1.5);}}
 @keyframes studio-atmosphere {0%,100%{opacity:.65;transform:scale(.97);}50%{opacity:1;transform:scale(1.03);}}
 @media(max-width:639px) {.studio-home .landing-stage{min-height:350px;max-width:400px;}.studio-home .landing-coin{width:170px;height:170px;}.studio-home .landing-float-chip{font-size:9px;padding:8px 10px;}.studio-home .landing-script{bottom:0;}}
-@media(prefers-reduced-motion:reduce) {.studio-home *,.studio-home *::after{animation:none!important;transition:none!important;}.studio-title-line,.studio-home .landing-lede,.studio-home .landing-cta-row{opacity:1;transform:none;}.studio-home .landing-coin{transform:rotate(-6deg);}.studio-svg-planet{display:none}}
+@media(prefers-reduced-motion:reduce) {.studio-home *,.studio-home *::after{animation:none!important;transition:none!important;}.studio-title-line,.studio-home .landing-lede,.studio-home .landing-cta-row{opacity:1;transform:none;}.studio-home .landing-coin{transform:rotate(-6deg);}}
 
 /* Agent connection kit: compact desktop action, full mobile story card. */
 .landing-llm-hero { display:none; }
