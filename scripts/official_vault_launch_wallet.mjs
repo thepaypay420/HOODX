@@ -62,7 +62,19 @@ const runtimeHashes = await Promise.all(routes.map(async ({ token }) => keccak25
 const ids = routes.map((route, index) => keccak256(encodeAbiParameters(parseAbiParameters("address,bytes32,bytes,bytes,bytes32"), [route.token, runtimeHashes[index], route.buy, route.sell, evidence])));
 const assetIndex = new Map(catalog.assets.map((asset, index) => [asset.symbol, index]));
 const slugs = catalog.vaults.map((vault) => vault.slug);
-const params = catalog.vaults.map((vault, index) => ({ curator: ADMIN, creator: ADMIN, recipient: ADMIN, treasury: ADMIN, name: names[index], symbol: vault.symbol, creatorFee: 40, protocolFee: 10, cashBps: vault.cashTargetBps, firstDeposit: 20_000_000_000_000_000n, imageURI: "" }));
+const params = catalog.vaults.map((vault, index) => ({
+  curator: ADMIN,
+  creator: ADMIN,
+  recipient: ADMIN,
+  treasury: ADMIN,
+  name: names[index],
+  symbol: vault.symbol,
+  creatorFee: 40,
+  protocolFee: 10,
+  cashBps: vault.cashTargetBps,
+  firstDeposit: 20_000_000_000_000_000n,
+  imageURI: `https://www.xhoodindex.com/vaults/${vault.symbol.toLowerCase()}.png`,
+}));
 const vaultConfigs = catalog.vaults.map((vault) => vault.assets.map((symbol) => ids[assetIndex.get(symbol)]));
 const vaultWeights = catalog.vaults.map((vault) => vault.weightsBps);
 
