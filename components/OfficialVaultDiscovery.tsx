@@ -15,10 +15,10 @@ const styleFor = (vault: VaultMeta) => ({ "--vault-accent": vault.accent }) as C
 
 function ThemeMark({ vault }: { vault: VaultMeta }) { return <span className="discovery-mark" style={styleFor(vault)} aria-hidden>{vault.mark}</span>; }
 function Model({ vault, liveReturn }: { vault: VaultMeta; liveReturn?: number }) {
-  const established=vault.slug in verifiedV2Vaults;
-  const value=established?liveReturn:vault.model7d;
+  const sinceLaunch=vault.slug === "696x";
+  const value=sinceLaunch?liveReturn:vault.model7dUsd;
   if(value===undefined)return <span className="discovery-status is-live"><i /> Live</span>;
-  return <div className="discovery-model"><strong className={value >= 0 ? "is-up" : "is-down"}>{value >= 0 ? "+" : ""}{value.toFixed(2)}%</strong><span>{established?'Since launch':'7D · ETH'}</span></div>;
+  return <div className="discovery-model"><strong className={value >= 0 ? "is-up" : "is-down"}>{value >= 0 ? "+" : ""}{value.toFixed(2)}%</strong><span>{sinceLaunch?'Since launch':'7D · USD'}</span></div>;
 }
 function Card({ vault, featured = false, liveReturn }: { vault: VaultMeta; featured?: boolean; liveReturn?: number }) {
   const href = vault.status === "live" ? `/i/${vault.slug}` : `/explore#${vault.slug}`;
@@ -47,6 +47,6 @@ export function OfficialVaultDiscovery() {
     <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div>
     {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
     <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}</div>
-    <p className="discovery-footnote">696X and FAANGX show live per-share return since launch. Empty collections show their prior 7D smart-weight model in ETH terms until seeded.</p>
+    <p className="discovery-footnote">696X shows live per-share return since launch. FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
   </section>;
 }
