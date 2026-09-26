@@ -1,0 +1,594 @@
+{
+  "chainId": 4663,
+  "block": "72795085",
+  "checkedAt": "2026-09-26T04:23:05.478Z",
+  "topology": {
+    "assets": 47,
+    "directWeth": 4,
+    "sharedUsdgBridge": 43,
+    "minimumRecordedPoolLiquidityUsd": 44938.82,
+    "medianRecordedPoolLiquidityUsd": 390422.24,
+    "weakestPools": [
+      {
+        "symbol": "SHOP",
+        "liquidityUsd": 44938.82,
+        "pool": "0x8baff387b51c50e2747e85bcddf87da78fee6efb45629743e1af4dfb07ad13ee"
+      },
+      {
+        "symbol": "RCAT",
+        "liquidityUsd": 45475.94,
+        "pool": "0x64710a70839585Af718e1B1FAEf9E7f1665F1116"
+      },
+      {
+        "symbol": "JNJ",
+        "liquidityUsd": 57819.85,
+        "pool": "0x7F0aCE18D1dCEd47063CF26e649bc8AB14D09e67"
+      },
+      {
+        "symbol": "BB",
+        "liquidityUsd": 65825.49,
+        "pool": "0xc250650901b49785b18443a0b1bfee10b98f5c20f11988635252030e5283a288"
+      },
+      {
+        "symbol": "VTI",
+        "liquidityUsd": 71688.24,
+        "pool": "0xb78DD1A97fa544c65d7D1f12453EcaAF1e05c36d"
+      },
+      {
+        "symbol": "USAR",
+        "liquidityUsd": 71976.1,
+        "pool": "0x04391780F519B7d3ba59c9590459D76e23d225C4"
+      },
+      {
+        "symbol": "NET",
+        "liquidityUsd": 88274.3,
+        "pool": "0xA9Caebb1b2fB2b954F192572b309aEf1cAf6a330"
+      },
+      {
+        "symbol": "SNOW",
+        "liquidityUsd": 94772.66,
+        "pool": "0xac720e95589b7124f0affbdb9e66c7ec6e824c68eae00dc54f9e11b0b294bac8"
+      },
+      {
+        "symbol": "MRNA",
+        "liquidityUsd": 97408.55,
+        "pool": "0xA34d0667334074DF2d5BfD259e79E6B9cf1fA8Bf"
+      },
+      {
+        "symbol": "PFE",
+        "liquidityUsd": 97661.1,
+        "pool": "0xC7d573Fcda6D2107C97fb582ae18411F9Db32E7f"
+      }
+    ]
+  },
+  "results": [
+    {
+      "slug": "chainfin",
+      "vault": "0xF77fb0e5cE0682B8D8064e754cF99d7F3EC643d2",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "MSTR",
+      "oneEthWorstQuoteRetentionBps": 9998,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "MSTR",
+          "bps": 9998
+        },
+        {
+          "symbol": "GLXY",
+          "bps": 9998
+        },
+        {
+          "symbol": "COIN",
+          "bps": 9999
+        },
+        {
+          "symbol": "CRCL",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "siliconx",
+      "vault": "0xb70dD77B61ad2d2D70d14d1e74591fd173f2FBBE",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "AVGO",
+      "oneEthWorstQuoteRetentionBps": 9996,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "AVGO",
+          "bps": 9996
+        },
+        {
+          "symbol": "TSM",
+          "bps": 9997
+        },
+        {
+          "symbol": "AMD",
+          "bps": 9998
+        },
+        {
+          "symbol": "NVDA",
+          "bps": 9999
+        },
+        {
+          "symbol": "INTC",
+          "bps": 9999
+        },
+        {
+          "symbol": "MU",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.0042984",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.021492",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.10746",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.21492",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "aistack",
+      "vault": "0x5B0a7D7e596fc7E627716945644B3cEe738c82E7",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "NVDA",
+      "oneEthWorstQuoteRetentionBps": 9999,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "NVDA",
+          "bps": 9999
+        },
+        {
+          "symbol": "META",
+          "bps": 9999
+        },
+        {
+          "symbol": "PLTR",
+          "bps": 9999
+        },
+        {
+          "symbol": "MSFT",
+          "bps": 9999
+        },
+        {
+          "symbol": "GOOGL",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.00406955",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.02034775",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.10173875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.2034775",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "retailx",
+      "vault": "0xB8C2F95238A9076E73D60273C22724360a7A052b",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "RBLX",
+      "oneEthWorstQuoteRetentionBps": 9996,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "RBLX",
+          "bps": 9996
+        },
+        {
+          "symbol": "AMC",
+          "bps": 9998
+        },
+        {
+          "symbol": "BB",
+          "bps": 9998
+        },
+        {
+          "symbol": "GME",
+          "bps": 9999
+        },
+        {
+          "symbol": "RDDT",
+          "bps": 9999
+        },
+        {
+          "symbol": "DJT",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.00414915",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.02074575",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.10372875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.2074575",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "healthx",
+      "vault": "0x8b53F25665e0fE8A860A1120A0A08d0007570166",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "MRNA",
+      "oneEthWorstQuoteRetentionBps": 9996,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "MRNA",
+          "bps": 9996
+        },
+        {
+          "symbol": "JNJ",
+          "bps": 9996
+        },
+        {
+          "symbol": "LLY",
+          "bps": 9999
+        },
+        {
+          "symbol": "HIMS",
+          "bps": 9999
+        },
+        {
+          "symbol": "PFE",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "cloudx",
+      "vault": "0x649be0E6396778Cf58cd5bdfD347cbe83508a3ec",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "ORCL",
+      "oneEthWorstQuoteRetentionBps": 9994,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "ORCL",
+          "bps": 9994
+        },
+        {
+          "symbol": "SHOP",
+          "bps": 9995
+        },
+        {
+          "symbol": "SNOW",
+          "bps": 9998
+        },
+        {
+          "symbol": "NET",
+          "bps": 9999
+        },
+        {
+          "symbol": "MSFT",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "realx",
+      "vault": "0x1a396BfE4f79b1d12a27524217C4DED677BEF1b9",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "USAR",
+      "oneEthWorstQuoteRetentionBps": 9987,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "USAR",
+          "bps": 9987
+        },
+        {
+          "symbol": "GLD",
+          "bps": 9999
+        },
+        {
+          "symbol": "SLV",
+          "bps": 9999
+        },
+        {
+          "symbol": "USO",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "corex",
+      "vault": "0xD6b3ba50aFf684df5B53bAD77CA697F64F076789",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "VTI",
+      "oneEthWorstQuoteRetentionBps": 9996,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "VTI",
+          "bps": 9996
+        },
+        {
+          "symbol": "SPY",
+          "bps": 9999
+        },
+        {
+          "symbol": "QQQ",
+          "bps": 9999
+        },
+        {
+          "symbol": "SGOV",
+          "bps": 9999
+        },
+        {
+          "symbol": "GLD",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.00422875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.02114375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.10571875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.2114375",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "frontierx",
+      "vault": "0xaabFc490682AD036b421458F10E14dFc105E3AdC",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "RCAT",
+      "oneEthWorstQuoteRetentionBps": 9970,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "RCAT",
+          "bps": 9970
+        },
+        {
+          "symbol": "USAR",
+          "bps": 9994
+        },
+        {
+          "symbol": "SPCX",
+          "bps": 9999
+        },
+        {
+          "symbol": "TSLA",
+          "bps": 9999
+        },
+        {
+          "symbol": "BA",
+          "bps": 9999
+        },
+        {
+          "symbol": "LMT",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "slug": "consumerx",
+      "vault": "0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15",
+      "supply": "0",
+      "minimumEth": "0.02",
+      "oneEthWorstAsset": "LULU",
+      "oneEthWorstQuoteRetentionBps": 9998,
+      "oneEthQuoteRetention": [
+        {
+          "symbol": "LULU",
+          "bps": 9998
+        },
+        {
+          "symbol": "AAPL",
+          "bps": 9999
+        },
+        {
+          "symbol": "AMZN",
+          "bps": 9999
+        },
+        {
+          "symbol": "COST",
+          "bps": 9999
+        },
+        {
+          "symbol": "META",
+          "bps": 9999
+        },
+        {
+          "symbol": "NFLX",
+          "bps": 9999
+        }
+      ],
+      "checks": [
+        {
+          "grossEth": "0.02",
+          "largestSleeveEth": "0.004975",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.1",
+          "largestSleeveEth": "0.024875",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "0.5",
+          "largestSleeveEth": "0.124375",
+          "status": "PASS"
+        },
+        {
+          "grossEth": "1",
+          "largestSleeveEth": "0.24875",
+          "status": "PASS"
+        }
+      ]
+    }
+  ]
+}
