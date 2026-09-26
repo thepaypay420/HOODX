@@ -1,0 +1,126 @@
+{
+  "chainId": 4663,
+  "blockNumber": "72974309",
+  "blockTimestamp": "1790414749",
+  "checkedAt": "2026-09-26T09:25:54.646Z",
+  "ready": true,
+  "checks": {
+    "cooldownMature": true,
+    "registryOwnedByDeployer": true,
+    "policyOwnedByRouteAdmin": true,
+    "routeAdminOwnedByCurator": true,
+    "routeAdminTargetsPolicy": true,
+    "routeBatchCapIs20": true,
+    "factoryOwnedByDeployer": true,
+    "factoryTreasuryIsCurator": true,
+    "factoryImplementationPinned": true,
+    "canarySlugAvailable": true,
+    "noPendingDeployerTransactions": true,
+    "noPendingCuratorTransactions": true,
+    "hookProposalsIntact": true,
+    "hooksNotYetActive": true
+  },
+  "expectedRouteFingerprint": "0x6e099c7bc199851686bca108bde88de3f20531e953352a4102712ef1ca03b93a",
+  "fees": {
+    "maxFeePerGasWei": "35676000",
+    "maxPriorityFeePerGasWei": "0"
+  },
+  "signers": {
+    "deployer": {
+      "address": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+      "balanceWei": "48882542920774000",
+      "balanceEth": "0.048882542920774",
+      "latestNonce": 104,
+      "pendingNonce": 104,
+      "pendingGap": 0
+    },
+    "curator": {
+      "address": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "balanceWei": "16242140552162295",
+      "balanceEth": "0.016242140552162295",
+      "latestNonce": 900,
+      "pendingNonce": 900,
+      "pendingGap": 0
+    }
+  },
+  "contracts": {
+    "registry": {
+      "address": "0xa46150E972Da054f9b954D7a695476A6258A4705",
+      "owner": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19"
+    },
+    "policy": {
+      "address": "0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21",
+      "owner": "0x49bAe4Eb7b7a7567f67A600Ca8752027e9d12Fa3"
+    },
+    "routeAdmin": {
+      "address": "0x49bAe4Eb7b7a7567f67A600Ca8752027e9d12Fa3",
+      "owner": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "policy": "0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21",
+      "maxBatch": "20"
+    },
+    "factory": {
+      "address": "0xb0a89074d2f88207698aC99f39061463eeabeC8a",
+      "owner": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+      "treasury": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "implementation": "0xDDC4084055Ae4d56f9Fa618A1Ccd962737F1aEf7",
+      "existingCanary": "0x0000000000000000000000000000000000000000"
+    }
+  },
+  "hooks": [
+    {
+      "address": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044",
+      "active": false,
+      "readyAt": "1790322086",
+      "proposedHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db",
+      "liveHash": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db",
+      "evidence": "0x6b70f4f761e22ecca3a35aab6a9ba22eea9dbd038165fe684f63ca9e1a27315f",
+      "checks": {
+        "readyAtPinned": true,
+        "proposalMatchesCode": true,
+        "expectedCodeHash": true,
+        "expectedEvidence": true
+      }
+    },
+    {
+      "address": "0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc",
+      "active": false,
+      "readyAt": "1790322086",
+      "proposedHash": "0xd6082651ea0016d58e52d4478b46b8ef601dce4cd6312f22f572ad39f8b2a094",
+      "liveHash": "0xd6082651ea0016d58e52d4478b46b8ef601dce4cd6312f22f572ad39f8b2a094",
+      "evidence": "0x6b70f4f761e22ecca3a35aab6a9ba22eea9dbd038165fe684f63ca9e1a27315f",
+      "checks": {
+        "readyAtPinned": true,
+        "proposalMatchesCode": true,
+        "expectedCodeHash": true,
+        "expectedEvidence": true
+      }
+    }
+  ],
+  "transactionPlan": [
+    {
+      "order": 1,
+      "signer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+      "action": "Activate PONS and QUOTRON hooks",
+      "transactions": 2
+    },
+    {
+      "order": 2,
+      "signer": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "action": "Admit reviewed routes 1-20",
+      "transactions": 1
+    },
+    {
+      "order": 3,
+      "signer": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "action": "Admit reviewed route 21",
+      "transactions": 1
+    },
+    {
+      "order": 4,
+      "signer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+      "action": "Create empty 696xcanary",
+      "transactions": 1
+    }
+  ],
+  "broadcast": false
+}
