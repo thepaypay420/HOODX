@@ -1,0 +1,903 @@
+{
+  "chainId": 4663,
+  "block": "72938277",
+  "sampledAt": "2026-09-26T08:25:04.575Z",
+  "executor": "0xB45AC99C355898EAcb3CDFF2c0b94F6C9a77a750",
+  "assets": [
+    {
+      "symbol": "musebook",
+      "token": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+      "name": "musebook",
+      "onchainSymbol": "musebook",
+      "decimals": 18,
+      "totalSupply": "100000000000000000000000000000",
+      "codeHash": "0xf10f86b05965a827a332e6c73086f18026fbe3917f4bffbec3f938b3b5397b56",
+      "references": [
+        {
+          "pool": "0xe972Dfc9032D148f4B1618fb914FBbD2fC41D6dC",
+          "quote": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "fee": 10000,
+          "liquidity": "847956244332270309396249",
+          "history1800": true,
+          "harmonicLiquidity": "852077765572481814657683"
+        },
+        {
+          "pool": "0x1dE1e5CdeEB236cEcE94c37854896064920c3A83",
+          "quote": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "fee": 10000,
+          "liquidity": "45383425403337",
+          "history1800": true,
+          "harmonicLiquidity": "45383425403337"
+        }
+      ],
+      "pools": [
+        {
+          "id": "0x40a433930370f6cdf0a78debc2c6dd599c23bd428c0d67dd8b5373e4f101557f",
+          "version": "v4",
+          "quote": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+          "displayLiquidityUsd": 1169169.87,
+          "key": {
+            "currency0": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "currency1": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+            "fee": 8388608,
+            "tickSpacing": 200,
+            "hooks": "0x4e3468951D49f2EEa976eD0D6e75fFCb44a9a544"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "2011890677869021127561994",
+          "discoveryError": "Pool key or liquidity unavailable"
+        },
+        {
+          "id": "0x93cc54eb4e1928e841cb8b2e488bd82e8d97d56e0aab16cf078ef71c576dcded",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 424468.15,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 7500,
+            "tickSpacing": 75,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "80882642589367590073",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xe972Dfc9032D148f4B1618fb914FBbD2fC41D6dC",
+          "version": "v3",
+          "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "displayLiquidityUsd": 242025.15
+        },
+        {
+          "id": "0xfb8b64d2c5f1ff6f3e0a74bd60753793c969285065a4a67fefa41e1314dd1ae4",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 24694.7,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10030,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "344174443717532800454126",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xc5dbdad387b3da3915ea1ec00ea131391dced576efcd8bea1462051ebfe02d08",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 126023.62,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10024,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "688909271196798530139491",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x1de673e2fd7c570743af36bc822040e3d73bb79aea4ad069d0a1ad3ee81cacb6",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 1745.74,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 82800,
+            "tickSpacing": 828,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "331137232082738942",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x65fc4c6a0344e9ea3a962b686d5b858a6c9c74a351b9514ffe612a9ca9a94079",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 84401.39,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 30000,
+            "tickSpacing": 300,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "16435303199780340850",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x4f5cCFfb0ED5b28857Fb53975DD8f75794EE09f6",
+          "version": "v3",
+          "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "displayLiquidityUsd": 9897.33
+        },
+        {
+          "id": "0xfdb3e58046a5d2116b9d51653cc25f700d83d78c97fc3b8fca4c964fac54bbc4",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 19076.54,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10007,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "125884202021112898206838",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xa50f8f6a3aa808b90e08105a9cd1552ca13127bcf39e9842a758518b027bfa58",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 17641.56,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 80800,
+            "tickSpacing": 808,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "0",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x01d765acde015ba40ffd4fa6b98af6fb98f43571472e0fdcb9e9c830a4f15d2d",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 4009.04,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 16201,
+            "tickSpacing": 324,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "1029901390259669117",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xe534914f094beef2bf7fdb6a090154d4a6d8bc7a3ea5a161d6cbe1fda313b505",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 3457.64,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10023,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "72370288978178776835",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xa03da164762f5c1e0d62f57632e1ffb138d9e5fa1c2132f3f3f2d434c3628629",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 1726.26,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 12000,
+            "tickSpacing": 120,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "46014814885335362282",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x8c6672ef7ad20e652a1a5e9f31a67194b81f3cc49b8c425ad2fa2b4890da3428",
+          "version": "v4",
+          "quote": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+          "displayLiquidityUsd": 2331.19,
+          "key": {
+            "currency0": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "currency1": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+            "fee": 29999,
+            "tickSpacing": 300,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "23516953459209906662250",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x1f49408fc4b943c3f3cabefcb6c7c9a80951d05ee5ea7d3303d5c22d05bb4d5f",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 952.06,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 3000,
+            "tickSpacing": 60,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "0",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x81d301AD53a46cD3447543057E0731E441E7eb5d",
+          "version": "v3",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 526.53
+        },
+        {
+          "id": "0xf49a29292cedf19b87e653aa21cc202dd2291356300b9a1e0e5b16b7346656b0",
+          "version": "v4",
+          "quote": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+          "displayLiquidityUsd": 210.62,
+          "key": {
+            "currency0": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "currency1": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+            "fee": 9000,
+            "tickSpacing": 90,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "2472886404264354991879",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xdd845ec4cad0fcc51e15e5d470decf0593e11bcf2fb33a2a48c28dd97116c388",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 368.25,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 53000,
+            "tickSpacing": 530,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "70695600749863171",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xb1accd3e9181c0f165ad454e664e5cc9d67fb74dc6604d360f3d3099626ab982",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 596.27,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 70000,
+            "tickSpacing": 2000,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "19725416451612324",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xcab171ae71ac5451c1253692e1ef6683268745a122a86c5bc367599370b0e215",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 99.89,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 80000,
+            "tickSpacing": 800,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "28615515563160185",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x5480497f49571d7407528be587207f59509bc753b7f8fbc272389a264a69c7bf",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": null,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10028,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "451652649800470623887",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x859078ffefd5062a09451923e36071819de8a4b822a274a6af60f924cfe61594",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 1.77,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 75,
+            "tickSpacing": 1,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "88479600348847",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x1d15beaf00b6b4e46347d30b7340652849e6d7f818a6e150b3a517a5dedebb10",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 0.03,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x0000000000000000000000000000000000000000",
+            "fee": 0,
+            "tickSpacing": 0,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": false,
+          "activeLiquidity": "1644025020216",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xe34cbd7c88ead47873481a73611246690ce6e8c764932944609b4fe663a2459f",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 5.84,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 200000,
+            "tickSpacing": 2000,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "284619029098038",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x1dE1e5CdeEB236cEcE94c37854896064920c3A83",
+          "version": "v3",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 0.96
+        },
+        {
+          "id": "0x008D840B94c02CD33dE9346FFF07e2D810789791",
+          "version": "unknown",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 12.11
+        },
+        {
+          "id": "0x68702bc8f2506861c0cc1338754a4092aa665699c18f1045d8d3e715428f765c",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 6.59,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 99800,
+            "tickSpacing": 998,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "330739921609366",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x92bec4347f0a6edc7b0a16f0db96a12c28debffd645a05d3335eceee19e15e90",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 42.43,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 48700,
+            "tickSpacing": 487,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "123649738191739",
+          "hookAllowed": true
+        },
+        {
+          "id": "0xda6863e84a2798bc56dadb1eb0f8cf938a230f52aac4b54ce05e81a97103edca",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": null,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+            "fee": 10017,
+            "tickSpacing": 200,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "0",
+          "hookAllowed": true
+        }
+      ],
+      "market": [
+        {
+          "id": "0x40a433930370f6cdf0a78debc2c6dd599c23bd428c0d67dd8b5373e4f101557f",
+          "version": "v4",
+          "quote": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+          "quoteSymbol": "META",
+          "marketCapUsd": 9317132,
+          "liquidityUsd": 1169169.87,
+          "volume24hUsd": 1675745.23
+        },
+        {
+          "id": "0x93cc54eb4e1928e841cb8b2e488bd82e8d97d56e0aab16cf078ef71c576dcded",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9311214,
+          "liquidityUsd": 424468.15,
+          "volume24hUsd": 4642753.46
+        },
+        {
+          "id": "0xe972Dfc9032D148f4B1618fb914FBbD2fC41D6dC",
+          "version": "v3",
+          "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "quoteSymbol": "WETH",
+          "marketCapUsd": 9298753,
+          "liquidityUsd": 242025.15,
+          "volume24hUsd": 1112212.62
+        },
+        {
+          "id": "0xc5dbdad387b3da3915ea1ec00ea131391dced576efcd8bea1462051ebfe02d08",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 9290950,
+          "liquidityUsd": 126023.62,
+          "volume24hUsd": 642516.05
+        },
+        {
+          "id": "0x65fc4c6a0344e9ea3a962b686d5b858a6c9c74a351b9514ffe612a9ca9a94079",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9479648,
+          "liquidityUsd": 84401.39,
+          "volume24hUsd": 190569.01
+        },
+        {
+          "id": "0xfb8b64d2c5f1ff6f3e0a74bd60753793c969285065a4a67fefa41e1314dd1ae4",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 9290881,
+          "liquidityUsd": 24694.7,
+          "volume24hUsd": 591969.2
+        },
+        {
+          "id": "0xfdb3e58046a5d2116b9d51653cc25f700d83d78c97fc3b8fca4c964fac54bbc4",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 9299426,
+          "liquidityUsd": 19076.54,
+          "volume24hUsd": 89712.08
+        },
+        {
+          "id": "0xa50f8f6a3aa808b90e08105a9cd1552ca13127bcf39e9842a758518b027bfa58",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 13339944,
+          "liquidityUsd": 17641.56,
+          "volume24hUsd": 9970.79
+        },
+        {
+          "id": "0x4f5cCFfb0ED5b28857Fb53975DD8f75794EE09f6",
+          "version": "v3",
+          "quote": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+          "quoteSymbol": "WETH",
+          "marketCapUsd": 9328549,
+          "liquidityUsd": 9897.33,
+          "volume24hUsd": 267527.83
+        },
+        {
+          "id": "0x01d765acde015ba40ffd4fa6b98af6fb98f43571472e0fdcb9e9c830a4f15d2d",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9353408,
+          "liquidityUsd": 4009.04,
+          "volume24hUsd": 11217.46
+        },
+        {
+          "id": "0xe534914f094beef2bf7fdb6a090154d4a6d8bc7a3ea5a161d6cbe1fda313b505",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 9494694,
+          "liquidityUsd": 3457.64,
+          "volume24hUsd": 230.43
+        },
+        {
+          "id": "0x8c6672ef7ad20e652a1a5e9f31a67194b81f3cc49b8c425ad2fa2b4890da3428",
+          "version": "v4",
+          "quote": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+          "quoteSymbol": "GLD",
+          "marketCapUsd": 10057066,
+          "liquidityUsd": 2331.19,
+          "volume24hUsd": 3944.21
+        },
+        {
+          "id": "0x1de673e2fd7c570743af36bc822040e3d73bb79aea4ad069d0a1ad3ee81cacb6",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9046865,
+          "liquidityUsd": 1745.74,
+          "volume24hUsd": 791.08
+        },
+        {
+          "id": "0xa03da164762f5c1e0d62f57632e1ffb138d9e5fa1c2132f3f3f2d434c3628629",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 11213947,
+          "liquidityUsd": 1726.26,
+          "volume24hUsd": 3666.72
+        },
+        {
+          "id": "0x1f49408fc4b943c3f3cabefcb6c7c9a80951d05ee5ea7d3303d5c22d05bb4d5f",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9263294,
+          "liquidityUsd": 952.06,
+          "volume24hUsd": 7564.16
+        },
+        {
+          "id": "0xb1accd3e9181c0f165ad454e664e5cc9d67fb74dc6604d360f3d3099626ab982",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9020371,
+          "liquidityUsd": 596.27,
+          "volume24hUsd": 35.3
+        },
+        {
+          "id": "0x81d301AD53a46cD3447543057E0731E441E7eb5d",
+          "version": "v3",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9289667,
+          "liquidityUsd": 526.53,
+          "volume24hUsd": 1540.01
+        },
+        {
+          "id": "0xdd845ec4cad0fcc51e15e5d470decf0593e11bcf2fb33a2a48c28dd97116c388",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9275933,
+          "liquidityUsd": 368.25,
+          "volume24hUsd": 413.2
+        },
+        {
+          "id": "0xf49a29292cedf19b87e653aa21cc202dd2291356300b9a1e0e5b16b7346656b0",
+          "version": "v4",
+          "quote": "0xC9a981FEE1F9DEc688bb123ccDeCc63D0deBFC4e",
+          "quoteSymbol": "GLD",
+          "marketCapUsd": 10209052,
+          "liquidityUsd": 210.62,
+          "volume24hUsd": 1033.17
+        },
+        {
+          "id": "0xcab171ae71ac5451c1253692e1ef6683268745a122a86c5bc367599370b0e215",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9266022,
+          "liquidityUsd": 99.89,
+          "volume24hUsd": 5.48
+        },
+        {
+          "id": "0x92bec4347f0a6edc7b0a16f0db96a12c28debffd645a05d3335eceee19e15e90",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9729215,
+          "liquidityUsd": 42.43,
+          "volume24hUsd": 0.41
+        },
+        {
+          "id": "0x008D840B94c02CD33dE9346FFF07e2D810789791",
+          "version": "unknown",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9340564,
+          "liquidityUsd": 12.11,
+          "volume24hUsd": 3.78
+        },
+        {
+          "id": "0x68702bc8f2506861c0cc1338754a4092aa665699c18f1045d8d3e715428f765c",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9931449,
+          "liquidityUsd": 6.59,
+          "volume24hUsd": 0.99
+        },
+        {
+          "id": "0xe34cbd7c88ead47873481a73611246690ce6e8c764932944609b4fe663a2459f",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 10549700,
+          "liquidityUsd": 5.84,
+          "volume24hUsd": 924.2
+        },
+        {
+          "id": "0x859078ffefd5062a09451923e36071819de8a4b822a274a6af60f924cfe61594",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 10094948,
+          "liquidityUsd": 1.77,
+          "volume24hUsd": 1.86
+        },
+        {
+          "id": "0x1dE1e5CdeEB236cEcE94c37854896064920c3A83",
+          "version": "v3",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9449364,
+          "liquidityUsd": 0.96,
+          "volume24hUsd": 0.26
+        },
+        {
+          "id": "0x1d15beaf00b6b4e46347d30b7340652849e6d7f818a6e150b3a517a5dedebb10",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 9305216,
+          "liquidityUsd": 0.03,
+          "volume24hUsd": 0.01
+        },
+        {
+          "id": "0x5480497f49571d7407528be587207f59509bc753b7f8fbc272389a264a69c7bf",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 10277040,
+          "liquidityUsd": null,
+          "volume24hUsd": 1144.51
+        },
+        {
+          "id": "0xda6863e84a2798bc56dadb1eb0f8cf938a230f52aac4b54ce05e81a97103edca",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": null,
+          "liquidityUsd": null,
+          "volume24hUsd": 33142.48
+        }
+      ]
+    },
+    {
+      "symbol": "STELX",
+      "token": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+      "name": "STELX",
+      "onchainSymbol": "STELX",
+      "decimals": 18,
+      "totalSupply": "1000000000000000000000000000",
+      "codeHash": "0xb502d20e4bf1ef304bac19710e74d782403148e0017e26ee87f7528bfcc18ae5",
+      "references": [],
+      "pools": [
+        {
+          "id": "0xe7d9b451db9ff15a8062bda895ca90c9712345c7476ef81c2f630f56011e1392",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 35913.42,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 0,
+            "tickSpacing": 200,
+            "hooks": "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "29277002188455997249281",
+          "discoveryError": "Pool key or liquidity unavailable"
+        },
+        {
+          "id": "0x55feca44a5039fe68bc4aa8fb5ef48abcf8e2b9643da999d4c44d6e6d42e37a3",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 302.92,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 110000,
+            "tickSpacing": 1100,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "13077994125479105",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x94142e744d664504f5347ca502382ced3547283aef1e0081fc03358911394f42",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "displayLiquidityUsd": 1.3,
+          "key": {
+            "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 100000,
+            "tickSpacing": 1000,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "48620015202645",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x8613a78b29c198738d59b392f1780def1c62c02b20313e75d1e9a7262622428b",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 1.44,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 99000,
+            "tickSpacing": 990,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "1018398556162392224",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x772600ad7b7dff205cb47b005a8bc8e0482deaafe719915c44215f3e04978570",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 26.63,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 100000,
+            "tickSpacing": 60,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "30732375585415322998",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x9e329d0375aeea553fa172f400740bfafc9f4f1afb9ab821b2d33bc8cdd17aea",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 0.31,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 810000,
+            "tickSpacing": 19988,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "447850848063674449",
+          "hookAllowed": true
+        },
+        {
+          "id": "0x64bddef7c78f2775e932b573bb7edc7011f8b6afdbf3a37192a0af7b514efd79",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "displayLiquidityUsd": 3.36,
+          "key": {
+            "currency0": "0x0000000000000000000000000000000000000000",
+            "currency1": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+            "fee": 808670,
+            "tickSpacing": 19988,
+            "hooks": "0x0000000000000000000000000000000000000000"
+          },
+          "identityMatches": true,
+          "activeLiquidity": "0",
+          "hookAllowed": true
+        }
+      ],
+      "market": [
+        {
+          "id": "0xe7d9b451db9ff15a8062bda895ca90c9712345c7476ef81c2f630f56011e1392",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 139924,
+          "liquidityUsd": 35913.42,
+          "volume24hUsd": 122325.65
+        },
+        {
+          "id": "0x55feca44a5039fe68bc4aa8fb5ef48abcf8e2b9643da999d4c44d6e6d42e37a3",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 134134,
+          "liquidityUsd": 302.92,
+          "volume24hUsd": 264.93
+        },
+        {
+          "id": "0x772600ad7b7dff205cb47b005a8bc8e0482deaafe719915c44215f3e04978570",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 144524,
+          "liquidityUsd": 26.63,
+          "volume24hUsd": 25.56
+        },
+        {
+          "id": "0x64bddef7c78f2775e932b573bb7edc7011f8b6afdbf3a37192a0af7b514efd79",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 45972,
+          "liquidityUsd": 3.36,
+          "volume24hUsd": 2.35
+        },
+        {
+          "id": "0x8613a78b29c198738d59b392f1780def1c62c02b20313e75d1e9a7262622428b",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 186356,
+          "liquidityUsd": 1.44,
+          "volume24hUsd": 0.17
+        },
+        {
+          "id": "0x94142e744d664504f5347ca502382ced3547283aef1e0081fc03358911394f42",
+          "version": "v4",
+          "quote": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "quoteSymbol": "USDG",
+          "marketCapUsd": 180900,
+          "liquidityUsd": 1.3,
+          "volume24hUsd": 0.4
+        },
+        {
+          "id": "0x9e329d0375aeea553fa172f400740bfafc9f4f1afb9ab821b2d33bc8cdd17aea",
+          "version": "v4",
+          "quote": "0x0000000000000000000000000000000000000000",
+          "quoteSymbol": "ETH",
+          "marketCapUsd": 46752,
+          "liquidityUsd": 0.31,
+          "volume24hUsd": 3.96
+        }
+      ]
+    }
+  ]
+}

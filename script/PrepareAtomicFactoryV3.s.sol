@@ -9,6 +9,7 @@ import {HoodxAtomicFactoryV3} from "../contracts/v3/HoodxAtomicFactoryV3.sol";
 import {HoodxHookRegistryV3} from "../contracts/v3/HoodxHookRegistryV3.sol";
 import {HoodxProportionalV3} from "../contracts/v3/HoodxProportionalV3.sol";
 import {HoodxProportionalPolicyV3} from "../contracts/v3/HoodxProportionalPolicyV3.sol";
+import {HoodxRouteAdminV3} from "../contracts/v3/HoodxRouteAdminV3.sol";
 import {HoodxRebalanceControllerV3} from "../contracts/v3/HoodxRebalanceControllerV3.sol";
 import {ProportionalWatchlistV3} from "./ProportionalWatchlistV3.sol";
 
@@ -19,6 +20,7 @@ contract PrepareAtomicFactoryV3 is Script {
     address constant ADMIN = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
     address constant REGISTRY = 0xa46150E972Da054f9b954D7a695476A6258A4705;
     address constant POLICY = 0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21;
+    address constant ROUTE_ADMIN = 0x49bAe4Eb7b7a7567f67A600Ca8752027e9d12Fa3;
     address constant IMPLEMENTATION = 0xDDC4084055Ae4d56f9Fa618A1Ccd962737F1aEf7;
     address constant PONS_HOOK = 0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044;
     address constant QUOTRON_HOOK = 0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc;
@@ -31,7 +33,9 @@ contract PrepareAtomicFactoryV3 is Script {
         require(!vm.isContext(VmSafe.ForgeContext.ScriptBroadcast), "simulation only");
         HoodxHookRegistryV3 registry = HoodxHookRegistryV3(REGISTRY);
         HoodxProportionalPolicyV3 policy = HoodxProportionalPolicyV3(POLICY);
-        require(policy.owner() == DEPLOYER, "policy owner changed");
+        HoodxRouteAdminV3 routeAdmin = HoodxRouteAdminV3(ROUTE_ADMIN);
+        require(routeAdmin.owner() == ADMIN && address(routeAdmin.policy()) == POLICY, "admin mismatch");
+        require(policy.owner() == ROUTE_ADMIN, "policy owner changed");
         _checkProposal(registry, PONS_HOOK, PONS_CODE_HASH);
         _checkProposal(registry, QUOTRON_HOOK, QUOTRON_CODE_HASH);
         bytes32[] memory ids = new bytes32[](ProportionalWatchlistV3.count());
@@ -42,11 +46,34 @@ contract PrepareAtomicFactoryV3 is Script {
         vm.startBroadcast(DEPLOYER);
         registry.activate(PONS_HOOK);
         registry.activate(QUOTRON_HOOK);
+        vm.stopBroadcast();
         require(registry.isApprovedHook(PONS_HOOK) && registry.isApprovedHook(QUOTRON_HOOK), "hook activation failed");
+
+        address[] memory tokens = new address[](ids.length);
+        bytes[] memory buys = new bytes[](ids.length);
+        bytes[] memory sells = new bytes[](ids.length);
         for (uint256 i; i < ids.length; ++i) {
-            (address token, bytes memory buy, bytes memory sell) = ProportionalWatchlistV3.routeFor(i);
-            ids[i] = policy.approveRoute(token, buy, sell, ProportionalWatchlistV3.evidence());
+            (tokens[i], buys[i], sells[i]) = ProportionalWatchlistV3.routeFor(i);
         }
+        vm.startBroadcast(ADMIN);
+        for (uint256 start; start < ids.length; start += routeAdmin.MAX_BATCH()) {
+            uint256 end = start + routeAdmin.MAX_BATCH();
+            if (end > ids.length) end = ids.length;
+            address[] memory batchTokens = new address[](end - start);
+            bytes[] memory batchBuys = new bytes[](end - start);
+            bytes[] memory batchSells = new bytes[](end - start);
+            for (uint256 i = start; i < end; ++i) {
+                batchTokens[i - start] = tokens[i];
+                batchBuys[i - start] = buys[i];
+                batchSells[i - start] = sells[i];
+            }
+            bytes32[] memory batchIds =
+                routeAdmin.approveRoutes(batchTokens, batchBuys, batchSells, ProportionalWatchlistV3.evidence());
+            for (uint256 i; i < batchIds.length; ++i) ids[start + i] = batchIds[i];
+        }
+        vm.stopBroadcast();
+
+        vm.startBroadcast(DEPLOYER);
         HoodxAtomicFactoryV3 factory = new HoodxAtomicFactoryV3(ADMIN, ADMIN, IMPLEMENTATION, ids);
         vm.stopBroadcast();
         factoryAddress = address(factory);
@@ -59,7 +86,7 @@ contract PrepareAtomicFactoryV3 is Script {
 
         uint16[] memory weights = new uint16[](ids.length);
         for (uint256 i; i < weights.length; ++i) {
-            weights[i] = 375;
+            weights[i] = ProportionalWatchlistV3.targetFor(i);
         }
         HoodxIndexV2.Init memory init = HoodxIndexV2.Init({
             curator: ADMIN,
@@ -88,8 +115,8 @@ contract PrepareAtomicFactoryV3 is Script {
         );
         console2.log("SIMULATED atomic factory", factoryAddress);
         console2.log("SIMULATED routes", ids.length);
-        console2.log("SIMULATED setup transactions", ids.length + 3);
-        console2.log("SIMULATED one-transaction 20-asset creation gas", creationGas);
+        console2.log("SIMULATED setup transactions", uint256(5));
+        console2.log("SIMULATED one-transaction 21-asset creation gas", creationGas);
     }
 
     function _checkProposal(HoodxHookRegistryV3 registry, address hook, bytes32 codeHash) private view {

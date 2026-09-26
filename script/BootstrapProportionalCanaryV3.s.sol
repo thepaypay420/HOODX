@@ -27,9 +27,8 @@ contract BootstrapProportionalCanaryV3 is Script, ProportionalCanaryGuardV3 {
             require(vm.envBytes32("HOODX_REVIEWED_ROUTES") == ProportionalWatchlistV3.fingerprint(), "route mismatch");
         }
         uint256[] memory budgets = new uint256[](ProportionalWatchlistV3.count());
-        uint256 budget = (CAPITAL * 9950 / 10000) * 375 / 10000;
         for (uint256 i; i < budgets.length; ++i) {
-            budgets[i] = budget;
+            budgets[i] = (CAPITAL * 9950 / 10000) * ProportionalWatchlistV3.targetFor(i) / 10000;
         }
         vm.deal(address(this), CAPITAL);
         uint256[] memory floors = _quoteBuys(vault, budgets, CAPITAL);

@@ -9,8 +9,9 @@ contract ProportionalWatchlistManifestV3Test is Test {
     address constant WETH = 0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73;
 
     function testManifestIsCompleteUniqueAndRoundTrips() public {
-        assertEq(ProportionalWatchlistV3.count(), 20);
-        address[] memory seen = new address[](20);
+        assertEq(ProportionalWatchlistV3.count(), 21);
+        address[] memory seen = new address[](ProportionalWatchlistV3.count());
+        uint256 totalWeight;
         for (uint256 i; i < seen.length; ++i) {
             (address token, bytes memory buy, bytes memory sell) = ProportionalWatchlistV3.routeFor(i);
             assertTrue(token != address(0) && token != WETH);
@@ -25,7 +26,9 @@ contract ProportionalWatchlistManifestV3Test is Test {
                 assertTrue(seen[j] != token);
             }
             seen[i] = token;
+            totalWeight += ProportionalWatchlistV3.targetFor(i);
         }
+        assertEq(totalWeight, 7500);
         emit log_named_bytes32("route fingerprint", ProportionalWatchlistV3.fingerprint());
     }
 }

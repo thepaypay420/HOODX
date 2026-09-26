@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {V2Hop, V2PoolKey} from "../contracts/v2/Types.sol";
 
-/// @notice Exact route manifest for the reviewed 20-asset 696X successor canary.
+/// @notice Exact route manifest for the reviewed 21-asset 696X successor canary.
 /// Bridge fees are pinned so live approvals cannot drift from the routes tested on the fork.
 library ProportionalWatchlistV3 {
     address internal constant WETH = 0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73;
@@ -11,10 +11,16 @@ library ProportionalWatchlistV3 {
     address internal constant SPY = 0x117cc2133c37B721F49dE2A7a74833232B3B4C0C;
     address internal constant SPCX = 0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa;
 
-    bytes32 internal constant EVIDENCE = keccak256("HOODX_696X_WATCHLIST_ROUTE_REVIEW_V1_2026-09-23");
+    bytes32 internal constant EVIDENCE = keccak256("HOODX_696X_WATCHLIST_ROUTE_REVIEW_V2_2026-09-26");
 
     function count() internal pure returns (uint256) {
-        return 20;
+        return 21;
+    }
+
+    /// @dev 25% remains in cash. Three 3.58% sleeves plus eighteen 3.57% sleeves total 75%.
+    function targetFor(uint256 i) internal pure returns (uint16) {
+        require(i < count(), "asset index");
+        return i < 3 ? 358 : 357;
     }
 
     function evidence() internal pure returns (bytes32) {
@@ -196,7 +202,7 @@ library ProportionalWatchlistV3 {
             );
         }
         if (i == 15) {
-            h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+            h.tokenOut = address(bytes20(hex"91a2dae9699f0b82540b5886b0d8759c22820ba3"));
             h.kind = 3;
             h.tokenIn = WETH;
             h.fee = 10000;
@@ -238,6 +244,18 @@ library ProportionalWatchlistV3 {
             h.key = V2PoolKey(
                 address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261")),
                 address(bytes20(hex"4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea")),
+                0,
+                200,
+                address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+            );
+        }
+        if (i == 20) {
+            h.tokenOut = address(bytes20(hex"7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1"));
+            h.kind = 4;
+            h.tokenIn = address(bytes20(hex"0000000000000000000000000000000000000000"));
+            h.key = V2PoolKey(
+                address(bytes20(hex"0000000000000000000000000000000000000000")),
+                address(bytes20(hex"7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1")),
                 0,
                 200,
                 address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))

@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import {createPublicClient,http,parseAbi,encodeAbiParameters,parseAbiParameters,keccak256} from 'viem';
 const universe=JSON.parse(fs.readFileSync('universe.json')).tokens;
-const names=['PONS','AI','CASHCAT','Index','MEME','STONKBROKER','PRISM','HOOKR','DELTA','SHROOM','BOW','UP','QUOTRON','NET','ZEAL','website','Aria','HARMONIC','QUOTIENT','PROMETHEUS'];
-const extra={PRISM:'0x20024e485c0b22b42855589700721b28320a7777',ZEAL:'0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc',Aria:'0xa74a94c15b95f8d5f3abdd2db00f6c7384037b55'};
+const names=['PONS','AI','CASHCAT','Index','MEME','STONKBROKER','PRISM','HOOKR','DELTA','SHROOM','BOW','UP','QUOTRON','NET','ZEAL','musebook','Aria','HARMONIC','QUOTIENT','PROMETHEUS','STELX'];
+const extra={PRISM:'0x20024e485c0b22b42855589700721b28320a7777',ZEAL:'0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc',Aria:'0xa74a94c15b95f8d5f3abdd2db00f6c7384037b55',musebook:'0x91a2dae9699f0b82540b5886b0d8759c22820ba3',STELX:'0x7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1'};
 const deployed=JSON.parse(fs.readFileSync('deployments/robinhood-4663-v2.json')).production;
 const integrations=JSON.parse(fs.readFileSync('deployed.json'));
 const client=createPublicClient({transport:http(process.env.ROBINHOOD_RPC_URL||'https://rpc.mainnet.chain.robinhood.com',{retryCount:1,timeout:20000})});

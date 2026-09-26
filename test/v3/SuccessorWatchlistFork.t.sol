@@ -783,27 +783,27 @@ contract SuccessorWatchlistForkTest is Test {
         run(h, 0.005 ether);
     }
 
-    function testwebsiteSmall() public {
+    function testmusebookSmall() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+        h.tokenOut = address(bytes20(hex"91a2dae9699f0b82540b5886b0d8759c22820ba3"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
         run(h, 0.0001 ether);
     }
 
-    function testwebsiteMedium() public {
+    function testmusebookMedium() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+        h.tokenOut = address(bytes20(hex"91a2dae9699f0b82540b5886b0d8759c22820ba3"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
         run(h, 0.001 ether);
     }
 
-    function testwebsiteLarge() public {
+    function testmusebookLarge() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"0762c1708f0d23f86b29d6b857121ff7df357506"));
+        h.tokenOut = address(bytes20(hex"91a2dae9699f0b82540b5886b0d8759c22820ba3"));
         h.kind = 3;
         h.tokenIn = W;
         h.fee = 10000;
@@ -970,5 +970,32 @@ contract SuccessorWatchlistForkTest is Test {
             address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
         );
         run(h, 0.005 ether);
+    }
+
+    function testSTELXSmall() public {
+        _runSTELX(0.0001 ether);
+    }
+
+    function testSTELXMedium() public {
+        _runSTELX(0.001 ether);
+    }
+
+    function testSTELXLarge() public {
+        _runSTELX(0.005 ether);
+    }
+
+    function _runSTELX(uint256 amount) private {
+        V2Hop memory h;
+        h.tokenOut = address(bytes20(hex"7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1"));
+        h.kind = 4;
+        h.tokenIn = address(0);
+        h.key = V2PoolKey(
+            address(0),
+            address(bytes20(hex"7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1")),
+            0,
+            200,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044"))
+        );
+        run(h, amount);
     }
 }

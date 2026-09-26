@@ -43,7 +43,7 @@ abstract contract ProportionalCanaryGuardV3 {
             (address token, bytes memory buy, bytes memory sell) = ProportionalWatchlistV3.routeFor(i);
             bytes32 id = keccak256(abi.encode(token, token.codehash, buy, sell, ProportionalWatchlistV3.evidence()));
             require(tokens[i] == token && vault.configId(token) == id, "config changed");
-            require(vault.targetBps(token) == 375, "target changed");
+            require(vault.targetBps(token) == ProportionalWatchlistV3.targetFor(i), "target changed");
             (address admitted,, bytes memory storedBuy, bytes memory storedSell) = policy.config(id);
             require(admitted == token && keccak256(storedBuy) == keccak256(buy), "buy route changed");
             require(keccak256(storedSell) == keccak256(sell), "sell route changed");

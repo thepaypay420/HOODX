@@ -9,7 +9,7 @@ import {HoodxProportionalPolicyV3} from "../contracts/v3/HoodxProportionalPolicy
 import {HoodxProportionalV3} from "../contracts/v3/HoodxProportionalV3.sol";
 import {ProportionalWatchlistV3} from "./ProportionalWatchlistV3.sol";
 
-/// @notice Creates an empty disposable 20-asset successor canary. It cannot move canary capital.
+/// @notice Creates an empty disposable 21-asset successor canary. It cannot move canary capital.
 contract CreateProportionalCanaryV3 is Script {
     address constant DEPLOYER = 0xf63E63a80A25611154C5d1c06E55FD763E0cfC19;
     address constant CURATOR = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
@@ -30,7 +30,7 @@ contract CreateProportionalCanaryV3 is Script {
             (address admitted,, bytes memory storedBuy, bytes memory storedSell) = policy.config(ids[i]);
             require(admitted == token && keccak256(storedBuy) == keccak256(buy), "buy route changed");
             require(keccak256(storedSell) == keccak256(sell), "sell route changed");
-            weights[i] = 375;
+            weights[i] = ProportionalWatchlistV3.targetFor(i);
         }
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");

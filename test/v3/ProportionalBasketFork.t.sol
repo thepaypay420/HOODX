@@ -6,6 +6,7 @@ import {HoodxProportionalV3} from "../../contracts/v3/HoodxProportionalV3.sol";
 import {HoodxProportionalPolicyV3} from "../../contracts/v3/HoodxProportionalPolicyV3.sol";
 import {HoodxFeeModelV3} from "../../contracts/v3/HoodxFeeModelV3.sol";
 import {HoodxRoutingV3} from "../../contracts/v3/HoodxRoutingV3.sol";
+import {HoodxRouteAdminV3} from "../../contracts/v3/HoodxRouteAdminV3.sol";
 import {HoodxHookRegistryV3} from "../../contracts/v3/HoodxHookRegistryV3.sol";
 import {HoodxProportionalFactoryV3} from "../../contracts/v3/HoodxProportionalFactoryV3.sol";
 import {HoodxIndexV2} from "../../contracts/v2/HoodxIndexV2.sol";
@@ -77,19 +78,18 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         HoodxProportionalPolicyV3 policy = new HoodxProportionalPolicyV3(address(this), address(router));
         HoodxFeeModelV3 fees =
             new HoodxFeeModelV3(address(router), qh, address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044")));
-        bytes32[] memory ids = new bytes32[](20);
-        uint16[] memory weights = new uint16[](20);
-        uint256[] memory floors = new uint256[](20);
-        bytes[] memory sells = new bytes[](20);
-        address[] memory tokens = new address[](20);
+        bytes32[] memory ids = new bytes32[](ProportionalWatchlistV3.count());
+        uint16[] memory weights = new uint16[](ProportionalWatchlistV3.count());
+        uint256[] memory floors = new uint256[](ProportionalWatchlistV3.count());
+        bytes[] memory sells = new bytes[](ProportionalWatchlistV3.count());
+        address[] memory tokens = new address[](ProportionalWatchlistV3.count());
         uint256 gross = vm.envOr("HOODX_CANARY_TEST_SEED", uint256(0.08 ether));
         uint256 net = gross * 9950 / 10000;
-        uint256 seedBudget = net * 375 / 10000;
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             bytes memory buy;
             (tokens[i], buy, sells[i]) = routeFor(i);
             ids[i] = policy.approveRoute(tokens[i], buy, sells[i], ProportionalWatchlistV3.evidence());
-            weights[i] = 375;
+            weights[i] = ProportionalWatchlistV3.targetFor(i);
         }
         HoodxProportionalV3 impl = new HoodxProportionalV3(address(policy), address(fees));
         HoodxProportionalV3 vault = HoodxProportionalV3(payable(Clones.clone(address(impl))));
@@ -111,19 +111,19 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             weights
         );
         vm.deal(address(this), 100 ether);
-        uint256[] memory seedBudgets = new uint256[](20);
-        for (uint256 i; i < 20; ++i) {
-            seedBudgets[i] = seedBudget;
+        uint256[] memory seedBudgets = new uint256[](ProportionalWatchlistV3.count());
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
+            seedBudgets[i] = net * ProportionalWatchlistV3.targetFor(i) / 10000;
         }
         floors = buyOutputs(vault, seedBudgets);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             floors[i] = floors[i] * 9700 / 10000;
             assertGt(floors[i], 0);
         }
         vault.bootstrap{value: gross}(floors, vault.planNonce(), block.timestamp + 300);
         uint256 initialShares = vault.totalSupply();
-        uint256[] memory initial = new uint256[](20);
-        for (uint256 i; i < 20; ++i) {
+        uint256[] memory initial = new uint256[](ProportionalWatchlistV3.count());
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             initial[i] = vault.freeBalance(tokens[i]);
             assertGt(initial[i], 0);
         }
@@ -135,7 +135,7 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         uint256 nonce = vault.planNonce();
         vm.prank(newcomer);
         vault.depositExactShares{value: joinBudget}(shares, budgets, needed, nonce, block.timestamp + 300);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertGe(vault.freeBalance(tokens[i]) * initialShares, initial[i] * vault.totalSupply());
         }
         assertGe(vault.freeBalance(W) * initialShares, cashBefore * vault.totalSupply());
@@ -152,7 +152,7 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         vault.setPaused(true);
         vm.prank(newcomer);
         vault.emergencyRedeemInKind(shares - partialShares, newcomer);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertGe(vault.freeBalance(tokens[i]), initial[i]);
             assertEq(vault.claimable(newcomer, tokens[i]), 0);
         }
@@ -164,7 +164,7 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
         vault.withdraw(initialShares, minimumEth, floors, vault.planNonce(), block.timestamp + 300);
         assertEq(vault.totalSupply(), 0);
         assertEq(vault.freeBalance(W), 0);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertEq(vault.freeBalance(tokens[i]), 0);
             assertEq(IERC20(tokens[i]).balanceOf(address(router)), 0);
         }
@@ -220,6 +220,7 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
     address constant LIVE_REGISTRY = 0xa46150E972Da054f9b954D7a695476A6258A4705;
     address constant LIVE_ROUTING = 0x0d96E749dc6eBd4Ec9E4f35BB3fa05Ab89f1C0dE;
     address constant LIVE_POLICY = 0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21;
+    address constant LIVE_ROUTE_ADMIN = 0x49bAe4Eb7b7a7567f67A600Ca8752027e9d12Fa3;
     address constant LIVE_FACTORY = 0xb0a89074d2f88207698aC99f39061463eeabeC8a;
     address constant PONS_HOOK = 0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044;
     address constant QUOTRON_HOOK = 0x62E200Cc8e4D95cf622f40Dd70f407C883EcB0cc;
@@ -228,21 +229,38 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
     function testLiveInfrastructureCanaryAndPermissionlessFutureVault() public {
         HoodxHookRegistryV3 registry = HoodxHookRegistryV3(LIVE_REGISTRY);
         vm.warp(READY_AT);
+        vm.startPrank(LIVE_DEPLOYER);
         registry.activate(PONS_HOOK);
         registry.activate(QUOTRON_HOOK);
+        vm.stopPrank();
 
-        HoodxProportionalPolicyV3 policy = HoodxProportionalPolicyV3(LIVE_POLICY);
-        bytes32[] memory ids = new bytes32[](20);
-        uint16[] memory weights = new uint16[](20);
-        address[] memory tokens = new address[](20);
-        vm.startPrank(LIVE_DEPLOYER);
-        for (uint256 i; i < 20; ++i) {
-            bytes memory buy;
-            bytes memory sell;
-            (tokens[i], buy, sell) = routeFor(i);
-            ids[i] = policy.approveRoute(tokens[i], buy, sell, ProportionalWatchlistV3.evidence());
-            weights[i] = 375;
+        bytes32[] memory ids = new bytes32[](ProportionalWatchlistV3.count());
+        uint16[] memory weights = new uint16[](ProportionalWatchlistV3.count());
+        address[] memory tokens = new address[](ProportionalWatchlistV3.count());
+        bytes[] memory buys = new bytes[](ProportionalWatchlistV3.count());
+        bytes[] memory sells = new bytes[](ProportionalWatchlistV3.count());
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
+            (tokens[i], buys[i], sells[i]) = routeFor(i);
+            weights[i] = ProportionalWatchlistV3.targetFor(i);
         }
+        HoodxRouteAdminV3 routeAdmin = HoodxRouteAdminV3(LIVE_ROUTE_ADMIN);
+        vm.startPrank(LIVE_CURATOR);
+        for (uint256 start; start < ProportionalWatchlistV3.count(); start += routeAdmin.MAX_BATCH()) {
+            uint256 end = start + routeAdmin.MAX_BATCH();
+            if (end > ProportionalWatchlistV3.count()) end = ProportionalWatchlistV3.count();
+            address[] memory batchTokens = new address[](end - start);
+            bytes[] memory batchBuys = new bytes[](end - start);
+            bytes[] memory batchSells = new bytes[](end - start);
+            for (uint256 i = start; i < end; ++i) {
+                batchTokens[i - start] = tokens[i];
+                batchBuys[i - start] = buys[i];
+                batchSells[i - start] = sells[i];
+            }
+            bytes32[] memory batchIds =
+                routeAdmin.approveRoutes(batchTokens, batchBuys, batchSells, ProportionalWatchlistV3.evidence());
+            for (uint256 i; i < batchIds.length; ++i) ids[start + i] = batchIds[i];
+        }
+        vm.stopPrank();
         HoodxProportionalFactoryV3 factory = HoodxProportionalFactoryV3(LIVE_FACTORY);
         HoodxIndexV2.Init memory init = HoodxIndexV2.Init(
             LIVE_CURATOR,
@@ -257,11 +275,11 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
             0.02 ether,
             ""
         );
+        vm.prank(LIVE_DEPLOYER);
         HoodxProportionalV3 vault = HoodxProportionalV3(payable(factory.create("696xcanary", init, ids, weights)));
-        vm.stopPrank();
         assertEq(vault.owner(), LIVE_CURATOR);
         assertEq(vault.creator(), LIVE_DEPLOYER);
-        assertEq(vault.planNonce(), 21);
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 1);
         _exerciseLiveCanary(vault, tokens, 0.02 ether);
 
         // Any user can create a future vault from the same admitted route IDs.
@@ -295,22 +313,22 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
 
     function _exerciseLiveCanary(HoodxProportionalV3 vault, address[] memory tokens, uint256 gross) private {
         vm.deal(address(this), 100 ether);
-        uint256 seedBudget = (gross * 9950 / 10000) * 375 / 10000;
-        uint256[] memory seedBudgets = new uint256[](20);
-        for (uint256 i; i < 20; ++i) {
-            seedBudgets[i] = seedBudget;
+        uint256 net = gross * 9950 / 10000;
+        uint256[] memory seedBudgets = new uint256[](ProportionalWatchlistV3.count());
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
+            seedBudgets[i] = net * ProportionalWatchlistV3.targetFor(i) / 10000;
         }
         uint256[] memory floors = buyOutputs(vault, seedBudgets);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             floors[i] = floors[i] * 9700 / 10000;
             assertGt(floors[i], 0);
         }
         vm.deal(LIVE_DEPLOYER, 1 ether);
         _bootstrapAs(vault, LIVE_DEPLOYER, gross, floors);
-        assertEq(vault.planNonce(), 21);
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 1);
         uint256 initialShares = vault.totalSupply();
-        uint256[] memory initial = new uint256[](20);
-        for (uint256 i; i < 20; ++i) {
+        uint256[] memory initial = new uint256[](ProportionalWatchlistV3.count());
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             initial[i] = vault.freeBalance(tokens[i]);
             assertGt(initial[i], 0);
         }
@@ -319,8 +337,8 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
         address newcomer = address(0xBEEF);
         vm.deal(newcomer, 1 ether);
         _depositAs(vault, newcomer, shares, budgets, needed);
-        assertEq(vault.planNonce(), 21);
-        for (uint256 i; i < 20; ++i) {
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 1);
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertGe(vault.freeBalance(tokens[i]) * initialShares, initial[i] * vault.totalSupply());
         }
         assertGe(vault.freeBalance(W) * initialShares, cashBefore * vault.totalSupply());
@@ -332,14 +350,14 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
             minimumEth += floors[i];
         }
         _withdrawAs(vault, newcomer, partialShares, minimumEth, floors);
-        assertEq(vault.planNonce(), 21);
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 1);
         vm.prank(LIVE_CURATOR);
         vault.setPaused(true);
-        assertEq(vault.planNonce(), 22);
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 2);
         vm.prank(newcomer);
         vault.emergencyRedeemInKind(shares - partialShares, newcomer);
-        assertEq(vault.planNonce(), 22);
-        for (uint256 i; i < 20; ++i) {
+        assertEq(vault.planNonce(), ProportionalWatchlistV3.count() + 2);
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertGe(vault.freeBalance(tokens[i]), initial[i]);
             assertEq(vault.claimable(newcomer, tokens[i]), 0);
         }
@@ -351,7 +369,7 @@ contract ProportionalLiveInfrastructureForkTest is ProportionalBasketForkTest {
         _withdrawAs(vault, LIVE_DEPLOYER, initialShares, minimumEth, floors);
         assertEq(vault.totalSupply(), 0);
         assertEq(vault.freeBalance(W), 0);
-        for (uint256 i; i < 20; ++i) {
+        for (uint256 i; i < ProportionalWatchlistV3.count(); ++i) {
             assertEq(vault.freeBalance(tokens[i]), 0);
             assertEq(IERC20(tokens[i]).balanceOf(LIVE_ROUTING), 0);
         }
