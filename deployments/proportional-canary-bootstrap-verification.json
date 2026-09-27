@@ -1,0 +1,220 @@
+{
+  "chainId": 4663,
+  "blockNumber": "73738283",
+  "blockTimestamp": "1790491852",
+  "expected": "bootstrapped",
+  "vault": "0x64C9cBBa19B6f6A6D9646b0694F668BeA2501436",
+  "paused": false,
+  "nonce": "22",
+  "supply": "497500000000000000",
+  "deployerShares": "497500000000000000",
+  "curatorShares": "0",
+  "freeWeth": "4975000000000000",
+  "freeNative": "0",
+  "actualWeth": "5075000000000000",
+  "actualNative": "0",
+  "allFreeZero": false,
+  "allClaimsZero": false,
+  "rows": [
+    {
+      "token": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
+      "id": "0x6e3e6cdcb990e87ff193b36ed24dafaae4b078cc7a6fa19e2869f3adf9945744",
+      "target": 358,
+      "free": "3119526548377787403",
+      "actualBalance": "3119526548377787403",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
+      "id": "0xb3fb8bfd23da8e6c90d2a68357c5c9055934c4fbad837b5c4c6da0088de89f0b",
+      "target": 358,
+      "free": "8139809771183074391",
+      "actualBalance": "8139809771183074391",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "id": "0xc1f610e46d234a301942486bfbc997024d708951a9be9a53cae908bb21d77f7a",
+      "target": 358,
+      "free": "10977568965125538451",
+      "actualBalance": "10977568965125538451",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x56910D4409F3a0C78C64DD8D0545FF0705389870",
+      "id": "0xce247ecb3b9dd0ef6729f86ef04d67654193a0e3124952dff9f8c7d9ebd4aa2e",
+      "target": 357,
+      "free": "73163113490601817108",
+      "actualBalance": "73163113490601817108",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x385F4f8ae47651ce5F58F5265395a669f8281e18",
+      "id": "0x5d0fbe8807aa8706263e9d1119c6989420db57af4e784887313255f6d551ea05",
+      "target": 357,
+      "free": "69443971979913295564",
+      "actualBalance": "69443971979913295564",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xe934e36A439C94017B64a3FecE66AF12099aBF50",
+      "id": "0x62297ac5cac89c34483c7d720b0509781a4d1904710d2ab70d458425bf67c84a",
+      "target": 357,
+      "free": "200619738071197582685",
+      "actualBalance": "200619738071197582685",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x20024E485c0B22b42855589700721b28320A7777",
+      "id": "0x61e8d731f6dff242b2309e25edab0e9ee67a59f5b824d683001766222a6457ef",
+      "target": 357,
+      "free": "123073468081840890931",
+      "actualBalance": "123073468081840890931",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x18E674231A58c239Dc7DaeDcffE15Ec3A24cff5c",
+      "id": "0xe4a18b08c624e9a31019e5b3b4c9a5c3b5d5ccc157a42937a57a6f8f75339e0a",
+      "target": 357,
+      "free": "176705060524359001894",
+      "actualBalance": "176705060524359001894",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xe8ffd7e24187F72afB08d75B1bb13088A989a791",
+      "id": "0x9f79797297eda561c58a533a1fe03f89fd61208d16319676cfbc135572b92b42",
+      "target": 357,
+      "free": "98666388271743419613",
+      "actualBalance": "98666388271743419613",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xab093dEF657F15dF31b33922A95e047aDd645B29",
+      "id": "0x037ddd8acf8fc35ac8b3325986b07ebc369bffaa55325d413901bcabf4f6244e",
+      "target": 357,
+      "free": "97694475296367011804",
+      "actualBalance": "97694475296367011804",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x451b42A15100C340CA12F7c66DE06fac5EA2D751",
+      "id": "0xffe3c731dbe852695211460054a7658e22490e27baa4aa9ec6bb72967fe6c627",
+      "target": 357,
+      "free": "286582161144254731338",
+      "actualBalance": "286582161144254731338",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x57C0E45cB534413D1C20A4240955d6bB250BB4F1",
+      "id": "0xd714af8e434e41be0014bbf2e4e5a28340042f31483cffb2f73978abd0f99a48",
+      "target": 357,
+      "free": "5182460438186351945",
+      "actualBalance": "5182460438186351945",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x5a86828Efd322bfb16d93cFeD16EE9BC14940D7F",
+      "id": "0x930604f21cfe88668384378c042971e798ff6e6f9038197524a35ae0060b7ad0",
+      "target": 357,
+      "free": "411031714344912",
+      "actualBalance": "411031714344912",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xCA9c78Dd337A67F6e0077F65F5E9218719d30eDf",
+      "id": "0x46463b72f4de80f6fd18d3913ec6e17486621c7f194450945e6c2c6170024c6e",
+      "target": 357,
+      "free": "3931121",
+      "actualBalance": "3931121",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x9fA1C5E90A11294F83A9F135b81ad1b537A5FFdC",
+      "id": "0x9194a9b54c0a6fc881399a6be0325f85f8d1f9996d28fae41e81bbd7c4a97250",
+      "target": 357,
+      "free": "1031951408133479174406",
+      "actualBalance": "1031951408133479174406",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x91A2DAe9699f0B82540B5886b0d8759C22820bA3",
+      "id": "0x1d609f073a924c4958b2df4a9e816024beaa58287d441c4d35270195a01e2f4a",
+      "target": 357,
+      "free": "23667122468581877613500",
+      "actualBalance": "23667122468581877613500",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xA74a94c15B95f8d5F3abDd2Db00F6c7384037B55",
+      "id": "0x49a36d05a81abf554e5cc84bf63b195ca4a2f812741d09b90ca8fac9c9d689bf",
+      "target": 357,
+      "free": "3018253502181839374171",
+      "actualBalance": "3018253502181839374171",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0xdEe52F2ab639b6942B0d0F0565400b93b7a0fbe5",
+      "id": "0xa006c17f45d0cacc0e45da02ec01d5fea93ac9789f13e19bd8aa83597d317b2b",
+      "target": 357,
+      "free": "753397376586989319435",
+      "actualBalance": "753397376586989319435",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x013940c3daa5e2Bb12df1Ea94AfE47Ce84c0db4f",
+      "id": "0xc66c7898dccffb3f558094538064d88e1ef439f191a597fb6e3b114ec0b21eaf",
+      "target": 357,
+      "free": "3551707981598833657925",
+      "actualBalance": "3551707981598833657925",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x20f24b8D2BCaD7cd252fC60EE5f2Db27C2f2f261",
+      "id": "0xcd22f0903831c2dafc2b5c01bf4bd99a6fbeeb96294d4d5049fa71b75b1050b2",
+      "target": 357,
+      "free": "3891176651769426863534",
+      "actualBalance": "3891176651769426863534",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    },
+    {
+      "token": "0x7A8cda6A1cAB3e5146Cd13Cb623a3bb284fb4aD1",
+      "id": "0xeee534a84a72cea648004ab9944171cb4adb4ab54c343a39454cedd6f4527fe5",
+      "target": 357,
+      "free": "6459015997431471201133",
+      "actualBalance": "6459015997431471201133",
+      "deployerClaim": "0",
+      "curatorClaim": "0"
+    }
+  ],
+  "receipts": [
+    {
+      "hash": "0xcc968c7b88c2fb5c283eb319f2d2eae0e5fede1f79d117e5ea38c36d9c966c80",
+      "blockNumber": "73738243",
+      "confirmations": "41",
+      "from": "0xf63e63a80a25611154c5d1c06e55fd763e0cfc19",
+      "to": "0x64c9cbba19b6f6a6d9646b0694f668bea2501436",
+      "gasUsed": "9870272",
+      "effectiveGasPrice": "22018000"
+    }
+  ]
+}

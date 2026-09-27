@@ -33,6 +33,10 @@ Each broadcast stage still requires `HOODX_LIVE_BROADCAST=1` and a new concrete 
 
 Future user-created vaults are permissionless at the factory and may select any route IDs already admitted by the policy. A new token still requires the same qualification, buy/sell rehearsal, code-hash pinning and owner admission before a user vault can select it; this prevents an arbitrary malicious token from entering other users' baskets.
 
-## Live boundary
+## Live canary checkpoint
 
-The two hook proposals matured at Unix timestamp `1790322086`: 2026-09-25 07:41:26 UTC / 00:41:26 Pacific. Read-only verification on 2026-09-26 confirmed both pending proposals still point to the reviewed code hashes and neither is active. Immediately before each signing request, refresh hook code and dependencies, current-fork lifecycle, signer nonces/balances, gas price and per-stage maximum fees. Production remains stopped until the live canary is fully recovered and verified.
+The two reviewed hooks were activated after their full cooldown, all 21 reviewed routes were admitted, and the empty `696xcanary` clone was created at `0x64C9cBBa19B6f6A6D9646b0694F668BeA2501436`.
+
+The guarded 0.02 ETH bootstrap completed in transaction `0xcc968c7b88c2fb5c283eb319f2d2eae0e5fede1f79d117e5ea38c36d9c966c80` at block `73738243`. The post-state verifier recorded 41 confirmations at block `73738283`, positive holdings for all 21 constituents, a positive WETH reserve, `0.4975` canary shares held entirely by the deployer, zero curator shares, zero deferred deployer/curator claims and no native ETH held by the vault. The machine-readable evidence is in `proportional-canary-bootstrap-verification.json`.
+
+This completes only the first guarded capital stage. The participant join, partial ETH exit, paused in-kind recovery and final deployer close remain pending and require their own fresh rehearsals, fee envelopes and explicit authorizations. The public successor release manifest remains inactive until the complete canary lifecycle is recovered and verified.
