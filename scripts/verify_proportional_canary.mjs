@@ -17,7 +17,7 @@ const addresses={
   factory:getAddress('0xb0a89074d2f88207698aC99f39061463eeabeC8a'),
   weth:getAddress('0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73'),
 };
-const expectedTokens=['0x39dbed3a2bd333467115de45665cc57f813c4571','0x2e8c31162b855a2ffa90f6f8634643ad6f111e18','0x020bfc650a365f8bb26819deaabf3e21291018b4','0x56910d4409f3a0c78c64dd8d0545ff0705389870','0x385f4f8ae47651ce5f58f5265395a669f8281e18','0xe934e36a439c94017b64a3fece66af12099abf50','0x20024e485c0b22b42855589700721b28320a7777','0x18e674231a58c239dc7daedcffe15ec3a24cff5c','0xe8ffd7e24187f72afb08d75b1bb13088a989a791','0xab093def657f15df31b33922a95e047add645b29','0x451b42a15100c340ca12f7c66de06fac5ea2d751','0x57c0e45cb534413d1c20a4240955d6bb250bb4f1','0x5a86828efd322bfb16d93cfed16ee9bc14940d7f','0xca9c78dd337a67f6e0077f65f5e9218719d30edf','0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc','0x0762c1708f0d23f86b29d6b857121ff7df357506','0xa74a94c15b95f8d5f3abdd2db00f6c7384037b55','0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5','0x013940c3daa5e2bb12df1ea94afe47ce84c0db4f','0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261'].map(getAddress);
+const expectedTokens=['0x39dbed3a2bd333467115de45665cc57f813c4571','0x2e8c31162b855a2ffa90f6f8634643ad6f111e18','0x020bfc650a365f8bb26819deaabf3e21291018b4','0x56910d4409f3a0c78c64dd8d0545ff0705389870','0x385f4f8ae47651ce5f58f5265395a669f8281e18','0xe934e36a439c94017b64a3fece66af12099abf50','0x20024e485c0b22b42855589700721b28320a7777','0x18e674231a58c239dc7daedcffe15ec3a24cff5c','0xe8ffd7e24187f72afb08d75b1bb13088a989a791','0xab093def657f15df31b33922a95e047add645b29','0x451b42a15100c340ca12f7c66de06fac5ea2d751','0x57c0e45cb534413d1c20a4240955d6bb250bb4f1','0x5a86828efd322bfb16d93cfed16ee9bc14940d7f','0xca9c78dd337a67f6e0077f65f5e9218719d30edf','0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc','0x91a2dae9699f0b82540b5886b0d8759c22820ba3','0xa74a94c15b95f8d5f3abdd2db00f6c7384037b55','0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5','0x013940c3daa5e2bb12df1ea94afe47ce84c0db4f','0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261','0x7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1'].map(getAddress);
 const factoryAbi=parseAbi(['function bySlug(string) view returns(address)','function implementation() view returns(address)']);
 const vaultAbi=parseAbi(['function accountingMode() pure returns(bytes32)','function policy() view returns(address)','function feeModel() view returns(address)','function executor() view returns(address)','function weth() view returns(address)','function owner() view returns(address)','function creator() view returns(address)','function creatorRecipient() view returns(address)','function treasury() view returns(address)','function creatorFeeBps() view returns(uint16)','function protocolFeeBps() view returns(uint16)','function cashTargetBps() view returns(uint16)','function minFirstDeposit() view returns(uint256)','function totalSupply() view returns(uint256)','function balanceOf(address) view returns(uint256)','function paused() view returns(bool)','function planNonce() view returns(uint256)','function constituents() view returns(address[])','function configId(address) view returns(bytes32)','function targetBps(address) view returns(uint16)','function freeBalance(address) view returns(uint256)','function claimable(address,address) view returns(uint256)']);
 const policyAbi=parseAbi(['function config(bytes32) view returns(address,address,bytes,bytes)']);
@@ -34,36 +34,42 @@ const [vault,implementation]=await Promise.all([
 ]);
 assert(vault!==zeroAddress,'Canary does not exist');
 assert(same(implementation,addresses.implementation),'Factory implementation changed');
-const code=await client.getCode({address:vault,blockNumber:block.number});
-const clone=`0x363d3d373d3d363d73${addresses.implementation.slice(2)}5af43d82803e903d91602b57fd5bf3`.toLowerCase();
-assert(code?.toLowerCase()===clone,'Clone runtime changed');
+let code;
+for(let attempt=0;attempt<3;attempt++){
+  code=await client.getCode({address:vault,blockNumber:block.number});
+  if(code&&code!=='0x') break;
+}
+// Pin the complete EIP-1167 runtime as a literal. This prevents an address
+// representation refactor from silently shortening the expected bytecode.
+const clone='0x363d3d373d3d3d363d73ddc4084055ae4d56f9fa618a1ccd962737f1aef75af43d82803e903d91602b57fd5bf3';
+assert(code&&keccak256(code)===keccak256(clone),`Clone runtime changed (actual hash ${code?keccak256(code):'missing'}, expected hash ${keccak256(clone)})`);
 const read=(functionName,args=[])=>client.readContract({address:vault,abi:vaultAbi,functionName,args,blockNumber:block.number});
 const [mode,policy,feeModel,executor,weth,owner,creator,recipient,treasury,creatorFee,protocolFee,cashTarget,minFirst,supply,deployerShares,curatorShares,paused,nonce,tokens]=await Promise.all([
   read('accountingMode'),read('policy'),read('feeModel'),read('executor'),read('weth'),read('owner'),read('creator'),read('creatorRecipient'),read('treasury'),read('creatorFeeBps'),read('protocolFeeBps'),read('cashTargetBps'),read('minFirstDeposit'),read('totalSupply'),read('balanceOf',[addresses.deployer]),read('balanceOf',[addresses.curator]),read('paused'),read('planNonce'),read('constituents'),
 ]);
 assert(mode===keccak256(toBytes('HOODX_PROPORTIONAL_V1')),'Accounting mode changed');
-for(const [actual,wanted,label] of [[policy,addresses.policy,'policy'],[feeModel,addresses.feeModel,'fee model'],[executor,addresses.executor,'executor'],[weth,addresses.weth,'WETH'],[owner,addresses.curator,'owner'],[creator,addresses.deployer,'creator'],[recipient,addresses.curator,'recipient'],[treasury,addresses.curator,'treasury']]) assert(same(actual,wanted),`${label} changed`);
-assert(creatorFee===40&&protocolFee===10&&cashTarget===2500&&minFirst===20_000_000_000_000_000n,'Economics changed');
-assert(tokens.length===20&&tokens.every((token,i)=>same(token,expectedTokens[i])),'Constituent order changed');
+for(const [actual,wanted,label] of [[policy,addresses.policy,'policy'],[feeModel,addresses.feeModel,'fee model'],[executor,addresses.routing,'routing'],[weth,addresses.weth,'WETH'],[owner,addresses.curator,'owner'],[creator,addresses.deployer,'creator'],[recipient,addresses.curator,'recipient'],[treasury,addresses.curator,'treasury']]) assert(same(actual,wanted),`${label} changed`);
+assert(Number(creatorFee)===40&&Number(protocolFee)===10&&Number(cashTarget)===2500&&minFirst===20_000_000_000_000_000n,'Economics changed');
+assert(tokens.length===21&&tokens.every((token,i)=>same(token,expectedTokens[i])),'Constituent order changed');
 
 const rows=[];
 for(const token of tokens){
   const [id,target,free,actualBalance,deployerClaim,curatorClaim]=await Promise.all([read('configId',[token]),read('targetBps',[token]),read('freeBalance',[token]),client.readContract({address:token,abi:erc20Abi,functionName:'balanceOf',args:[vault],blockNumber:block.number}),read('claimable',[addresses.deployer,token]),read('claimable',[addresses.curator,token])]);
   const [admitted,oracle,buy,sell]=await client.readContract({address:addresses.policy,abi:policyAbi,functionName:'config',args:[id],blockNumber:block.number});
   assert(same(admitted,token)&&oracle===zeroAddress&&buy.length>2&&sell.length>2,'Route admission changed');
-  assert(target===375,'Target changed');
+  assert(Number(target)===(rows.length<3?358:357),'Target changed');
   rows.push({token,id,target,free,actualBalance,deployerClaim,curatorClaim});
 }
 const [freeWeth,freeNative,deployerWethClaim,deployerNativeClaim,curatorWethClaim,curatorNativeClaim,actualWeth,actualNative]=await Promise.all([read('freeBalance',[addresses.weth]),read('freeBalance',[zeroAddress]),read('claimable',[addresses.deployer,addresses.weth]),read('claimable',[addresses.deployer,zeroAddress]),read('claimable',[addresses.curator,addresses.weth]),read('claimable',[addresses.curator,zeroAddress]),client.readContract({address:addresses.weth,abi:erc20Abi,functionName:'balanceOf',args:[vault],blockNumber:block.number}),client.getBalance({address:vault,blockNumber:block.number})]);
 
 const allFreeZero=rows.every(row=>row.free===0n)&&freeWeth===0n&&freeNative===0n;
 const allClaimsZero=rows.every(row=>row.deployerClaim===0n&&row.curatorClaim===0n)&&deployerWethClaim===0n&&deployerNativeClaim===0n&&curatorWethClaim===0n&&curatorNativeClaim===0n;
-if(expected==='empty') assert(supply===0n&&allFreeZero&&nonce===21n&&!paused,'Canary is not pristine');
-if(expected==='bootstrapped') assert(supply>0n&&deployerShares===supply&&rows.every(row=>row.free>0n)&&freeWeth>0n&&nonce===21n&&!paused,'Bootstrap state mismatch');
-if(expected==='participant') assert(supply>deployerShares&&curatorShares>0n&&nonce===21n&&!paused,'Participant position missing');
-if(expected==='participant-recovered') assert(curatorShares===0n&&deployerShares===supply&&paused&&nonce===22n,'Participant recovery incomplete');
+if(expected==='empty') assert(supply===0n&&allFreeZero&&nonce===22n&&!paused,'Canary is not pristine');
+if(expected==='bootstrapped') assert(supply>0n&&deployerShares===supply&&rows.every(row=>row.free>0n)&&freeWeth>0n&&nonce===22n&&!paused,'Bootstrap state mismatch');
+if(expected==='participant') assert(supply>deployerShares&&curatorShares>0n&&nonce===22n&&!paused,'Participant position missing');
+if(expected==='participant-recovered') assert(curatorShares===0n&&deployerShares===supply&&paused&&nonce===23n,'Participant recovery incomplete');
 if(expected==='complete'){
-  assert(supply===0n&&deployerShares===0n&&curatorShares===0n&&allFreeZero&&allClaimsZero&&paused&&nonce===22n,'Canary recovery incomplete');
+  assert(supply===0n&&deployerShares===0n&&curatorShares===0n&&allFreeZero&&allClaimsZero&&paused&&nonce===23n,'Canary recovery incomplete');
   assert(rows.every(row=>row.actualBalance===0n)&&actualWeth===0n&&actualNative===0n,'Vault balance remains');
   for(const token of [...tokens,addresses.weth]){
     const [atExecutor,atRouting]=await Promise.all([client.readContract({address:token,abi:erc20Abi,functionName:'balanceOf',args:[addresses.executor],blockNumber:block.number}),client.readContract({address:token,abi:erc20Abi,functionName:'balanceOf',args:[addresses.routing],blockNumber:block.number})]);

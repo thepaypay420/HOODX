@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {HoodxProportionalFactoryV3} from "../contracts/v3/HoodxProportionalFactoryV3.sol";
 import {HoodxProportionalPolicyV3} from "../contracts/v3/HoodxProportionalPolicyV3.sol";
 import {HoodxProportionalV3} from "../contracts/v3/HoodxProportionalV3.sol";
+import {HoodxRoutingV3} from "../contracts/v3/HoodxRoutingV3.sol";
 import {ProportionalWatchlistV3} from "./ProportionalWatchlistV3.sol";
 import {Vm} from "forge-std/Vm.sol";
 
@@ -15,6 +16,7 @@ abstract contract ProportionalCanaryGuardV3 {
     address internal constant POLICY = 0x93E3d62d50eAfAD5d5dE38c55Da33CC9dB839b21;
     address internal constant FEE_MODEL = 0xE274bc33C5dCD3Ee1dd603a3e08509E46c2B3dFb;
     address internal constant EXECUTOR = 0xB45AC99C355898EAcb3CDFF2c0b94F6C9a77a750;
+    address internal constant ROUTING = 0x0d96E749dc6eBd4Ec9E4f35BB3fa05Ab89f1C0dE;
     address internal constant IMPLEMENTATION = 0xDDC4084055Ae4d56f9Fa618A1Ccd962737F1aEf7;
     address internal constant FACTORY = 0xb0a89074d2f88207698aC99f39061463eeabeC8a;
     string internal constant SLUG = "696xcanary";
@@ -31,7 +33,8 @@ abstract contract ProportionalCanaryGuardV3 {
         vault = HoodxProportionalV3(payable(candidate));
         require(vault.accountingMode() == keccak256("HOODX_PROPORTIONAL_V1"), "accounting changed");
         require(address(vault.policy()) == POLICY && address(vault.feeModel()) == FEE_MODEL, "dependencies changed");
-        require(address(vault.executor()) == EXECUTOR, "executor changed");
+        require(address(vault.executor()) == ROUTING, "routing changed");
+        require(address(HoodxRoutingV3(payable(ROUTING)).pools()) == EXECUTOR, "executor changed");
         require(vault.owner() == CURATOR && vault.creator() == DEPLOYER, "roles changed");
         require(vault.creatorRecipient() == CURATOR && vault.treasury() == CURATOR, "recipients changed");
         require(vault.creatorFeeBps() == 40 && vault.protocolFeeBps() == 10, "fees changed");

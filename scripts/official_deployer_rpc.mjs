@@ -23,6 +23,11 @@ if (mode === "nonce") {
   raw = raw.trim();
   if (!/^0x[0-9a-fA-F]+$/.test(raw)) throw new Error("Invalid signed transaction");
   console.log(await rpc("eth_sendRawTransaction", [raw]));
+} else if (mode === "receipt") {
+  if (!/^0x[0-9a-fA-F]{64}$/.test(argument || "")) throw new Error("Invalid transaction hash");
+  console.log(JSON.stringify(await rpc("eth_getTransactionReceipt", [argument])));
+} else if (mode === "block") {
+  console.log(await rpc("eth_blockNumber", []));
 } else {
-  throw new Error("Expected nonce <address> or send");
+  throw new Error("Expected nonce <address>, send, receipt <hash>, or block");
 }

@@ -30,8 +30,13 @@ contract BootstrapProportionalCanaryV3 is Script, ProportionalCanaryGuardV3 {
         for (uint256 i; i < budgets.length; ++i) {
             budgets[i] = (CAPITAL * 9950 / 10000) * ProportionalWatchlistV3.targetFor(i) / 10000;
         }
-        vm.deal(address(this), CAPITAL);
+        // Quote from the exact payer. Restore the fork snapshot afterwards so
+        // the intentionally reverting quote cannot advance the payer nonce and
+        // skew the transaction that Forge records for broadcast.
+        uint256 quoteSnapshot = vm.snapshotState();
+        vm.prank(DEPLOYER);
         uint256[] memory floors = _quoteBuys(vault, budgets, CAPITAL);
+        require(vm.revertToState(quoteSnapshot), "quote snapshot restore failed");
         require(floors.length == budgets.length, "quote length");
         for (uint256 i; i < floors.length; ++i) {
             floors[i] = floors[i] * 9700 / 10000;
