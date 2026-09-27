@@ -11,7 +11,7 @@ export function BrandMark({
 }) {
   return (
     <Image
-      src="/brand/hoodx-hat.png"
+      src="/brand/hoodx-x.png"
       alt="HOODX"
       width={size}
       height={size}

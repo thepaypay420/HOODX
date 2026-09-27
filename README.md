@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/brand/hoodx-hat.png" width="96" alt="HOODX" />
+  <img src="public/brand/hoodx-x.png" width="96" alt="HOODX" />
 </p>
 
 <h1 align="center">HOODX</h1>
