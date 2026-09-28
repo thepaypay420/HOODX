@@ -1,0 +1,233 @@
+{
+  "WETH/USDG 1bp": {
+    "pool": "WETH/USDG 1bp",
+    "half_width_pct": 10.0,
+    "dwell_hours": 12,
+    "cooldown_hours": 72,
+    "compound_hours": 168,
+    "full_return_pct": 4.9218148602680145,
+    "full_excess_pct": -0.10843488249046018,
+    "full_max_drawdown_pct": -3.5115413662314188,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 1,
+    "fold_returns_pct": [
+      1.399428454003826,
+      2.399112966895456,
+      1.7579342773018203
+    ],
+    "fold_excess_pct": [
+      0.6129666850497539,
+      -0.054912927868355776,
+      0.04110876508001127
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": 0.6468611365762944
+  },
+  "WETH/USDG 5bp": {
+    "pool": "WETH/USDG 5bp",
+    "half_width_pct": 10.0,
+    "dwell_hours": 12,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": 4.761789104147596,
+    "full_excess_pct": -0.26078854944969754,
+    "full_max_drawdown_pct": -3.5161010838214657,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 1,
+    "fold_returns_pct": [
+      1.3019078469580725,
+      2.3650538011594557,
+      1.790069758757351
+    ],
+    "fold_excess_pct": [
+      0.5162024553356792,
+      -0.08815585533580306,
+      0.07270206754179664
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": 0.6293718523212677
+  },
+  "NVDA/USDG 5bp": {
+    "pool": "NVDA/USDG 5bp",
+    "half_width_pct": 10.0,
+    "dwell_hours": 4,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": 2.8121645759894287,
+    "full_excess_pct": 0.28235656397499476,
+    "full_max_drawdown_pct": -4.1054027640764374,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 0,
+    "fold_returns_pct": [
+      1.7798962848524225,
+      -1.2182477249868096,
+      1.9953067605579689
+    ],
+    "fold_excess_pct": [
+      0.12427637257261814,
+      0.12373482695542393,
+      -0.36223460409688935
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": 0.0945101636972212
+  },
+  "QQQ/USDG 5bp": {
+    "pool": "QQQ/USDG 5bp",
+    "half_width_pct": 10.0,
+    "dwell_hours": 4,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": 1.38513563771685,
+    "full_excess_pct": 0.1897268190308221,
+    "full_max_drawdown_pct": -1.5751638531558143,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 0,
+    "fold_returns_pct": [
+      0.27754380323408157,
+      -0.07232468408122639,
+      1.0479170010381011
+    ],
+    "fold_excess_pct": [
+      0.2008699633231137,
+      0.1050975238253482,
+      -0.10814541447162762
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": 0.17053555881732296
+  },
+  "AAPL/USDG 5bp": {
+    "pool": "AAPL/USDG 5bp",
+    "half_width_pct": 25.0,
+    "dwell_hours": 4,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": 2.9815935392242254,
+    "full_excess_pct": -0.07602795797276851,
+    "full_max_drawdown_pct": -2.4174558536584456,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 0,
+    "fold_returns_pct": [
+      -0.6070997442621073,
+      2.9111010972787676,
+      0.7009339691053995
+    ],
+    "fold_excess_pct": [
+      0.09857368972661096,
+      -0.2903626970258033,
+      0.03437307848785931
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": 0.24376485245395818
+  },
+  "SPY/USDG 5bp": {
+    "pool": "SPY/USDG 5bp",
+    "half_width_pct": 5.0,
+    "dwell_hours": 4,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": 0.08524869934827262,
+    "full_excess_pct": 0.27693864188844675,
+    "full_max_drawdown_pct": -1.8428129572213736,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 0,
+    "fold_returns_pct": [
+      -0.162787103246953,
+      -0.285822501197075,
+      0.4667900001414038
+    ],
+    "fold_excess_pct": [
+      0.1104556818734892,
+      0.07758718166990253,
+      0.013986262258836035
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": -0.0826512430531623
+  },
+  "AMZN/USDG 30bp": {
+    "pool": "AMZN/USDG 30bp",
+    "half_width_pct": 25.0,
+    "dwell_hours": 4,
+    "cooldown_hours": 24,
+    "compound_hours": 168,
+    "full_return_pct": -2.897837267649761,
+    "full_excess_pct": 0.038365432454656734,
+    "full_max_drawdown_pct": -4.9709822645952695,
+    "full_uptime_pct": 100.0,
+    "full_rebalances": 0,
+    "fold_returns_pct": [
+      -1.4039300951964262,
+      1.8040310509890745,
+      -3.439653284152988
+    ],
+    "fold_excess_pct": [
+      0.1702387955899276,
+      -0.02364117833997259,
+      -0.4114427621491945
+    ],
+    "fold_uptime_pct": [
+      100.0,
+      100.0,
+      100.0
+    ],
+    "fold_rebalances": [
+      0,
+      0,
+      0
+    ],
+    "robust_score": -1.306028239404049
+  }
+}
