@@ -2,7 +2,7 @@ import { GEN0_SLUG } from "@/lib/curators";
 import type { Address } from "viem";
 
 export type VaultCategory = "culture" | "technology" | "markets" | "defensive";
-export type VaultStatus = "live" | "validated";
+export type VaultStatus = "live" | "validated" | "pilot";
 export type VaultMeta = {
   slug: string; symbol: string; name: string; thesis: string; flair: string; image: string; orbitDeg: number;
   category: VaultCategory; status: VaultStatus; assets: string[]; cashTarget: number; model7dUsd?: number; accent: string; mark: string; address?: Address;
@@ -22,6 +22,7 @@ export const FEATURED_VAULTS: VaultMeta[] = [
   { slug: "corex", symbol: "COREX", name: "Core & carry", thesis: "Broad markets, short Treasuries and a gold sleeve.", flair: "Defensive · Core", image: "/vaults/corex.png", orbitDeg: 0, category: "defensive", status: "live", assets: ["SPY", "QQQ", "SGOV", "GLD", "VTI"], cashTarget: 25, model7dUsd: 2.17, accent: "#d9e3dd", mark: "◇", address: "0xD6b3ba50aFf684df5B53bAD77CA697F64F076789" },
   { slug: "frontierx", symbol: "EDGE", name: "Frontier systems", thesis: "Space, autonomy and strategic industry.", flair: "Markets · Frontier", image: "/vaults/edge.png", orbitDeg: 0, category: "markets", status: "live", assets: ["SPCX", "TSLA", "BA", "LMT", "RCAT", "USAR"], cashTarget: 25, model7dUsd: 0.97, accent: "#ffb86a", mark: "△", address: "0xaabFc490682AD036b421458F10E14dFc105E3AdC" },
   { slug: "consumerx", symbol: "ICONX", name: "Consumer icons", thesis: "Products and platforms people choose every day.", flair: "Markets · Brands", image: "/vaults/iconx.png", orbitDeg: 0, category: "markets", status: "live", assets: ["AAPL", "AMZN", "COST", "META", "NFLX", "LULU"], cashTarget: 25, model7dUsd: 2.44, accent: "#f2a6ff", mark: "✺", address: "0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15" },
+  { slug: "liquidity-prime", symbol: "HLPX", name: "Liquidity prime", thesis: "Four managed liquidity ranges, one recoverable index.", flair: "Liquidity · Protocol pilot", image: "/vaults/liquidity-prime.png", orbitDeg: 0, category: "markets", status: "pilot", assets: ["WU", "WS", "WP", "CW"], cashTarget: 15, accent: "#2ee6cc", mark: "LP" },
 ];
 
 export const NEW_VAULTS = FEATURED_VAULTS.filter((vault) => vault.status === "validated");

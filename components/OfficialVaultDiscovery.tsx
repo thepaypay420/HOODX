@@ -16,17 +16,18 @@ const styleFor = (vault: VaultMeta) => ({ "--vault-accent": vault.accent }) as C
 
 function ThemeMark({ vault }: { vault: VaultMeta }) { return <span className="discovery-mark" style={styleFor(vault)} aria-hidden>{vault.mark}</span>; }
 function Model({ vault, liveReturn }: { vault: VaultMeta; liveReturn?: number }) {
+  if(vault.status === "pilot") return <span className="discovery-status is-pilot"><i /> Pilot</span>;
   const sinceLaunch=vault.slug === "696x";
   const value=sinceLaunch?liveReturn:vault.model7dUsd;
   if(value===undefined)return <span className="discovery-status is-live"><i /> Live</span>;
   return <div className="discovery-model"><strong className={value >= 0 ? "is-up" : "is-down"}>{value >= 0 ? "+" : ""}{value.toFixed(2)}%</strong><span>{sinceLaunch?'Since launch':'7D · USD'}</span></div>;
 }
 function Card({ vault, featured = false, liveReturn }: { vault: VaultMeta; featured?: boolean; liveReturn?: number }) {
-  const href = vault.status === "live" ? `/i/${vault.slug}` : `/explore#${vault.slug}`;
+  const href = vault.status === "pilot" ? `/${vault.slug}` : vault.status === "live" ? `/i/${vault.slug}` : `/explore#${vault.slug}`;
   return <Link id={vault.slug} href={href} className={`discovery-card ${featured ? "is-featured" : ""}`} style={styleFor(vault)}>
     <div className="discovery-card-top">{vault.image ? <TokenArt slug={vault.slug} src={vault.image} size={featured ? "md" : "sm"} /> : <ThemeMark vault={vault} />}<Model vault={vault} liveReturn={liveReturn} /></div>
     <div className="discovery-card-copy"><p>{vault.flair}</p><h3>{vault.name}</h3><span>{vault.thesis}</span></div>
-    <div className="discovery-card-foot"><div className="discovery-tokens" aria-label={`${vault.assets.length} assets: ${vault.assets.join(", ")}`}>{vault.assets.slice(0, 6).map((asset) => <b key={asset}>{asset.slice(0, 2)}</b>)}</div><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
+    <div className="discovery-card-foot"><div className="discovery-tokens" aria-label={`${vault.assets.length} assets: ${vault.assets.join(", ")}`}>{vault.assets.slice(0, 6).map((asset) => <b key={asset}>{asset.slice(0, 2)}</b>)}</div><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : vault.status === "pilot" ? `${vault.assets.length} LP sleeves` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
   </Link>;
 }
 function CreateCard() {
