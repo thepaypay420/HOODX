@@ -1,0 +1,4 @@
+profile,morpho_weight_pct,spark_weight_pct,liquid_reserve_pct,reward_inclusive_apy_pct,organic_30d_apy_pct
+conservative,50.0,30.0,20.0,4.55,2.9450000000000003
+recommended,60.0,30.0,10.0,5.25,3.324
+maximum_headline,75.0,15.0,10.0,5.775,3.3675

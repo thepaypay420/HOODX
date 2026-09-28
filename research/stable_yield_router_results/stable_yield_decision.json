@@ -1,0 +1,22 @@
+{
+  "study_date": "2026-09-28",
+  "best_available_user_headline_apy_pct": 7.0,
+  "headline_source": "Robinhood Earn estimate; variable Morpho rewards included",
+  "underlying_morpho_30d_apy_pct": 3.79,
+  "recommended_router": {
+    "Steakhouse USDG via Morpho": 0.6,
+    "Spark Savings spUSDG": 0.3,
+    "liquid USDG reserve": 0.1,
+    "reward_inclusive_apy_pct": 5.25,
+    "organic_30d_apy_pct": 3.324
+  },
+  "tight_lp_sleeve": {
+    "current_weight": 0.0,
+    "maximum_weight": 0.1,
+    "candidate_policy": "U/USDG +/-25 bps; 12h persistence; 7d cooldown; monthly fee reinvestment",
+    "activation_hurdle_excess_apy_pct": 12.0,
+    "first_tested_volume_multiple_over_12pct": 8.0,
+    "interpolated_volume_multiple_over_12pct": 6.75,
+    "reason": "Observed fees did not compensate for range loss and idle time at current volume."
+  }
+}
