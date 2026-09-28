@@ -6,6 +6,8 @@ The corrected active QUOTIENT token is `0x2531F3ca1b31086b7FC130eCDa6D3253DAF83b
 
 The existing registry requires one proposal and its existing two-day review delay for the Doppler initializer. This is a one-time hook-family review. Once activated, a curator may approve a new asset route using the same exact reviewed outer and nested hook stack immediately. A new or changed hook implementation still requires review.
 
+The reviewed proposal was confirmed on Robinhood Chain in transaction `0x341bca9d6d68f62c2712948a54cb18b43bda5277eb5481773428d92b3d7fd5ba`. The registry stores the expected outer-hook code hash `0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631` and evidence hash `0x9ae8e1086e397ae39cea6d6aea9eafd7da7a4870cc2fb180afffec2a9b42186c`. Its activation eligibility time is Unix `1790740826` (`2026-09-30 04:00:26 UTC`, `2026-09-29 21:00:26 PDT`). The hook remains inactive until a separate post-cooldown activation transaction succeeds.
+
 The replacement deployment reuses the live registry, executor, routing dispatcher, policy, and route administrator. Only a new immutable fee model, vault implementation, and factory are required. Existing vaults and the retired canary are not changed.
 
 ## Validation
