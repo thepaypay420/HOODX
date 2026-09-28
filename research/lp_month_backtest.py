@@ -208,11 +208,12 @@ def simulate(
     cooldown_hours: int,
     compound_hours: int,
     fee_haircut: float,
+    capital_usd: float = CAPITAL,
 ) -> dict:
     start_price = float(df.iloc[0].close)
     lower, upper = centered(start_price, half_width)
     vpl = value_per_liquidity(pool, start_price, lower, upper)
-    liquidity = CAPITAL / vpl
+    liquidity = capital_usd / vpl
     initial_liquidity = liquidity
     fees_idle = 0.0
     rebalances = 0
@@ -295,8 +296,9 @@ def simulate(
         "volume_usd": float(df.volume_usd.sum()),
         "fees_to_position_usd": fee_total,
         "costs_usd": costs_total,
-        "net_return_pct": (final_value / CAPITAL - 1) * 100,
-        "hodl_return_pct": (hodl_final / CAPITAL - 1) * 100,
+        "capital_usd": capital_usd,
+        "net_return_pct": (final_value / capital_usd - 1) * 100,
+        "hodl_return_pct": (hodl_final / capital_usd - 1) * 100,
         "excess_vs_hodl_pct": (final_value / hodl_final - 1) * 100,
         "max_drawdown_pct": drawdown * 100,
         "annualized_vol_pct": annual_vol * 100,
