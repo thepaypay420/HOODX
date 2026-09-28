@@ -1,0 +1,97 @@
+{
+  "data": {
+    "id": "robinhood_0x69bfaf19c9f377bb306a89aed9f6b07e2c1a8d9a",
+    "type": "pool",
+    "attributes": {
+      "base_token_price_usd": "1.00062600065586",
+      "base_token_price_native_currency": "0.000373557441243506",
+      "quote_token_price_usd": "2674.54",
+      "quote_token_price_native_currency": "1.0",
+      "base_token_price_quote_token": "0.0003735574412",
+      "quote_token_price_base_token": "2676.964476122",
+      "address": "0x69bfaf19c9f377bb306a89aed9f6b07e2c1a8d9a",
+      "name": "USDG / WETH 0.05%",
+      "pool_name": "USDG / WETH",
+      "pool_fee_percentage": "0.05",
+      "pool_created_at": "2026-06-29T09:34:25Z",
+      "fdv_usd": "688219108.101505",
+      "market_cap_usd": "3251240607.89781",
+      "price_change_percentage": {
+        "m5": "-0.031",
+        "m15": "0.081",
+        "m30": "0.051",
+        "h1": "0.147",
+        "h6": "0.057",
+        "h24": "0.059"
+      },
+      "transactions": {
+        "m5": {
+          "buys": 11,
+          "sells": 0,
+          "buyers": 9,
+          "sellers": 0
+        },
+        "m15": {
+          "buys": 101,
+          "sells": 11,
+          "buyers": 75,
+          "sellers": 6
+        },
+        "m30": {
+          "buys": 177,
+          "sells": 120,
+          "buyers": 111,
+          "sellers": 81
+        },
+        "h1": {
+          "buys": 405,
+          "sells": 291,
+          "buyers": 202,
+          "sellers": 143
+        },
+        "h6": {
+          "buys": 4355,
+          "sells": 3890,
+          "buyers": 966,
+          "sellers": 801
+        },
+        "h24": {
+          "buys": 17861,
+          "sells": 18183,
+          "buyers": 2335,
+          "sellers": 2176
+        }
+      },
+      "volume_usd": {
+        "m5": "8428.4072874209",
+        "m15": "68017.5987964083",
+        "m30": "163241.036326012",
+        "h1": "378635.510682404",
+        "h6": "5011557.21244225",
+        "h24": "22862675.3837752"
+      },
+      "reserve_in_usd": "5670989.8043",
+      "locked_liquidity_percentage": "0.0"
+    },
+    "relationships": {
+      "base_token": {
+        "data": {
+          "id": "robinhood_0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "type": "token"
+        }
+      },
+      "quote_token": {
+        "data": {
+          "id": "robinhood_0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "type": "token"
+        }
+      },
+      "dex": {
+        "data": {
+          "id": "uniswap-v3-robinhood",
+          "type": "dex"
+        }
+      }
+    }
+  }
+}

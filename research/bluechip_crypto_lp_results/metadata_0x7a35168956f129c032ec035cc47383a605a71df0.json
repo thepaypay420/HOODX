@@ -1,0 +1,97 @@
+{
+  "data": {
+    "id": "robinhood_0x7a35168956f129c032ec035cc47383a605a71df0",
+    "type": "pool",
+    "attributes": {
+      "base_token_price_usd": "2674.58",
+      "base_token_price_native_currency": "1.0",
+      "quote_token_price_usd": "1.00010378327709",
+      "quote_token_price_native_currency": "0.000374176193964921",
+      "base_token_price_quote_token": "2672.537740586",
+      "quote_token_price_base_token": "0.000374176194",
+      "address": "0x7a35168956f129c032ec035cc47383a605a71df0",
+      "name": "WETH / USDG 0.006%",
+      "pool_name": "WETH / USDG",
+      "pool_fee_percentage": "0.006",
+      "pool_created_at": "2026-08-20T06:35:54Z",
+      "fdv_usd": "97884179.3904004",
+      "market_cap_usd": "96582777.8580006",
+      "price_change_percentage": {
+        "m5": "-0.059",
+        "m15": "-0.201",
+        "m30": "-0.247",
+        "h1": "-0.221",
+        "h6": "-0.056",
+        "h24": "-0.423"
+      },
+      "transactions": {
+        "m5": {
+          "buys": 157,
+          "sells": 141,
+          "buyers": 46,
+          "sellers": 74
+        },
+        "m15": {
+          "buys": 355,
+          "sells": 350,
+          "buyers": 78,
+          "sellers": 128
+        },
+        "m30": {
+          "buys": 628,
+          "sells": 554,
+          "buyers": 98,
+          "sellers": 167
+        },
+        "h1": {
+          "buys": 995,
+          "sells": 922,
+          "buyers": 136,
+          "sellers": 235
+        },
+        "h6": {
+          "buys": 8014,
+          "sells": 8028,
+          "buyers": 566,
+          "sellers": 780
+        },
+        "h24": {
+          "buys": 26702,
+          "sells": 25650,
+          "buyers": 1233,
+          "sellers": 1779
+        }
+      },
+      "volume_usd": {
+        "m5": "37268.0586230715",
+        "m15": "104324.082104399",
+        "m30": "185205.384315667",
+        "h1": "350172.188989868",
+        "h6": "3743554.94099559",
+        "h24": "11432191.9405088"
+      },
+      "reserve_in_usd": "221167.7067",
+      "locked_liquidity_percentage": null
+    },
+    "relationships": {
+      "base_token": {
+        "data": {
+          "id": "robinhood_0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+          "type": "token"
+        }
+      },
+      "quote_token": {
+        "data": {
+          "id": "robinhood_0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "type": "token"
+        }
+      },
+      "dex": {
+        "data": {
+          "id": "alandale-cl",
+          "type": "dex"
+        }
+      }
+    }
+  }
+}
