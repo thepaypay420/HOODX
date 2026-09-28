@@ -9,6 +9,11 @@ import {
   parseAbi,
 } from "viem";
 
+throw new Error(
+  "BLOCKED: the historical proportional-canary plan contains the legacy QUOTIENT token. "
+  + "The corrected token's dynamic-fee route fails the deployed fee model, so readiness cannot pass.",
+);
+
 const CHAIN_ID = 4663;
 const DEPLOYER = getAddress("0xf63E63a80A25611154C5d1c06E55FD763E0cfC19");
 const CURATOR = getAddress("0x134D468B0bcaeA6DF127916f951F7938c06A37C6");

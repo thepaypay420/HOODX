@@ -312,20 +312,20 @@
       "id": "QUOTIENT",
       "symbol": "QUOTIENT",
       "name": "Quotient",
-      "token": "0x013940c3daa5e2bb12df1ea94afe47ce84c0db4f",
-      "listedMcapUsd": 1600000,
+      "token": "0x2531f3ca1b31086b7fc130ecda6d3253daf83ba3",
+      "listedMcapUsd": 1214038,
       "listedQuote": "WETH",
-      "mcapUsd": 477325.0,
-      "priceUsd": 0.0004773,
-      "buyPool": "0x10f49351db85bffc0c0d837771a6e4da2dd2daa1",
+      "mcapUsd": 1214038.0,
+      "priceUsd": 1.214e-05,
+      "buyPool": "0xc6c2cd8e0f1e9373e0e2c60da3b6619753f7ff05599d59a66a358cbbaecc5ccf",
       "buyDex": "uniswap",
       "buyLabels": [
-        "v3"
+        "v4"
       ],
       "buyQuote": "WETH",
       "buyQuoteAddr": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
-      "buyTvlUsd": 379291.53,
-      "vol24Usd": 0.02,
+      "buyTvlUsd": 287201.72,
+      "vol24Usd": 47290.7,
       "hops": 1
     },
     {

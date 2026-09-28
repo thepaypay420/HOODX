@@ -65,9 +65,11 @@ contract SuccessorWatchlistForkTest is Test {
         vm.warp(now_ - 2 days);
         registry.propose(address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044")), bytes32(uint256(1)));
         registry.propose(address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc")), bytes32(uint256(2)));
+        registry.propose(address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544")), bytes32(uint256(3)));
         vm.warp(now_);
         registry.activate(address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044")));
         registry.activate(address(bytes20(hex"62e200cc8e4d95cf622f40dd70f407c883ecb0cc")));
+        registry.activate(address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544")));
         ex = new HoodxExecutorV3(
             W,
             address(bytes20(hex"8876789976decbfcbbbe364623c63652db8c0904")),
@@ -902,28 +904,46 @@ contract SuccessorWatchlistForkTest is Test {
 
     function testQUOTIENTSmall() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
-        h.kind = 3;
+        h.tokenOut = address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3"));
+        h.kind = 4;
         h.tokenIn = W;
-        h.fee = 100;
+        h.key = V2PoolKey(
+            W,
+            address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3")),
+            8388608,
+            200,
+            address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544"))
+        );
         run(h, 0.0001 ether);
     }
 
     function testQUOTIENTMedium() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
-        h.kind = 3;
+        h.tokenOut = address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3"));
+        h.kind = 4;
         h.tokenIn = W;
-        h.fee = 100;
+        h.key = V2PoolKey(
+            W,
+            address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3")),
+            8388608,
+            200,
+            address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544"))
+        );
         run(h, 0.001 ether);
     }
 
     function testQUOTIENTLarge() public {
         V2Hop memory h;
-        h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
-        h.kind = 3;
+        h.tokenOut = address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3"));
+        h.kind = 4;
         h.tokenIn = W;
-        h.fee = 100;
+        h.key = V2PoolKey(
+            W,
+            address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3")),
+            8388608,
+            200,
+            address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544"))
+        );
         run(h, 0.005 ether);
     }
 

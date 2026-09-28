@@ -11,7 +11,7 @@ library ProportionalWatchlistV3 {
     address internal constant SPY = 0x117cc2133c37B721F49dE2A7a74833232B3B4C0C;
     address internal constant SPCX = 0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa;
 
-    bytes32 internal constant EVIDENCE = keccak256("HOODX_696X_WATCHLIST_ROUTE_REVIEW_V2_2026-09-26");
+    bytes32 internal constant EVIDENCE = keccak256("HOODX_696X_WATCHLIST_ROUTE_REVIEW_V3_2026-09-27");
 
     function count() internal pure returns (uint256) {
         return 21;
@@ -232,10 +232,18 @@ library ProportionalWatchlistV3 {
             );
         }
         if (i == 18) {
-            h.tokenOut = address(bytes20(hex"013940c3daa5e2bb12df1ea94afe47ce84c0db4f"));
-            h.kind = 3;
+            // Active QUOTIENT. The identically named 0x0139...db4f contract is a
+            // legacy, effectively inactive market and must never be used again.
+            h.tokenOut = address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3"));
+            h.kind = 4;
             h.tokenIn = WETH;
-            h.fee = 100;
+            h.key = V2PoolKey(
+                WETH,
+                address(bytes20(hex"2531f3ca1b31086b7fc130ecda6d3253daf83ba3")),
+                8388608,
+                200,
+                address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544"))
+            );
         }
         if (i == 19) {
             h.tokenOut = address(bytes20(hex"20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261"));

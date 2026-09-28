@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import { formatEther, keccak256, toBytes } from "viem";
 
+throw new Error(
+  "RETIRED: do not rebuild the historical canary envelope. It contains the legacy QUOTIENT token, "
+  + "and the active dynamic-fee route is unsupported by deployed HoodxFeeModelV3.",
+);
+
 const readiness = JSON.parse(fs.readFileSync("deployments/proportional-canary-live-readiness.json", "utf8"));
 if (!readiness.ready || readiness.broadcast) throw new Error("Readiness checkpoint is not safe");
 

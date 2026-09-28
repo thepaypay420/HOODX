@@ -10,6 +10,12 @@ import {
   parseAbi,
 } from "viem";
 
+throw new Error(
+  "RETIRED: the 696xcanary signing envelope contains the legacy QUOTIENT token. "
+  + "The active QUOTIENT route is also incompatible with deployed HoodxFeeModelV3. "
+  + "No setup transaction may be presented from this script.",
+);
+
 const PORT = 8796;
 const ZERO = "0x0000000000000000000000000000000000000000";
 const readiness = JSON.parse(fs.readFileSync("deployments/proportional-canary-live-readiness.json", "utf8"));

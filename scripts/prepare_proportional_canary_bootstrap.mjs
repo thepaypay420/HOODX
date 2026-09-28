@@ -10,6 +10,10 @@ import {
   parseAbi,
 } from "viem";
 
+throw new Error(
+  "RETIRED: the existing canary contains the legacy QUOTIENT token and must not receive another bootstrap or deposit.",
+);
+
 const rpc = process.env.ROBINHOOD_RPC_URL || fs.readFileSync("C:/Users/lukey/Desktop/RH RPC.txt", "utf8").trim();
 const deployer = getAddress("0xf63E63a80A25611154C5d1c06E55FD763E0cfC19");
 const curator = getAddress("0x134D468B0bcaeA6DF127916f951F7938c06A37C6");

@@ -1,0 +1,347 @@
+{
+  "chainId": 4663,
+  "checkedAt": "2026-09-28T02:52:52.088Z",
+  "blockNumber": "74454122",
+  "blockedTokens": [
+    "0x013940c3daa5e2bb12df1ea94afe47ce84c0db4f"
+  ],
+  "passed": true,
+  "rows": [
+    {
+      "expectedSymbol": "PONS",
+      "token": "0x39dbed3a2bd333467115de45665cc57f813c4571",
+      "name": "Pons",
+      "symbol": "PONS",
+      "decimals": 18,
+      "pair": "0xf2A0bE59AB76b96f957bd5E5b967F2B75e8dB269",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 1508853.3,
+      "volume24Usd": 7254387.94,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "AI",
+      "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+      "name": "Artificial Inu",
+      "symbol": "AI",
+      "decimals": 18,
+      "pair": "0x7aebd80541bfaaf23dbb6e99ce13d4d31c1a84c91414f971eadbff7db5f85995",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 1256888.55,
+      "volume24Usd": 3514570.04,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "CASHCAT",
+      "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+      "name": "Cash Cat",
+      "symbol": "CASHCAT",
+      "decimals": 18,
+      "pair": "0xd42A491087a15E5afd51FEb3606066Cc152d2b09",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 2280814.17,
+      "volume24Usd": 3497328.05,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "Index",
+      "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+      "name": "The Index",
+      "symbol": "Index",
+      "decimals": 18,
+      "pair": "0x8fb2273e40a44bd4b442bf7f24b953e46a7ecae7384038b266008ae44ebe62be",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 191230.48,
+      "volume24Usd": 348876.74,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "MEME",
+      "token": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
+      "name": "A Meme Coin",
+      "symbol": "MEME",
+      "decimals": 18,
+      "pair": "0x46525dc119850396470f132c4a989d7192cb692139db891b5a4cdcd684c11b17",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 1068422.16,
+      "volume24Usd": 1468561.09,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "STONKBROKER",
+      "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+      "name": "StonkBroker",
+      "symbol": "STONKBROKER",
+      "decimals": 18,
+      "pair": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 2502035.7,
+      "volume24Usd": 168438.04,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "PRISM",
+      "token": "0x20024e485c0b22b42855589700721b28320a7777",
+      "name": "Prism Assets",
+      "symbol": "PRISM",
+      "decimals": 18,
+      "pair": "0xF1D6b8eCAF2271233BED626FB1962BC0c39Cb1f3",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 76024.2,
+      "volume24Usd": 491954.52,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "HOOKR",
+      "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+      "name": "Hookr.fun",
+      "symbol": "HOOKR",
+      "decimals": 18,
+      "pair": "0x590dcb6a87828bf688b48089a62239b693378f1fb64d2286e6a399ed8c005fdf",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 776664.39,
+      "volume24Usd": 690519.36,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "DELTA",
+      "token": "0xe8ffd7e24187f72afb08d75b1bb13088a989a791",
+      "name": "Delta",
+      "symbol": "DELTA",
+      "decimals": 18,
+      "pair": "0xD64FbdA67E1015dF43Fa5e49F02cA844729E5F94",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 1351646.43,
+      "volume24Usd": 1025711.19,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "SHROOM",
+      "token": "0xab093def657f15df31b33922a95e047add645b29",
+      "name": "MUSHROOM",
+      "symbol": "SHROOM",
+      "decimals": 18,
+      "pair": "0x778a632fdd85577efe9cfce4a2c9ac91b9decdb24c351f9b56e25d38fbe587b4",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 564625.64,
+      "volume24Usd": 341310.28,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "BOW",
+      "token": "0x451b42a15100c340ca12f7c66de06fac5ea2d751",
+      "name": "Longbow",
+      "symbol": "BOW",
+      "decimals": 18,
+      "pair": "0xdba909ac1600a59685928cf317fb953d518d405b4748371889e3cb2932adf4c2",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 210706.7,
+      "volume24Usd": 169742.64,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "UP",
+      "token": "0x57c0e45cb534413d1c20a4240955d6bb250bb4f1",
+      "name": "up",
+      "symbol": "UP",
+      "decimals": 18,
+      "pair": "0x23D641FeCcD207E8794c593e8240444A0674C4Ba",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 1405201.18,
+      "volume24Usd": 536294.5,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "QUOTRON",
+      "token": "0x5a86828efd322bfb16d93cfed16ee9bc14940d7f",
+      "name": "QUOTRONS",
+      "symbol": "QUOTRON",
+      "decimals": 18,
+      "pair": "0x0b142aaf734f1b063355bfe854e282a13b26dcac86e2e564e74540f9b218d069",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 380267.58,
+      "volume24Usd": 132380.5,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "NET",
+      "token": "0xca9c78dd337a67f6e0077f65f5e9218719d30edf",
+      "name": "NetNet",
+      "symbol": "NET",
+      "decimals": 9,
+      "pair": "0x99e70A5b06215e5D2F3BeC773b4f59c008fc1673",
+      "labels": [
+        "v3"
+      ],
+      "liquidityUsd": 262557.14,
+      "volume24Usd": 1546453.11,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "ZEAL",
+      "token": "0x9fa1c5e90a11294f83a9f135b81ad1b537a5ffdc",
+      "name": "ZEAL",
+      "symbol": "ZEAL",
+      "decimals": 18,
+      "pair": "0x95f9fcf8eb2d707d6c9c8175822c6005fcce759933e54f8d5ca6df458c8ccaf0",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 136849.94,
+      "volume24Usd": 140073.24,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "musebook",
+      "token": "0x91a2dae9699f0b82540b5886b0d8759c22820ba3",
+      "name": "musebook",
+      "symbol": "musebook",
+      "decimals": 18,
+      "pair": "0x93cc54eb4e1928e841cb8b2e488bd82e8d97d56e0aab16cf078ef71c576dcded",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 246649.04,
+      "volume24Usd": 1502356.44,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "Aria",
+      "token": "0xa74a94c15b95f8d5f3abdd2db00f6c7384037b55",
+      "name": "Aria",
+      "symbol": "Aria",
+      "decimals": 18,
+      "pair": "0x84ee7bda8d15c2605eb78326862827f961d659cc2ba97d26845cd0156e6e5606",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 48723.09,
+      "volume24Usd": 132366.05,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "HARMONIC",
+      "token": "0xdee52f2ab639b6942b0d0f0565400b93b7a0fbe5",
+      "name": "Harmonic Agent",
+      "symbol": "HARMONIC",
+      "decimals": 18,
+      "pair": "0x77ea11bbfb8f1259c702cb0ebc2105b7c007db89cf30c2f1a8776886a4467c07",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 169150.42,
+      "volume24Usd": 181758.02,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "QUOTIENT",
+      "token": "0x2531f3ca1b31086b7fc130ecda6d3253daf83ba3",
+      "name": "Quotient",
+      "symbol": "QUOTIENT",
+      "decimals": 18,
+      "pair": "0xc6c2cd8e0f1e9373e0e2c60da3b6619753f7ff05599d59a66a358cbbaecc5ccf",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 287201.72,
+      "volume24Usd": 47290.7,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "PROMETHEUS",
+      "token": "0x20f24b8d2bcad7cd252fc60ee5f2db27c2f2f261",
+      "name": "Prometheus",
+      "symbol": "PROMETHEUS",
+      "decimals": 18,
+      "pair": "0x627c2c78063757b8e85ef1eae046df8ad0695a1ebd3dbb6b62aec2ee516de2e8",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 66605.03,
+      "volume24Usd": 15771.49,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    },
+    {
+      "expectedSymbol": "STELX",
+      "token": "0x7a8cda6a1cab3e5146cd13cb623a3bb284fb4ad1",
+      "name": "STELX",
+      "symbol": "STELX",
+      "decimals": 18,
+      "pair": "0xe7d9b451db9ff15a8062bda895ca90c9712345c7476ef81c2f630f56011e1392",
+      "labels": [
+        "v4"
+      ],
+      "liquidityUsd": 58626.64,
+      "volume24Usd": 86557.7,
+      "identityMatches": true,
+      "liquid": true,
+      "active": true
+    }
+  ]
+}
