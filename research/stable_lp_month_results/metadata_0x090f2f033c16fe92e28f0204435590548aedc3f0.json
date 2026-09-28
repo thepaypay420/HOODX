@@ -1,0 +1,97 @@
+{
+  "data": {
+    "id": "robinhood_0x090f2f033c16fe92e28f0204435590548aedc3f0",
+    "type": "pool",
+    "attributes": {
+      "base_token_price_usd": "0.997148319846407",
+      "base_token_price_native_currency": "0.000369613658053685207792179060070904399973187",
+      "quote_token_price_usd": "0.997807236035828",
+      "quote_token_price_native_currency": "0.000369895251242179",
+      "base_token_price_quote_token": "0.9992387218",
+      "quote_token_price_base_token": "1.0007618582",
+      "address": "0x090f2f033c16fe92e28f0204435590548aedc3f0",
+      "name": "U / USDG 0.01%",
+      "pool_name": "U / USDG",
+      "pool_fee_percentage": "0.01",
+      "pool_created_at": "2026-09-08T13:34:19Z",
+      "fdv_usd": "29914649.023664",
+      "market_cap_usd": "1517502583.81427",
+      "price_change_percentage": {
+        "m5": "0.011",
+        "m15": "0.122",
+        "m30": "0.306",
+        "h1": "-0.219",
+        "h6": "-0.287",
+        "h24": "-0.201"
+      },
+      "transactions": {
+        "m5": {
+          "buys": 6,
+          "sells": 0,
+          "buyers": 4,
+          "sellers": 0
+        },
+        "m15": {
+          "buys": 9,
+          "sells": 12,
+          "buyers": 6,
+          "sellers": 9
+        },
+        "m30": {
+          "buys": 18,
+          "sells": 64,
+          "buyers": 13,
+          "sellers": 37
+        },
+        "h1": {
+          "buys": 60,
+          "sells": 89,
+          "buyers": 32,
+          "sellers": 51
+        },
+        "h6": {
+          "buys": 465,
+          "sells": 421,
+          "buyers": 112,
+          "sellers": 169
+        },
+        "h24": {
+          "buys": 1065,
+          "sells": 1236,
+          "buyers": 231,
+          "sellers": 355
+        }
+      },
+      "volume_usd": {
+        "m5": "2108.8867427729",
+        "m15": "7186.8781151197",
+        "m30": "40950.2824101636",
+        "h1": "72482.5126701954",
+        "h6": "369416.509582605",
+        "h24": "1571936.30940727"
+      },
+      "reserve_in_usd": "5939951.7008",
+      "locked_liquidity_percentage": null
+    },
+    "relationships": {
+      "base_token": {
+        "data": {
+          "id": "robinhood_0xce24439f2d9c6a2289f741120fe202248b666666",
+          "type": "token"
+        }
+      },
+      "quote_token": {
+        "data": {
+          "id": "robinhood_0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "type": "token"
+        }
+      },
+      "dex": {
+        "data": {
+          "id": "pancakeswap-v3-robinhood",
+          "type": "dex"
+        }
+      }
+    }
+  }
+}

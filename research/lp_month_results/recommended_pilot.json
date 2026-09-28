@@ -1,0 +1,103 @@
+{
+  "capital_usd": 10000.0,
+  "reserve_weight_pct": 15.0,
+  "sleeves": {
+    "WETH/USDG 1bp": {
+      "weight": 0.55,
+      "half_width_pct": 10.0,
+      "dwell_hours": 12,
+      "cooldown_hours": 72,
+      "compound_hours": 72
+    },
+    "NVDA/USDG 5bp": {
+      "weight": 0.2,
+      "half_width_pct": 10.0,
+      "dwell_hours": 4,
+      "cooldown_hours": 24,
+      "compound_hours": 168
+    },
+    "QQQ/USDG 5bp": {
+      "weight": 0.1,
+      "half_width_pct": 10.0,
+      "dwell_hours": 4,
+      "cooldown_hours": 24,
+      "compound_hours": 168
+    }
+  },
+  "cases": {
+    "50pct_fee_haircut": {
+      "net_return_pct": 4.564546085844534,
+      "max_drawdown_pct": -2.400437499181274,
+      "annualized_vol_pct": 12.833691662588159,
+      "worst_day_pct": -1.53889488093778,
+      "sleeves": [
+        {
+          "pool": "WETH/USDG 1bp",
+          "weight_pct": 55.00000000000001,
+          "net_return_pct": 6.606372507511549,
+          "max_drawdown_pct": -3.2580980924974523,
+          "time_in_range_pct": 100.0,
+          "rebalances": 1,
+          "compounds": 9
+        },
+        {
+          "pool": "NVDA/USDG 5bp",
+          "weight_pct": 20.0,
+          "net_return_pct": 3.785617022926302,
+          "max_drawdown_pct": -3.8807092607339944,
+          "time_in_range_pct": 100.0,
+          "rebalances": 0,
+          "compounds": 4
+        },
+        {
+          "pool": "QQQ/USDG 5bp",
+          "weight_pct": 10.0,
+          "net_return_pct": 1.7391780212792085,
+          "max_drawdown_pct": -1.4579221994908464,
+          "time_in_range_pct": 100.0,
+          "rebalances": 0,
+          "compounds": 4
+        }
+      ],
+      "passive_starting_mix_return_pct": 3.3934921343473645,
+      "excess_vs_passive_pct": 1.1326186274621008
+    },
+    "75pct_fee_haircut": {
+      "net_return_pct": 3.4084473417196115,
+      "max_drawdown_pct": -2.559767456823858,
+      "annualized_vol_pct": 12.803904244465961,
+      "worst_day_pct": -1.5830868671496412,
+      "sleeves": [
+        {
+          "pool": "WETH/USDG 1bp",
+          "weight_pct": 55.00000000000001,
+          "net_return_pct": 4.922728841363688,
+          "max_drawdown_pct": -3.515131013798345,
+          "time_in_range_pct": 100.0,
+          "rebalances": 1,
+          "compounds": 9
+        },
+        {
+          "pool": "NVDA/USDG 5bp",
+          "weight_pct": 20.0,
+          "net_return_pct": 2.8121645759894287,
+          "max_drawdown_pct": -4.1054027640764374,
+          "time_in_range_pct": 100.0,
+          "rebalances": 0,
+          "compounds": 4
+        },
+        {
+          "pool": "QQQ/USDG 5bp",
+          "weight_pct": 10.0,
+          "net_return_pct": 1.38513563771685,
+          "max_drawdown_pct": -1.5751638531558143,
+          "time_in_range_pct": 100.0,
+          "rebalances": 0,
+          "compounds": 4
+        }
+      ],
+      "passive_starting_mix_return_pct": 3.3934921343473645,
+      "excess_vs_passive_pct": 0.014464360438481982
+    }
+  }
+}

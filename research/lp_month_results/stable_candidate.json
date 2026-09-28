@@ -1,0 +1,20 @@
+{
+  "label": "USDe/USDG 1bp v4",
+  "pool_id": "0xa5f23cae4e5c3388c5a8a6b08a83f53e56df8f1a63757e606b362994b68a2361",
+  "fee": 100,
+  "tvl_usd": 998168.61,
+  "hours": 720,
+  "from": "2026-08-29T17:00:00+00:00",
+  "to": "2026-09-28T16:00:00+00:00",
+  "volume_30d_usd": 6121707.696384488,
+  "median_price": 0.999871864195367,
+  "max_close_deviation_bps": 302.37721721380063,
+  "p99_close_deviation_bps": 39.33095129931445,
+  "p99_intrahour_deviation_bps": 113.11645173324789,
+  "anomalous_wick_hours_over_500bps": 2,
+  "full_pool_fee_return_pct": 0.061329395004562276,
+  "close_uptime_within_25bps_pct": 96.38888888888889,
+  "close_uptime_within_50bps_pct": 99.30555555555556,
+  "close_uptime_within_100bps_pct": 99.72222222222223,
+  "close_uptime_within_200bps_pct": 99.86111111111111
+}
