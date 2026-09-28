@@ -4,7 +4,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SuccessorWatchlistForkTest} from "./SuccessorWatchlistFork.t.sol";
 import {HoodxProportionalV3} from "../../contracts/v3/HoodxProportionalV3.sol";
 import {HoodxProportionalPolicyV3} from "../../contracts/v3/HoodxProportionalPolicyV3.sol";
-import {HoodxFeeModelV3} from "../../contracts/v3/HoodxFeeModelV3.sol";
+import {HoodxFeeModelV4} from "../../contracts/v3/HoodxFeeModelV4.sol";
 import {HoodxRoutingV3} from "../../contracts/v3/HoodxRoutingV3.sol";
 import {HoodxRouteAdminV3} from "../../contracts/v3/HoodxRouteAdminV3.sol";
 import {HoodxHookRegistryV3} from "../../contracts/v3/HoodxHookRegistryV3.sol";
@@ -76,8 +76,14 @@ contract ProportionalBasketForkTest is SuccessorWatchlistForkTest {
             qh
         );
         HoodxProportionalPolicyV3 policy = new HoodxProportionalPolicyV3(address(this), address(router));
-        HoodxFeeModelV3 fees =
-            new HoodxFeeModelV3(address(router), qh, address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044")));
+        HoodxFeeModelV4 fees = new HoodxFeeModelV4(
+            address(router),
+            qh,
+            address(bytes20(hex"e5e702641ea86f4ae6cc3cdaed2b886f976be044")),
+            address(bytes20(hex"8366a39cc670b4001a1121b8f6a443a643e40951")),
+            address(bytes20(hex"4e3468951d49f2eea976ed0d6e75ffcb44a9a544")),
+            address(bytes20(hex"9982538f41f2ae29ddb9d3d9307010052984fdbb"))
+        );
         bytes32[] memory ids = new bytes32[](ProportionalWatchlistV3.count());
         uint16[] memory weights = new uint16[](ProportionalWatchlistV3.count());
         uint256[] memory floors = new uint256[](ProportionalWatchlistV3.count());

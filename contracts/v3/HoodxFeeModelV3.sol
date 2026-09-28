@@ -45,7 +45,7 @@ contract HoodxFeeModelV3 {
         ponsHash = ponsHook_.codehash;
     }
 
-    function factor(bytes memory route) external view returns (uint256 retained) {
+    function factor(bytes memory route) public view virtual returns (uint256 retained) {
         V2Hop[] memory h = abi.decode(route, (V2Hop[]));
         if (h.length == 0 || h.length > 4) revert UnsupportedFee();
         retained = 1e18;
@@ -89,7 +89,7 @@ contract HoodxFeeModelV3 {
         if (retained < 800e15) revert UnsupportedFee();
     }
 
-    function transferFactor(bytes memory route) external pure returns (uint256) {
+    function transferFactor(bytes memory route) public pure virtual returns (uint256) {
         V2Hop[] memory h = abi.decode(route, (V2Hop[]));
         if (h.length == 1 && h[0].kind == 6) {
             if (h[0].hookData.length != 32) revert UnsupportedFee();
