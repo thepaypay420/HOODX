@@ -1,0 +1,11 @@
+pool,external_backtest_return_pct,mc_worst5_pct,mc_median_pct,mc_best5_pct,decision,reason
+WETH/USDG 0.01%,3.52,9.0,10.0,11.0,ADMIT CORE,positive external tail band; deepest pool
+NVDA/USDG 0.05%,2.35,1.0,4.0,11.0,ADMIT CAPPED,positive external tail band; independent fee sleeve
+TSLA/USDG 0.3%,8.36,-60.0,-15.0,26.0,REJECT V1,high backtest return but catastrophic adverse band
+WETH/SPY 0.05%,15.84,-88.0,-68.0,-22.0,REJECT,every reported Monte Carlo band is negative
+WETH/NVDA 0.05%,1.57,-79.0,-32.0,26.0,REJECT,volatile/volatile pair adds double-beta tail risk
+WETH/MSTR 1%,-54.7,,,,REJECT,every tested range lost money
+MU/USDG 0.3%,3.33,5.0,9.0,22.0,WATCH,positive external band; HOODX full-path fee excess still negative
+AMZN/USDG 0.3%,10.27,4.0,15.0,35.0,WATCH,positive external band conflicts with negative HOODX 30-day regime
+SLV/USDG 0.3%,13.3,7.0,20.0,46.0,WATCH,positive external band; HOODX drawdown and one fold fail
+DELL/USDG 1%,11.15,33.0,34.0,34.0,WATCH/VERIFY,low-confidence external result; HOODX return mostly beta
