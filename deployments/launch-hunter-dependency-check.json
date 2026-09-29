@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-09-29T16:51:59.245Z",
+  "chainId": 4663,
+  "blockNumber": "75813752",
+  "blockTimestamp": "1790700719",
+  "infrastructure": {
+    "executor": "0xB45AC99C355898EAcb3CDFF2c0b94F6C9a77a750",
+    "executorCodeHash": "0x7f0ab91ef78f36e60d01f7b167e227de218e708931ce4b6e823080608a4dc195",
+    "registry": "0xa46150E972Da054f9b954D7a695476A6258A4705",
+    "registryCodeHash": "0xe99ef6b4630b07bd49e8183cfcc3f4f27dcb1df1fcd4d03460821e41354118ed",
+    "registryMatchesExecutor": true,
+    "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+    "v2Factory": "0x8bcEaA40B9AcdfAedF85AdF4FF01F5Ad6517937f"
+  },
+  "hooks": {
+    "pons": {
+      "active": true,
+      "codeHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "evidence": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "readyAt": "0",
+      "readyAtIso": null,
+      "matured": false
+    },
+    "doppler": {
+      "active": false,
+      "codeHash": "0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631",
+      "evidence": "0x9ae8e1086e397ae39cea6d6aea9eafd7da7a4870cc2fb180afffec2a9b42186c",
+      "readyAt": "1790740826",
+      "readyAtIso": "2026-09-30T04:00:26.000Z",
+      "matured": false
+    }
+  },
+  "signers": {
+    "deployer": {
+      "address": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+      "balanceEth": "0.028522407743122",
+      "latestNonce": 109,
+      "pendingNonce": 109
+    },
+    "curator": {
+      "address": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+      "balanceEth": "0.024261567567392797",
+      "latestNonce": 903,
+      "pendingNonce": 903
+    }
+  }
+}

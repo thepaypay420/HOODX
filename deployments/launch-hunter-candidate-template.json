@@ -1,0 +1,21 @@
+{
+  "tokenAddress": "",
+  "chainId": 4663,
+  "family": "PONS_V2",
+  "creatorFunderClusterHash": "",
+  "evidenceHash": "",
+  "observedAtUtc": "",
+  "tokenAgeHours": null,
+  "priceVsTwoHourReference": null,
+  "sixHourVolumeEth": null,
+  "sixHourSwapCount": null,
+  "activeFifteenMinuteBars": null,
+  "transferTaxReviewed": false,
+  "runtimeCodeHash": "",
+  "oracleAddress": "",
+  "buyRouteHash": "",
+  "sellRouteHash": "",
+  "forkRoundTripPassed": false,
+  "reviewer": "",
+  "decision": "REJECT"
+}

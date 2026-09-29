@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-09-29T17:05:30.525Z",
+  "chainId": 4663,
+  "blockNumber": "75821815",
+  "status": "READY_TO_DEPLOY",
+  "checks": {
+    "executorPinned": true,
+    "ponsHookActive": true,
+    "executorRegistryPinned": true,
+    "wethPinned": true,
+    "noPendingDeployerTransactions": true,
+    "deployerGasFunded": true
+  },
+  "launcher": "0x902da2D736f099CC9F8acC06E991500a11E0Ed9C",
+  "deployer": {
+    "address": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+    "nonce": 109,
+    "balanceEth": "0.028522407743122"
+  },
+  "curator": {
+    "address": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+    "balanceEth": "0.024261567567392797",
+    "seedEth": "0.073973",
+    "bootstrapFundingShortfallEth": "0.049711432432607203"
+  },
+  "deployment": {
+    "gasEstimate": "4659645",
+    "gasLimit": "5824556",
+    "maxFeePerGas": "24878400",
+    "maximumCostEth": "0.0001449056339904",
+    "initCodeBytes": 23356,
+    "initCodeHash": "0x437ad7a4b516a15f0b7ba46845485f0d3c3b5b2d8ed8849741fa86bb9c998594"
+  }
+}
