@@ -38,7 +38,15 @@ contract RehearseLiquidityPrimeV1 is Script {
             (int24 lower, int24 upper) = _range(pools[i], widths[i]);
             sleeves[i] = address(
                 new HoodxLiquiditySleeveV1(
-                    CURATOR, POSITION_MANAGER, FACTORY, pools[i], lower, upper, names[i], symbols[i]
+                    CURATOR,
+                    POSITION_MANAGER,
+                    FACTORY,
+                    pools[i],
+                    _feeProtocol(pools[i]),
+                    lower,
+                    upper,
+                    names[i],
+                    symbols[i]
                 )
             );
         }
@@ -50,7 +58,7 @@ contract RehearseLiquidityPrimeV1 is Script {
         policies[2] = _policy(6_000, 900, 600, 6_000, 30 minutes, 30 minutes, 6 hours);
         policies[3] = _policy(7_200, 1_200, 720, 7_200, 30 minutes, 30 minutes, 6 hours);
         HoodxLiquidityControllerV1 controller =
-            new HoodxLiquidityControllerV1(address(index), CURATOR, sleeves, policies);
+            new HoodxLiquidityControllerV1(address(index), CURATOR, CURATOR, CURATOR, sleeves, policies);
         index.transferOwnership(address(controller));
         for (uint256 i; i < sleeves.length; ++i) {
             HoodxLiquiditySleeveV1(sleeves[i]).transferOwnership(address(controller));
@@ -82,6 +90,10 @@ contract RehearseLiquidityPrimeV1 is Script {
         pure
         returns (HoodxLiquidityControllerV1.Policy memory)
     {
-        return HoodxLiquidityControllerV1.Policy(width, buffer, deviation, move, twap, dwell, cooldown);
+        return HoodxLiquidityControllerV1.Policy(width, buffer, deviation, move, twap, dwell, cooldown, false);
+    }
+
+    function _feeProtocol(address pool) internal view returns (uint8 feeProtocol) {
+        (,,,,, feeProtocol,) = IUniswapV3PoolLike(pool).slot0();
     }
 }

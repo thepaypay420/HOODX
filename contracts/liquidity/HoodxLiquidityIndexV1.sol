@@ -8,7 +8,7 @@ import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-/// @notice Protocol-controlled pilot index of fungible LP sleeves plus a WETH reserve.
+/// @notice Protocol-controlled pilot index of fungible LP sleeves plus optional idle WETH.
 /// @dev V1 intentionally has no public deposit path. The protocol bootstraps it once, then users may
 ///      acquire index shares and always unwrap them into independent sleeve shares plus WETH.
 contract HoodxLiquidityIndexV1 is ERC20, Ownable2Step, ReentrancyGuard {
@@ -46,12 +46,11 @@ contract HoodxLiquidityIndexV1 is ERC20, Ownable2Step, ReentrancyGuard {
         return _sleeves;
     }
 
-    /// @notice Finalizes the protocol seed. Every sleeve and the cash reserve must be funded first.
+    /// @notice Finalizes the protocol seed. Every configured sleeve must be funded first.
+    /// @dev Idle WETH is optional. A fully deployed pilot can use a reviewed WETH/stable sleeve instead.
     function bootstrap(address receiver, uint256 initialShares) external onlyOwner {
         if (bootstrapped) revert AlreadyBootstrapped();
-        if (receiver == address(0) || initialShares == 0 || IERC20(weth).balanceOf(address(this)) == 0) {
-            revert Invalid();
-        }
+        if (receiver == address(0) || initialShares == 0) revert Invalid();
         for (uint256 i; i < _sleeves.length; ++i) {
             if (IERC20(_sleeves[i]).balanceOf(address(this)) == 0) revert Invalid();
         }

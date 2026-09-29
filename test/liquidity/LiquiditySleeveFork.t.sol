@@ -58,6 +58,7 @@ contract LiquiditySleeveForkTest is Test {
                     POSITION_MANAGER,
                     FACTORY,
                     pools[i],
+                    _feeProtocol(pools[i]),
                     center - widths[i],
                     center + widths[i],
                     "HOODX LP Sleeve",
@@ -71,12 +72,13 @@ contract LiquiditySleeveForkTest is Test {
         // WETH is token0 of the reviewed WETH/USDG pool.
         assertEq(index.weth(), IUniswapV3PoolLike(WETH_USDG).token0());
         HoodxLiquidityControllerV1.Policy[] memory policies = new HoodxLiquidityControllerV1.Policy[](4);
-        policies[0] = HoodxLiquidityControllerV1.Policy(2_000, 300, 120, 2_000, 30 minutes, 1 hours, 12 hours);
-        policies[1] = HoodxLiquidityControllerV1.Policy(4_000, 600, 300, 4_000, 1 hours, 4 hours, 24 hours);
-        policies[2] = HoodxLiquidityControllerV1.Policy(6_000, 900, 600, 6_000, 30 minutes, 30 minutes, 6 hours);
-        policies[3] = HoodxLiquidityControllerV1.Policy(7_200, 1_200, 720, 7_200, 30 minutes, 30 minutes, 6 hours);
+        policies[0] = HoodxLiquidityControllerV1.Policy(2_000, 300, 120, 2_000, 30 minutes, 1 hours, 12 hours, false);
+        policies[1] = HoodxLiquidityControllerV1.Policy(4_000, 600, 300, 4_000, 1 hours, 4 hours, 24 hours, false);
+        policies[2] = HoodxLiquidityControllerV1.Policy(6_000, 900, 600, 6_000, 30 minutes, 30 minutes, 6 hours, false);
+        policies[3] =
+            HoodxLiquidityControllerV1.Policy(7_200, 1_200, 720, 7_200, 30 minutes, 30 minutes, 6 hours, false);
         HoodxLiquidityControllerV1 controller =
-            new HoodxLiquidityControllerV1(address(index), curator, sleeves, policies);
+            new HoodxLiquidityControllerV1(address(index), curator, curator, curator, sleeves, policies);
 
         vm.startPrank(curator);
         index.transferOwnership(address(controller));
@@ -119,7 +121,15 @@ contract LiquiditySleeveForkTest is Test {
         int24 upper = center + halfWidth;
 
         HoodxLiquiditySleeveV1 sleeve = new HoodxLiquiditySleeveV1(
-            curator, POSITION_MANAGER, FACTORY, poolAddress, lower, upper, "HOODX LP WETH-USDG", "hxLP-WU"
+            curator,
+            POSITION_MANAGER,
+            FACTORY,
+            poolAddress,
+            _feeProtocol(poolAddress),
+            lower,
+            upper,
+            "HOODX LP WETH-USDG",
+            "hxLP-WU"
         );
         address token0 = pool.token0();
         address token1 = pool.token1();
@@ -145,5 +155,9 @@ contract LiquiditySleeveForkTest is Test {
         assertEq(sleeve.totalSupply(), 0);
         assertEq(sleeve.tokenId(), 0);
         assertGt(IERC20(token0).balanceOf(user) + IERC20(token1).balanceOf(user), before0 + before1);
+    }
+
+    function _feeProtocol(address poolAddress) internal view returns (uint8 feeProtocol) {
+        (,,,,, feeProtocol,) = IUniswapV3PoolLike(poolAddress).slot0();
     }
 }

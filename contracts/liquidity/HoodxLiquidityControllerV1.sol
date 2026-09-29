@@ -16,6 +16,7 @@ interface ILiquiditySleeveV1 {
     function tickSpacing() external view returns (int24);
     function tickLower() external view returns (int24);
     function tickUpper() external view returns (int24);
+    function expectedFeeProtocol() external view returns (uint8);
     function fund(
         address funder,
         address receiver,
@@ -38,6 +39,7 @@ interface ILiquiditySleeveV1 {
         uint256 deadline
     ) external returns (uint256 tokenId, uint128 liquidity);
     function setManagementPaused(bool paused) external;
+    function rescueUnexpectedToken(address token, address receiver, uint256 amount) external;
 }
 
 interface ILiquidityIndexV1 {
@@ -45,7 +47,9 @@ interface ILiquidityIndexV1 {
     function pendingOwner() external view returns (address);
     function acceptOwnership() external;
     function bootstrapped() external view returns (bool);
+    function weth() external view returns (address);
     function bootstrap(address receiver, uint256 initialShares) external;
+    function rescueUnexpectedToken(address token, address receiver, uint256 amount) external;
 }
 
 /// @notice Deterministic, protocol-controlled manager for the first HOODX LP index.
@@ -62,10 +66,13 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
         uint32 twapSeconds;
         uint32 breachDelay;
         uint32 cooldown;
+        bool blockTokenDownside;
     }
 
     ILiquidityIndexV1 public immutable index;
     address public immutable curator;
+    address public immutable activationAuthority;
+    address public immutable bootstrapAuthority;
     address[] private _sleeves;
     Policy[] private _policies;
     mapping(uint256 => uint64) public breachSince;
@@ -90,13 +97,23 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
         _;
     }
 
-    constructor(address index_, address curator_, address[] memory sleeves_, Policy[] memory policies_) {
+    constructor(
+        address index_,
+        address curator_,
+        address activationAuthority_,
+        address bootstrapAuthority_,
+        address[] memory sleeves_,
+        Policy[] memory policies_
+    ) {
         if (
-            index_.code.length == 0 || curator_ == address(0) || sleeves_.length == 0
-                || sleeves_.length != policies_.length || sleeves_.length > 8
+            index_.code.length == 0 || curator_ == address(0) || activationAuthority_ == address(0)
+                || bootstrapAuthority_ == address(0) || sleeves_.length == 0 || sleeves_.length != policies_.length
+                || sleeves_.length > 8
         ) revert Invalid();
         index = ILiquidityIndexV1(index_);
         curator = curator_;
+        activationAuthority = activationAuthority_;
+        bootstrapAuthority = bootstrapAuthority_;
         for (uint256 i; i < sleeves_.length; ++i) {
             if (sleeves_[i].code.length == 0) revert Invalid();
             int24 spacing = ILiquiditySleeveV1(sleeves_[i]).tickSpacing();
@@ -115,12 +132,15 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
 
     /// @notice Accepts ownership only after every exact contract has been reviewed and nominated.
     function activate() external nonReentrant {
-        if (msg.sender != curator || activated || index.owner() != curator || index.pendingOwner() != address(this)) {
+        if (
+            msg.sender != activationAuthority || activated || index.owner() != activationAuthority
+                || index.pendingOwner() != address(this)
+        ) {
             revert Unauthorized();
         }
         for (uint256 i; i < _sleeves.length; ++i) {
             ILiquiditySleeveV1 sleeve = ILiquiditySleeveV1(_sleeves[i]);
-            if (sleeve.owner() != curator || sleeve.pendingOwner() != address(this)) revert Unauthorized();
+            if (sleeve.owner() != activationAuthority || sleeve.pendingOwner() != address(this)) revert Unauthorized();
         }
         index.acceptOwnership();
         for (uint256 i; i < _sleeves.length; ++i) {
@@ -146,15 +166,18 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
         uint256 amount0Min,
         uint256 amount1Min,
         uint256 deadline
-    ) external onlyCurator nonReentrant returns (uint256 shares, uint128 liquidityAdded) {
+    ) external nonReentrant returns (uint256 shares, uint128 liquidityAdded) {
+        if (!activated || msg.sender != bootstrapAuthority) revert Unauthorized();
         // Adding sleeve shares after index issuance would require full NAV accounting and would
         // dilute holders. V1 therefore makes the reviewed seed a one-time pre-bootstrap operation.
         if (sleeveIndex >= _sleeves.length || index.bootstrapped()) revert Invalid();
-        return ILiquiditySleeveV1(_sleeves[sleeveIndex])
-            .fund(curator, address(index), amount0Desired, amount1Desired, amount0Min, amount1Min, deadline);
+        (shares, liquidityAdded) = ILiquiditySleeveV1(_sleeves[sleeveIndex])
+            .fund(msg.sender, address(index), amount0Desired, amount1Desired, amount0Min, amount1Min, deadline);
+        if (lastReband[sleeveIndex] == 0) lastReband[sleeveIndex] = uint64(block.timestamp);
     }
 
-    function bootstrap(address receiver, uint256 initialShares) external onlyCurator nonReentrant {
+    function bootstrap(address receiver, uint256 initialShares) external nonReentrant {
+        if (!activated || msg.sender != bootstrapAuthority) revert Unauthorized();
         index.bootstrap(receiver, initialShares);
     }
 
@@ -178,7 +201,9 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
     function signal(uint256 sleeveIndex) external returns (bool ready) {
         (ILiquiditySleeveV1 sleeve, Policy memory p, int24 spot, int24 twap) = _state(sleeveIndex);
         if (_absDiff(spot, twap) > uint24(p.maxTwapDeviation)) revert Divergence();
-        bool atEdge = spot <= sleeve.tickLower() + p.edgeBuffer || spot >= sleeve.tickUpper() - p.edgeBuffer;
+        // The dwell timer follows the manipulation-resistant TWAP. Spot is only a divergence guard,
+        // so a one-block trade cannot cheaply start or clear the timer.
+        bool atEdge = twap <= sleeve.tickLower() + p.edgeBuffer || twap >= sleeve.tickUpper() - p.edgeBuffer;
         if (!atEdge) {
             if (breachSince[sleeveIndex] != 0) emit EdgeCleared(sleeveIndex, spot, twap);
             breachSince[sleeveIndex] = 0;
@@ -211,12 +236,20 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
                 || block.timestamp < uint256(lastReband[sleeveIndex]) + p.cooldown
         ) revert NotReady();
         if (_absDiff(spot, twap) > uint24(p.maxTwapDeviation)) revert Divergence();
-        if (spot > sleeve.tickLower() + p.edgeBuffer && spot < sleeve.tickUpper() - p.edgeBuffer) revert NotReady();
+        if (twap > sleeve.tickLower() + p.edgeBuffer && twap < sleeve.tickUpper() - p.edgeBuffer) revert NotReady();
 
         int24 spacing = sleeve.tickSpacing();
-        int24 center = twap - (twap % spacing);
+        int24 center = _nearestUsableTick(twap, spacing);
         int24 oldCenter = (sleeve.tickLower() + sleeve.tickUpper()) / 2;
         if (_absDiff(center, oldCenter) > uint24(p.maxCenterMove)) revert Divergence();
+        if (p.blockTokenDownside) {
+            address quote = index.weth();
+            if (sleeve.token0() != quote && sleeve.token1() != quote) revert Invalid();
+            // Tick is token1/token0. When WETH is token0, a higher tick means the paired token
+            // is cheaper in WETH; when WETH is token1, a lower tick means the paired token is cheaper.
+            bool tokenPriceFell = sleeve.token0() == quote ? center > oldCenter : center < oldCenter;
+            if (tokenPriceFell) revert Divergence();
+        }
         lower = center - p.halfWidth;
         upper = center + p.halfWidth;
         sleeve.reband(lower, upper, amount0Min, amount1Min, minNewLiquidity, deadline);
@@ -232,6 +265,21 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
         }
     }
 
+    /// @notice Recovers only assets that are neither WETH nor a configured sleeve.
+    function rescueIndexToken(address token, address receiver, uint256 amount) external onlyCurator nonReentrant {
+        index.rescueUnexpectedToken(token, receiver, amount);
+    }
+
+    /// @notice Recovers only assets that are neither underlying token of the selected sleeve.
+    function rescueSleeveToken(uint256 sleeveIndex, address token, address receiver, uint256 amount)
+        external
+        onlyCurator
+        nonReentrant
+    {
+        if (sleeveIndex >= _sleeves.length) revert Invalid();
+        ILiquiditySleeveV1(_sleeves[sleeveIndex]).rescueUnexpectedToken(token, receiver, amount);
+    }
+
     function _state(uint256 sleeveIndex)
         internal
         view
@@ -241,6 +289,8 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
         sleeve = ILiquiditySleeveV1(_sleeves[sleeveIndex]);
         p = _policies[sleeveIndex];
         IUniswapV3PoolLike pool = IUniswapV3PoolLike(sleeve.pool());
+        (,,,,, uint8 feeProtocol,) = pool.slot0();
+        if (feeProtocol != sleeve.expectedFeeProtocol()) revert Divergence();
         (, spot,,,,,) = pool.slot0();
         uint32[] memory secondsAgos = new uint32[](2);
         secondsAgos[0] = p.twapSeconds;
@@ -254,5 +304,12 @@ contract HoodxLiquidityControllerV1 is ReentrancyGuard {
     function _absDiff(int24 a, int24 b) internal pure returns (uint24) {
         int256 d = int256(a) - int256(b);
         return uint24(uint256(d < 0 ? -d : d));
+    }
+
+    function _nearestUsableTick(int24 tick, int24 spacing) internal pure returns (int24 center) {
+        int24 remainder = tick % spacing;
+        center = tick - remainder;
+        if (remainder >= spacing / 2) center += spacing;
+        if (remainder <= -(spacing / 2)) center -= spacing;
     }
 }

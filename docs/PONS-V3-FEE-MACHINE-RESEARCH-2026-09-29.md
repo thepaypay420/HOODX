@@ -34,10 +34,10 @@ This correction materially reduced the first estimate. All results below use the
 
 ## Frozen strategy
 
-The candidate pilot is deliberately simple:
+The PONS selection rule is deliberately simple. The final contract adds a 10% WETH/USDG core sleeve so the complete seed remains deployed:
 
-1. Hold 25% in WETH.
-2. Allocate 25% each to DELTA/WETH, PONGO/WETH and GIWA/WETH.
+1. Allocate 30% each to DELTA/WETH, PONGO/WETH and GIWA/WETH.
+2. Allocate 10% to a wider WETH/USDG core range.
 3. Mint a centered Uniswap v3 range extending 10% below and 10% above the entry price.
 4. Do not chase an out-of-range position during the week.
 5. Recenter once per week only if the pool still passes the safety and flow gates.
@@ -57,7 +57,7 @@ Each evaluation week used a disjoint preceding week for market-activity screenin
 - a 1% round-trip token-acquisition and liquidation allowance;
 - two 0.000025 WETH management actions per position.
 
-With each LP at 25% of vault NAV and 25% retained in WETH, modeled weekly vault returns were:
+The original 25/25/25 plus 25% WETH screen produced modeled weekly vault returns of:
 
 - week of 7 September: **+0.37%**;
 - week of 14 September: **+9.33%**;
@@ -95,12 +95,14 @@ Pause new liquidity immediately if canonical provenance changes, `feeProtocol` c
 
 ## $200 pilot
 
-At the initial size, use live ETH/USD only to translate the allocations:
+At the initial size, use live ETH/USD only to translate the allocations. The final contract allocation is:
 
-- $50 WETH reserve;
-- $50 DELTA/WETH LP;
-- $50 PONGO/WETH LP;
-- $50 GIWA/WETH LP.
+- $60 DELTA/WETH LP;
+- $60 PONGO/WETH LP;
+- $60 GIWA/WETH LP;
+- $20 WETH/USDG core LP.
+
+At matching pilot scale, the final four-sleeve structure returned +0.60%, +10.96%, and +12.98% in the same three evaluation weeks after the conservative core lower bound. Full calculations and risk limits are in `FEE-MACHINE-ECONOMIC-AUDIT-2026-09-29.md`.
 
 The canary should run for four complete weeks with public deposits disabled. Promotion requires exact realized fee reconciliation, successful exit rehearsals on a local fork, no unbounded approvals, no manager path that can touch unrelated vault assets, and a positive lower confidence bound after realized gas and slippage.
 

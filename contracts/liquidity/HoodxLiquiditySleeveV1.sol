@@ -26,6 +26,7 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
     address public immutable token1;
     uint24 public immutable fee;
     int24 public immutable tickSpacing;
+    uint8 public immutable expectedFeeProtocol;
 
     uint256 public tokenId;
     uint128 public positionLiquidity;
@@ -50,6 +51,7 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
         address positionManager_,
         address factory_,
         address pool_,
+        uint8 expectedFeeProtocol_,
         int24 initialLower,
         int24 initialUpper,
         string memory name_,
@@ -67,9 +69,11 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
         token1 = p.token1();
         fee = p.fee();
         tickSpacing = p.tickSpacing();
+        (,,,,, uint8 feeProtocol,) = p.slot0();
+        expectedFeeProtocol = expectedFeeProtocol_;
         if (
             p.factory() != factory_ || IUniswapV3FactoryLike(factory_).getPool(token0, token1, fee) != pool_
-                || token0 >= token1 || tickSpacing <= 0
+                || token0 >= token1 || tickSpacing <= 0 || feeProtocol != expectedFeeProtocol_
         ) revert Invalid();
         _validateTicks(initialLower, initialUpper);
         tickLower = initialLower;
@@ -88,6 +92,7 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
         uint256 deadline
     ) external onlyOwner nonReentrant returns (uint256 shares, uint128 liquidityAdded) {
         if (managementPaused || funder == address(0) || receiver == address(0)) revert Invalid();
+        _validateEconomics();
         _validateDeadline(deadline);
         if (amount0Desired == 0 && amount1Desired == 0) revert Invalid();
 
@@ -168,6 +173,7 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
         returns (uint128 liquidityAdded, uint256 amount0Used, uint256 amount1Used)
     {
         if (managementPaused || tokenId == 0 || minLiquidityAdded == 0) revert Invalid();
+        _validateEconomics();
         _validateDeadline(deadline);
         _collectAll();
         uint256 desired0 = IERC20(token0).balanceOf(address(this));
@@ -202,6 +208,7 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
         if (managementPaused || tokenId == 0 || positionLiquidity == 0 || minNewLiquidity == 0) {
             revert Invalid();
         }
+        _validateEconomics();
         _validateDeadline(deadline);
         _validateTicks(newLower, newUpper);
 
@@ -329,6 +336,11 @@ contract HoodxLiquiditySleeveV1 is ERC20, Ownable2Step, ReentrancyGuard {
 
     function _validateDeadline(uint256 deadline) internal view {
         if (deadline < block.timestamp || deadline > block.timestamp + MAX_DEADLINE_WINDOW) revert Stale();
+    }
+
+    function _validateEconomics() internal view {
+        (,,,,, uint8 feeProtocol,) = IUniswapV3PoolLike(pool).slot0();
+        if (feeProtocol != expectedFeeProtocol) revert Invalid();
     }
 
     function _validateTicks(int24 lower, int24 upper) internal view {
