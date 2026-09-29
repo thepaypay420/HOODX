@@ -1,0 +1,188 @@
+{
+  "policy": {
+    "decisionHours": 12,
+    "minimumPriceVsTwoHourReference": 1.0,
+    "minimumSixHourVolumeEth": 5,
+    "stop": 0.2,
+    "principalRecoveryMultiple": 1.5,
+    "trailingDrawdown": 0.55,
+    "maximumHoldHours": 24
+  },
+  "sample": {
+    "calendarCohorts": 4,
+    "positions": 8,
+    "meanPositionsPerActiveCohort": 2.0,
+    "baseTradeActionsPerActiveCohort": 4.0,
+    "warning": "One extreme winner dominates every positive mean. These are sensitivity tests, not forecasts or APR."
+  },
+  "scenarios": [
+    {
+      "allocationPctPerCandidate": 5.0,
+      "extraRoundTripCostPctPerCandidate": 0.0,
+      "cohortVaultReturnsPct": [
+        -3.266328,
+        -1.327096,
+        -3.254261,
+        212.726325
+      ],
+      "meanPct": 51.21966,
+      "medianPct": -2.290679,
+      "worstPct": -3.266328,
+      "bestPct": 212.726325
+    },
+    {
+      "allocationPctPerCandidate": 5.0,
+      "extraRoundTripCostPctPerCandidate": 2.0,
+      "cohortVaultReturnsPct": [
+        -3.466328,
+        -1.427096,
+        -3.454261,
+        212.426325
+      ],
+      "meanPct": 51.01966,
+      "medianPct": -2.440679,
+      "worstPct": -3.466328,
+      "bestPct": 212.426325
+    },
+    {
+      "allocationPctPerCandidate": 5.0,
+      "extraRoundTripCostPctPerCandidate": 5.0,
+      "cohortVaultReturnsPct": [
+        -3.766328,
+        -1.577096,
+        -3.754261,
+        211.976325
+      ],
+      "meanPct": 50.71966,
+      "medianPct": -2.665679,
+      "worstPct": -3.766328,
+      "bestPct": 211.976325
+    },
+    {
+      "allocationPctPerCandidate": 5.0,
+      "extraRoundTripCostPctPerCandidate": 10.0,
+      "cohortVaultReturnsPct": [
+        -4.266328,
+        -1.827096,
+        -4.254261,
+        211.226325
+      ],
+      "meanPct": 50.21966,
+      "medianPct": -3.040679,
+      "worstPct": -4.266328,
+      "bestPct": 211.226325
+    },
+    {
+      "allocationPctPerCandidate": 7.5,
+      "extraRoundTripCostPctPerCandidate": 0.0,
+      "cohortVaultReturnsPct": [
+        -4.899492,
+        -1.990644,
+        -4.881392,
+        319.089487
+      ],
+      "meanPct": 76.82949,
+      "medianPct": -3.436018,
+      "worstPct": -4.899492,
+      "bestPct": 319.089487
+    },
+    {
+      "allocationPctPerCandidate": 7.5,
+      "extraRoundTripCostPctPerCandidate": 2.0,
+      "cohortVaultReturnsPct": [
+        -5.199492,
+        -2.140644,
+        -5.181392,
+        318.639487
+      ],
+      "meanPct": 76.52949,
+      "medianPct": -3.661018,
+      "worstPct": -5.199492,
+      "bestPct": 318.639487
+    },
+    {
+      "allocationPctPerCandidate": 7.5,
+      "extraRoundTripCostPctPerCandidate": 5.0,
+      "cohortVaultReturnsPct": [
+        -5.649492,
+        -2.365644,
+        -5.631392,
+        317.964487
+      ],
+      "meanPct": 76.07949,
+      "medianPct": -3.998518,
+      "worstPct": -5.649492,
+      "bestPct": 317.964487
+    },
+    {
+      "allocationPctPerCandidate": 7.5,
+      "extraRoundTripCostPctPerCandidate": 10.0,
+      "cohortVaultReturnsPct": [
+        -6.399492,
+        -2.740644,
+        -6.381392,
+        316.839487
+      ],
+      "meanPct": 75.32949,
+      "medianPct": -4.561018,
+      "worstPct": -6.399492,
+      "bestPct": 316.839487
+    },
+    {
+      "allocationPctPerCandidate": 10.0,
+      "extraRoundTripCostPctPerCandidate": 0.0,
+      "cohortVaultReturnsPct": [
+        -6.532655,
+        -2.654192,
+        -6.508523,
+        425.45265
+      ],
+      "meanPct": 102.43932,
+      "medianPct": -4.581357,
+      "worstPct": -6.532655,
+      "bestPct": 425.45265
+    },
+    {
+      "allocationPctPerCandidate": 10.0,
+      "extraRoundTripCostPctPerCandidate": 2.0,
+      "cohortVaultReturnsPct": [
+        -6.932655,
+        -2.854192,
+        -6.908523,
+        424.85265
+      ],
+      "meanPct": 102.03932,
+      "medianPct": -4.881357,
+      "worstPct": -6.932655,
+      "bestPct": 424.85265
+    },
+    {
+      "allocationPctPerCandidate": 10.0,
+      "extraRoundTripCostPctPerCandidate": 5.0,
+      "cohortVaultReturnsPct": [
+        -7.532655,
+        -3.154192,
+        -7.508523,
+        423.95265
+      ],
+      "meanPct": 101.43932,
+      "medianPct": -5.331357,
+      "worstPct": -7.532655,
+      "bestPct": 423.95265
+    },
+    {
+      "allocationPctPerCandidate": 10.0,
+      "extraRoundTripCostPctPerCandidate": 10.0,
+      "cohortVaultReturnsPct": [
+        -8.532655,
+        -3.654192,
+        -8.508523,
+        422.45265
+      ],
+      "meanPct": 100.43932,
+      "medianPct": -6.081357,
+      "worstPct": -8.532655,
+      "bestPct": 422.45265
+    }
+  ]
+}
