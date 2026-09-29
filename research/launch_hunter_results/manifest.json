@@ -1,0 +1,15 @@
+{
+  "cohort": "all ETH/WETH v4 pools initialized 2026-09-20 00:00\u201306:00 UTC",
+  "initialized_pools": 986,
+  "market_gate_passes": 18,
+  "complete_seven_day_histories": 11,
+  "unique_tokens_selected": 18,
+  "selection_gate": "complete two-hour history; 40 swaps; 0.5 ETH; 0.40 side balance; active in 6/8 quarter-hours; top-10 trades <=70% volume; repeated exact sizes <=30%",
+  "limitations": [
+    "Market replay cannot prove token contract safety or future sellability.",
+    "LP fee attribution uses emitted active liquidity, a 5% share cap and a 50% realization haircut.",
+    "ETH/USD is fixed at $2,680 because results are evaluated in ETH terms.",
+    "Transaction sender diversity requires archive transaction reads and is excluded from this first cohort replay."
+  ],
+  "decision": "Shadow mode only. No tested policy established a repeatable positive held-out edge."
+}

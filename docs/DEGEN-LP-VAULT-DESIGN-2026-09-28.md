@@ -3,6 +3,8 @@
 **Research snapshot:** 28 September 2026
 **Status:** design candidate; no contracts deployed and no user deposits enabled
 
+> **Launch Hunter update (29 September):** the larger direct onchain cohort replay supersedes the preliminary launch template below. Launch Hunter is now **shadow mode only**. See `LAUNCH-HUNTER-DEEP-RESEARCH-2026-09-29.md` for the tested funnel, negative held-out evidence, staged 1% scout design and promotion requirements.
+
 ## Decision
 
 HOODX should build two different products. Combining them would hide materially different risks.

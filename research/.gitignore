@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+launch_hunter_results/cache/
+launch_hunter_results/run.log
