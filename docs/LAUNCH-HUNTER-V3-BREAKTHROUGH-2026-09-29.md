@@ -17,7 +17,7 @@ The new rule waits for a launch to survive, then buys the first strong one-hour 
 - selection: strongest recovery first, one token per creator cluster, maximum two entries per day;
 - position: exactly 10% of initial NAV, or $20 in the $200 pilot;
 - maximum launch exposure: 20%;
-- exit: +20% take-profit, -15% oracle stop, or four-hour timeout;
+- exit: +50% take-profit, -20% oracle stop, or four-hour timeout;
 - activity: two buys and two exits on a fully active day.
 
 This rejects the earlier assumption that more raw volume should rank first. Across the eligible population, raw volume and short-horizon volatility were negatively associated with forward return. Recovery strength after a pullback was more useful.
@@ -60,7 +60,7 @@ The 20% WETH is working capital, not a return target. Putting it in another LP b
 - exactly 10% per launch;
 - two active positions and two entries per day;
 - 12-hour minimum observation and 48-hour entry expiry;
-- public +20%, -15%, and four-hour exits;
+- public +50%, -20%, and four-hour exits;
 - a separate immutable 20% WETH seed and 100% NAV risk reference;
 - one to four reviewed base-sleeve tokens that must be funded before bootstrap;
 - direct in-kind recovery of WETH, every base sleeve and every active launch token;

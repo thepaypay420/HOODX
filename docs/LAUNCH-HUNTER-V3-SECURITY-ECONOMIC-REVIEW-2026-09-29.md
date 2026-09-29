@@ -27,11 +27,13 @@ Fourteen focused tests cover bootstrap backing, exact sizing, risk and entry lim
 
 ## Economic result
 
-The tested tactical sleeve uses two 10% positions and caps every winner at +20%. At 5% round-trip friction, the later untouched cohorts contributed +2.21% of total NAV and the worst held-out day was -0.59%. At 8% friction they contributed +0.88%, with a -1.20% worst day.
+The refined tactical sleeve uses two 10% positions, a +50% oracle take-profit, a -20% oracle stop and a four-hour maximum hold. Exit selection used only the first two cohort dates on a coarse operational grid. The later two dates were then reported unchanged. The replay checks intrabar highs and lows, treats an unknowable same-bar stop/target ordering as a stop, caps favorable execution at the target, and charges delayed downside at the later observed close.
 
-The one losing held-out trade fell through its -15% trigger and realized -19.91% after 5% friction. This is why the contract limits the position to 10% of NAV and uses the observed exit rather than presenting the stop as guaranteed.
+At 5% round-trip friction and immediate execution, the held-out sample contributed +14.80% of total NAV, with a +6.30% worst held-out day. At 8% friction plus a 15-minute delayed close fill, it contributed +12.06%, with a +4.46% worst held-out day. All four held-out trades remained profitable in those scenarios. At 12% friction, a target win nets 32% and a stopped trade loses 29.6%, so the after-cost reward/risk falls to 1.08:1 and requires a 48.1% win rate to break even.
 
-The research does not establish an annual return. Four non-consecutive observation days cannot be annualized responsibly. A displayed APR remains prohibited until the later-data promotion gates pass.
+The nominal +50%/-20% ratio is 2.5:1. After 5% assumed round-trip friction it is 1.77:1, with a 36.1% break-even win rate. This is the center of a profitable +40% to +55% target and -20% to -22% stop neighborhood. A superficially stronger +55%/-18% fine-grid result was rejected: the stop sat only 2.3 percentage points beyond an observed -15.7% adverse excursion and produced a negative held-out day. The stop is a trigger, not a guaranteed fill, and the 10% position cap remains the primary loss control.
+
+The research does not establish an annual return. Four non-consecutive observation days cannot be annualized responsibly. The calendar holdout is mechanically excluded from selection in the script, but prior V3 work had already inspected those dates, so fresh confirmatory data is still required. A displayed APR remains prohibited until the later-data promotion gates pass.
 
 ## Remaining launch blockers
 
@@ -39,7 +41,7 @@ The research does not establish an annual return. Four non-consecutive observati
 - **UNVERIFIED:** exact three base-sleeve contracts, balances, fee ownership and complete unwind on a current local fork;
 - **UNVERIFIED:** oracle resistance during the four-hour exit window and agreement with executable route value;
 - **UNVERIFIED:** token-specific blacklist, transfer-tax, mutable-code, mint and confiscation behavior;
-- **UNVERIFIED:** at least 30 later calendar days and 30 completed frozen-rule trades;
+- **UNVERIFIED:** at least 30 later calendar days and 30 completed frozen-rule trades; the current exit evidence is eight trades across four non-consecutive days;
 - **UNVERIFIED:** deployment launcher, source fingerprint, role wiring, bootstrap amounts and production UI;
 - independent contract review is still required before any signing flow is produced.
 

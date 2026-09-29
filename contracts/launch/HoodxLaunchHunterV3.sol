@@ -51,8 +51,8 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
     uint256 public constant OBSERVATION_DELAY = 12 hours;
     uint256 public constant MAX_ENTRY_AGE = 48 hours;
     uint256 public constant MAX_HOLD = 4 hours;
-    uint256 public constant PROFIT_TRIGGER_BPS = 12_000; // close at +20% oracle value
-    uint256 public constant STOP_BPS = 8500; // close at -15% oracle value; actual route floor still applies
+    uint256 public constant PROFIT_TRIGGER_BPS = 15_000; // close at +50% oracle value
+    uint256 public constant STOP_BPS = 8000; // close at -20% oracle value; actual route floor still applies
     string public constant IMAGE_URI = "https://xhoodindex.com/vaults/launch-hunter.png";
 
     bool public bootstrapped;
@@ -267,7 +267,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         emit ProbeEntered(token, c.cluster, wethAmount, received);
     }
 
-    /// @notice Anyone can enforce the four-hour timeout, +20% take-profit or -15% stop.
+    /// @notice Anyone can enforce the four-hour timeout, +50% take-profit or -20% stop.
     /// @dev The caller cannot weaken execution protection: `_trade` derives an independent
     ///      97% oracle floor and takes the greater of that floor and the caller's minimum.
     function enforceExit(address token, uint256 minWeth, uint256 deadline)

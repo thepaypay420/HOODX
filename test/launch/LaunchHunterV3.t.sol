@@ -116,14 +116,14 @@ contract LaunchHunterV3Test is Test {
     function testTwoEntryDailyLimitSurvivesFastProfitableExits() public {
         _ready(3);
         _enter(0);
-        oracles[0].setPrice(1.2 ether);
-        executor.setRate(address(tokens[0]), 1.2 ether);
-        hunter.enforceExit(address(tokens[0]), 11.64 ether, vm.getBlockTimestamp() + 5 minutes);
+        oracles[0].setPrice(1.5 ether);
+        executor.setRate(address(tokens[0]), 1.5 ether);
+        hunter.enforceExit(address(tokens[0]), 14.55 ether, vm.getBlockTimestamp() + 5 minutes);
         vm.warp(block.timestamp + 30 minutes);
         _enter(1);
-        oracles[1].setPrice(1.2 ether);
-        executor.setRate(address(tokens[1]), 1.2 ether);
-        hunter.enforceExit(address(tokens[1]), 11.64 ether, vm.getBlockTimestamp() + 5 minutes);
+        oracles[1].setPrice(1.5 ether);
+        executor.setRate(address(tokens[1]), 1.5 ether);
+        hunter.enforceExit(address(tokens[1]), 14.55 ether, vm.getBlockTimestamp() + 5 minutes);
         vm.warp(block.timestamp + 30 minutes);
         vm.prank(curator);
         vm.expectRevert();
@@ -142,23 +142,23 @@ contract LaunchHunterV3Test is Test {
         assertEq(weth.balanceOf(address(hunter)), 20 ether);
     }
 
-    function testTwentyPercentProfitClosesWithoutWaiting() public {
+    function testFiftyPercentProfitClosesWithoutWaiting() public {
         _ready(1);
         _enter(0);
-        oracles[0].setPrice(1.2 ether);
-        executor.setRate(address(tokens[0]), 1.2 ether);
-        hunter.enforceExit(address(tokens[0]), 11.64 ether, vm.getBlockTimestamp() + 5 minutes);
-        assertEq(weth.balanceOf(address(hunter)), 22 ether);
+        oracles[0].setPrice(1.5 ether);
+        executor.setRate(address(tokens[0]), 1.5 ether);
+        hunter.enforceExit(address(tokens[0]), 14.55 ether, vm.getBlockTimestamp() + 5 minutes);
+        assertEq(weth.balanceOf(address(hunter)), 25 ether);
         assertEq(hunter.activeTokens().length, 0);
     }
 
-    function testFifteenPercentStopClosesWithoutWaiting() public {
+    function testTwentyPercentStopClosesWithoutWaiting() public {
         _ready(1);
         _enter(0);
-        oracles[0].setPrice(.85 ether);
-        executor.setRate(address(tokens[0]), .85 ether);
-        hunter.enforceExit(address(tokens[0]), 8.245 ether, vm.getBlockTimestamp() + 5 minutes);
-        assertEq(weth.balanceOf(address(hunter)), 18.5 ether);
+        oracles[0].setPrice(.8 ether);
+        executor.setRate(address(tokens[0]), .8 ether);
+        hunter.enforceExit(address(tokens[0]), 7.76 ether, vm.getBlockTimestamp() + 5 minutes);
+        assertEq(weth.balanceOf(address(hunter)), 18 ether);
         assertEq(hunter.activeTokens().length, 0);
     }
 
