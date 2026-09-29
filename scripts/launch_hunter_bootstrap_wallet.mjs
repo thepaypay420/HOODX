@@ -4,6 +4,8 @@ import {
   createPublicClient, encodeFunctionData, formatEther, getAddress, http as rpcHttp, parseAbi,
 } from "viem";
 
+throw new Error("Launch Hunter V1 bootstrap is retired. V1 remains empty while the higher-utilization V2 is audited.");
+
 const launcher = getAddress(process.argv[2] || "");
 const rpc = (process.env.ROBINHOOD_RPC_URL || fs.readFileSync("C:/Users/lukey/Desktop/RH RPC.txt", "utf8")).trim();
 const client = createPublicClient({ transport: rpcHttp(rpc, { timeout: 20_000, retryCount: 1 }) });

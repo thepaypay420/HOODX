@@ -1,6 +1,6 @@
 {
   "verifiedAt": "2026-09-29T17:14:17.698Z",
-  "status": "DEPLOYED_AWAITING_BOOTSTRAP",
+  "status": "SUPERSEDED_UNBOOTSTRAPPED",
   "deploymentTransaction": "0xd9d0f7648b661dccae54621723786be63c30d3f8a6638351c2d1cfdca6a96232",
   "launcher": "0x902da2D736f099CC9F8acC06E991500a11E0Ed9C",
   "policy": "0xF636a73c98E90FF10716f847599Fc46066fd41a4",
