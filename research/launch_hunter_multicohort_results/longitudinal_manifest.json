@@ -1,0 +1,7 @@
+{
+  "candidate_pools": 113,
+  "bar_minutes": 15,
+  "complete_160h_histories": 41,
+  "read_only": true,
+  "rpc": "private archive endpoint (credential omitted)"
+}

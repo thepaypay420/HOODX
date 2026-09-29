@@ -1,109 +1,134 @@
-# HOODX Launch Hunter: historical cohort research
+# HOODX Launch Hunter: multi-cohort onchain research
 
 **Research snapshot:** 29 September 2026
-**Decision:** build the scanner and shadow portfolio; do not open a capital-bearing public vault yet
 
-## The finding
+**Decision:** build the scanner and shadow portfolio; do not open a capital-bearing public vault
 
-Launch Hunter can become a strong HOODX product, but the edge is not early entry or the highest displayed APR. The launch stream is dominated by pools that are dead, mechanically churned, or too incomplete to underwrite. HOODX's defensible edge is a **fail-closed admission funnel, tiny staged exposure, and automatic principal recovery from the rare winner**.
+## Breakthrough finding
 
-The direct onchain replay did not prove a positive, repeatable live-capital edge. A launch vault should therefore remain in shadow mode until a larger rolling sample passes the promotion gates below. Shipping capital first would turn users into the experiment.
+Launch Hunter should not be a permanent LP basket or an early-launch chase. The onchain evidence separates the product into two different engines:
 
-## What was measured
+1. **Fee-bearing LP engine:** only pools where HOODX can prove that fees accrue to its position. Current launch inventory did not establish a positive LP edge.
+2. **Delayed survivor engine:** wait 24 hours, select very few continuing launches, cap each at 0.5% of NAV, admit only one token per creator cluster, and recover principal quickly. This produced a promising convex shadow result, but only four trades passed the frozen rule.
 
-The study enumerated every ETH/WETH Uniswap v4 pool initialized through Robinhood Chain's live PoolManager during a fixed six-hour historical cohort on 20 September 2026.
+The portfolio constraint is the useful discovery. A single-launch product concentrates creator and gap risk. A basket can suppress that risk by clustering related launches, funding only the strongest continuation in each cluster, and leaving at least 97.5% in WETH.
 
-- 986 ETH/WETH launch pools formed the denominator, including pools never surfaced by discovery APIs.
-- 181 had at least 40 swaps in their first two hours.
-- 171 also traded at least 0.5 ETH.
-- 143 also had a buy/sell count balance of at least 0.40.
-- Only 18 remained active in at least six of eight 15-minute windows.
-- Seven-day histories were complete within the work budget for 11 of those 18. Incomplete histories failed closed.
+## Research denominator
 
-This means **98.2% of the raw launch cohort failed the market-quality gate** before token security checks. Public “new pool” feeds were much shallower: the accessible feed covered only about 46 minutes during collection, so it would have hidden the failed-launch denominator and inflated apparent success.
+The private archive-RPC study enumerated every ETH/WETH Uniswap v4 pool initialized during four independent six-hour windows on 13, 15, 17 and 20 September 2026.
 
-## Replay result
+- **6,339** launches formed the complete denominator.
+- **113** passed the two-hour activity/manipulation gate: 1.78%.
+- Median selected-pool price after the observation point finished at **0.34x, 0.60x, 0.61x and 0.34x** by cohort.
+- Only **11 of 113** sustained a 2x move for at least one hour.
+- Median five-minute signed markout among selected pools was mean-reverting, but the distribution was wide enough that a blanket LP policy remained unsafe.
 
-The strategy grid tested 72 combinations:
+The gate requires at least 40 swaps, 0.5 ETH volume, a 0.40 buy/sell count balance, activity in six of eight quarter-hours, top-ten trades at no more than 70% of volume, and repeated exact sizes at no more than 30%.
 
-- observation delays of 2, 4, 6 and 12 hours;
-- symmetric LP widths of ±25%, ±40% and ±60%;
-- downside exits at 15%, 25% and 35%;
-- principal recovery with a retained runner versus LP-only management.
+## Fee ownership changed the design
 
-The replay charged $0.20 per management action, capped the strategy at 5% of emitted active liquidity, and credited only 50% of pro-rata fee flow. A deterministic pool-id split separated training and held-out pools.
+Market activity is not LP revenue. Of the 113 selected pools:
 
-No combination established a reliable positive edge. The strongest median training result was the two-hour, ±40%, 25% stop, runner policy: +8.4% median, but -10.2% mean. Its held-out mean was -12.6%. The least-negative held-out result was a four-hour, ±60%, 15% stop, runner policy at -2.8%, but its training mean was -13.7%. The held-out set contained only two complete pools, so every policy estimate remains **UNVERIFIED**, not launch evidence.
+- **73 were PONS v2 graduates.** Their v4 pool fee is zero; the PONS hook collects and routes its own fee. An outside LP must not treat that tax as position yield.
+- **22 were hookless with an unverified launch origin.** They remain ineligible until factory provenance and token behavior are pinned.
+- **18 used other hooks.** Unknown hook code fails closed.
+- Across the full 6,339-pool denominator, **579 used the canonical Doppler hook**, but only five passed a relaxed fee-bearing LP activity gate and only two passed the stricter market gate.
 
-The runner mattered. LP-only variants frequently lost more than half because concentrated liquidity sells the winner during the rise and retains the failing token during the fall. Recovering principal at 2× materially reduced the right-tail giveback, but did not by itself create a positive cohort mean.
+The five canonical Doppler candidates were replayed with exact emitted liquidity, observed swap fees, a 25% fee-credit haircut, $0.10 per action, and a $20 position.
 
-## Recommended formula: Launch Hunter Shadow
+- A WETH-only pullback range had a best median of **-1.0%** and no positive outcomes.
+- A short centered volatility harvest had a best median of approximately **-1.0%**, a **-6.9% mean**, and one loss below -31%.
+- Fee income did not cover inventory loss and action cost across the sample.
 
-### Vault-level capital limits
+This rejects a public claim that Launch Hunter can earn launch yield merely by placing active ranges around new pools.
 
-| Sleeve | Target | $200 pilot equivalent |
-|---|---:|---:|
-| WETH reserve | 70% | $140 |
-| Probe LP book | 20% | four slots, $10 each maximum |
-| Graduated LP book | 5% | one slot, $10 maximum |
-| Winner runners | 5% | two tokens, $5 each maximum |
+## Directional policy tests
 
-For shadow mode these weights are calculated but no funds move. After validation, the first live canary should use protocol capital only and the same dollar limits.
+Full-size breakout entries also failed. Across 243 staged-entry combinations, no policy remained positive in the held-out split and every calendar cohort. Rare winners existed, but ordinary 20-30% stops could gap to substantially larger realized losses.
 
-### Admission sequence
+A delayed cross-sectional basket performed better:
 
-1. **Canonical origin.** Accept only launches produced by an explicitly versioned factory and hook deployment. The first integrations should be official Doppler deployments and a separately reviewed PONS factory/hook pair. An unknown hook, direct PoolManager call, copied symbol, or unrecognized bytecode fails closed.
-2. **Two hours of observation.** Require at least 40 swaps, 0.5 ETH volume, both directions with a 0.40 balance, and activity in six of eight quarter-hour windows. Volume is capped in scoring; extreme turnover creates a manipulation flag.
-3. **Contract and route safety.** Pin token runtime hash, decimals, supply behavior, pool id, hook, fee logic and route. Run bounded buy and sell simulations at two sizes. Reject mutable tax, blacklist, arbitrary mint, transfer pause, upgrade, or confiscation powers unless the exact power is intentionally supported and surfaced.
-4. **Four-hour survivorship check.** Price, active liquidity and two-sided flow must still exist. A missing or oversized history, RPC disagreement, unavailable sell quote, or unresolved metadata produces no entry.
-5. **One-percent scout.** The first live position is 1% of vault value. It may graduate to 5% only after six hours of successful sellability checks and no security-state change. It never jumps directly to a full slot.
+- decision time: 24 hours after launch;
+- known PONS v2 family only for this directional study;
+- current price at least 1.25x the two-hour reference;
+- at least 20 ETH of volume, 48 swaps and 12 active 15-minute bars in the prior six hours;
+- rank by recent six-hour volume;
+- one token per exact creator cluster, at most five tokens;
+- 0.5% of vault NAV per token;
+- 20% intended stop, recover principal at 1.5x, 40% trailing exit, 12-hour maximum hold.
 
-### Position management
+The parameter neighborhood from 1.25x to 2x and 12-96 hours produced the same four qualifying selections, so the result was not dependent on one exact threshold. Vault-level outcomes were:
 
-- Start at ±60% around entry. Narrower launch ranges captured more fees in places but increased churn and adverse-selection exposure.
-- Exit at 15% below weighted entry; do not re-center downward into sell-dominated flow.
-- Re-center upward only after 90 minutes, continued two-sided flow and sufficient projected fees to cover the action by 8×.
-- At 2×, remove enough value to recover original principal plus execution costs. Keep at most 2.5% of vault value as a direct-token runner.
-- Sell the runner on a 30% drawdown from its high or at day seven. A failed swap leaves the token directly claimable and quarantines the route; it must not block unrelated withdrawals.
-- Permit at most two active launch positions and four total scouts at once. Queue later candidates in WETH.
-- Stop admitting positions if one-hour action cost exceeds 10% of realized fees, the RPC/security service is unavailable, or the complete-history budget is exhausted.
+- **-0.133%, -0.123%, -0.114%, +2.009%** across the four cohorts;
+- **+0.410% mean**, **-0.118% median**;
+- one winner produced the entire positive mean.
 
-## The protocol edge
+This is breakthrough progress in risk construction, not proof of return. Four selections cannot support an APY, a public deposit product, or a claim of positive expected value.
 
-Krystal-style automation improves one LP position. Launch Hunter should improve the **portfolio decision**:
+## Launch Hunter Shadow v2
 
-- observe every launch but fund almost none;
-- prove canonical origin and sellability rather than trusting names or APR;
-- diversify four tiny scouts instead of betting one launch;
-- automatically turn LP inventory into recovered WETH plus a capped runner;
-- publish every rejection, promotion, reband and exit as a visible vault action;
-- retain direct redemption so automation or quote outages cannot trap users.
+### Capital structure
 
-This can later become a launch-quality data product even before the vault holds capital. The public scanner, rejection reasons, survival curve and shadow P&L establish a track record without putting depositors at risk.
+- WETH reserve: **97.5% minimum**.
+- Survivor probes: **0.5% each**, maximum five.
+- Per creator/funding cluster: **one active token**.
+- Unknown hook, unknown factory, missing sell simulation, missing history, or RPC disagreement: **0%**.
+- PONS graduates: directional shadow only; never count hook tax as LP yield.
+- Canonical Doppler: LP shadow only until a larger fee-bearing sample is positive after costs.
 
-## Promotion requirements
+### Admission and management
 
-Launch Hunter can move from shadow to protocol-funded canary only after all of the following hold:
+1. Pin factory, hook, pool, token runtime hash and fee recipient semantics.
+2. Observe for two hours and run the market-quality gate.
+3. Continuously simulate two sell sizes and detect mutable tax, blacklist, pause, mint, confiscation and upgrade powers.
+4. Wait until hour 24. Require continued price, volume and activity; rank candidates cross-sectionally.
+5. Cluster by creator and funding relationship. Admit only the highest-scoring token in a cluster.
+6. Shadow a 0.5% probe. Model gaps at the observed execution price rather than the stop trigger.
+7. Recover original capital at 1.5x after entry. Trail the remainder by 40% and force exit after 12 hours.
+8. A failed sell quarantines only that asset. Direct redemption and unrelated vault operations must remain available.
 
-- at least 500 fully reconstructed launches across at least 30 calendar days;
-- at least 50 candidates passing the market gate and 30 passing every security gate;
-- a frozen policy tested on a later, untouched cohort;
-- positive aggregate return after gas and modeled fees, positive median, and a bootstrap 95% confidence interval whose lower bound is above -5%;
-- maximum simulated vault drawdown below 10% with 70% WETH reserve;
-- successful local-fork entry, reband, principal recovery, stop, failed-swap quarantine and direct-redemption tests for every supported factory family;
-- a protocol-funded $200 live canary with public actions and no user deposits.
+## What HOODX can do better than a single-LP manager
 
-Until then, the correct product state is **Shadow — observing launches**, not an advertised APY.
+- scan the full launch denominator rather than a promoted feed;
+- distinguish trading tax from collectible LP fees;
+- reject unknown hook and launch provenance;
+- cap correlated creator exposure across many launches;
+- hold WETH while candidates fail instead of continuously rebanding a dying pool;
+- publish every rejection, promotion, simulated exit and shadow result;
+- later combine independently proven LP and survivor sleeves without allowing either to block withdrawal.
+
+## Promotion gates
+
+No capital should move until all of the following are true:
+
+- at least 30 calendar days and 500 fully reconstructed launches;
+- at least 30 security-qualified survivor candidates and 30 fee-bearing LP candidates;
+- creator clustering expanded from exact sender to common funder and deployment graph;
+- a frozen policy evaluated on later untouched cohorts;
+- positive mean and median after impact, hook tax, gas and failed-exit modeling;
+- bootstrap 95% lower confidence bound above zero for the vault-level return;
+- maximum modeled vault drawdown below 5% and maximum launch sleeve below 2.5%;
+- local-fork tests for buy, sell, gap, hook failure, route failure, quarantine and direct redemption;
+- a protocol-funded $200 canary with no public deposits.
 
 ## Evidence and limitations
 
-The replay code and auditable outputs are in `research/launch_hunter_cohort_study.py` and `research/launch_hunter_results/`. Raw RPC responses are intentionally excluded from version control.
+Reproducible code lives in:
 
-The replay reconstructs pool prices, direction, active liquidity and swaps. It does not prove token safety, offchain identity, future sellability, or transaction-sender diversity. Seven of 18 candidate histories exceeded the bounded public-RPC work path and were rejected. The current sample is enough to reject an unsafe launch claim; it is not enough to claim an investable edge.
+- `research/launch_hunter_multicohort_study.py`
+- `research/launch_hunter_longitudinal_study.py`
+- `research/launch_hunter_doppler_lp_study.py`
+- `research/launch_hunter_survivor_study.py`
+
+Derived evidence is under `research/launch_hunter_multicohort_results/`. Raw archive responses and the private RPC credential are excluded from version control. The study is read-only and sent no transaction.
+
+The sample can reject unsafe designs, but it cannot prove future sellability, token safety, or investable alpha. Fifteen-minute bars understate intra-bar gaps. Exact creator addresses are only the first clustering layer; common funders and coordinated wallets remain unmodeled. PONS directional results do not imply external LP revenue. The canonical Doppler LP sample contains only five active candidates.
 
 Primary references:
 
-- Uniswap Liquidity Launchpad overview and transparent price-discovery flow: https://developers.uniswap.org/docs/liquidity/liquidity-launchpad/overview
-- Canonical Doppler deployments, including Robinhood Chain: https://github.com/whetstoneresearch/doppler/blob/main/Deployments.md
+- Uniswap Liquidity Launchpad deployments and fee-recipient design: https://developers.uniswap.org/docs/liquidity/liquidity-launchpad/deployments
+- Canonical Doppler deployments: https://github.com/whetstoneresearch/doppler/blob/main/Deployments.md
+- PONS v2 fee and locked-liquidity design: https://github.com/ponsdotdev/pons-labs/blob/main/README.md
+- Uniswap v4 hook and dynamic-fee architecture: https://app.uniswap.org/whitepaper-v4.pdf
 - AMM loss-versus-rebalancing research: https://arxiv.org/abs/2208.06046
 - FLAIR research on fee return, flow toxicity and LP competition: https://arxiv.org/abs/2306.09421

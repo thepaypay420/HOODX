@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 launch_hunter_results/cache/
 launch_hunter_results/run.log
+launch_hunter_multicohort_results/cache/
+launch_hunter_multicohort_results/candidate_7d_bars.csv
+launch_hunter_multicohort_results/runner_policy_outcomes.csv
+launch_hunter_multicohort_results/staged_runner_outcomes.csv
+launch_hunter_multicohort_results/survivor_outcomes.csv

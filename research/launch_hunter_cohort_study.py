@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import statistics
 import time
 import collections
@@ -29,7 +30,7 @@ CACHE = OUT / "cache"
 OUT.mkdir(exist_ok=True)
 CACHE.mkdir(exist_ok=True)
 
-RPC = "https://rpc.mainnet.chain.robinhood.com"
+RPC = os.environ.get("LAUNCH_HUNTER_RPC_URL", "https://rpc.mainnet.chain.robinhood.com")
 MANAGER = "0x8366a39cc670b4001a1121b8f6a443a643e40951"
 WETH = "0x0bd7d308f8e1639fab988df18a8011f41eacad73"
 ZERO = "0x0000000000000000000000000000000000000000"
@@ -351,6 +352,55 @@ def simulate(pool: LaunchPool, logs: list[dict], width: float, downside_stop: fl
         "winner": high >= 2 * entry, "stopped": stopped, "principal_recovered": principal_recovered,
         "max_multiple": high / entry, "final_multiple": final_price / entry,
     }
+
+
+def simulate_bid_range(
+    pool: LaunchPool, logs: list[dict], observe_hours: int, inner_discount: float,
+    outer_discount: float, stop_below_outer: float, max_hours: int,
+) -> dict:
+    """WETH-only range below spot: wait, buy a pullback, sell a rebound."""
+    rows = logs if logs and "amount0" in logs[0] else [decode_swap(log) for log in logs]
+    start_block = pool.init_block + int(observe_hours * BLOCKS_PER_HOUR)
+    end_block = start_block + int(max_hours * BLOCKS_PER_HOUR)
+    rows = [row for row in rows if start_block <= row["block"] <= end_block]
+    if len(rows) < 2:
+        return {"return_pct": np.nan, "actions": 0, "touched": False, "completed": False, "stopped": False}
+    reference = token_price_eth(pool, rows[0]["sqrt"])
+    upper, lower = reference * (1 - inner_discount), reference * (1 - outer_discount)
+    if not (math.isfinite(reference) and 0 < lower < upper):
+        return {"return_pct": np.nan, "actions": 0, "touched": False, "completed": False, "stopped": False}
+    capital_eth = POSITION_USD / ETH_USD
+    unit_value = range_value_per_raw_liquidity(pool, reference, lower, upper)
+    liquidity = capital_eth / unit_value
+    fees_eth, touched, completed, stopped = 0.0, False, False, False
+    actions = 1  # mint the resting bid range
+    final_price = reference
+    for row in rows:
+        price = token_price_eth(pool, row["sqrt"])
+        if not math.isfinite(price) or price <= 0:
+            continue
+        final_price = price
+        active = lower <= price <= upper
+        touched = touched or price <= upper
+        if active and row["liquidity"] > 0:
+            share = min(0.05, liquidity / row["liquidity"])
+            eth_amount = abs(row["amount0"] if pool.eth_side == 0 else row["amount1"]) / 1e18
+            fees_eth += eth_amount * (row["fee"] / 1_000_000) * share * 0.50
+        value = liquidity * range_value_per_raw_liquidity(pool, price, lower, upper) + fees_eth
+        if touched and price >= upper:
+            final = max(0, value - 2 * ACTION_COST_USD / ETH_USD)
+            actions += 1
+            completed = True
+            return {"return_pct": (final / capital_eth - 1) * 100, "actions": actions, "touched": True, "completed": True, "stopped": False}
+        if price <= lower * (1 - stop_below_outer):
+            final = max(0, value - 2 * ACTION_COST_USD / ETH_USD)
+            actions += 1
+            stopped = True
+            return {"return_pct": (final / capital_eth - 1) * 100, "actions": actions, "touched": touched, "completed": False, "stopped": True}
+    final = liquidity * range_value_per_raw_liquidity(pool, final_price, lower, upper) + fees_eth
+    final = max(0, final - 2 * ACTION_COST_USD / ETH_USD)
+    actions += 1
+    return {"return_pct": (final / capital_eth - 1) * 100, "actions": actions, "touched": touched, "completed": completed, "stopped": stopped}
 
 
 def main() -> None:

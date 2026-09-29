@@ -1,0 +1,15 @@
+{
+  "cohorts": [
+    "2026-09-13",
+    "2026-09-15",
+    "2026-09-17",
+    "2026-09-20"
+  ],
+  "initialized": 6339,
+  "market_gate": 113,
+  "flow_gate": 65,
+  "doppler_lp_gate": 5,
+  "selection_rate_pct": 1.7826155545038649,
+  "rpc": "private archive endpoint (credential omitted)",
+  "decision": "Metrics are research evidence only; no transaction was sent."
+}
