@@ -97,6 +97,12 @@ This is breakthrough progress in risk construction, not proof of return. Four se
 - publish every rejection, promotion, simulated exit and shadow result;
 - later combine independently proven LP and survivor sleeves without allowing either to block withdrawal.
 
+## New door: legacy PONS v1 fee machines
+
+A separate follow-up study found a materially stronger fee-bearing opportunity outside the original v4 launch cohort. Legacy PONS v1 pools are standard 1% Uniswap v3 pools. After correcting for the pools' `0x66` protocol-fee setting, a persistent three-pool DELTA/PONGO/GIWA sleeve with centered ±10% bands and a 25% WETH reserve was positive in three consecutive evaluation weeks.
+
+Modeled vault returns were +0.37%, +9.33% and +10.81% per week. Historical fee-growth state reconciled to the swap replay within 2.1%. This supports a protocol-controlled $200 canary after local-fork tests, not public deposits or an advertised APR. The full methodology and operating rules are in `docs/PONS-V3-FEE-MACHINE-RESEARCH-2026-09-29.md`.
+
 ## Promotion gates
 
 No capital should move until all of the following are true:
@@ -119,6 +125,7 @@ Reproducible code lives in:
 - `research/launch_hunter_longitudinal_study.py`
 - `research/launch_hunter_doppler_lp_study.py`
 - `research/launch_hunter_survivor_study.py`
+- `research/launch_hunter_pons_v3_study.py`
 
 Derived evidence is under `research/launch_hunter_multicohort_results/`. Raw archive responses and the private RPC credential are excluded from version control. The study is read-only and sent no transaction.
 

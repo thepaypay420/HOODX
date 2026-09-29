@@ -1,0 +1,10 @@
+{
+  "launches": 242858,
+  "ranking_active_pools": 15131,
+  "eligible_after_frozen_gates": 92,
+  "evaluated_pools": 92,
+  "capital_per_position_weth": 0.01,
+  "action_cost_weth": 2.5e-05,
+  "selection": "prior-week volume with sender, direction, and creator-cluster gates",
+  "decision": "research only; no transaction sent"
+}
