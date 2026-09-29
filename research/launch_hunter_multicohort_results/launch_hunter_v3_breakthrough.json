@@ -1,0 +1,1214 @@
+{
+  "snapshot_rows": 1036,
+  "eligible_pools": 50,
+  "declared_policy_count": 1620,
+  "train_days": [
+    "2026-09-13",
+    "2026-09-15"
+  ],
+  "holdout_days": [
+    "2026-09-17",
+    "2026-09-20"
+  ],
+  "round_trip_friction_pct": [
+    3,
+    5,
+    8
+  ],
+  "selection": "first signal per pool; max two creator-distinct entries per day",
+  "position_size_pct_of_nav": 10,
+  "maximum_simultaneous_launch_exposure_pct": 20,
+  "expected_actions_per_active_day": 4,
+  "recommended": {
+    "policy": [
+      0.1,
+      0.05,
+      2.0,
+      0.0,
+      5.0,
+      100.0
+    ],
+    "train_3": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 16.39999999999999,
+      "mean_trade_pct": 16.39999999999999,
+      "worst_day_pct": 32.79999999999998,
+      "mean_day_pct": 32.79999999999998,
+      "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+      "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+    },
+    "holdout_3": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 16.39999999999999,
+      "mean_trade_pct": 7.745256933413588,
+      "worst_day_pct": -1.8189722663456322,
+      "mean_day_pct": 15.490513866827175,
+      "portfolio_total_pct_at_10pct_per_trade": 3.098102773365435,
+      "portfolio_worst_day_pct_at_10pct_per_trade": -0.18189722663456323
+    },
+    "train_5": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 13.99999999999999,
+      "mean_trade_pct": 13.99999999999999,
+      "worst_day_pct": 27.99999999999998,
+      "mean_day_pct": 27.99999999999998,
+      "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+      "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+    },
+    "holdout_5": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 13.99999999999999,
+      "mean_trade_pct": 5.523705244064853,
+      "worst_day_pct": -5.905179023740569,
+      "mean_day_pct": 11.047410488129705,
+      "portfolio_total_pct_at_10pct_per_trade": 2.2094820976259415,
+      "portfolio_worst_day_pct_at_10pct_per_trade": -0.5905179023740569
+    },
+    "train_8": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 10.40000000000001,
+      "mean_trade_pct": 10.40000000000001,
+      "worst_day_pct": 20.80000000000002,
+      "mean_day_pct": 20.80000000000002,
+      "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+      "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+    },
+    "holdout_8": {
+      "trades": 4,
+      "active_days": 2,
+      "median_trade_pct": 10.40000000000001,
+      "mean_trade_pct": 2.1913777100417695,
+      "worst_day_pct": -12.03448915983294,
+      "mean_day_pct": 4.382755420083539,
+      "portfolio_total_pct_at_10pct_per_trade": 0.8765510840167079,
+      "portfolio_worst_day_pct_at_10pct_per_trade": -1.2034489159832942
+    }
+  },
+  "top_training_policies": [
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.0,
+        5.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 7.745256933413588,
+        "worst_day_pct": -1.8189722663456322,
+        "mean_day_pct": 15.490513866827175,
+        "portfolio_total_pct_at_10pct_per_trade": 3.098102773365435,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -0.18189722663456323
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 5.523705244064853,
+        "worst_day_pct": -5.905179023740569,
+        "mean_day_pct": 11.047410488129705,
+        "portfolio_total_pct_at_10pct_per_trade": 2.2094820976259415,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -0.5905179023740569
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 2.1913777100417695,
+        "worst_day_pct": -12.03448915983294,
+        "mean_day_pct": 4.382755420083539,
+        "portfolio_total_pct_at_10pct_per_trade": 0.8765510840167079,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -1.2034489159832942
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.02,
+        5.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -5.471776670644461,
+        "worst_day_pct": -20.068134416232212,
+        "mean_day_pct": -10.943553341288922,
+        "portfolio_total_pct_at_10pct_per_trade": -2.1887106682577846,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.0068134416232213
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -7.420812203208493,
+        "worst_day_pct": -23.778069789093404,
+        "mean_day_pct": -14.841624406416987,
+        "portfolio_total_pct_at_10pct_per_trade": -2.9683248812833973,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.3778069789093403
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -10.344365502054526,
+        "worst_day_pct": -29.342972848385163,
+        "mean_day_pct": -20.68873100410905,
+        "portfolio_total_pct_at_10pct_per_trade": -4.137746200821811,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.9342972848385163
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.0,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.0,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.0,
+        5.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 7.745256933413588,
+        "worst_day_pct": -1.8189722663456322,
+        "mean_day_pct": 15.490513866827175,
+        "portfolio_total_pct_at_10pct_per_trade": 3.098102773365435,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -0.18189722663456323
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 5.523705244064853,
+        "worst_day_pct": -5.905179023740569,
+        "mean_day_pct": 11.047410488129705,
+        "portfolio_total_pct_at_10pct_per_trade": 2.2094820976259415,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -0.5905179023740569
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 2.1913777100417695,
+        "worst_day_pct": -12.03448915983294,
+        "mean_day_pct": 4.382755420083539,
+        "portfolio_total_pct_at_10pct_per_trade": 0.8765510840167079,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -1.2034489159832942
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.02,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.02,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.1,
+        2.0,
+        0.02,
+        5.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -5.471776670644461,
+        "worst_day_pct": -20.068134416232212,
+        "mean_day_pct": -10.943553341288922,
+        "portfolio_total_pct_at_10pct_per_trade": -2.1887106682577846,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.0068134416232213
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -7.420812203208493,
+        "worst_day_pct": -23.778069789093404,
+        "mean_day_pct": -14.841624406416987,
+        "portfolio_total_pct_at_10pct_per_trade": -2.9683248812833973,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.3778069789093403
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -10.344365502054526,
+        "worst_day_pct": -29.342972848385163,
+        "mean_day_pct": -20.68873100410905,
+        "portfolio_total_pct_at_10pct_per_trade": -4.137746200821811,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -2.9342972848385163
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.2,
+        2.0,
+        0.0,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -18.36682317137989,
+        "mean_trade_pct": -10.640810001286807,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -21.281620002573614,
+        "portfolio_total_pct_at_10pct_per_trade": -4.256324000514723,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -20.049981456506075,
+        "mean_trade_pct": -12.483267527033469,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -24.966535054066938,
+        "portfolio_total_pct_at_10pct_per_trade": -4.993307010813388,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -22.57471888419535,
+        "mean_trade_pct": -15.246953815653455,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -30.49390763130691,
+        "portfolio_total_pct_at_10pct_per_trade": -6.098781526261383,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.2,
+        2.0,
+        0.0,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -18.36682317137989,
+        "mean_trade_pct": -10.640810001286807,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -21.281620002573614,
+        "portfolio_total_pct_at_10pct_per_trade": -4.256324000514723,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -20.049981456506075,
+        "mean_trade_pct": -12.483267527033469,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -24.966535054066938,
+        "portfolio_total_pct_at_10pct_per_trade": -4.993307010813388,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -22.57471888419535,
+        "mean_trade_pct": -15.246953815653455,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -30.49390763130691,
+        "portfolio_total_pct_at_10pct_per_trade": -6.098781526261383,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.2,
+        2.0,
+        0.02,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -18.36682317137989,
+        "mean_trade_pct": -10.640810001286807,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -21.281620002573614,
+        "portfolio_total_pct_at_10pct_per_trade": -4.256324000514723,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -20.049981456506075,
+        "mean_trade_pct": -12.483267527033469,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -24.966535054066938,
+        "portfolio_total_pct_at_10pct_per_trade": -4.993307010813388,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -22.57471888419535,
+        "mean_trade_pct": -15.246953815653455,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -30.49390763130691,
+        "portfolio_total_pct_at_10pct_per_trade": -6.098781526261383,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.2,
+        2.0,
+        0.02,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 16.39999999999999,
+        "worst_day_pct": 32.79999999999998,
+        "mean_day_pct": 32.79999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 6.559999999999997,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 3.2799999999999985
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -18.36682317137989,
+        "mean_trade_pct": -10.640810001286807,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -21.281620002573614,
+        "portfolio_total_pct_at_10pct_per_trade": -4.256324000514723,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 13.99999999999999,
+        "worst_day_pct": 27.99999999999998,
+        "mean_day_pct": 27.99999999999998,
+        "portfolio_total_pct_at_10pct_per_trade": 5.599999999999996,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.799999999999998
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -20.049981456506075,
+        "mean_trade_pct": -12.483267527033469,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -24.966535054066938,
+        "portfolio_total_pct_at_10pct_per_trade": -4.993307010813388,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 10.40000000000001,
+        "worst_day_pct": 20.80000000000002,
+        "mean_day_pct": 20.80000000000002,
+        "portfolio_total_pct_at_10pct_per_trade": 4.160000000000004,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 2.080000000000002
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -22.57471888419535,
+        "mean_trade_pct": -15.246953815653455,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -30.49390763130691,
+        "portfolio_total_pct_at_10pct_per_trade": -6.098781526261383,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.0,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 11.414122724643358,
+        "worst_day_pct": 12.856490898573446,
+        "mean_day_pct": 22.828245449286715,
+        "portfolio_total_pct_at_10pct_per_trade": 4.565649089857343,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 1.2856490898573447
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 9.116924317949676,
+        "worst_day_pct": 8.467697271798723,
+        "mean_day_pct": 18.23384863589935,
+        "portfolio_total_pct_at_10pct_per_trade": 3.646769727179871,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.8467697271798724
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 5.671126707909178,
+        "worst_day_pct": 1.8845068316366902,
+        "mean_day_pct": 11.342253415818355,
+        "portfolio_total_pct_at_10pct_per_trade": 2.268450683163671,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.18845068316366903
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.0,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 11.414122724643358,
+        "worst_day_pct": 12.856490898573446,
+        "mean_day_pct": 22.828245449286715,
+        "portfolio_total_pct_at_10pct_per_trade": 4.565649089857343,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 1.2856490898573447
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 9.116924317949676,
+        "worst_day_pct": 8.467697271798723,
+        "mean_day_pct": 18.23384863589935,
+        "portfolio_total_pct_at_10pct_per_trade": 3.646769727179871,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.8467697271798724
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 5.671126707909178,
+        "worst_day_pct": 1.8845068316366902,
+        "mean_day_pct": 11.342253415818355,
+        "portfolio_total_pct_at_10pct_per_trade": 2.268450683163671,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.18845068316366903
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.02,
+        0.1,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 11.414122724643358,
+        "worst_day_pct": 12.856490898573446,
+        "mean_day_pct": 22.828245449286715,
+        "portfolio_total_pct_at_10pct_per_trade": 4.565649089857343,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 1.2856490898573447
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 9.116924317949676,
+        "worst_day_pct": 8.467697271798723,
+        "mean_day_pct": 18.23384863589935,
+        "portfolio_total_pct_at_10pct_per_trade": 3.646769727179871,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.8467697271798724
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 5.671126707909178,
+        "worst_day_pct": 1.8845068316366902,
+        "mean_day_pct": 11.342253415818355,
+        "portfolio_total_pct_at_10pct_per_trade": 2.268450683163671,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.18845068316366903
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    },
+    {
+      "policy": [
+        0.1,
+        0.05,
+        2.0,
+        0.02,
+        1.0,
+        100.0
+      ],
+      "train_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 16.39999999999999,
+        "mean_trade_pct": 11.414122724643358,
+        "worst_day_pct": 12.856490898573446,
+        "mean_day_pct": 22.828245449286715,
+        "portfolio_total_pct_at_10pct_per_trade": 4.565649089857343,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 1.2856490898573447
+      },
+      "holdout_3": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -0.9094861331728161,
+        "mean_trade_pct": -0.9834115856899501,
+        "worst_day_pct": -36.73364634275978,
+        "mean_day_pct": -1.9668231713799003,
+        "portfolio_total_pct_at_10pct_per_trade": -0.39336463427598006,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -3.6733646342759787
+      },
+      "train_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 13.99999999999999,
+        "mean_trade_pct": 9.116924317949676,
+        "worst_day_pct": 8.467697271798723,
+        "mean_day_pct": 18.23384863589935,
+        "portfolio_total_pct_at_10pct_per_trade": 3.646769727179871,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.8467697271798724
+      },
+      "holdout_5": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -2.9525895118702845,
+        "mean_trade_pct": -3.0249907282530435,
+        "worst_day_pct": -40.09996291301215,
+        "mean_day_pct": -6.049981456506085,
+        "portfolio_total_pct_at_10pct_per_trade": -1.2099962913012174,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.009996291301215
+      },
+      "train_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": 10.40000000000001,
+        "mean_trade_pct": 5.671126707909178,
+        "worst_day_pct": 1.8845068316366902,
+        "mean_day_pct": 11.342253415818355,
+        "portfolio_total_pct_at_10pct_per_trade": 2.268450683163671,
+        "portfolio_worst_day_pct_at_10pct_per_trade": 0.18845068316366903
+      },
+      "holdout_8": {
+        "trades": 4,
+        "active_days": 2,
+        "median_trade_pct": -6.01724457991647,
+        "mean_trade_pct": -6.087359442097671,
+        "worst_day_pct": -45.1494377683907,
+        "mean_day_pct": -12.17471888419534,
+        "portfolio_total_pct_at_10pct_per_trade": -2.4349437768390683,
+        "portfolio_worst_day_pct_at_10pct_per_trade": -4.51494377683907
+      }
+    }
+  ]
+}

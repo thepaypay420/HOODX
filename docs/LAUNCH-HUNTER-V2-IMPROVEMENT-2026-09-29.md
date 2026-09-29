@@ -1,5 +1,7 @@
 # Launch Hunter V2 — Higher-utilization candidate
 
+**Status:** superseded before deployment by the calendar-held-out V3 pullback/recovery design. V2 remains preserved as negative-control evidence and must not be bootstrapped.
+
 ## Why V1 remains empty
 
 The deployed V1 vault limits each launch to 0.5% of the $200 seed, roughly $1. That is an appropriate loss-bounded research canary but too small to produce useful net dollars. V1 is immutable, so its limits cannot be loosened in place. It should remain unbootstrapped while V2 is tested.
