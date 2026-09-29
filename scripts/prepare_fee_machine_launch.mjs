@@ -81,10 +81,12 @@ for (let i = 0; i < pools.length; i += 1) {
 const coreSqrt = BigInt((await client.readContract({ address: pools[3], abi: poolAbi, functionName: "slot0" }))[0]);
 const q96 = 2n ** 96n;
 const usdPerEthScaled = coreSqrt * coreSqrt * 10n ** 18n * 10n ** 12n / (q96 * q96);
-const targetUsdScaled = 200n * 10n ** 18n;
+const targetUsd = BigInt(process.env.HOODX_FEE_MACHINE_TARGET_USD || "200");
+if (targetUsd <= 0n || targetUsd > 10_000n) throw new Error("Invalid fee-machine target USD");
+const targetUsdScaled = targetUsd * 10n ** 18n;
 const rawSeed = targetUsdScaled * 10n ** 18n / usdPerEthScaled;
 const seedWei = rawSeed / 10n ** 12n * 10n ** 12n;
-const initialShares = 200n * 10n ** 18n;
+const initialShares = targetUsd * 10n ** 18n;
 
 const artifact = JSON.parse(fs.readFileSync(new URL("out/HoodxFeeMachineLaunchV1.sol/HoodxFeeMachineLaunchV1.json", ROOT), "utf8"));
 const bytecode = artifact.bytecode.object.startsWith("0x") ? artifact.bytecode.object : `0x${artifact.bytecode.object}`;
@@ -117,7 +119,7 @@ const manifest = {
     symbol: "FEEX",
     seedWei: seedWei.toString(),
     seedEth: formatEther(seedWei),
-    approximateUsdAtSpot: 200,
+    approximateUsdAtSpot: Number(targetUsd),
     initialShares: initialShares.toString(),
     allocationBps: [3000, 3000, 3000, 1000],
     centers: reviewed.map((x) => x.center),
@@ -139,5 +141,6 @@ const manifest = {
   },
   pools: reviewed,
 };
-fs.writeFileSync(new URL("deployments/fee-machine-launch-preflight.json", ROOT), `${JSON.stringify(manifest, null, 2)}\n`);
+const outputPath = process.env.HOODX_FEE_MACHINE_PREFLIGHT_PATH || "deployments/fee-machine-launch-preflight.json";
+fs.writeFileSync(new URL(outputPath, ROOT), `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(JSON.stringify({ status: manifest.status, violations: manifest.violations, block: manifest.blockNumber, seedEth: manifest.pilot.seedEth, shortfallEth: manifest.funding.shortfallEth, centers: manifest.pilot.centers, pools: manifest.pools.map(({pool, spot, twap, center}) => ({pool, spot, twap, center, deviation: Math.abs(spot - twap)})), expectedLauncher: manifest.deployment.expectedLauncher, estimatedGas: manifest.deployment.estimatedGas, initCodeBytes: manifest.deployment.initCodeBytes }, null, 2));

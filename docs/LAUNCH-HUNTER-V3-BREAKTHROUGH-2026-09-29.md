@@ -46,10 +46,10 @@ The 43x token that dominated the earlier survivor study is not allowed to domina
 
 HUNTX V3 is a barbell:
 
-- 80% in the three independently reviewed PONS v1 fee sleeves;
+- 80% in one fully backed FEEX base token containing four independently reviewed LP sleeves (DELTA, PONGO, GIWA and USDG);
 - 20% WETH working capital for two simultaneous $20 launch trades.
 
-With equal weights across the three fee sleeves, the historical base sleeve alone modeled +0.40%, +9.95%, and +11.54% in its three disjoint evaluation weeks. Those weeks do not align with the launch cohorts, so the LP and launch returns are reported separately and are not added together.
+The earlier three-sleeve research informed the base design. The production pilot uses the separately audited 30/30/30/10 FEEX basket; historical LP and launch returns remain reported separately and are not added together.
 
 The 20% WETH is working capital, not a return target. Putting it in another LP between short signals would add an LP exit, stable conversion, gas and timing risk to every $20 launch trade. At pilot scale that can erase the edge. The correct optimization is for the other 80% to earn, while the 20% remains immediately executable.
 
@@ -62,7 +62,7 @@ The 20% WETH is working capital, not a return target. Putting it in another LP b
 - 12-hour minimum observation and 48-hour entry expiry;
 - public +50%, -20%, and four-hour exits;
 - a separate immutable 20% WETH seed and 100% NAV risk reference;
-- one to four reviewed base-sleeve tokens that must be funded before bootstrap;
+- one exact FEEX base token, itself backed by four reviewed sleeve positions, that must be funded before bootstrap;
 - direct in-kind recovery of WETH, every base sleeve and every active launch token;
 - a 97% oracle execution floor that public exit callers cannot weaken.
 

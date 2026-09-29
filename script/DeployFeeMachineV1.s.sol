@@ -30,6 +30,7 @@ contract DeployFeeMachineV1 is Script {
                 "wrong deployment stage"
             );
             require(vm.envBytes32("HOODX_REVIEWED_BUILD") == buildFingerprint(), "reviewed build mismatch");
+            require(vm.getNonce(DEPLOYER) == vm.envUint("HOODX_FEE_MACHINE_DEPLOYER_NONCE"), "deployer nonce changed");
         }
 
         console2.log("Reviewed build fingerprint");

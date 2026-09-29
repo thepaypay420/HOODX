@@ -1,9 +1,11 @@
 {
-  "status": "AWAITING_CURATOR_SEED",
-  "violations": [],
-  "generatedAt": "2026-09-29T20:15:41.779Z",
+  "status": "AWAITING_MARKET_STABILITY",
+  "violations": [
+    "Pool 2 spot/TWAP divergence: 739 ticks"
+  ],
+  "generatedAt": "2026-09-29T21:00:41.055Z",
   "chainId": 4663,
-  "blockNumber": "75935573",
+  "blockNumber": "75962485",
   "accounts": {
     "deployer": {
       "address": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
@@ -20,10 +22,10 @@
   "pilot": {
     "name": "HOODX Fee Machine",
     "symbol": "FEEX",
-    "seedWei": "74363000000000000",
-    "seedEth": "0.074363",
-    "approximateUsdAtSpot": 200,
-    "initialShares": "200000000000000000000",
+    "seedWei": "59510000000000000",
+    "seedEth": "0.05951",
+    "approximateUsdAtSpot": 160,
+    "initialShares": "160000000000000000000",
     "allocationBps": [
       3000,
       3000,
@@ -31,26 +33,26 @@
       1000
     ],
     "centers": [
-      117600,
+      117800,
       146600,
-      155400,
-      -197353
+      155600,
+      -197345
     ]
   },
   "deployment": {
     "expectedLauncher": "0x1Df943F95D56C0372F25245D1FBfD6C8035EAD9A",
     "creationCodeHash": "0xc7fc9bfc0c6439c9bcad8674fa9aef11b94085fc58dc2c19b42a4026c3aed74a",
-    "deployDataHash": "0xbed7efe7b24ed06006f9cf92b7a0d6454d583a5748cbfa090a3d92ee041f8a08",
+    "deployDataHash": "0x819def84edf3f88f8782a35d10169a1a0d8f03b3dc5835b5430c42eaabd70a98",
     "initCodeBytes": 44919,
-    "estimatedGas": "16484818",
-    "maxFeePerGasWei": "26100000",
-    "reviewedGasCapWei": "537817187250000"
+    "estimatedGas": "0",
+    "maxFeePerGasWei": "26856000",
+    "reviewedGasCapWei": "0"
   },
   "funding": {
-    "bootstrapGasReserveWei": "417600000000000",
-    "requiredCuratorWei": "74780600000000000",
-    "shortfallWei": "50519032432607203",
-    "shortfallEth": "0.050519032432607203"
+    "bootstrapGasReserveWei": "429696000000000",
+    "requiredCuratorWei": "59939696000000000",
+    "shortfallWei": "35678128432607203",
+    "shortfallEth": "0.035678128432607203"
   },
   "pools": [
     {
@@ -58,10 +60,10 @@
       "token1": "0xe8ffd7e24187F72afB08d75B1bb13088A989a791",
       "fee": 10000,
       "spacing": 200,
-      "liquidity": "180519942940815006505732",
-      "spot": 117789,
-      "twap": 117669,
-      "center": 117600,
+      "liquidity": "179390658969503095807884",
+      "spot": 117828,
+      "twap": 117788,
+      "center": 117800,
       "feeProtocol": 102
     },
     {
@@ -69,9 +71,9 @@
       "token1": "0xedAee44320107CAa714BaAEc486261A87F27022d",
       "fee": 10000,
       "spacing": 200,
-      "liquidity": "37511797711742087113021",
-      "spot": 146395,
-      "twap": 146589,
+      "liquidity": "37754172065419997864789",
+      "spot": 146789,
+      "twap": 146520,
       "center": 146600,
       "feeProtocol": 102
     },
@@ -80,10 +82,10 @@
       "token1": "0xdaB0E8CE3b999D16898709A6DfC44c953bFc43b1",
       "fee": 10000,
       "spacing": 200,
-      "liquidity": "38035200988148755209516",
-      "spot": 155378,
-      "twap": 155356,
-      "center": 155400,
+      "liquidity": "37580434834131077059445",
+      "spot": 156437,
+      "twap": 155698,
+      "center": 155600,
       "feeProtocol": 102
     },
     {
@@ -91,10 +93,10 @@
       "token1": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
       "fee": 100,
       "spacing": 1,
-      "liquidity": "4649256597568648554",
-      "spot": -197350,
-      "twap": -197353,
-      "center": -197353,
+      "liquidity": "4651212242466532636",
+      "spot": -197353,
+      "twap": -197345,
+      "center": -197345,
       "feeProtocol": 68
     }
   ]

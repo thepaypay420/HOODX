@@ -5,7 +5,7 @@
 
 ## Security result
 
-No critical or high issue was found in the tested prototype paths. The contract is not cleared for deployment because exact live base sleeves, candidate routes, PONS fees and fork execution have not yet been supplied.
+This prototype review is superseded for deployment readiness by [HUNTX-V3-PRODUCTION-AUDIT-2026-09-29.md](./HUNTX-V3-PRODUCTION-AUDIT-2026-09-29.md). The production pass added the exact FEEX base, authenticated deployment tooling, atomic backing, tracked candidate recovery, and current-fork execution evidence. Candidate routes remain deliberately deferred until each asset is separately reviewed and armed.
 
 The principal safety properties are:
 
@@ -38,7 +38,7 @@ The research does not establish an annual return. Four non-consecutive observati
 ## Remaining launch blockers
 
 - **UNVERIFIED:** exact $20 buy and sell against every proposed live route, including creator tax, PONS fee, price impact and gas;
-- **UNVERIFIED:** exact three base-sleeve contracts, balances, fee ownership and complete unwind on a current local fork;
+- **RESOLVED FOR THE CLOSED PILOT:** exact four-sleeve FEEX backing and two-layer recovery passed on a current local fork; future candidate routes remain separately gated.
 - **UNVERIFIED:** oracle resistance during the four-hour exit window and agreement with executable route value;
 - **UNVERIFIED:** token-specific blacklist, transfer-tax, mutable-code, mint and confiscation behavior;
 - **UNVERIFIED:** at least 30 later calendar days and 30 completed frozen-rule trades; the current exit evidence is eight trades across four non-consecutive days;

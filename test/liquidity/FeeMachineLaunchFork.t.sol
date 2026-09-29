@@ -8,6 +8,8 @@ import {HoodxLiquidityIndexV1} from "../../contracts/liquidity/HoodxLiquidityInd
 import {HoodxLiquiditySleeveV1} from "../../contracts/liquidity/HoodxLiquiditySleeveV1.sol";
 import {HoodxLiquidityControllerV1} from "../../contracts/liquidity/HoodxLiquidityControllerV1.sol";
 import {IUniswapV3PoolLike} from "../../contracts/liquidity/UniswapV3Types.sol";
+import {HoodxLaunchHunterLaunchV3} from "../../contracts/launch/HoodxLaunchHunterLaunchV3.sol";
+import {HoodxLaunchHunterV3} from "../../contracts/launch/HoodxLaunchHunterV3.sol";
 
 interface IFeeMachineQuoterV3 {
     struct Params {
@@ -26,6 +28,7 @@ contract FeeMachineLaunchForkTest is Test {
     address internal constant CURATOR = 0x134D468B0bcaeA6DF127916f951F7938c06A37C6;
     address internal constant WETH = 0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73;
     address internal constant V3_QUOTER = 0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7;
+    bytes32 internal constant EXECUTOR_HASH = 0x7f0ab91ef78f36e60d01f7b167e227de218e708931ce4b6e823080608a4dc195;
     address[4] internal pools = [
         0xD64FbdA67E1015dF43Fa5e49F02cA844729E5F94,
         0xdEc8F541FF159D2B4ABD3c3b041CD739BD7C486F,
@@ -88,6 +91,44 @@ contract FeeMachineLaunchForkTest is Test {
             assertEq(sleeve.tokenId(), 0);
         }
         assertEq(index.totalSupply(), 0);
+    }
+
+    function testFullFeeBaseIntoHuntxAndTwoLayerRecovery() public {
+        uint256 baseSeed = 0.05 ether;
+        uint256 huntWeth = 0.0125 ether;
+        int24[4] memory centers;
+        for (uint256 i; i < 4; ++i) {
+            centers[i] = _center(pools[i], i == 3 ? 30 minutes : 1 hours);
+        }
+        HoodxFeeMachineLaunchV1 feeLaunch = new HoodxFeeMachineLaunchV1(CURATOR, baseSeed, 160 ether, centers);
+        (uint256[4] memory minTokenOut, uint256[4] memory minWethUsed, uint256[4] memory minTokenUsed) =
+            _protectedMinimums(feeLaunch, baseSeed);
+        vm.deal(CURATOR, baseSeed + huntWeth);
+        vm.prank(CURATOR);
+        feeLaunch.bootstrapFromEth{value: baseSeed}(minTokenOut, minWethUsed, minTokenUsed, block.timestamp + 5 minutes);
+        uint256 curatorWethBeforeHunt = IERC20(WETH).balanceOf(CURATOR);
+
+        HoodxLaunchHunterLaunchV3 huntLaunch = new HoodxLaunchHunterLaunchV3(
+            address(feeLaunch.index()),
+            EXECUTOR_HASH,
+            address(feeLaunch.index()).codehash,
+            160 ether,
+            huntWeth,
+            0.0625 ether,
+            200 ether
+        );
+        HoodxLaunchHunterV3 hunt = huntLaunch.vault();
+        uint256 huntWethBefore = IERC20(WETH).balanceOf(address(hunt));
+        vm.startPrank(CURATOR);
+        feeLaunch.index().approve(address(hunt), 160 ether);
+        hunt.bootstrap{value: huntWeth}(CURATOR);
+        assertEq(feeLaunch.index().balanceOf(address(hunt)), 160 ether);
+        assertEq(IERC20(WETH).balanceOf(address(hunt)), huntWethBefore + huntWeth);
+        hunt.redeemInKind(200 ether, CURATOR);
+        vm.stopPrank();
+        assertEq(hunt.totalSupply(), 0);
+        assertEq(feeLaunch.index().balanceOf(CURATOR), 160 ether);
+        assertEq(IERC20(WETH).balanceOf(CURATOR), curatorWethBeforeHunt + huntWethBefore + huntWeth);
     }
 
     function testOnlyCuratorCanBootstrapAndBootstrapCannotReplay() public {

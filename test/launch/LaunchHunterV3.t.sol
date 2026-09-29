@@ -5,6 +5,20 @@ import {Test} from "forge-std/Test.sol";
 import {HoodxLaunchHunterV3} from "../../contracts/launch/HoodxLaunchHunterV3.sol";
 import {HunterToken, HunterWeth, HunterOracle, HunterExecutor, HunterPolicy} from "./LaunchHunterV1.t.sol";
 
+contract BalanceGriefTokenV3 is HunterToken {
+    bool public grief;
+    constructor() HunterToken("GRIEF") {}
+
+    function setGrief(bool value) external {
+        grief = value;
+    }
+
+    function balanceOf(address account) public view override returns (uint256) {
+        if (grief) revert("balance grief");
+        return super.balanceOf(account);
+    }
+}
+
 contract LaunchHunterV3Test is Test {
     HunterWeth weth;
     HunterExecutor executor;
@@ -29,9 +43,15 @@ contract LaunchHunterV3Test is Test {
         baseSleeve = new HunterToken("BASE");
         address[] memory baseSleeves = new address[](1);
         baseSleeves[0] = address(baseSleeve);
-        hunter = new HoodxLaunchHunterV3(address(policy), curator, 20 ether, 100 ether, 200 ether, baseSleeves);
-        baseSleeve.mint(address(hunter), 80 ether);
+        uint256[] memory baseSeedAmounts = new uint256[](1);
+        baseSeedAmounts[0] = 80 ether;
+        hunter = new HoodxLaunchHunterV3(
+            address(policy), curator, 20 ether, 100 ether, 200 ether, baseSleeves, baseSeedAmounts
+        );
+        baseSleeve.mint(curator, 80 ether);
         vm.deal(curator, 21 ether);
+        vm.prank(curator);
+        baseSleeve.approve(address(hunter), 80 ether);
         vm.prank(curator);
         hunter.bootstrap{value: 20 ether}(curator);
     }
@@ -42,7 +62,9 @@ contract LaunchHunterV3Test is Test {
     }
 
     function _ready(uint256 count) internal {
-        for (uint256 i; i < count; ++i) _arm(i);
+        for (uint256 i; i < count; ++i) {
+            _arm(i);
+        }
         vm.warp(block.timestamp + 12 hours);
     }
 
@@ -67,8 +89,12 @@ contract LaunchHunterV3Test is Test {
         HunterToken emptySleeve = new HunterToken("EMPTY");
         address[] memory sleeves = new address[](1);
         sleeves[0] = address(emptySleeve);
+        uint256[] memory seedAmounts = new uint256[](1);
+        seedAmounts[0] = 80 ether;
         HoodxLaunchHunterV3 emptyHunter =
-            new HoodxLaunchHunterV3(address(policy), curator, 20 ether, 100 ether, 200 ether, sleeves);
+            new HoodxLaunchHunterV3(address(policy), curator, 20 ether, 100 ether, 200 ether, sleeves, seedAmounts);
+        vm.prank(curator);
+        emptySleeve.approve(address(emptyHunter), 80 ether);
         vm.prank(curator);
         vm.expectRevert();
         emptyHunter.bootstrap{value: 20 ether}(curator);
@@ -79,6 +105,47 @@ contract LaunchHunterV3Test is Test {
         vm.expectRevert();
         hunter.rescueUnexpectedToken(address(baseSleeve), curator, 1 ether);
         assertEq(baseSleeve.balanceOf(address(hunter)), 80 ether);
+    }
+
+    function testMaliciousActiveBalanceReadCannotBlockBaseAndWethRecovery() public {
+        BalanceGriefTokenV3 grief = new BalanceGriefTokenV3();
+        HunterOracle oracle = new HunterOracle();
+        bytes32 id = policy.add(address(grief), address(oracle));
+        executor.setRate(address(grief), 1 ether);
+        vm.prank(curator);
+        hunter.arm(id, keccak256("grief-cluster"), keccak256("reviewed-evidence"));
+        vm.warp(block.timestamp + 12 hours);
+        vm.prank(curator);
+        hunter.enter(address(grief), 10 ether, 9.7 ether, vm.getBlockTimestamp() + 5 minutes);
+        grief.setGrief(true);
+
+        uint256 baseBefore = baseSleeve.balanceOf(curator);
+        vm.prank(curator);
+        hunter.redeemInKind(200 ether, curator);
+        assertEq(hunter.totalSupply(), 0);
+        assertEq(baseSleeve.balanceOf(curator), baseBefore + 80 ether);
+        assertEq(weth.balanceOf(curator), 10 ether);
+        grief.setGrief(false);
+        assertEq(grief.balanceOf(curator), 10 ether);
+    }
+
+    function testPartialRedemptionScalesCostBasisAndCannotFabricateStop() public {
+        _ready(1);
+        _enter(0);
+        vm.prank(curator);
+        hunter.redeemInKind(40 ether, curator);
+        vm.expectRevert(HoodxLaunchHunterV3.NotReady.selector);
+        hunter.enforceExit(address(tokens[0]), 0, vm.getBlockTimestamp() + 5 minutes);
+        assertEq(hunter.trackedCandidateBalance(address(tokens[0])), 8 ether);
+    }
+
+    function testCandidateDonationCannotFabricateProfitExitOrRisk() public {
+        _ready(1);
+        _enter(0);
+        tokens[0].mint(address(hunter), 100 ether);
+        assertEq(hunter.riskyAssets(), 10 ether);
+        vm.expectRevert(HoodxLaunchHunterV3.NotReady.selector);
+        hunter.enforceExit(address(tokens[0]), 0, vm.getBlockTimestamp() + 5 minutes);
     }
 
     function testTwoPositionsCapLaunchRiskAtTwentyPercent() public {
@@ -155,8 +222,8 @@ contract LaunchHunterV3Test is Test {
     function testTwentyPercentStopClosesWithoutWaiting() public {
         _ready(1);
         _enter(0);
-        oracles[0].setPrice(.8 ether);
-        executor.setRate(address(tokens[0]), .8 ether);
+        oracles[0].setPrice(0.8 ether);
+        executor.setRate(address(tokens[0]), 0.8 ether);
         hunter.enforceExit(address(tokens[0]), 7.76 ether, vm.getBlockTimestamp() + 5 minutes);
         assertEq(weth.balanceOf(address(hunter)), 18 ether);
         assertEq(hunter.activeTokens().length, 0);
@@ -174,7 +241,7 @@ contract LaunchHunterV3Test is Test {
         _ready(1);
         _enter(0);
         vm.warp(block.timestamp + 4 hours);
-        executor.setRate(address(tokens[0]), .96 ether);
+        executor.setRate(address(tokens[0]), 0.96 ether);
         vm.expectRevert();
         hunter.enforceExit(address(tokens[0]), 0, vm.getBlockTimestamp() + 5 minutes);
         assertEq(hunter.activeTokens().length, 1);

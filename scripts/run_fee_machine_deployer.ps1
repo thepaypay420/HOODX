@@ -1,13 +1,17 @@
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $root
-$preflight = Get-Content -LiteralPath "deployments\fee-machine-launch-preflight.json" -Raw | ConvertFrom-Json
+$preflightPath = if ($env:HOODX_FEE_MACHINE_PREFLIGHT_PATH) { $env:HOODX_FEE_MACHINE_PREFLIGHT_PATH } else { "deployments\fee-machine-launch-preflight.json" }
+$preflight = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
 if ($preflight.status -ne "READY_TO_DEPLOY_AND_BOOTSTRAP") {
   throw "Fee Machine preflight is $($preflight.status). Run a fresh preflight and satisfy every gate first."
 }
+$age = (Get-Date).ToUniversalTime() - [DateTime]::Parse($preflight.generatedAt).ToUniversalTime()
+if ($age.TotalMinutes -gt 15) { throw "Fee Machine preflight is stale. Refresh it before deployment." }
 $env:ROBINHOOD_RPC_URL = (Get-Content -LiteralPath "C:\Users\lukey\Desktop\RH RPC.txt" -Raw).Trim()
 $env:HOODX_FEE_MACHINE_SEED_WEI = $preflight.pilot.seedWei
 $env:HOODX_FEE_MACHINE_INITIAL_SHARES = $preflight.pilot.initialShares
+$env:HOODX_FEE_MACHINE_DEPLOYER_NONCE = $preflight.accounts.deployer.nonce
 for ($i = 0; $i -lt 4; $i++) { Set-Item -Path "Env:HOODX_FEE_MACHINE_CENTER_$i" -Value $preflight.pilot.centers[$i] }
 $env:HOODX_LIVE_BROADCAST = "1"
 $env:HOODX_DEPLOY_STAGE = "fee-machine-pilot"

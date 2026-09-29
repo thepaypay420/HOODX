@@ -1,0 +1,45 @@
+{
+  "status": "BLOCKED_MARKET_AND_FUNDING",
+  "reviewedAt": "2026-09-29T20:55:00Z",
+  "productionTransactionsBroadcast": 0,
+  "pilot": {
+    "targetUsd": 200,
+    "feexBaseUsd": 160,
+    "workingWethUsd": 40,
+    "initialHuntxShares": "200000000000000000000"
+  },
+  "liveGate": {
+    "blockNumber": "75962485",
+    "baseSeedWei": "59510000000000000",
+    "workingWethWei": "14877500000000000",
+    "curatorBalanceWei": "24261567567392797",
+    "approximateTotalShortfallEthWithGas": "0.0505",
+    "marketViolation": "GIWA spot/TWAP divergence: 739 ticks"
+  },
+  "verification": {
+    "launchTests": { "passed": 39, "failed": 0, "skippedOptInFork": 1 },
+    "nonForkRepositoryTests": { "passed": 305, "failed": 0 },
+    "currentFork": {
+      "blockNumber": "75942583",
+      "scope": "FEEX deploy and four-sleeve seed; HUNTX deploy and atomic seed; two-layer recovery",
+      "result": "PASS"
+    },
+    "contractSize": {
+      "huntxRuntimeBytes": 17142,
+      "huntxRuntimeMarginBytes": 7434,
+      "launcherInitCodeBytes": 27892
+    },
+    "securityReview": {
+      "criticalOpen": 0,
+      "highOpen": 0,
+      "findingsFixed": [
+        "malicious candidate balanceOf could block base recovery",
+        "post-bootstrap wallet receipt required a spent curator FEEX balance",
+        "partial redemption did not scale tactical cost basis",
+        "candidate donations could fabricate an exit trigger",
+        "deployment manifests did not authenticate the creation transaction"
+      ]
+    }
+  },
+  "nextGate": "Fund the official curator wallet, wait for GIWA stability, refresh both preflights, then follow HUNTX-V3-LAUNCH-RUNBOOK.md in order."
+}

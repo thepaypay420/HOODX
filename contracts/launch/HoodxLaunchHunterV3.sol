@@ -38,6 +38,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
     uint256 public immutable riskReferenceAmount;
     uint256 public immutable initialShares;
     address[] private _baseSleeves;
+    uint256[] private _baseSeedAmounts;
 
     uint256 public constant BPS = 10_000;
     uint256 public constant MAX_ACTIVE = 2;
@@ -63,6 +64,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
     address[] private _activeTokens;
     mapping(address => Candidate) public candidate;
     mapping(bytes32 => address) public activeCluster;
+    mapping(address => uint256) public trackedCandidateBalance;
     mapping(address => uint256) public reserved;
     mapping(address => mapping(address => uint256)) public claimable;
 
@@ -96,13 +98,12 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         uint256 wethSeedAmount_,
         uint256 riskReferenceAmount_,
         uint256 initialShares_,
-        address[] memory baseSleeves_
-    )
-        ERC20("HOODX Launch Hunter", "HUNTX")
-    {
+        address[] memory baseSleeves_,
+        uint256[] memory baseSeedAmounts_
+    ) ERC20("HOODX Launch Hunter", "HUNTX") {
         if (
-            policy_.code.length == 0 || curator_ == address(0) || wethSeedAmount_ == 0
-                || riskReferenceAmount_ == 0 || initialShares_ == 0 || baseSleeves_.length == 0
+            policy_.code.length == 0 || curator_ == address(0) || wethSeedAmount_ == 0 || riskReferenceAmount_ == 0
+                || initialShares_ == 0 || baseSleeves_.length == 0 || baseSleeves_.length != baseSeedAmounts_.length
                 || baseSleeves_.length > MAX_BASE_SLEEVES
                 || wethSeedAmount_ != Math.mulDiv(riskReferenceAmount_, MAX_TOTAL_RISK_BPS, BPS)
         ) {
@@ -119,11 +120,12 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         initialShares = initialShares_;
         for (uint256 i; i < baseSleeves_.length; ++i) {
             address sleeve = baseSleeves_[i];
-            if (sleeve == weth || sleeve.code.length == 0) revert Invalid();
+            if (sleeve == weth || sleeve.code.length == 0 || baseSeedAmounts_[i] == 0) revert Invalid();
             for (uint256 j; j < i; ++j) {
                 if (baseSleeves_[j] == sleeve) revert Invalid();
             }
             _baseSleeves.push(sleeve);
+            _baseSeedAmounts.push(baseSeedAmounts_[i]);
         }
     }
 
@@ -134,7 +136,10 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
     function bootstrap(address receiver) external payable onlyCurator nonReentrant {
         if (bootstrapped || receiver == address(0) || msg.value != wethSeedAmount) revert Invalid();
         for (uint256 i; i < _baseSleeves.length; ++i) {
-            if (IERC20(_baseSleeves[i]).balanceOf(address(this)) == 0) revert Invalid();
+            IERC20 sleeve = IERC20(_baseSleeves[i]);
+            uint256 beforeBalance = sleeve.balanceOf(address(this));
+            sleeve.safeTransferFrom(msg.sender, address(this), _baseSeedAmounts[i]);
+            if (sleeve.balanceOf(address(this)) - beforeBalance != _baseSeedAmounts[i]) revert Invalid();
         }
         bootstrapped = true;
         IV2Weth(weth).deposit{value: msg.value}();
@@ -148,6 +153,10 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
 
     function baseSleeves() external view returns (address[] memory) {
         return _baseSleeves;
+    }
+
+    function baseSeedAmounts() external view returns (uint256[] memory) {
+        return _baseSeedAmounts;
     }
 
     /// @notice Wallet-facing token artwork metadata.
@@ -175,14 +184,14 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         value = freeBalance(weth);
         for (uint256 i; i < _activeTokens.length; ++i) {
             address token = _activeTokens[i];
-            value += _value(token, freeBalance(token));
+            value += _value(token, _trackedFree(token));
         }
     }
 
     function riskyAssets() public view returns (uint256 value) {
         for (uint256 i; i < _activeTokens.length; ++i) {
             address token = _activeTokens[i];
-            value += _value(token, freeBalance(token));
+            value += _value(token, _trackedFree(token));
         }
     }
 
@@ -233,8 +242,8 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         if (
             !bootstrapped || managementPaused || c.configId == 0 || c.active
                 || block.timestamp < uint256(c.armedAt) + OBSERVATION_DELAY || deadline < block.timestamp
-                || block.timestamp > uint256(c.armedAt) + MAX_ENTRY_AGE
-                || deadline > block.timestamp + 5 minutes || token.codehash != c.runtimeHash
+                || block.timestamp > uint256(c.armedAt) + MAX_ENTRY_AGE || deadline > block.timestamp + 5 minutes
+                || token.codehash != c.runtimeHash
         ) revert NotReady();
         if (_activeTokens.length >= MAX_ACTIVE || activeCluster[c.cluster] != address(0)) revert Limit();
         if (lastEntryAt != 0 && block.timestamp < uint256(lastEntryAt) + MIN_ENTRY_SPACING) revert Limit();
@@ -256,6 +265,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         c.enteredAt = uint64(block.timestamp);
         c.entryWeth = wethAmount;
         c.highWaterWeth = _value(token, received);
+        trackedCandidateBalance[token] = received;
         lastEntryAt = uint64(block.timestamp);
         entriesInWindow += 1;
         activeCluster[c.cluster] = token;
@@ -277,12 +287,12 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
     {
         Candidate storage c = candidate[token];
         if (!c.active) revert Invalid();
-        uint256 value = _value(token, freeBalance(token));
+        uint256 value = _value(token, _trackedFree(token));
         bool expired = block.timestamp >= uint256(c.enteredAt) + MAX_HOLD;
         bool profit = value >= Math.mulDiv(c.entryWeth, PROFIT_TRIGGER_BPS, BPS);
         bool stopped = value <= Math.mulDiv(c.entryWeth, STOP_BPS, BPS);
         if (!expired && !profit && !stopped) revert NotReady();
-        uint256 amount = freeBalance(token);
+        uint256 amount = _trackedFree(token);
         received = _trade(token, false, amount, minWeth, deadline);
         bytes32 reason = expired ? keccak256("EXPIRY") : profit ? keccak256("PROFIT") : keccak256("STOP");
         _deactivate(token, amount, received, reason);
@@ -296,7 +306,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         returns (uint256 received)
     {
         if (!candidate[token].active) revert Invalid();
-        uint256 amount = freeBalance(token);
+        uint256 amount = _trackedFree(token);
         received = _trade(token, false, amount, minWeth, deadline);
         _deactivate(token, amount, received, keccak256("EMERGENCY"));
     }
@@ -316,7 +326,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
             _reserve(msg.sender, _baseSleeves[i], shares, supply);
         }
         for (uint256 i; i < tokens.length; ++i) {
-            _reserve(msg.sender, tokens[i], shares, supply);
+            _reserveTracked(msg.sender, tokens[i], shares, supply);
         }
         _burn(msg.sender, shares);
         if (totalSupply() == 0) {
@@ -349,6 +359,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         claimable[holder][token] = 0;
         reserved[token] -= amount;
         IERC20(token).safeTransfer(receiver, amount);
+        if (candidate[token].configId != 0) trackedCandidateBalance[token] -= amount;
         emit AssetClaimed(holder, token, receiver, amount);
     }
 
@@ -397,6 +408,7 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         Candidate storage c = candidate[token];
         bytes32 cluster = c.cluster;
         c.active = false;
+        trackedCandidateBalance[token] = reserved[token];
         activeCluster[cluster] = address(0);
         for (uint256 i; i < _activeTokens.length; ++i) {
             if (_activeTokens[i] == token) {
@@ -412,6 +424,27 @@ contract HoodxLaunchHunterV3 is ERC20, ReentrancyGuard {
         uint256 amount = Math.mulDiv(freeBalance(token), shares, supply);
         reserved[token] += amount;
         claimable[holder][token] += amount;
+    }
+
+    /// @dev Candidate recovery must not depend on an attacker-controlled balanceOf call. The
+    ///      tracked amount is the exact executor output and is reduced only by successful claims
+    ///      or a full route exit. Unsolicited candidate-token donations never enlarge claims.
+    function _reserveTracked(address holder, address token, uint256 shares, uint256 supply) private {
+        uint256 available = _trackedFree(token);
+        uint256 amount = Math.mulDiv(available, shares, supply);
+        Candidate storage c = candidate[token];
+        if (amount != 0 && available != 0) {
+            c.entryWeth -= Math.mulDiv(c.entryWeth, amount, available);
+            c.highWaterWeth -= Math.mulDiv(c.highWaterWeth, amount, available);
+        }
+        reserved[token] += amount;
+        claimable[holder][token] += amount;
+    }
+
+    function _trackedFree(address token) private view returns (uint256) {
+        uint256 tracked = trackedCandidateBalance[token];
+        uint256 heldForClaims = reserved[token];
+        return tracked > heldForClaims ? tracked - heldForClaims : 0;
     }
 
     function _attempt(address holder, address token, address receiver) private {
