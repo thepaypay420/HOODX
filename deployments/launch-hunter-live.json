@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-09-29T17:14:17.698Z",
+  "status": "DEPLOYED_AWAITING_BOOTSTRAP",
+  "deploymentTransaction": "0xd9d0f7648b661dccae54621723786be63c30d3f8a6638351c2d1cfdca6a96232",
+  "launcher": "0x902da2D736f099CC9F8acC06E991500a11E0Ed9C",
+  "policy": "0xF636a73c98E90FF10716f847599Fc46066fd41a4",
+  "vault": "0x2878D9DD80C9Bd6FE46d04e2b273612ff5502598",
+  "codeHashes": {
+    "launcher": "0x3ddb3600b2033bae61d79bc8f71bd65ff0034e51b6f648dd6fee41fb98e30d49",
+    "policy": "0x7fbccaa09abdeac6715396a9763c497655e35dfaad0a2a283860a15d561cbc7a",
+    "vault": "0xb55524f82db395f2cda2b705ded8ab94cccc9c68aee3f3f9909f28d3531f63a4"
+  },
+  "checks": {
+    "contractsExist": true,
+    "policyOwnedByCurator": true,
+    "policyUsesPinnedExecutor": true,
+    "vaultUsesPolicy": true,
+    "vaultUsesCurator": true,
+    "seedPinned": true,
+    "sharesPinned": true,
+    "notPrebootstrapped": true,
+    "imagePinned": true
+  }
+}

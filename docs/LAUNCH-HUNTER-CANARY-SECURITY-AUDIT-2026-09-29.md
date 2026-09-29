@@ -1,6 +1,6 @@
 # Launch Hunter V1 — Closed Canary Security Audit
 
-Date: 2026-09-29  
+Date: 2026-09-29
 Scope: `HoodxLaunchHunterV1`, its one-purpose launcher, deployment/verification scripts, and the official-curator bootstrap signer.
 
 ## Decision
@@ -63,3 +63,4 @@ The PONS V2 hook `0xE5e7…e044` is already active in the live registry, so the 
 Each candidate still requires an exact token-address review, creator/funder cluster evidence, oracle validation, buy-and-sell route validation, transfer-tax review, and current-fork round-trip test. No candidate is approved by this audit. Candidate admission without that evidence is a launch blocker for that candidate, not for deploying and funding the empty canary.
 
 No unresolved critical or high finding remains in the reviewed closed-canary contract. Public deposits, automated admission, or public factory use require a new audit.
+
