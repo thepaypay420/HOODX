@@ -61,7 +61,16 @@ class Sleeve:
         self.out_since = None
         self.last_reband = t0
 
+    def _session_toxic(self, t):
+        import datetime as _dt
+        ts = float(np.interp(t, DAY_BLOCKS, DAY_TS))
+        d = _dt.datetime.fromtimestamp(ts, _dt.timezone.utc)
+        return d.weekday() < 5 and 8 * 60 <= d.hour * 60 + d.minute < 20 * 60
+
     def _width(self, t):
+        if self.mode.startswith("session:"):
+            _, benign, toxic = self.mode.split(":")
+            return 1 + float(toxic if self._session_toxic(t) else benign)
         if self.mode.startswith("skew:"):
             _, lo, hi = self.mode.split(":")
             return math.sqrt(float(hi) / float(lo))
@@ -151,6 +160,17 @@ class Sleeve:
             self.rebands += 1
             self.last_reband = t2
             self.out_since = None
+        if self.mode.startswith("session:"):
+            tox = self._session_toxic(t2)
+            if getattr(self, "_last_tox", None) is None:
+                self._last_tox = tox
+            elif tox != self._last_tox and sane:
+                self._last_tox = tox
+                self._withdraw(s2)
+                self.width = self._width(t2)
+                self.sa, self.sb, _, _ = snap_range(s2, 1 / self.width, self.width, p.spacing, p.q1)
+                self._mint(s2)
+                self.gas += 2 * GAS
         if daily:
             if self.mode == "krystal":
                 # harvest: token fees sold at mid minus the pool fee, into cash
@@ -185,6 +205,7 @@ class Sleeve:
 
 DAYS: list = []
 DAY_BLOCKS = np.array([])
+DAY_TS = np.array([])
 
 
 def main():
@@ -244,10 +265,12 @@ if __name__ == "__main__":
 
 def run_vault(pools, bounds, proto, start, end, K, mode, capital=200.0, symbols=None, routes=None):
     """Generic continuous vault run; returns net USD at exact exit plus per-sleeve detail."""
-    global DAYS, DAY_BLOCKS
+    global DAYS, DAY_BLOCKS, DAY_TS
+    import datetime as _dt
     days = sorted(bounds)
     DAYS = days
     DAY_BLOCKS = np.array([bounds[d] for d in days])
+    DAY_TS = np.array([_dt.datetime.fromisoformat(d).replace(tzinfo=_dt.timezone.utc).timestamp() for d in days])
     T0, T1 = bounds[start], bounds[end]
     if symbols is None:
         best = {}

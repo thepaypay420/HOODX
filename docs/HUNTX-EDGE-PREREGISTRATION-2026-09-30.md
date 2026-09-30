@@ -755,3 +755,26 @@ dominant by construction (the max over pools includes the LP pool), so it is
 adopted as execution practice. The depth-aware pick filter costs at small sizes
 and is recorded as a size-dependent design rule (apply when the sleeve fails the
 1% depth check in its pool), to be validated on new data, not on September.
+
+## Amendment A22 — 2026-09-30, session-aware width (frozen before running)
+
+Mechanism: 24 h markouts show informed flow concentrated in pre-market and regular
+hours (08:00–20:00 UTC weekdays) and about 4× lighter after-hours, overnight and at
+weekends. Pulling liquidity out in toxic hours (A11 session modes) gave up too much
+volume. Instead stay in and re-mint the width at each session switch: centered on
+the current price, no swap (leftover idle is re-used at the next daily compound),
+2 txs of gas per switch.
+* **W1:** ±0.5% in benign sessions, ±1.5% in toxic sessions.
+* **W2:** ±0.5% in benign sessions, ±1.0% in toxic sessions.
+Everything else is as B0 (K=8, maker rebands after a 24 h breach, daily
+compounding, exact entry and exit, $200). Same 7 windows and picks as A18.
+Replace the current best (B2) only if a variant's confirmation mean ≥ B2's
+confirmation mean + $0.50, and its worst window and down window are ≥ B2's.
+Both variants are also reported vs B0.
+
+**A22 verdict: REJECTED.** Confirmation mean W1 +$1.293, W2 +$2.326 (B2 +$5.630,
+B0 +$6.065). Worst W1 −$3.578, W2 −$4.537. Down window W1 −$1.816, W2 −$1.804.
+Mechanism failure: session re-minting without a swap strands capital each time
+price drifts, which costs more than the benign/toxic toxicity gap earns.
+Pattern across A11/A18/A22: a stable ±1% book beats session and management
+cleverness.
