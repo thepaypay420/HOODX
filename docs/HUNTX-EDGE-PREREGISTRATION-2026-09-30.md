@@ -745,3 +745,13 @@ Evaluate D1 vs B0 at $2k and $20k on the 7 A18 windows (same starts).
 Pass: D1 at $20k has mean ≥ +1.5% per 9 d and worst window ≥ −2%, and D1 at $2k
 has mean ≥ B0 at $2k minus 0.2 pp. A pass makes depth-aware routing part of the
 production policy and raises the documented capacity.
+
+**A21 verdict: FAIL by the frozen rule (narrowly, on the $2k criterion).**
+D1 $20k mean +1.916% / worst −0.458% (both $20k criteria PASS; B0 $20k −0.233% /
+−13.598%). D1 $2k mean +2.998% vs B0 $2k +3.274% (needed ≥ +3.074%): FAIL by
+0.08 pp. The 09-20 window at $20k improved from −13.60% to −0.46%.
+Interpretation (no re-selection on these windows): best-pool routing is weakly
+dominant by construction (the max over pools includes the LP pool), so it is
+adopted as execution practice. The depth-aware pick filter costs at small sizes
+and is recorded as a size-dependent design rule (apply when the sleeve fails the
+1% depth check in its pool), to be validated on new data, not on September.

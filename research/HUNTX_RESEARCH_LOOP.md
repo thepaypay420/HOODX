@@ -171,9 +171,11 @@ maker rebands after a 24 h breach, daily no-swap compounding. Forward-tested fro
 | V-C | Earnings / event avoidance | Single-name gaps (NFLX-type) drive tail losses | Needs an earnings calendar (external data) |
 | V-D | Session-aware width (tight after-hours, wider pre-market/regular) | Toxicity is 4× lower after-hours | Queued |
 | V-E | Rotation: weekly re-selection of the 8 names by fee yield | Fee yield decays; follow flow | Queued (costs conversions) |
-| V-F | Capacity: how does $/day scale at $2k and $20k per sleeve | Dilution vs pool liquidity | Queued (0 RPC) |
+| V-F | Capacity (A20) + depth routing (A21) | Dilution and forced thin-pool conversion | DONE: +3.1–3.3% per 9 d at $200–$2k; $20k broken by a thin pool (−13.6%) and fixed by routing (+1.92% mean, worst −0.46%). A21 formally FAIL on the $2k criterion (−0.08 pp). Best-pool routing adopted (dominant by construction); depth filter size-dependent |
 | V-G | Majors (ETH/USDG) at ±0.5% in low-volatility hours | Huge volume, tiny fee; vs hold ≈ 0 so far | Low prior |
 
 * **Vault iteration A18 (beta control, ~1k RPC):** B0 conf +6.07 / worst +0.98; **B2**
   conf +5.63 / worst +1.34 (replaces by rule); B1 +3.71; B3 +3.39. Window-net beta vs
   hold ≈ 0 (−0.09). Tried and rejected: SGOV mixing (B1, B3). **Next: V-F capacity (≈ 0.5k RPC).**
+* **Vault iteration A20/A21:** capacity is about $2k at full edge and about $20k with best-pool routing
+  (+1.92% per 9 d). A21 FAIL by rule (narrow). **Next: V-D session-aware width (A22).**
