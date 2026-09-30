@@ -1,0 +1,400 @@
+{
+ "method": "Out-of-sample test of the frozen rules on untouched folds F1/F2 (Amendment A3).\n\nDecisions 2026-09-08..09-21 (00:00 UTC), 3-day hold, exact V4Quoter entry and\nexit quotes. Primary: H3. Reference and control: H1, C0. Reuses the slice\nengine (huntx_edge_slice_study.py) unchanged except for data loading:\n* logs = early (09-01..19, all lean pools) + slice (09-20..29, prefilter pools)\n  + gap (09-20..23, remaining lean pools), deduplicated by (block, log index);\n* ETH/USD from the reference ETH/USDG pool's last swap before each boundary;\n* protocol fee: slot0 read at the pool's first live boundary and 09-19; if\n  those differ, an exact archive slot0 read at the needed boundary.",
+ "pools": 1429,
+ "eth_ref": "0x24107d152f14a76d292123265ae3f3c71f863fc2f4ef7ba49d64e78d28ea379e",
+ "decision_days": [
+  "2026-09-08",
+  "2026-09-09",
+  "2026-09-10",
+  "2026-09-11",
+  "2026-09-12",
+  "2026-09-13",
+  "2026-09-14",
+  "2026-09-15",
+  "2026-09-16",
+  "2026-09-17",
+  "2026-09-18",
+  "2026-09-19",
+  "2026-09-20",
+  "2026-09-21"
+ ],
+ "hypotheses": {
+  "H3": {
+   "all": {
+    "n": 278,
+    "unique_pools": 130,
+    "unique_tokens": 90,
+    "profitable": 155,
+    "profitable_tokens": 55,
+    "mean_net_usd_per_100": 3.679,
+    "median_net_usd_per_100": 0.17,
+    "mean_vs_hold_usd_per_100": 3.679,
+    "worst": -78.73,
+    "best": 128.724,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -1.928,
+     "2026-09-09": 1.898,
+     "2026-09-10": -1.188,
+     "2026-09-11": 3.65,
+     "2026-09-12": 10.205,
+     "2026-09-13": 7.877,
+     "2026-09-14": 4.7,
+     "2026-09-15": 7.997,
+     "2026-09-16": 0.726,
+     "2026-09-17": 4.001,
+     "2026-09-18": 4.075,
+     "2026-09-19": 4.22,
+     "2026-09-20": 0.795,
+     "2026-09-21": 4.592
+    },
+    "positive_days": 12
+   },
+   "F1": {
+    "n": 152,
+    "unique_pools": 79,
+    "unique_tokens": 55,
+    "profitable": 90,
+    "profitable_tokens": 28,
+    "mean_net_usd_per_100": 3.409,
+    "median_net_usd_per_100": 0.299,
+    "mean_vs_hold_usd_per_100": 3.409,
+    "worst": -73.306,
+    "best": 128.724,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -1.928,
+     "2026-09-09": 1.898,
+     "2026-09-10": -1.188,
+     "2026-09-11": 3.65,
+     "2026-09-12": 10.205,
+     "2026-09-13": 7.877,
+     "2026-09-14": 4.7
+    },
+    "positive_days": 5,
+    "day_cluster_boot_mean": {
+     "p05": 0.719,
+     "p50": 3.369,
+     "p95": 6.375
+    }
+   },
+   "F2": {
+    "n": 126,
+    "unique_pools": 72,
+    "unique_tokens": 54,
+    "profitable": 65,
+    "profitable_tokens": 34,
+    "mean_net_usd_per_100": 4.004,
+    "median_net_usd_per_100": 0.041,
+    "mean_vs_hold_usd_per_100": 4.004,
+    "worst": -78.73,
+    "best": 66.386,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-15": 7.997,
+     "2026-09-16": 0.726,
+     "2026-09-17": 4.001,
+     "2026-09-18": 4.075,
+     "2026-09-19": 4.22,
+     "2026-09-20": 0.795,
+     "2026-09-21": 4.592
+    },
+    "positive_days": 7,
+    "day_cluster_boot_mean": {
+     "p05": 2.531,
+     "p50": 3.959,
+     "p95": 5.4
+    }
+   },
+   "day_cluster_boot_mean_all": {
+    "p05": 2.006,
+    "p50": 3.682,
+    "p95": 5.379
+   },
+   "token_level": {
+    "tokens": 90,
+    "mean_of_token_means": 1.527,
+    "profitable_tokens": 47
+   }
+  },
+  "H1": {
+   "all": {
+    "n": 994,
+    "unique_pools": 297,
+    "unique_tokens": 168,
+    "profitable": 579,
+    "profitable_tokens": 120,
+    "mean_net_usd_per_100": 2.733,
+    "median_net_usd_per_100": 1.317,
+    "mean_vs_hold_usd_per_100": 7.782,
+    "worst": -105.927,
+    "best": 170.581,
+    "failed_exits": 19,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -7.937,
+     "2026-09-09": -1.1,
+     "2026-09-10": 2.817,
+     "2026-09-11": 0.456,
+     "2026-09-12": 9.759,
+     "2026-09-13": 1.914,
+     "2026-09-14": 3.48,
+     "2026-09-15": 6.327,
+     "2026-09-16": 13.833,
+     "2026-09-17": 4.487,
+     "2026-09-18": 2.367,
+     "2026-09-19": -0.201,
+     "2026-09-20": 4.293,
+     "2026-09-21": 0.494
+    },
+    "positive_days": 11
+   },
+   "F1": {
+    "n": 562,
+    "unique_pools": 229,
+    "unique_tokens": 132,
+    "profitable": 316,
+    "profitable_tokens": 84,
+    "mean_net_usd_per_100": 1.157,
+    "median_net_usd_per_100": 0.924,
+    "mean_vs_hold_usd_per_100": 7.47,
+    "worst": -100.595,
+    "best": 170.581,
+    "failed_exits": 11,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -7.937,
+     "2026-09-09": -1.1,
+     "2026-09-10": 2.817,
+     "2026-09-11": 0.456,
+     "2026-09-12": 9.759,
+     "2026-09-13": 1.914,
+     "2026-09-14": 3.48
+    },
+    "positive_days": 5,
+    "day_cluster_boot_mean": {
+     "p05": -1.902,
+     "p50": 1.244,
+     "p95": 4.306
+    }
+   },
+   "F2": {
+    "n": 432,
+    "unique_pools": 173,
+    "unique_tokens": 110,
+    "profitable": 263,
+    "profitable_tokens": 82,
+    "mean_net_usd_per_100": 4.783,
+    "median_net_usd_per_100": 3.916,
+    "mean_vs_hold_usd_per_100": 8.188,
+    "worst": -105.927,
+    "best": 99.813,
+    "failed_exits": 8,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-15": 6.327,
+     "2026-09-16": 13.833,
+     "2026-09-17": 4.487,
+     "2026-09-18": 2.367,
+     "2026-09-19": -0.201,
+     "2026-09-20": 4.293,
+     "2026-09-21": 0.494
+    },
+    "positive_days": 6,
+    "day_cluster_boot_mean": {
+     "p05": 2.197,
+     "p50": 4.661,
+     "p95": 7.742
+    }
+   },
+   "day_cluster_boot_mean_all": {
+    "p05": 0.433,
+    "p50": 2.76,
+    "p95": 5.024
+   },
+   "token_level": {
+    "tokens": 168,
+    "mean_of_token_means": -2.613,
+    "profitable_tokens": 89
+   }
+  },
+  "C0": {
+   "all": {
+    "n": 70,
+    "unique_pools": 28,
+    "unique_tokens": 24,
+    "profitable": 34,
+    "profitable_tokens": 13,
+    "mean_net_usd_per_100": -6.1,
+    "median_net_usd_per_100": -1.064,
+    "mean_vs_hold_usd_per_100": 1.12,
+    "worst": -75.481,
+    "best": 83.569,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -4.416,
+     "2026-09-09": -8.926,
+     "2026-09-10": -6.517,
+     "2026-09-11": -23.269,
+     "2026-09-12": -18.146,
+     "2026-09-13": -0.029,
+     "2026-09-14": -10.158,
+     "2026-09-15": -4.703,
+     "2026-09-16": 4.094,
+     "2026-09-17": -4.554,
+     "2026-09-18": -19.865,
+     "2026-09-19": -7.991,
+     "2026-09-20": 7.713,
+     "2026-09-21": 11.366
+    },
+    "positive_days": 3
+   },
+   "F1": {
+    "n": 35,
+    "unique_pools": 17,
+    "unique_tokens": 14,
+    "profitable": 15,
+    "profitable_tokens": 8,
+    "mean_net_usd_per_100": -10.209,
+    "median_net_usd_per_100": -12.676,
+    "mean_vs_hold_usd_per_100": 3.764,
+    "worst": -75.481,
+    "best": 83.569,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-08": -4.416,
+     "2026-09-09": -8.926,
+     "2026-09-10": -6.517,
+     "2026-09-11": -23.269,
+     "2026-09-12": -18.146,
+     "2026-09-13": -0.029,
+     "2026-09-14": -10.158
+    },
+    "positive_days": 0,
+    "day_cluster_boot_mean": {
+     "p05": -14.957,
+     "p50": -10.121,
+     "p95": -5.854
+    }
+   },
+   "F2": {
+    "n": 35,
+    "unique_pools": 18,
+    "unique_tokens": 17,
+    "profitable": 19,
+    "profitable_tokens": 10,
+    "mean_net_usd_per_100": -1.991,
+    "median_net_usd_per_100": 3.237,
+    "mean_vs_hold_usd_per_100": -1.525,
+    "worst": -64.517,
+    "best": 45.224,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-15": -4.703,
+     "2026-09-16": 4.094,
+     "2026-09-17": -4.554,
+     "2026-09-18": -19.865,
+     "2026-09-19": -7.991,
+     "2026-09-20": 7.713,
+     "2026-09-21": 11.366
+    },
+    "positive_days": 3,
+    "day_cluster_boot_mean": {
+     "p05": -8.205,
+     "p50": -1.97,
+     "p95": 4.192
+    }
+   },
+   "day_cluster_boot_mean_all": {
+    "p05": -10.292,
+    "p50": -6.14,
+    "p95": -1.869
+   },
+   "token_level": {
+    "tokens": 24,
+    "mean_of_token_means": -10.233,
+    "profitable_tokens": 10
+   }
+  }
+ },
+ "portfolios": {
+  "H3_K1": {
+   "net_usd_on_200": 175.205,
+   "positions": 5,
+   "profitable": 2,
+   "unique_tokens": 5,
+   "abstain_days": 9,
+   "worst_usd": -38.377
+  },
+  "H3_K2": {
+   "net_usd_on_200": 72.261,
+   "positions": 10,
+   "profitable": 4,
+   "unique_tokens": 10,
+   "abstain_days": 9,
+   "worst_usd": -47.0
+  },
+  "H3_K3": {
+   "net_usd_on_200": 108.73,
+   "positions": 15,
+   "profitable": 7,
+   "unique_tokens": 15,
+   "abstain_days": 9,
+   "worst_usd": -31.229
+  },
+  "H1_K1": {
+   "net_usd_on_200": 358.007,
+   "positions": 5,
+   "profitable": 3,
+   "unique_tokens": 4,
+   "abstain_days": 9,
+   "worst_usd": -90.886
+  },
+  "H1_K2": {
+   "net_usd_on_200": 338.92,
+   "positions": 10,
+   "profitable": 6,
+   "unique_tokens": 8,
+   "abstain_days": 9,
+   "worst_usd": -43.483
+  },
+  "H1_K3": {
+   "net_usd_on_200": 217.663,
+   "positions": 15,
+   "profitable": 9,
+   "unique_tokens": 13,
+   "abstain_days": 9,
+   "worst_usd": -37.67
+  },
+  "C0_K1": {
+   "net_usd_on_200": -7.264,
+   "positions": 5,
+   "profitable": 2,
+   "unique_tokens": 4,
+   "abstain_days": 9,
+   "worst_usd": -25.209
+  },
+  "C0_K2": {
+   "net_usd_on_200": -91.938,
+   "positions": 10,
+   "profitable": 4,
+   "unique_tokens": 8,
+   "abstain_days": 9,
+   "worst_usd": -51.555
+  },
+  "C0_K3": {
+   "net_usd_on_200": -10.067,
+   "positions": 15,
+   "profitable": 8,
+   "unique_tokens": 9,
+   "abstain_days": 9,
+   "worst_usd": -34.412
+  }
+ }
+}

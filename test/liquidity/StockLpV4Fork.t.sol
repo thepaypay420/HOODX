@@ -1,0 +1,347 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {Test} from "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {HoodxLiquidityIndexV1} from "../../contracts/liquidity/HoodxLiquidityIndexV1.sol";
+import {HoodxLiquiditySleeveV4} from "../../contracts/liquidity/v4/HoodxLiquiditySleeveV4.sol";
+import {HoodxStockLpControllerV1} from "../../contracts/liquidity/v4/HoodxStockLpControllerV1.sol";
+import {IPriceReference, IV4StateView, PoolKey} from "../../contracts/liquidity/v4/V4Types.sol";
+
+struct SwapParamsT {
+    bool zeroForOne;
+    int256 amountSpecified;
+    uint160 sqrtPriceLimitX96;
+}
+
+interface IPoolManagerSwap {
+    function unlock(bytes calldata data) external returns (bytes memory);
+    function swap(PoolKey memory key, SwapParamsT memory params, bytes calldata hookData) external returns (int256);
+    function sync(address currency) external;
+    function settle() external payable returns (uint256);
+    function take(address currency, address to, uint256 amount) external;
+}
+
+/// @dev Test-only settable price reference (stands in for HOODX CL TWAPs over the stock's V3 pools).
+contract MockPriceRef is IPriceReference {
+    mapping(address => uint256) public unitValue;
+
+    function set(address token, uint256 v) external {
+        unitValue[token] = v;
+    }
+
+    function value(address token, uint256) external view returns (uint256) {
+        return unitValue[token];
+    }
+}
+
+/// @dev Test-only external trader: exact-input swaps settled directly against the PoolManager.
+contract Trader {
+    IPoolManagerSwap constant PM = IPoolManagerSwap(0x8366a39CC670B4001A1121B8F6A443A643e40951);
+    uint160 constant MIN_SQRT = 4295128740;
+    uint160 constant MAX_SQRT = 1461446703485210103287273052203988822378723970341;
+
+    function swap(PoolKey memory key, bool zeroForOne, uint256 amountIn) external {
+        PM.unlock(abi.encode(key, zeroForOne, amountIn));
+    }
+
+    function unlockCallback(bytes calldata data) external returns (bytes memory) {
+        require(msg.sender == address(PM), "pm");
+        (PoolKey memory key, bool z, uint256 amt) = abi.decode(data, (PoolKey, bool, uint256));
+        int256 d = PM.swap(key, SwapParamsT(z, -int256(amt), z ? MIN_SQRT + 1 : MAX_SQRT - 1), "");
+        _settle(key.currency0, int128(d >> 128));
+        _settle(key.currency1, int128(d));
+        return "";
+    }
+
+    function _settle(address c, int128 d) internal {
+        if (d < 0) {
+            PM.sync(c);
+            IERC20(c).transfer(address(PM), uint256(uint128(-d)));
+            PM.settle();
+        } else if (d > 0) {
+            PM.take(c, address(this), uint256(uint128(d)));
+        }
+    }
+}
+
+/// @notice Fork lifecycle tests for the HOODX stock-token LP index (V4 sleeves + controller).
+/// @dev Run with HOODX_FORK_TEST=true ROBINHOOD_RPC_URL=<rpc>. Nothing is broadcast.
+contract StockLpV4ForkTest is Test {
+    address constant PM = 0x8366a39CC670B4001A1121B8F6A443A643e40951;
+    address constant STATE_VIEW = 0xF3334192D15450CdD385c8B70e03f9A6bD9E673b;
+    address constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
+    address constant META = 0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35;
+    address constant SPY = 0x117cc2133c37B721F49dE2A7a74833232B3B4C0C;
+    uint256 constant REVIEW_BLOCK = 76_679_496;
+    uint24 constant PROTOCOL_FEE = 2_048_500; // 500 pips each direction, packed
+    int24 constant HALF = 240; // 4 spacings of 60 ≈ ±2.4%
+    int24 constant MAKER = 480;
+
+    address curator = address(0xC0FFEE);
+    address user = address(0xBEEF);
+    HoodxLiquidityIndexV1 index;
+    HoodxStockLpControllerV1 controller;
+    HoodxLiquiditySleeveV4[2] sleeves;
+    PoolKey[2] keys;
+    address[2] stock;
+    MockPriceRef ref;
+    Trader trader;
+    bool live;
+
+    function setUp() public {
+        if (!vm.envOr("HOODX_FORK_TEST", false)) return;
+        vm.createSelectFork(vm.envString("ROBINHOOD_RPC_URL"), vm.envOr("HOODX_FORK_BLOCK", REVIEW_BLOCK));
+        live = true;
+        keys[0] = PoolKey(USDG, META, 3000, 60, address(0)); // quote is token0
+        keys[1] = PoolKey(SPY, USDG, 3000, 60, address(0)); // quote is token1
+        stock[0] = META;
+        stock[1] = SPY;
+        ref = new MockPriceRef();
+        trader = new Trader();
+        address[] memory sl = new address[](2);
+        HoodxStockLpControllerV1.Policy[] memory pol = new HoodxStockLpControllerV1.Policy[](2);
+        for (uint256 i; i < 2; ++i) {
+            int24 c = _floor(_tick(i), 60);
+            sleeves[i] = new HoodxLiquiditySleeveV4(
+                address(this), PM, STATE_VIEW, keys[i], PROTOCOL_FEE, c - HALF, c + HALF, "HOODX Stock LP", "hxSLP"
+            );
+            sl[i] = address(sleeves[i]);
+            pol[i] = HoodxStockLpControllerV1.Policy({
+                halfWidth: HALF,
+                makerWidth: MAKER,
+                maxDivergenceBps: 150,
+                breachDelay: 24 hours,
+                cooldown: 1 hours,
+                priceRef: ref,
+                tokenDecimals: 18,
+                quoteDecimals: 6
+            });
+            _syncRef(i);
+        }
+        index = new HoodxLiquidityIndexV1(address(this), USDG, sl, "HOODX Stock LP Index", "STKX");
+        controller = new HoodxStockLpControllerV1(address(index), curator, address(this), address(this), sl, pol);
+        index.transferOwnership(address(controller));
+        for (uint256 i; i < 2; ++i) {
+            sleeves[i].transferOwnership(address(controller));
+        }
+        controller.activate();
+        for (uint256 i; i < 2; ++i) {
+            _seed(i, 40e6);
+        }
+        controller.bootstrap(user, 200e18);
+    }
+
+    // ------------------------------------------------------------------ tests
+
+    function test_lifecycle_feesHarvestCompoundAndExitInKind() public {
+        if (!live) return;
+        for (uint256 i; i < 2; ++i) {
+            _churn(i, 20, 300e6);
+            _syncRef(i);
+            vm.prank(curator);
+            (uint256 a0, uint256 a1) = controller.harvest(i);
+            assertGt(a0 + a1, 0, "fees accrued to the sleeve");
+            uint128 before = sleeves[i].positionLiquidity();
+            _compoundMax(i);
+            assertGe(sleeves[i].positionLiquidity(), before, "compound never reduces liquidity");
+        }
+        // Exit: index -> sleeve shares -> underlying tokens, with management paused (must still work).
+        vm.prank(curator);
+        controller.setManagementPaused(true);
+        vm.startPrank(user);
+        index.unwrap(index.balanceOf(user) / 2, user);
+        for (uint256 i; i < 2; ++i) {
+            uint256 shares = sleeves[i].balanceOf(user);
+            assertGt(shares, 0);
+            uint256 u0 = IERC20(USDG).balanceOf(user);
+            uint256 s0 = IERC20(stock[i]).balanceOf(user);
+            sleeves[i].redeem(shares, user, 0, 0, block.timestamp);
+            assertGt(IERC20(USDG).balanceOf(user) - u0 + (IERC20(stock[i]).balanceOf(user) - s0), 0);
+        }
+        vm.stopPrank();
+    }
+
+    function test_oneSidedMakerRebandAfterSustainedBreach() public {
+        if (!live) return;
+        for (uint256 i; i < 2; ++i) {
+            int24 lowerBefore = sleeves[i].tickLower();
+            // Buy the stock until the pool leaves the range (price of the stock rises by > ±2.4%).
+            bool buyStockZeroForOne = keys[i].currency0 == USDG;
+            uint256 pushes;
+            for (uint256 k; k < 240 && !_beyond(i, 3 * 60); ++k) {
+                _swap(i, buyStockZeroForOne, 50_000e6);
+                pushes++;
+            }
+            emit log_named_uint("USDG pushed (thousands) to leave the range", pushes * 50);
+            assertFalse(_inRange(i), "pushed out of range");
+            _syncRef(i);
+            // Keeper pings every 29 minutes for > 24 h; reference stays in agreement.
+            for (uint256 k; k < 52; ++k) {
+                vm.warp(block.timestamp + 29 minutes);
+                vm.roll(block.number + 17_000);
+                controller.signal(i);
+            }
+            uint128 L = sleeves[i].positionLiquidity() * 4;
+            bool done;
+            for (uint256 k; k < 80 && !done; ++k) {
+                vm.prank(curator);
+                try controller.executeReband(i, L, block.timestamp) {
+                    done = true;
+                } catch {
+                    L = L * 9 / 10;
+                }
+            }
+            assertTrue(done, "reband funded from own balances");
+            (, int24 t) = sleeves[i].spot();
+            int24 lo = sleeves[i].tickLower();
+            int24 hi = sleeves[i].tickUpper();
+            assertEq(hi - lo, MAKER, "maker width");
+            assertTrue(lo > t || hi <= t, "range is one-sided (entirely off the current price)");
+            assertTrue(lo != lowerBefore, "range moved");
+        }
+    }
+
+    function test_edgeCrossingNoOpRebandIsRefused() public {
+        if (!live) return;
+        bool buyStockZeroForOne = keys[0].currency0 == USDG;
+        for (uint256 k; k < 240 && _inRange(0); ++k) {
+            _swap(0, buyStockZeroForOne, 5_000e6);
+        }
+        vm.assume(!_inRange(0) && !_beyond(0, 60));
+        _syncRef(0);
+        for (uint256 k; k < 52; ++k) {
+            vm.warp(block.timestamp + 29 minutes);
+            vm.roll(block.number + 17_000);
+            controller.signal(0);
+        }
+        vm.prank(curator);
+        vm.expectRevert(HoodxStockLpControllerV1.NotReady.selector);
+        controller.executeReband(0, 1, block.timestamp);
+    }
+
+    function test_referenceDisagreementBlocksPriceSensitiveSteps() public {
+        if (!live) return;
+        uint256 v = ref.unitValue(META);
+        ref.set(META, v * 110 / 100);
+        vm.expectRevert(HoodxStockLpControllerV1.Divergence.selector);
+        controller.signal(0);
+        vm.prank(curator);
+        vm.expectRevert(HoodxStockLpControllerV1.Divergence.selector);
+        controller.compound(0, 1, block.timestamp);
+    }
+
+    function test_onlyCuratorMovesLiquidity_andRebandNeedsDwell() public {
+        if (!live) return;
+        vm.expectRevert(HoodxStockLpControllerV1.Unauthorized.selector);
+        controller.executeReband(0, 1, block.timestamp);
+        vm.expectRevert(HoodxStockLpControllerV1.Unauthorized.selector);
+        controller.harvest(0);
+        vm.prank(curator);
+        vm.expectRevert(HoodxStockLpControllerV1.NotReady.selector);
+        controller.executeReband(0, 1, block.timestamp);
+        // Direct sleeve management is closed to everyone but the controller.
+        vm.expectRevert();
+        sleeves[0].reband(-600, 600, 1, block.timestamp);
+    }
+
+    // ------------------------------------------------------------------ helpers
+
+    function _seed(uint256 i, uint256 usdgBudget) internal {
+        address tok = stock[i];
+        uint256 tokBudget = Math.mulDiv(usdgBudget, 1e18, ref.unitValue(tok));
+        vm.startPrank(PM);
+        IERC20(USDG).transfer(address(this), usdgBudget * 2);
+        IERC20(tok).transfer(address(this), tokBudget * 2);
+        vm.stopPrank();
+        IERC20(USDG).approve(address(sleeves[i]), type(uint256).max);
+        IERC20(tok).approve(address(sleeves[i]), type(uint256).max);
+        (uint256 max0, uint256 max1) = keys[i].currency0 == USDG ? (usdgBudget, tokBudget) : (tokBudget, usdgBudget);
+        // Off-chain curator math stand-in: largest liquidity the budget funds (binary search on the fork).
+        uint128 lo = 1;
+        uint128 hi = type(uint128).max / 2;
+        for (uint256 k; k < 128 && lo < hi; ++k) {
+            uint128 mid = lo + (hi - lo + 1) / 2;
+            uint256 snap = vm.snapshotState();
+            try controller.seedSleeve(i, mid, max0, max1, block.timestamp) {
+                lo = mid;
+            } catch {
+                hi = mid - 1;
+            }
+            vm.revertToState(snap);
+        }
+        controller.seedSleeve(i, lo, max0, max1, block.timestamp);
+        assertGt(sleeves[i].positionLiquidity(), 0);
+    }
+
+    function _compoundMax(uint256 i) internal {
+        uint128 lo = 0;
+        uint128 hi = sleeves[i].positionLiquidity();
+        for (uint256 k; k < 128 && lo < hi; ++k) {
+            uint128 mid = lo + (hi - lo + 1) / 2;
+            uint256 snap = vm.snapshotState();
+            vm.prank(curator);
+            try controller.compound(i, mid, block.timestamp) {
+                lo = mid;
+            } catch {
+                hi = mid - 1;
+            }
+            vm.revertToState(snap);
+        }
+        if (lo > 0) {
+            vm.prank(curator);
+            controller.compound(i, lo, block.timestamp);
+        }
+    }
+
+    function _churn(uint256 i, uint256 rounds, uint256 usdgSize) internal {
+        bool usdgIs0 = keys[i].currency0 == USDG;
+        uint256 tokSize = Math.mulDiv(usdgSize, 1e18, ref.unitValue(stock[i]));
+        for (uint256 k; k < rounds; ++k) {
+            _swap(i, usdgIs0, usdgSize); // buy stock with USDG
+            _swapToken(i, !usdgIs0, tokSize); // sell stock back
+        }
+    }
+
+    function _swap(uint256 i, bool zeroForOne, uint256 usdgAmount) internal {
+        vm.prank(PM);
+        IERC20(USDG).transfer(address(trader), usdgAmount);
+        trader.swap(keys[i], zeroForOne, usdgAmount);
+    }
+
+    function _swapToken(uint256 i, bool zeroForOne, uint256 tokAmount) internal {
+        vm.prank(PM);
+        IERC20(stock[i]).transfer(address(trader), tokAmount);
+        trader.swap(keys[i], zeroForOne, tokAmount);
+    }
+
+    function _tick(uint256 i) internal view returns (int24 t) {
+        (, t,,) = IV4StateView(STATE_VIEW).getSlot0(keccak256(abi.encode(keys[i])));
+    }
+
+    function _beyond(uint256 i, int24 margin) internal view returns (bool) {
+        int24 t = _tick(i);
+        return t < sleeves[i].tickLower() - margin || t >= sleeves[i].tickUpper() + margin;
+    }
+
+    function _inRange(uint256 i) internal view returns (bool) {
+        int24 t = _tick(i);
+        return t >= sleeves[i].tickLower() && t < sleeves[i].tickUpper();
+    }
+
+    /// @dev Sets the mock reference to the pool's current price (quote units per 1e18 token units).
+    function _syncRef(uint256 i) internal {
+        (uint160 sqrtP,,,) = IV4StateView(STATE_VIEW).getSlot0(keccak256(abi.encode(keys[i])));
+        uint256 unit = 1e18;
+        uint256 v = keys[i].currency0 == USDG
+            ? Math.mulDiv(unit, uint256(1) << 192, uint256(sqrtP) * uint256(sqrtP))
+            : Math.mulDiv(Math.mulDiv(unit, uint256(sqrtP), uint256(1) << 96), uint256(sqrtP), uint256(1) << 96);
+        ref.set(stock[i], v);
+    }
+
+    function _floor(int24 tick, int24 spacing) internal pure returns (int24 c) {
+        c = tick / spacing * spacing;
+        if (tick < 0 && tick % spacing != 0) c -= spacing;
+    }
+}

@@ -1,0 +1,183 @@
+{
+ "method": "Causal clone of the RAPTOR-X-style breadth fee harvester (Amendment A5).\n\nDecisions 2026-09-15..09-24 at 00:00 UTC (test half only), 5-day units,\ncentered +/-15%, daily re-centering when out of range for the whole prior day,\ndaily fee sweeps, exact V4Quoter costs for entry, rebalancing and exit.\nOnly data strictly before each decision block feeds the entry decision.",
+ "summary": {
+  "units": 1695,
+  "failed_entries": 0,
+  "failed_exits": 55,
+  "tokens": 185,
+  "profitable_tokens": 85,
+  "mean_net_exec_per_100": -2.08,
+  "median_net_exec_per_100": 0.436,
+  "mean_net_mid_per_100": 1.141,
+  "mean_fees": 23.408,
+  "mean_rerange_cost": 0.792,
+  "mean_reranges": 0.532,
+  "boot_net_exec": {
+   "p05": -5.769,
+   "p50": -2.051,
+   "p95": 1.462
+  },
+  "day_means": {
+   "2026-09-15": -1.652,
+   "2026-09-16": 9.13,
+   "2026-09-17": 6.785,
+   "2026-09-18": 2.282,
+   "2026-09-19": -3.868,
+   "2026-09-20": -4.154,
+   "2026-09-21": 0.07,
+   "2026-09-22": -4.193,
+   "2026-09-23": -13.442,
+   "2026-09-24": -12.012
+  }
+ },
+ "portfolios": {
+  "K1": {
+   "net_exec_usd_on_200": -97.123,
+   "positions": 2,
+   "profitable": 1,
+   "tokens": 2
+  },
+  "K2": {
+   "net_exec_usd_on_200": -97.905,
+   "positions": 4,
+   "profitable": 1,
+   "tokens": 4
+  },
+  "K3": {
+   "net_exec_usd_on_200": -89.464,
+   "positions": 6,
+   "profitable": 2,
+   "tokens": 6
+  }
+ },
+ "rejection_census": {
+  "2026-09-15": {
+   "ELIGIBLE": 185,
+   "volume_24h": 770,
+   "fees_24h": 773,
+   "fees/TVL": 680,
+   "vol/TVL": 596,
+   "no price": 237,
+   "degenerate price": 50,
+   "entry impact": 15,
+   "age": 73,
+   "24h drawdown": 45,
+   "entry quote failed": 1
+  },
+  "2026-09-16": {
+   "ELIGIBLE": 170,
+   "fees_24h": 816,
+   "volume_24h": 822,
+   "fees/TVL": 723,
+   "24h drawdown": 76,
+   "vol/TVL": 644,
+   "no price": 226,
+   "degenerate price": 50,
+   "entry impact": 3,
+   "age": 44
+  },
+  "2026-09-17": {
+   "ELIGIBLE": 168,
+   "degenerate price": 53,
+   "fees_24h": 870,
+   "volume_24h": 866,
+   "fees/TVL": 749,
+   "vol/TVL": 672,
+   "24h drawdown": 58,
+   "age": 44,
+   "no price": 206,
+   "entry impact": 7,
+   "entry quote failed": 2
+  },
+  "2026-09-18": {
+   "ELIGIBLE": 200,
+   "degenerate price": 54,
+   "fees_24h": 861,
+   "volume_24h": 860,
+   "fees/TVL": 746,
+   "vol/TVL": 668,
+   "24h drawdown": 28,
+   "age": 53,
+   "no price": 181,
+   "entry impact": 6,
+   "entry quote failed": 1
+  },
+  "2026-09-19": {
+   "ELIGIBLE": 168,
+   "degenerate price": 57,
+   "fees_24h": 893,
+   "volume_24h": 893,
+   "fees/TVL": 796,
+   "vol/TVL": 714,
+   "24h drawdown": 24,
+   "age": 77,
+   "no price": 147,
+   "entry impact": 3,
+   "exit impact": 1,
+   "entry quote failed": 1
+  },
+  "2026-09-20": {
+   "ELIGIBLE": 147,
+   "degenerate price": 56,
+   "fees_24h": 977,
+   "volume_24h": 970,
+   "fees/TVL": 864,
+   "vol/TVL": 791,
+   "24h drawdown": 45,
+   "age": 85,
+   "entry impact": 3,
+   "no price": 120
+  },
+  "2026-09-21": {
+   "ELIGIBLE": 148,
+   "degenerate price": 57,
+   "fees_24h": 1008,
+   "volume_24h": 1009,
+   "fees/TVL": 883,
+   "vol/TVL": 842,
+   "24h drawdown": 26,
+   "age": 77,
+   "entry impact": 3,
+   "exit quote failed": 1,
+   "no price": 104
+  },
+  "2026-09-22": {
+   "ELIGIBLE": 161,
+   "degenerate price": 61,
+   "fees_24h": 956,
+   "volume_24h": 967,
+   "fees/TVL": 849,
+   "vol/TVL": 763,
+   "24h drawdown": 43,
+   "age": 68,
+   "entry impact": 9,
+   "entry quote failed": 3,
+   "exit impact": 2,
+   "no price": 78
+  },
+  "2026-09-23": {
+   "ELIGIBLE": 184,
+   "degenerate price": 64,
+   "fees_24h": 1008,
+   "volume_24h": 999,
+   "fees/TVL": 885,
+   "vol/TVL": 802,
+   "24h drawdown": 32,
+   "entry impact": 3,
+   "no price": 58,
+   "age": 62
+  },
+  "2026-09-24": {
+   "ELIGIBLE": 164,
+   "degenerate price": 63,
+   "fees_24h": 1027,
+   "volume_24h": 1017,
+   "fees/TVL": 931,
+   "vol/TVL": 840,
+   "24h drawdown": 38,
+   "entry impact": 1,
+   "no price": 43,
+   "age": 61
+  }
+ }
+}

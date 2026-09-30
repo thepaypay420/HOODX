@@ -1,0 +1,10 @@
+[profile.default]
+src = "test"
+test = "test"
+out = "out"
+cache_path = "cache"
+libs = ["../../lib"]
+remappings = ["forge-std/=../../lib/forge-std/src/"]
+solc_version = "0.8.24"
+evm_version = "cancun"
+fs_permissions = [{ access = "read-write", path = "./" }]

@@ -1,0 +1,704 @@
+{
+  "system": "RAPTOR-X",
+  "version": "1.2.4-RH-Gas-Reserve-Clarified",
+  "strategy_name": "RAPTOR-X v1.2.4-RH-Gas-Reserve-Clarified - Robinhood Chain Fully Deployed Position Accumulator",
+  "target_network": {
+    "name": "Robinhood Chain",
+    "chain_id": 4663,
+    "network_type": "EVM Arbitrum L2",
+    "native_gas_token": "ETH",
+    "rpc_reference": "https://rpc.mainnet.chain.robinhood.com",
+    "block_explorer_reference": "https://robinhoodchain.blockscout.com"
+  },
+  "build_lineage": [
+    "RAPTOR-X v1.2.4-RH-Gas-Reserve-Clarified: resolved circular dependency in dynamic gas reserve computation by defining authorized_transaction as pre-trade-quoted candidate for this scan, not a post-decision status; added explicit gas_reserve_computation_order; added emergency_gas_priority and execution_sequencing_rule so an authorized emergency close is gas-funded before any new $200 open is committed in the same scan",
+    "RAPTOR-X v1.2.3-RH-25x-Gas-Gate: fee action gate USD floor raised from $3 to $10 for both harvest and compound attempts; 25x action-gas multiple unchanged",
+    "RAPTOR-X patch: harvest gate miss is not a blocking failure for emergency close; gas reserve target vs floor clarified; increase_position remains forbidden",
+    "RAPTOR-X patch: 1% pool-TVL and 5% exit-liquidity caps are new-open only; low TVL must not block same-pool re-range",
+    "RAPTOR-X v1.2.2-RH-25x-Gas-Gate consistency patch: USDG added to execution_viability_layer.allowed_pair_quote_assets; underscore flag names; emergency drawdown policy explicit",
+    "RAPTOR-X v1.2.2-RH-25x-Gas-Gate harvest and compound economic floor",
+    "Fee action gate: harvest and any compound attempt require pending fees >= max($10 USD, 25x estimated action gas)",
+    "Compound remains disabled; 25x gate is still binding if a compound is ever proposed",
+    "RAPTOR-X v1.2.2-RH Gas-Only Reserve and Full Capital Deployment",
+    "RAPTOR-X v1.2.1-RH Same-Pool Range Maintenance",
+    "RAPTOR-X v1.2.0-RH Permanent Position Accumulator",
+    "RAPTOR-X v1.1.1-RH USDG Quote-Pair Expansion",
+    "RAPTOR-X v1.1.0-RH Diversified Closed-Loop Four-Seat Model",
+    "RAPTOR-X v1.0.4 Real Output Kill Switch",
+    "RAPTOR-X v1.0.3E2 Emberfang False Ignition Filter",
+    "RAPTOR-X v1.0.3E.4.2 Emberfang No Unfunded Close",
+    "Robinhood Chain early-liquidity and low-gas adaptation"
+  ],
+  "primary_objective": "Keep nearly all capital working in a growing collection of independent Robinhood Chain LP positions. Retain only a small dynamic ETH gas reserve, not a percentage-based capital reserve. Whenever spendable ETH above that gas reserve contains one or more $200 entry units, open as many distinct qualified positions as current funds and candidates support. Do not rotate, recycle, or permanently exit an incumbent because of negative PnL, weak output, lower APR, out-of-range status, or a stronger candidate. Maintain and rebalance an incumbent's range when persistent range drift makes maintenance economically useful, but preserve the same pool exposure and never convert maintenance into a replacement or funding event. Harvest to ETH only when pending fees clear max($10 USD, 25 times estimated harvest-action gas). Never compound into a source position.",
+  "goal_statement_short": "Keep capital working: hold only enough ETH for gas, harvest fees to ETH only at max($10, 25x harvest gas), and deploy each accumulated $200 unit into another qualified position. Allow disciplined same-pool range adjustments and rebalancing while forbidding rotation, compound-into-source, permanent loss-taking exits, or using incumbent capital to fund another position.",
+  "krystal_execution_contract": {
+    "schema_mode": "strict_json_only",
+    "human_language_bias": "plain_english",
+    "stateless_assumption": true,
+    "do_not_infer_unwritten_logic": true,
+    "do_not_override_explicit_rules_with_executor_defaults": true,
+    "on_conflict": "follow_this_instruction_set",
+    "decision_priority": [
+      "obey network, token, pair, and execution hard blocks",
+      "an authorized emergency close must proceed even if harvest was skipped or failed the max($10, 25x harvest-action gas) gate",
+      "compute the dynamic gas reserve per capital_model.gas_reserve_computation_order using pre-trade gas estimates for all transaction types with a non-zero chance of executing this scan, before any of them is authorized to spend funds",
+      "protect the ETH gas reserve",
+      "if an emergency close is a candidate this scan, finalize and reserve its gas before committing spendable ETH to any new open_new_position (see capital_model.execution_sequencing_rule)",
+      "inspect incumbents and candidate pools using current snapshot data",
+      "validate token contracts and executable liquidity",
+      "apply fee-truth and false-ignition gates",
+      "open as many new qualified positions as available $200 spendable ETH units and distinct qualified candidates permit",
+      "keep every non-emergency incumbent regardless of PnL, APR, output, rank, or range status",
+      "same-pool range maintenance and remint use incumbent capital as-is and must not be rejected by the 1% pool-TVL or 5% exit-liquidity new-entry caps",
+      "harvest only when pending fees are at least the maximum of $10 USD and 25 times the estimated gas of the harvest action; compound remains disabled, but any compound attempt must clear the same max($10 USD, 25x compound-action gas) gate",
+      "prefer a new distinct qualified position over increasing any incumbent",
+      "never assume future deposits or DCA funding",
+      "if any action or lookup fails, isolate the failure and hold"
+    ]
+  },
+  "capital_model": {
+    "base_asset": "ETH",
+    "deployment_asset": "ETH",
+    "native_gas_asset": "ETH",
+    "idle_asset_preference": "ETH",
+    "close_proceeds_preference": "ETH",
+    "harvest_asset_preference": "ETH",
+    "principal_only_mode": false,
+    "allow_harvest_redeployment": true,
+    "external_deposit_assumption": "none",
+    "self_contained_capital_only": true,
+    "harvest_redeployment_policy": "Pool harvested ETH with idle ETH above the gas-only reserve. Harvest only when pending fees clear max($10 USD, 25 times estimated harvest-action gas). Compound remains disabled and must never auto-compound into the source position. If a compound is ever proposed it must still clear max($10 USD, 25 times estimated compound-action gas) and is still rejected. For every complete $200 spendable unit, fund another distinct qualified position as soon as possible; never close an incumbent to fund an entry.",
+    "compound_enabled": false,
+    "use_usdc_sink": false,
+    "use_btc_sink": false,
+    "minimum_idle_eth_reserve_fraction": 0.0,
+    "hard_minimum_idle_eth_reserve_fraction": 0.0,
+    "gas_only_reserve_enabled": true,
+    "target_gas_reserve_usd": 15,
+    "hard_minimum_gas_reserve_usd": 10,
+    "dynamic_gas_reserve_rule": "Hard floor is the greater of $10 in ETH and five times the highest pre-trade-estimated gas cost among this scan's authorized_transaction candidates (see authorized_transaction_definition and gas_reserve_computation_order). target_gas_reserve_usd of $15 is aspirational only. If the computed hard floor is below $15, hold $15 when that does not block a fully qualified $200 new open. If the computed hard floor is above $15, the hard floor wins. Never spend below the hard floor. Never invent a percentage reserve.",
+    "authorized_transaction_definition": "A transaction type currently being evaluated for possible execution in this scan (candidates: emergency close, harvest if gate-eligible, adjust_range/remint if triggered, open_new_position if a $200 spendable unit and a qualified candidate exist) for which a pre-trade gas estimate has been obtained via quote or simulation. Use the pre-trade estimate, not a post-execution actual cost, and not a hypothetical transaction that was never queued for evaluation this scan. A transaction does not need to have already been approved or executed to count here; it only needs to be a live candidate with a real gas quote.",
+    "gas_reserve_computation_order": [
+      "Step 1: enumerate every transaction type with a non-zero chance of executing this scan: authorized emergency close (if triggered), harvest (if pending fees data suggests it may clear the fee_action_gas_gate), adjust_range/remint (if range guardrail conditions are met), open_new_position (if spendable ETH may contain a $200 unit and a candidate may qualify)",
+      "Step 2: obtain a pre-trade gas estimate for each enumerated type via quote/simulation, independently of whether that action will ultimately be authorized",
+      "Step 3: set the scan's hard_minimum_gas_reserve_usd = max($10, 5x the highest of the step 2 estimates)",
+      "Step 4: only after the reserve is fixed from step 3 does decision_priority evaluate and authorize actions against spendable ETH above that reserve",
+      "Step 5: if a new transaction type becomes a candidate mid-scan that was not enumerated in step 1 (e.g. an emergency condition detected after initial computation), recompute the reserve per steps 1-3 before authorizing further spend"
+    ],
+    "emergency_gas_priority": true,
+    "reserve_gas_for_authorized_emergency_actions_before_new_open": true,
+    "execution_sequencing_rule": "Within a single scan, if an authorized emergency close is a candidate alongside a potential new open_new_position, finalize and reserve gas for the emergency close first. Execute or firmly commit its gas allocation before committing any spendable ETH to a new open. Only after the emergency close's gas need is secured should spendable ETH above the (possibly re-estimated) reserve be recomputed and considered available for a new $200 open. Never let a new open consume ETH that leaves an authorized emergency close under-funded for gas.",
+    "gas_reserve_precedence": [
+      "hard_floor_equals_max_of_10_usd_and_5x_highest_pre_trade_estimate_among_this_scans_authorized_transaction_candidates",
+      "if_hard_floor_below_15_usd_prefer_target_15_usd_when_it_does_not_block_a_qualified_200_usd_open",
+      "if_hard_floor_above_15_usd_hard_floor_wins",
+      "never_spend_below_hard_floor",
+      "an_authorized_emergency_close_candidate_always_wins_gas_priority_over_a_new_open_in_the_same_scan"
+    ],
+    "never_swap_reserved_gas_eth": true,
+    "fund_new_positions_from_idle_eth_first": true,
+    "never_withdraw_valid_incumbent_only_to_create_funding": true
+  },
+  "portfolio_structure": {
+    "target_open_positions": "grow_without_fixed_target",
+    "minimum_open_positions_if_qualified": 1,
+    "maximum_open_positions": null,
+    "position_count_policy": "No fixed seat count or routine maximum. Position count may grow for as long as distinct qualified pools and sufficient spendable ETH exist.",
+    "seat_policy": {
+      "legacy_seat_labels_disabled": true,
+      "unique_pair_required": true,
+      "unique_primary_non_eth_token_required": true,
+      "new_position_priority_over_increasing_incumbents": true,
+      "new_position_priority_note": "increase_position is false. This flag does not authorize a fallback increase. Unused spendable ETH stays idle until a distinct qualified new position can open.",
+      "open_when_spendable_eth_above_reserve_usd_is_at_least": 200,
+      "one_new_position_per_scan": false,
+      "open_multiple_positions_per_scan_when_multiple_200_usd_units_and_qualified_candidates_exist": true,
+      "do_not_open_a_weak_position_merely_to_grow_count": true,
+      "do_not_reopen_a_previously_permanently_closed_pair_unless_the_prior_close_was_an_emergency_and_the_emergency_is_proven_resolved": true
+    },
+    "concentration_controls": {
+      "soft_max_single_position_share_of_total_vault_value": null,
+      "hard_max_single_position_share_of_total_vault_value": null,
+      "max_combined_deployed_fraction": 0.99,
+      "max_same_primary_token_positions": 1,
+      "evaluate_projected_post_action_concentration": false,
+      "reject_action_if_projected_hard_cap_is_exceeded": false
+    }
+  },
+  "market_maturity_model": {
+    "chain_stage": "early_mainnet",
+    "principles": [
+      "Use pool-level metrics rather than token market capitalization or token-wide volume.",
+      "Do not assume a token is liquid because its displayed market cap or aggregate 24h volume is high.",
+      "Short history increases the proof required for entry; it does not automatically disqualify a pool.",
+      "On an early chain, fee density and executable exit liquidity outrank raw TVL.",
+      "A single-hour burst is nomination evidence, never sufficient admission evidence."
+    ]
+  },
+  "candidate_admission_engine": {
+    "mode": "apr_nominated_fee_truth_first",
+    "allowed_quote_assets": ["ETH", "WETH", "USDG"],
+    "required_pair_shape": "Exactly one allowed quote asset (ETH, WETH, or USDG) paired with one distinct non-quote token; stablecoin-to-stablecoin pairs remain blocked",
+    "usdg_pair_policy": {
+      "enabled": true,
+      "treat_usdg_as_allowed_quote_asset_not_as_primary_token_theme": true,
+      "require_direct_or_supported_two_hop_eth_to_usdg_entry_route": true,
+      "require_direct_or_supported_two_hop_usdg_to_eth_exit_route": true,
+      "require_usdg_contract_address_and_chain_identity_confirmation": true,
+      "require_usdg_price_and_depeg_check": true,
+      "maximum_allowed_usdg_depeg_fraction": 0.02,
+      "do_not_hold_usdg_as_idle_reserve_or_harvest_sink": true
+    },
+    "rank_candidates_by": [
+      "practical_output_per_dollar",
+      "fees_per_tvl_24h",
+      "absolute_fees_24h",
+      "volume_per_tvl_24h",
+      "apr_1h",
+      "apr_24h",
+      "executable_exit_liquidity",
+      "token_safety",
+      "route_simplicity",
+      "range_survivability"
+    ],
+    "standard_entry_thresholds": {
+      "minimum_apr_1h": 100,
+      "minimum_apr_24h": 70,
+      "minimum_pool_tvl_usd": 10000,
+      "minimum_pool_volume_24h_usd": 7500,
+      "minimum_absolute_pool_fees_24h_usd": 75,
+      "minimum_fees_per_tvl_24h": 0.006,
+      "minimum_volume_per_tvl_24h": 0.25,
+      "maximum_token_drawdown_24h": 0.35,
+      "maximum_estimated_entry_price_impact_fraction": 0.025,
+      "maximum_estimated_exit_price_impact_fraction": 0.04
+    },
+    "early_ignition_exception": {
+      "enabled": true,
+      "purpose": "Permit genuinely active new Robinhood Chain pools without allowing one-window APR mirages.",
+      "minimum_pool_tvl_usd": 5000,
+      "minimum_pool_volume_24h_usd": 15000,
+      "minimum_absolute_pool_fees_24h_usd": 100,
+      "minimum_fees_per_tvl_24h": 0.012,
+      "minimum_volume_per_tvl_24h": 1.0,
+      "minimum_apr_1h": 180,
+      "minimum_apr_24h": 90,
+      "maximum_initial_position_fraction": 0.12,
+      "must_pass_false_ignition_filter": true,
+      "must_pass_full_token_and_route_preflight": true
+    },
+    "preferred_printer_band": {
+      "minimum_pool_tvl_usd": 25000,
+      "minimum_absolute_pool_fees_24h_usd": 200,
+      "minimum_fees_per_tvl_24h": 0.01,
+      "minimum_volume_per_tvl_24h": 0.75,
+      "minimum_apr_24h": 100,
+      "score_bonus": 0.25
+    },
+    "scoring_weights": {
+      "practical_output_per_dollar": 0.22,
+      "fees_per_tvl_24h": 0.18,
+      "absolute_fees_24h": 0.13,
+      "volume_per_tvl_24h": 0.11,
+      "apr_1h": 0.10,
+      "apr_24h": 0.10,
+      "executable_exit_liquidity": 0.07,
+      "token_safety": 0.05,
+      "execution_viability": 0.03,
+      "range_survivability": 0.01
+    },
+    "minimum_data_quality": {
+      "reject_zero_missing_or_stale_pool_tvl": true,
+      "reject_zero_missing_or_stale_pool_volume": true,
+      "reject_zero_missing_or_internally_inconsistent_fee_data": true,
+      "reject_if_token_price_cannot_be_resolved_confidently": true,
+      "reject_if_apr_cannot_be_reconciled_with_fee_and_tvl_data": true,
+      "reject_if_only_token_level_metrics_are_available": true
+    }
+  },
+  "false_ignition_filter": {
+    "enabled": true,
+    "current_snapshot_only": true,
+    "apr_is_nomination_not_proof": true,
+    "required_truth_metrics": [
+      "fees_per_tvl_24h",
+      "volume_per_tvl_24h",
+      "absolute_fees_24h",
+      "practical_output_per_dollar",
+      "executable_exit_liquidity"
+    ],
+    "minimum_truth_metrics_passed": 3,
+    "multi_window_rules": {
+      "require_apr_24h_support_for_apr_1h_spike": true,
+      "single_hour_apr_burst_cannot_admit_alone": true,
+      "seven_day_history_is_bonus_not_requirement": true,
+      "if_7d_history_exists_and_is_materially_negative": "apply_high_risk_penalty"
+    },
+    "deny_if_any_true": [
+      "apr_1h_is_extreme_but_absolute_fees_24h_are_below_entry_floor",
+      "aggregate_token_volume_is_high_but_candidate_pool_volume_is_below_entry_floor",
+      "volume_is_high_but_fees_are_negligible_for_the_fee_tier",
+      "pool_tvl_or_fee_data_appears_stale_or_self_inconsistent",
+      "estimated_exit_price_impact_exceeds_limit",
+      "token_contract_or_transfer_behavior_is_unresolved",
+      "price_move_is_parabolic_without_24h_fee_truth_support",
+      "candidate_requires_unverified_multihop_routing"
+    ]
+  },
+  "token_safety_firewall": {
+    "enabled": true,
+    "require_contract_address_resolution": true,
+    "require_chain_id_match": 4663,
+    "require_standard_erc20_behavior_or_executor_confirmed_support": true,
+    "reject_if_any_true": [
+      "honeypot_or_sell_restriction_detected",
+      "unbounded_or_unresolved_transfer_tax",
+      "blacklist_or_whitelist_transfer_controls_create_exit_risk",
+      "mint_authority_or_proxy_upgrade_risk_is_unresolved_and_material",
+      "token_decimals_or_symbol_mapping_is_ambiguous",
+      "buy_route_exists_but_sell_route_cannot_be_quoted",
+      "candidate_token_contract_is_unverified_or_conflicts_across_data_sources",
+      "liquidity_can_be_removed_or_trading_can_be_disabled_by_an_unresolved_privileged_controller"
+    ],
+    "never_identify_token_by_symbol_alone": true,
+    "never_reuse_contract_addresses_from_other_chains": true
+  },
+  "execution_viability_layer": {
+    "enabled": true,
+    "require_pair_to_be_openable_from_eth": true,
+    "allowed_pair_quote_assets": ["ETH", "WETH", "USDG"],
+    "allowed_pair_quote_assets_rule": "Must match candidate_admission_engine.allowed_quote_assets. USDG-quoted pairs are executable only when usdg_pair_policy checks pass and both ETH->USDG entry and USDG->ETH exit routes are supported.",
+    "prefer_direct_eth_or_weth_routes": true,
+    "allow_supported_eth_to_usdg_route_for_usdg_quoted_pairs": true,
+    "require_usdg_quoted_pairs_to_have_supported_reverse_exit_route_to_eth": true,
+    "require_supported_krystal_protocol_and_position_manager": true,
+    "require_token_approval_path_to_be_constructible": true,
+    "require_swap_quote_before_open": true,
+    "require_reverse_exit_quote_before_open": true,
+    "reject_unresolved_payload_token_mapping_or_rate_lookup": true,
+    "maximum_route_hops": 2,
+    "maximum_estimated_total_entry_cost_fraction_of_position": 0.015,
+    "maximum_estimated_total_rotation_cost_fraction_of_replacement": null,
+    "l2_gas_policy": "Low Robinhood Chain fees support periodic harvesting and incremental new entries; rotation remains disabled. Harvest still requires max($10 USD, 25x harvest-action gas)."
+  },
+  "position_sizing": {
+    "mode": "fixed_minimum_eth_accumulation_entry",
+    "reserve_idle_eth_fraction": 0.0,
+    "reserve_policy": "gas_only_dynamic_usd_floor",
+    "minimum_new_position_value_usd": 200,
+    "entry_funding_asset": "ETH",
+    "minimum_position_fraction": null,
+    "standard_position_fraction": null,
+    "maximum_position_fraction": null,
+    "default_new_position_value_usd": 200,
+    "entry_size_policy": "Use each complete $200 unit of ETH above the dynamic gas reserve to open another qualified position. Open multiple positions in one scan when funds and distinct qualified candidates permit. Any remainder below $200 stays idle only until fees raise it to the next entry minimum.",
+    "legacy_fractional_sizing_bands_enabled": false,
+    "sizing_bands": [],
+    "additional_caps": {
+      "position_must_not_exceed_fraction_of_pool_tvl": 0.01,
+      "position_must_not_exceed_fraction_of_estimated_executable_exit_liquidity": 0.05,
+      "weak_or_ambiguous_truth_score_multiplier": 0.60,
+      "early_ignition_score_multiplier": 0.70,
+      "scope": "new_open_only",
+      "do_not_apply_tvl_or_exit_liquidity_fraction_caps_to_same_pool_range_maintenance": true,
+      "rule": "The 1% pool-TVL cap and the 5% executable-exit-liquidity cap apply only when opening a new position. They must not reject, shrink, or block adjust_range, rebalance_same_pool_position, or atomic same-pool remint of an incumbent. If pool TVL later falls so the incumbent exceeds 1% of current TVL, keep the incumbent and still allow range maintenance at the incumbent's existing capital. Do not treat a TVL decline as an exit, a trim, or a reason to leave the position unrestored after a remint. Impaired sell route or contract failure remains an emergency, independent of these fraction caps."
+    },
+    "anti_fragmentation": {
+      "do_not_open_any_position_below_usd": 200,
+      "prefer_many_independent_qualified_positions_over_concentrated_positions": true,
+      "maximum_dust_positions": 0
+    }
+  },
+  "stateless_hysteresis_and_rotation": {
+    "enabled": false,
+    "rotation_permanently_disabled": true,
+    "evaluate_incumbents_for_emergency_safety_only": true,
+    "keep_thresholds": {
+      "minimum_apr_1h": 40,
+      "minimum_apr_24h": 35,
+      "minimum_pool_fees_24h_usd": 40,
+      "minimum_fees_per_tvl_24h": 0.0035,
+      "maximum_drawdown_24h_without_emergency_exit": 0.25,
+      "real_output_must_remain_non_negligible": true
+    },
+    "normal_replacement_barriers": {
+      "minimum_challenger_score_delta": 0.25,
+      "minimum_challenger_apr_delta": 75,
+      "require_both_score_and_apr_delta": true,
+      "challenger_must_beat_incumbent_on_at_least_truth_metrics": 3,
+      "truth_metrics_compared": [
+        "fees_per_tvl_24h",
+        "volume_per_tvl_24h",
+        "absolute_fees_24h",
+        "practical_output_per_dollar",
+        "executable_exit_liquidity"
+      ]
+    },
+    "massive_superiority_override": {
+      "minimum_score_delta": 0.40,
+      "minimum_apr_delta": 160,
+      "still_requires_all_safety_and_preflight_gates": true
+    },
+    "out_of_range_policy": {
+      "out_of_range_alone_is_not_an_exit": true,
+      "allow_same_pool_range_maintenance": true,
+      "never_treat_range_maintenance_as_a_permanent_exit_or_replacement": true,
+      "never_redirect_rebalanced_assets_to_another_pool_or_idle_funding": true
+    }
+  },
+  "real_output_kill_switch": {
+    "enabled": false,
+    "disabled_reason": "Low fees or weak real output do not justify realizing negative PnL or creating close-and-reopen churn in accumulation mode.",
+    "stateless_design": true,
+    "use_current_snapshot_position_age_if_available": true,
+    "trust_real_output_over_optical_apr": true,
+    "normal_application_minimum_position_value_usd": 25,
+    "low_truth_exit_thresholds": {
+      "minimum_position_age_minutes": 90,
+      "minimum_generated_fees_usd": 0.02,
+      "minimum_generated_fees_per_100_usd_position_value": 0.01,
+      "apr_1h_floor_to_avoid_exit": 100,
+      "apr_24h_floor_to_avoid_exit": 70
+    },
+    "universal_output_failure_thresholds": {
+      "minimum_position_age_minutes": 180,
+      "minimum_generated_fees_usd": 0.02,
+      "exit_unless_current_pool_data_clearly_confirms_real_fee_output": true
+    },
+    "rules": [
+      "Never close an incumbent because of position age, negligible fees, low APR, weak output, ranking deterioration, or negative PnL.",
+      "Real-output measurements are telemetry only for incumbents and remain admission evidence for new positions."
+    ]
+  },
+  "no_unfunded_close_safeguard": {
+    "enabled": false,
+    "disabled_reason": "All non-emergency incumbent replacement and rotation are forbidden in accumulation mode.",
+    "applies_to": "legacy_non_emergency_incumbent_replacements_disabled",
+    "close_first_replacement_forbidden": true,
+    "required_before_incumbent_close": [
+      "challenger passes current admission thresholds",
+      "challenger passes false ignition filter",
+      "challenger token contract and chain identity are confirmed",
+      "challenger is not hard blocked",
+      "Krystal supports the target pool protocol and position type",
+      "entry and reverse exit routes are quoteable",
+      "target range and position size are valid",
+      "complete replacement funding source is identified",
+      "gas reserve remains above hard minimum after replacement",
+      "estimated gas slippage and price impact remain below limits",
+      "replacement is economically superior after all execution costs",
+      "executor can construct the full downstream replacement action sequence"
+    ],
+    "funding_source_order": [
+      "idle ETH above reserve",
+      "harvested ETH already idle",
+      "proceeds from an incumbent that independently qualifies for exit",
+      "never use a still-valid incumbent merely to discover whether replacement funding works"
+    ],
+    "if_any_preflight_step_fails": "keep_incumbent_unchanged_and_hold_or_use_idle_eth_only",
+    "if_replacement_open_fails_after_an_authorized_close": "hold_proceeds_in_ETH_and_do_not_attempt_an_unrelated_fallback_pool_in_the_same_cycle",
+    "emergency_exit_exception": [
+      "honeypot_or_sell_restriction_risk",
+      "pool_or_token_contract_integrity_failure",
+      "material_depeg_or_exploit",
+      "estimated_drawdown_exceeds_emergency_limit",
+      "position_manager_or_pool becomes structurally invalid"
+    ],
+    "emergency_drawdown_limit_source": "exit_rules.emergency_drawdown_fraction",
+    "emergency_drawdown_limit_if_null": "do_not_trigger_drawdown_emergency"
+  },
+  "exit_rules": {
+    "emergency_drawdown_fraction": null,
+    "emergency_drawdown_policy": "disabled_unless_explicit_limit_supplied",
+    "emergency_drawdown_policy_rule": "emergency_drawdown_fraction is null on purpose. Drawdown alone never authorizes an emergency close. The phrase estimated_drawdown_exceeds_emergency_limit in no_unfunded_close_safeguard is inert unless this field is later set to a number in (0, 1]. Do not invent a default limit. Do not treat negative PnL as drawdown emergency.",
+    "exit_if_any_true": [
+      "token_safety_or_contract_integrity_fails",
+      "sell_or_liquidity exit route becomes materially impaired",
+      "pool_depeg_or_exploit_evidence_exists"
+    ],
+    "emergency_only": true,
+    "negative_pnl_never_authorizes_exit": true,
+    "routine_profitability_exit_disabled": true,
+    "never_exit_solely_because": [
+      "position_has_negative_unrealized_or_total_pnl",
+      "position_has_low_or_zero_fees",
+      "position_apr_or_output_has_collapsed",
+      "position_is_temporarily_out_of_range",
+      "position_is_persistently_out_of_range",
+      "apr_1h_cooled_during_one_snapshot",
+      "another_pool_has_a_higher_rank_or_is_economically_superior",
+      "harvest_failed",
+      "rate_lookup_failed",
+      "route construction failed",
+      "a replacement might become fundable after closing",
+      "the executor wants to apply a fallback action",
+      "the executor intends_to_reopen_the_same_pair_later"
+    ]
+  },
+  "harvest_policy": {
+    "enabled": true,
+    "harvest_asset": "ETH",
+    "compound_enabled": false,
+    "harvest_threshold_usd": 10.00,
+    "harvest_threshold_rule": "max_of_usd_floor_and_25x_action_gas",
+    "harvest_before_close_if_safe_and_supported": true,
+    "harvest_before_adjust_if_safe_and_supported": true,
+    "harvest_is_non_blocking_best_effort": true,
+    "harvest_gate_not_met_is_not_a_failure_for_close_purposes": true,
+    "harvest_before_emergency_close_rule": "Try harvest before an authorized emergency close only if the harvest gate already clears and harvest is supported. If pending fees are below max($10 USD, 25x harvest-action gas), skip harvest and proceed to the emergency close. A harvest-gate miss is not a failure. Do not abort the close. Do not wait for a later scan.",
+    "do_not_harvest_below_threshold_solely_because_a_scan_occurs": true,
+    "do_not_harvest_below_25x_action_gas": true,
+    "fee_action_gas_gate": {
+      "enabled": true,
+      "applies_to": ["harvest", "compound"],
+      "mode": "all_of_max",
+      "minimum_pending_fees_usd": 10.00,
+      "minimum_multiple_of_estimated_action_gas": 25,
+      "unit": "USD",
+      "price_source": "same_price_source_used_for_vault_valuation",
+      "gas_definition": "Estimated all-in network fee of the action that will actually run, including L2 execution and L1 data fee, converted to USD. Use harvest-action gas for the harvest gate. Use compound-action gas for the compound gate. Never substitute a simple-transfer gas estimate.",
+      "missing_gas_or_price_behavior": "hold",
+      "rule": "Pending fees must be at least the maximum of $10 USD and 25 times the estimated gas of the action that will actually run. Convert both legs to USD with the same price source used for vault valuation. If gas estimate or price is missing, hold. Do not harvest below this gate solely because a scan occurs."
+    },
+    "compound_trigger": {
+      "mode": "all_of_max",
+      "compound_authorized": false,
+      "minimum_pending_fees_usd": 10.00,
+      "minimum_multiple_of_estimated_action_gas": 25,
+      "unit": "USD",
+      "price_source": "same_price_source_used_for_vault_valuation",
+      "gas_definition": "Estimated all-in network fee of the compound action, including L2 execution and L1 data fee, converted to USD. Never substitute a simple-transfer gas estimate.",
+      "missing_gas_or_price_behavior": "hold",
+      "rule": "Compound remains disabled in RAPTOR. If a compound action is proposed anyway, reject it. Independently, pending fees would still have to clear max($10 USD, 25 times estimated compound-action gas)."
+    },
+    "compound_rule": "Compound is forbidden. Never auto-compound harvests into the source position. Prefer a new distinct qualified position over increasing any incumbent.",
+    "realized_eth_use_order": [
+      "restore only the dynamic gas reserve",
+      "accumulate until spendable ETH above the gas reserve reaches at least $200",
+      "fund as many new distinct qualified positions as complete $200 units permit",
+      "remain idle when no fully qualified use exists"
+    ],
+    "never_redeploy_harvest_if_projected_idle_eth_falls_below_dynamic_gas_reserve": true,
+    "never_treat_expected_future_fees_or_external_deposits_as_available_funding": true,
+    "on_harvest_failure": {
+      "keep_position_unchanged": true,
+      "do_not_close": true,
+      "do_not_close_exception": "authorized_emergency_close",
+      "do_not_adjust_range": true,
+      "do_not_withdraw_and_swap": true,
+      "do_not_apply_same_cycle_fallback": true,
+      "retry_on_later_scan": true,
+      "harvest_gate_miss_is_skip_not_failure": true,
+      "rule": "If harvest fails or the 25x/$10 gate is not met during a non-emergency cycle, keep the position and do not close, adjust, or swap. If an emergency close is already authorized, a harvest skip or harvest failure must not block that close in the same cycle."
+    }
+  },
+  "range_system": {
+    "mode": "deterministic_truth_and_volatility_mapping",
+    "reference": "current_price",
+    "do_not_allow_executor_to_improvise_range_style": true,
+    "profiles": {
+      "proven_real_output_printer": {
+        "neutral_lower_fraction": 0.15,
+        "neutral_upper_fraction": 0.15,
+        "high_volatility_lower_fraction": 0.30,
+        "high_volatility_upper_fraction": 0.30
+      },
+      "mid_confidence_real_flow": {
+        "neutral_lower_fraction": 0.10,
+        "neutral_upper_fraction": 0.10,
+        "high_volatility_lower_fraction": 0.24,
+        "high_volatility_upper_fraction": 0.24
+      },
+      "early_ignition_or_low_truth": {
+        "neutral_lower_fraction": 0.06,
+        "neutral_upper_fraction": 0.08,
+        "high_volatility_lower_fraction": 0.18,
+        "high_volatility_upper_fraction": 0.20
+      }
+    },
+    "trend_bias": {
+      "if_price_change_1h_above_0_05": {
+        "lower_width_multiplier": 0.85,
+        "upper_width_multiplier": 1.15
+      },
+      "if_price_change_1h_below_negative_0_05": {
+        "lower_width_multiplier": 1.20,
+        "upper_width_multiplier": 0.80
+      },
+      "otherwise": "centered"
+    },
+    "guardrails": {
+      "minimum_total_range_fraction": 0.05,
+      "never_emit_null_range_when_pool_context_exists": true,
+      "do_not_use_wide_survival_range_for_unproven_optical_apr": true,
+      "adjust_existing_positions": true,
+      "same_pool_only": true,
+      "same_pair_only": true,
+      "minimum_minutes_between_adjustments_per_position": 1440,
+      "require_out_of_range_or_price_within_outer_range_fraction": 0.10,
+      "require_condition_on_two_consecutive_scans": true,
+      "single_snapshot_noise_cannot_trigger_adjustment": true,
+      "require_projected_fee_recovery_to_exceed_gas_slippage_and_rebalance_cost": true,
+      "prefer_in_place_adjustment_when_supported": true,
+      "if_close_and_remint_is_required": "Atomically remove liquidity and reopen the same pool with the same incumbent capital in the newly authorized range. Do not leave proceeds idle, redirect them, rank a challenger, or count the operation as an exit. Do not refuse the remint because current pool TVL is low or because incumbent value now exceeds 1% of pool TVL.",
+      "rebalance_swap_policy": "Permit only the minimum swap between the incumbent pair assets required to restore the target LP ratio. Do not swap incumbent proceeds into ETH for reserve, harvesting, or another position.",
+      "negative_pnl_does_not_forbid_necessary_same_pool_range_maintenance": true,
+      "post_adjustment_require_same_pool_pair_and_capital_continuity": true,
+      "tvl_fraction_cap_does_not_block_incumbent_range_maintenance": true,
+      "exit_liquidity_fraction_cap_does_not_block_incumbent_range_maintenance": true,
+      "if_current_pool_tvl_makes_incumbent_exceed_new_entry_caps": "Proceed with same-pool range maintenance using incumbent capital. Do not apply position_must_not_exceed_fraction_of_pool_tvl or position_must_not_exceed_fraction_of_estimated_executable_exit_liquidity to the remint size. Do not reduce the position to fit 1% of the new TVL. Do not abort the remint and leave proceeds idle."
+    }
+  },
+  "hard_blocks": {
+    "blocked_pair_categories": [
+      "stablecoin_to_stablecoin",
+      "ETH_or_WETH_to_USDC",
+      "ETH_or_WETH_to_USDT",
+      "ETH_or_WETH_to_WBTC_or_cbBTC",
+      "staked_ETH_to_ETH",
+      "two_unrelated_non_base_tokens",
+      "any_pair_without_exactly_one_allowed_quote_asset_of_ETH_WETH_or_USDG",
+      "any_USDG_pair_without_a_confirmed_supported_ETH_funding_and_ETH_exit_route",
+      "any_pair_without_a_confirmed_ETH_funding_and_exit_route"
+    ],
+    "blocked_token_symbols_when_encountered": ["AERO", "RAVE", "DMT", "NAT", "SCAM", "TEST"],
+    "symbol_block_is_case_insensitive": true,
+    "blue_chip_drift_block": {
+      "enabled": true,
+      "reject_low_yield_major_pairs_even_if_they_are_safer": true,
+      "reject_if_pool_tvl_above_usd": 1000000,
+      "and_apr_24h_below": 50
+    },
+    "absolute_pool_rejections": {
+      "pool_tvl_below_usd_unless_early_ignition_exception": 10000,
+      "pool_tvl_below_absolute_usd": 5000,
+      "pool_volume_24h_below_usd": 7500,
+      "pool_fees_24h_below_usd": 40,
+      "unresolved_or_stale_pool_metrics": true
+    }
+  },
+  "execution_failure_firewall": {
+    "enabled": true,
+    "abort_remaining_actions_for_position_after_any_failure": true,
+    "abort_does_not_apply_to_authorized_emergency_close_after_harvest_skip_or_harvest_failure": true,
+    "do_not_attempt_alternative_action_on_same_position_after_failure": true,
+    "do_not_translate_failed_harvest_into_close_adjust_or_swap": true,
+    "do_not_translate_failed_harvest_into_blocking_an_already_authorized_emergency_close": true,
+    "do_not_translate_failed_rate_lookup_into_position_exit": true,
+    "do_not_translate_failed_open_into_an_unrelated_fallback_open": true,
+    "harvest_or_compound_below_25x_action_gas_gate_classification": "skip_not_failure_when_an_emergency_close_is_authorized",
+    "preferred_response": "hold_position_and_idle_ETH_then_retry_on_a_later_scan",
+    "recognized_failure_types": [
+      "rate not found",
+      "invalid token address",
+      "wrong chain token address",
+      "token mapping failure",
+      "swap path construction failure",
+      "unsupported pool or position manager",
+      "approval failure",
+      "gas estimation failure",
+      "slippage or price impact limit exceeded",
+      "harvest route unsupported",
+      "harvest_or_compound_below_25x_action_gas_gate",
+      "post-mint liquidity not confirmed"
+    ],
+    "rule": "A harvest or compound that fails the max($10, 25x action gas) gate is a skip, not a position failure, when the next authorized action is an emergency close. Do not use abort_remaining_actions_for_position_after_any_failure to freeze an emergency close. do_not_translate_failed_harvest_into_close_adjust_or_swap still forbids inventing a close from a failed harvest; it does not forbid a close that was independently authorized as emergency."
+  },
+  "post_action_verification": {
+    "enabled": true,
+    "after_open_require": [
+      "transaction_success",
+      "position_registered_by_Krystal",
+      "nonzero_liquidity",
+      "correct_token_pair",
+      "correct_chain_id",
+      "range_matches_authorized_range",
+      "ETH_gas_reserve_remains_above_hard_minimum"
+    ],
+    "after_close_require": [
+      "transaction_success",
+      "position_liquidity_is_zero_or_position_is_closed",
+      "proceeds_are_accounted_for",
+      "no_unexpected_token_balance_or_phantom_position_remains"
+    ],
+    "after_range_adjustment_require": [
+      "transaction_success",
+      "same_pool_and_pair_as_incumbent",
+      "new_position_registered_by_Krystal",
+      "nonzero_liquidity",
+      "new_range_matches_authorized_range",
+      "incumbent_capital_and_pair_asset_proceeds_are_accounted_for",
+      "no_rebalance_proceeds_were_redirected_to_idle_reserve_or_another_pool",
+      "ETH_gas_reserve_remains_above_hard_minimum"
+    ],
+    "if_verification_fails": "stop_all_chained_actions_and_report_the_exact_failure"
+  },
+  "allowed_actions": {
+    "open_new_position": true,
+    "increase_position": false,
+    "increase_position_rule": "Increase is forbidden, not merely deprioritized. seat_policy.new_position_priority_over_increasing_incumbents is vestigial: never increase an incumbent.",
+    "adjust_range": true,
+    "rebalance_same_pool_position": true,
+    "harvest": true,
+    "compound": false,
+    "close_position": "emergency_only",
+    "withdraw_and_redeploy": "same_pool_atomic_range_maintenance_only"
+  },
+  "forbidden_behaviors": [
+    "do_not_use_token_market_cap_as_pool_liquidity",
+    "do_not_use_aggregate_token_volume_as_candidate_pool_volume",
+    "do_not_enter_on_apr_alone",
+    "do_not_reuse_contract_addresses_from_another_chain",
+    "do_not_duplicate_primary_non_quote_token_themes",
+    "do_not_spend_reserved_gas_ETH",
+    "do_not_open_blocked_major_or_stable_to_stable_pairs",
+    "do_not_compound_harvests",
+    "do_not_harvest_when_pending_fees_are_below_max_of_10_usd_and_25x_harvest_action_gas",
+    "do_not_compound_when_pending_fees_are_below_max_of_10_usd_and_25x_compound_action_gas",
+    "do_not_open_below_200_usd_of_spendable_ETH",
+    "do_not_use_principal_from_any_incumbent_to_fund_a_new_position",
+    "do_not_close_any_position_for_negative_pnl_low_apr_low_fees_out_of_range_status_or_candidate_superiority",
+    "do_not_use_range_adjustment_or_rebalancing_as_a_disguised_exit_rotation_or_funding_source",
+    "do_not_leave_same_pool_rebalance_proceeds_idle_or_redirect_them_to_another_pool",
+    "do_not_reopen_a_permanently_closed_pair_after_a_non_emergency_close",
+    "do_not_rotate_positions",
+    "do_not_close_a_valid_incumbent_to_test_whether_a_challenger_can_open",
+    "do_not_close_first_then_search_for_a_replacement",
+    "do_not_convert_execution_failure_into_churn",
+    "do_not_apply_multiple_fallback_actions_to_the_same_position_in_one_cycle",
+    "do_not_block_same_pool_range_maintenance_because_incumbent_exceeds_one_percent_of_current_pool_tvl",
+    "do_not_trim_or_resize_an_incumbent_during_range_maintenance_to_satisfy_new_entry_tvl_caps",
+    "do_not_block_an_authorized_emergency_close_because_harvest_missed_the_25x_or_10_usd_gate",
+    "do_not_treat_a_harvest_gate_miss_as_a_position_failure_when_emergency_close_is_authorized",
+    "do_not_compute_the_gas_reserve_from_a_transaction_that_was_never_quoted_or_evaluated_this_scan",
+    "do_not_commit_spendable_eth_to_a_new_open_before_an_authorized_emergency_closes_gas_need_is_secured"
+  ],
+  "telemetry_and_debug": {
+    "enabled": true,
+    "report_top_candidates_considered": 5,
+    "report_candidate_contract_address_and_pool_address": true,
+    "report_pool_level_metrics_not_token_level_metrics": true,
+    "report_admission_pass_fail_and_reason": true,
+    "report_false_ignition_pass_fail_and_reason": true,
+    "report_token_safety_pass_fail_and_reason": true,
+    "report_entry_and_reverse_exit_quote_status": true,
+    "report_practical_output_per_dollar": true,
+    "report_real_output_kill_switch_status": false,
+    "report_real_output_kill_switch_status_reason": "real_output_kill_switch.enabled is false; status reporting would be noise",
+    "report_incumbent_emergency_safety_status": true,
+    "report_spendable_eth_above_reserve_and_progress_to_next_200_usd_entry": true,
+    "report_position_sizing_and_cap_used": true,
+    "report_range_profile_and_bias_used": true,
+    "report_gas_reserve_before_and_after_projected_action": true,
+    "report_gas_reserve_computation_candidates_and_estimates": true,
+    "report_emergency_gas_priority_applied": true,
+    "report_harvest_25x_gas_gate_pass_fail": true,
+    "report_compound_25x_gas_gate_status": true,
+    "report_estimated_action_gas_usd": true,
+    "report_no_unfunded_close_pass_fail": true,
+    "report_full_replacement_chain_preflight": true,
+    "report_execution_failure_and_isolation_action": true,
+    "report_post_action_verification": true
+  },
+  "final_instruction": "Operate as a self-contained Robinhood Chain fully deployed ETH-fee position accumulator with no fixed seat target or routine maximum position count and no assumption of future deposits or DCA funding. Eligible new pools use ETH, WETH, or USDG as the quote asset and must pass all admission, fee-truth, safety, liquidity, and route checks. Do not maintain a percentage-based ETH reserve. Retain only a dynamic gas reserve equal to the greater of $10 in ETH or five times the highest pre-trade gas estimate among this scan's authorized_transaction candidates (per capital_model.gas_reserve_computation_order), with a $15 target when practical. Pool realized harvested fees in ETH above that gas reserve. For every complete $200 unit of spendable ETH, open another distinct qualified position at approximately $200; open multiple positions in the same scan when multiple units and qualified candidates exist. Leave only the gas reserve and any sub-$200 remainder idle. Never increase an incumbent when a new qualified position can be created. If an authorized emergency close is a candidate in the same scan as a potential new open, secure and reserve the emergency close's gas first; only commit spendable ETH to a new $200 open after that gas need is protected. Existing positions are permanent holdings: negative PnL, low or zero fees, falling APR, weak output, age, concentration, or a superior challenger never authorizes permanent closing, rotation, trimming, replacement, or diversion of incumbent principal. Range maintenance is allowed when a position is out of range or remains within the outer 10% of its range for two consecutive scans, at least 24 hours have elapsed since its last adjustment, and projected fee recovery exceeds execution cost. Prefer an in-place adjustment; if the protocol requires removing liquidity and reminting, reopen the same pool atomically with the same incumbent capital and use only the minimum pair-asset swap needed for LP balance. Never leave those proceeds idle, redirect them to another pool, or count maintenance as an exit. Close permanently only when verified contract failure, exploit, honeypot, material depeg, or materially impaired exit mechanics make continued holding unsafe. Never use incumbent principal to fund a new entry. If any lookup or execution step fails, isolate the failure and hold. Harvest to ETH only when pending fees are at least the maximum of $10 USD and 25 times the estimated harvest-action gas. Compound remains disabled. Any compound attempt is rejected and would still have to clear max($10 USD, 25 times estimated compound-action gas). The 1% pool-TVL cap and the 5% executable-exit-liquidity cap apply only to new opens. If pool TVL later falls, do not refuse same-pool range maintenance or remint, and do not trim incumbent capital to refit those caps. Harvest before close is best-effort only. If an emergency close is authorized and harvest is below max($10, 25x harvest-action gas) or harvest fails, skip harvest and close. Do not treat that skip as a firewall failure. Gas reserve hard floor is max($10, 5x the highest pre-trade estimate among this scan's authorized_transaction candidates); $15 is a target only when it does not block a qualified $200 open and when the hard floor is below $15. Never increase an incumbent."
+}

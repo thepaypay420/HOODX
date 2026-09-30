@@ -1,0 +1,52 @@
+{
+ "method": "V3 (0 RPC): stock-token LP flow toxicity by US market session.\n\nCanonical Robinhood stock tokens (public/rh_stocks.json), unhooked V4 pools in\nthe lean logs. Per swap: LP fee vs 1 h LP markout (mid move against the LP, in\nthe taker's direction). Swaps at degenerate prices (|tick| >= 700k at either\nend) are dropped; single 1 h moves are capped at +/-50%. Sessions are in UTC\n(US EDT in September): regular 13:30-20:00, pre-market 08:00-13:30,\nafter-hours 20:00-24:00, overnight 00:00-08:00, weekend.",
+ "pools": 108,
+ "horizon_blocks": 35700,
+ "sessions": {
+  "regular": {
+   "swaps": 929937,
+   "vol_usd": 246059868,
+   "vol_share": 0.351,
+   "fee_bp": 34.7,
+   "markout_bp": -16.9,
+   "realized_spread_bp": 17.8,
+   "abs_move_bp": 51.0
+  },
+  "overnight": {
+   "swaps": 644948,
+   "vol_usd": 150963092,
+   "vol_share": 0.215,
+   "fee_bp": 33.3,
+   "markout_bp": -5.0,
+   "realized_spread_bp": 28.3,
+   "abs_move_bp": 22.8
+  },
+  "pre-market": {
+   "swaps": 439936,
+   "vol_usd": 116131573,
+   "vol_share": 0.166,
+   "fee_bp": 32.4,
+   "markout_bp": -17.6,
+   "realized_spread_bp": 14.8,
+   "abs_move_bp": 58.6
+  },
+  "weekend": {
+   "swaps": 570323,
+   "vol_usd": 105709907,
+   "vol_share": 0.151,
+   "fee_bp": 29.8,
+   "markout_bp": -3.5,
+   "realized_spread_bp": 26.3,
+   "abs_move_bp": 13.9
+  },
+  "after-hours": {
+   "swaps": 442409,
+   "vol_usd": 82207061,
+   "vol_share": 0.117,
+   "fee_bp": 42.2,
+   "markout_bp": -4.2,
+   "realized_spread_bp": 38.0,
+   "abs_move_bp": 42.5
+  }
+ }
+}

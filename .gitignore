@@ -17,3 +17,22 @@ tsconfig.tsbuildinfo
 cache/
 broadcast/
 deployments/*-broadcast-state.json
+
+# HUNTX research raw data (large, reproducible from scripts)
+research/huntx_edge_logs*/
+research/huntx_edge_registry.json.gz
+research/huntx_edge_activity_screen.json
+research/huntx_edge_state_panel*.json.gz
+research/huntx_edge_rpc_cache.json.gz
+research/huntx_edge_*ledger.json.gz
+research/huntx_lp_population/
+research/huntx_launch_l3/
+research/huntx_launch_l7/
+research/huntx_forward/logs/
+research/huntx_forward/state.json.gz
+research/huntx_*units*.json.gz
+research/huntx_harvester_clone_ledger.json.gz
+research/fork_validation/out/
+research/fork_validation/cache/
+research/fork_validation/cases.json
+research/*.log

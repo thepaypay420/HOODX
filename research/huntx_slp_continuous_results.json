@@ -1,0 +1,78 @@
+{
+ "method": "A15: continuous stock-LP vault simulation (SLP-v2, SLP-v2-vol, Krystal-like), $200.\n\nHourly stepping 2026-09-04 -> 2026-09-29 on the pools' own swap logs. Fee\naccrual uses the validated V4 model with dilution (\u00f71.03). Entry and exit, and\nthe Krystal-like swap rebalances, use exact V4Quoter quotes at the archive\nblock. Measured gas $0.0125/tx. Read-only.",
+ "picks": [
+  "SNDK",
+  "TSM",
+  "AMD",
+  "PLTR",
+  "MSTR"
+ ],
+ "slp": {
+  "final_nav": 208.91,
+  "net_usd": 8.91,
+  "mid_nav_0916": 202.531,
+  "per_sleeve": [
+   -0.738,
+   0.051,
+   5.059,
+   0.831,
+   3.707
+  ],
+  "rebands": [
+   11,
+   10,
+   12,
+   14,
+   8
+  ],
+  "gas": 3.125
+ },
+ "slp_vol": {
+  "final_nav": 210.731,
+  "net_usd": 10.731,
+  "mid_nav_0916": 203.289,
+  "per_sleeve": [
+   0.048,
+   0.051,
+   4.983,
+   2.322,
+   3.327
+  ],
+  "rebands": [
+   11,
+   10,
+   12,
+   10,
+   6
+  ],
+  "gas": 2.975
+ },
+ "krystal": {
+  "final_nav": 209.739,
+  "net_usd": 9.739,
+  "mid_nav_0916": 200.349,
+  "per_sleeve": [
+   -0.841,
+   0.864,
+   3.737,
+   3.613,
+   2.366
+  ],
+  "rebands": [
+   3,
+   0,
+   2,
+   0,
+   2
+  ],
+  "gas": 2.013
+ },
+ "hold_stocks": {
+  "final_nav": 178.878,
+  "net_usd": -21.122
+ },
+ "hold_usdg": {
+  "final_nav": 200.0,
+  "net_usd": 0.0
+ }
+}

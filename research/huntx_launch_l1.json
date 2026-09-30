@@ -1,0 +1,546 @@
+{
+ "method": "Loop L1 (Amendment A7): launch-age LP outcomes with per-episode rug marking.\n\nOffline, 0 RPC. Reuses the reconstructed LP population and swap logs.\nValuation rule: an episode opened at a degenerate price (|tick| >= 700k) is\ndropped; an episode still open at the window end in a pool that is then\ndegenerate is a total loss of its remaining value (pnl = fees - deposit).",
+ "valued": 1233777,
+ "dropped_unvaluable": 982,
+ "open_in_drained_marked_total_loss": 267,
+ "age": {
+  "<1h": {
+   "disc": {
+    "n": 134543,
+    "owners": 4421,
+    "tokens": 260,
+    "dep_usd": 98938140,
+    "ret_vs_usd": 0.04599,
+    "ret_vs_hold": 0.04416,
+    "fee_ret": 0.07234,
+    "win_rate": 0.484,
+    "median_ret": 0.0,
+    "rugged_share": 0.0001
+   },
+   "test": {
+    "n": 33442,
+    "owners": 1883,
+    "tokens": 76,
+    "dep_usd": 13980593,
+    "ret_vs_usd": 0.02085,
+    "ret_vs_hold": 0.02208,
+    "fee_ret": 0.03672,
+    "win_rate": 0.413,
+    "median_ret": 0.0,
+    "rugged_share": 0.0
+   }
+  },
+  "1-6h": {
+   "disc": {
+    "n": 180085,
+    "owners": 6685,
+    "tokens": 277,
+    "dep_usd": 171434044,
+    "ret_vs_usd": 0.02803,
+    "ret_vs_hold": 0.03159,
+    "fee_ret": 0.06053,
+    "win_rate": 0.459,
+    "median_ret": 0.0,
+    "rugged_share": 0.0005
+   },
+   "test": {
+    "n": 47524,
+    "owners": 2493,
+    "tokens": 100,
+    "dep_usd": 17952107,
+    "ret_vs_usd": 0.01079,
+    "ret_vs_hold": 0.01412,
+    "fee_ret": 0.03496,
+    "win_rate": 0.369,
+    "median_ret": 0.0,
+    "rugged_share": 0.0
+   }
+  },
+  "6-24h": {
+   "disc": {
+    "n": 143282,
+    "owners": 7760,
+    "tokens": 309,
+    "dep_usd": 137879119,
+    "ret_vs_usd": 0.02186,
+    "ret_vs_hold": 0.02822,
+    "fee_ret": 0.05585,
+    "win_rate": 0.455,
+    "median_ret": 0.0,
+    "rugged_share": 0.0003
+   },
+   "test": {
+    "n": 51405,
+    "owners": 3077,
+    "tokens": 114,
+    "dep_usd": 24528108,
+    "ret_vs_usd": 0.00853,
+    "ret_vs_hold": 0.01191,
+    "fee_ret": 0.03345,
+    "win_rate": 0.362,
+    "median_ret": 0.0,
+    "rugged_share": 0.0
+   }
+  },
+  "1-3d": {
+   "disc": {
+    "n": 118947,
+    "owners": 7922,
+    "tokens": 324,
+    "dep_usd": 160055250,
+    "ret_vs_usd": 0.01854,
+    "ret_vs_hold": 0.02472,
+    "fee_ret": 0.04845,
+    "win_rate": 0.459,
+    "median_ret": 0.0,
+    "rugged_share": 0.0003
+   },
+   "test": {
+    "n": 66920,
+    "owners": 3308,
+    "tokens": 138,
+    "dep_usd": 34515849,
+    "ret_vs_usd": -0.0045,
+    "ret_vs_hold": 0.00427,
+    "fee_ret": 0.02827,
+    "win_rate": 0.33,
+    "median_ret": 0.0,
+    "rugged_share": 0.0002
+   }
+  },
+  "3-7d": {
+   "disc": {
+    "n": 128598,
+    "owners": 7652,
+    "tokens": 291,
+    "dep_usd": 195287689,
+    "ret_vs_usd": 0.0155,
+    "ret_vs_hold": 0.02414,
+    "fee_ret": 0.04046,
+    "win_rate": 0.439,
+    "median_ret": 0.0,
+    "rugged_share": 0.0002
+   },
+   "test": {
+    "n": 49387,
+    "owners": 3252,
+    "tokens": 144,
+    "dep_usd": 39137917,
+    "ret_vs_usd": 0.00103,
+    "ret_vs_hold": 0.01016,
+    "fee_ret": 0.02533,
+    "win_rate": 0.345,
+    "median_ret": 0.0,
+    "rugged_share": 0.0
+   }
+  },
+  ">7d": {
+   "disc": {
+    "n": 134203,
+    "owners": 10421,
+    "tokens": 274,
+    "dep_usd": 403536543,
+    "ret_vs_usd": 0.00658,
+    "ret_vs_hold": 0.01062,
+    "fee_ret": 0.02075,
+    "win_rate": 0.432,
+    "median_ret": 0.0,
+    "rugged_share": 0.0003
+   },
+   "test": {
+    "n": 145441,
+    "owners": 7499,
+    "tokens": 320,
+    "dep_usd": 365283413,
+    "ret_vs_usd": 0.00121,
+    "ret_vs_hold": 0.00412,
+    "fee_ret": 0.01014,
+    "win_rate": 0.365,
+    "median_ret": 0.0,
+    "rugged_share": 0.0
+   }
+  }
+ },
+ "shape_in_first_hour": {
+  "side": {
+   "quote_only(bid)": {
+    "disc": {
+     "n": 119762,
+     "owners": 3282,
+     "tokens": 220,
+     "dep_usd": 82670444,
+     "ret_vs_usd": 0.02747,
+     "ret_vs_hold": 0.02735,
+     "fee_ret": 0.04843,
+     "win_rate": 0.461,
+     "median_ret": 0.0
+    },
+    "test": {
+     "n": 31551,
+     "owners": 1611,
+     "tokens": 68,
+     "dep_usd": 10901294,
+     "ret_vs_usd": 0.02023,
+     "ret_vs_hold": 0.02004,
+     "fee_ret": 0.03554,
+     "win_rate": 0.403,
+     "median_ret": 0.0
+    }
+   },
+   "straddle": {
+    "disc": {
+     "n": 10062,
+     "owners": 1847,
+     "tokens": 242,
+     "dep_usd": 13573748,
+     "ret_vs_usd": 0.12383,
+     "ret_vs_hold": 0.11896,
+     "fee_ret": 0.1818,
+     "win_rate": 0.721,
+     "median_ret": 0.07537
+    },
+    "test": {
+     "n": 1291,
+     "owners": 501,
+     "tokens": 60,
+     "dep_usd": 1795431,
+     "ret_vs_usd": 0.0279,
+     "ret_vs_hold": 0.03334,
+     "fee_ret": 0.05083,
+     "win_rate": 0.668,
+     "median_ret": 0.03692
+    }
+   },
+   "token_only(ask)": {
+    "disc": {
+     "n": 4719,
+     "owners": 652,
+     "tokens": 169,
+     "dep_usd": 2693949,
+     "ret_vs_usd": 0.22207,
+     "ret_vs_hold": 0.18312,
+     "fee_ret": 0.25449,
+     "win_rate": 0.559,
+     "median_ret": 0.04853
+    },
+    "test": {
+     "n": 600,
+     "owners": 126,
+     "tokens": 52,
+     "dep_usd": 1283868,
+     "ret_vs_usd": 0.01629,
+     "ret_vs_hold": 0.02373,
+     "fee_ret": 0.02705,
+     "win_rate": 0.405,
+     "median_ret": 0.0
+    }
+   }
+  },
+  "width": {
+   "10-40%": {
+    "disc": {
+     "n": 44784,
+     "owners": 1877,
+     "tokens": 205,
+     "dep_usd": 22411873,
+     "ret_vs_usd": 0.04292,
+     "ret_vs_hold": 0.04541,
+     "fee_ret": 0.07284,
+     "win_rate": 0.388,
+     "median_ret": 0.0
+    },
+    "test": {
+     "n": 15232,
+     "owners": 866,
+     "tokens": 61,
+     "dep_usd": 3812956,
+     "ret_vs_usd": 0.01925,
+     "ret_vs_hold": 0.02064,
+     "fee_ret": 0.03898,
+     "win_rate": 0.31,
+     "median_ret": 0.0
+    }
+   },
+   "2-10%": {
+    "disc": {
+     "n": 27779,
+     "owners": 673,
+     "tokens": 182,
+     "dep_usd": 6828938,
+     "ret_vs_usd": 0.04012,
+     "ret_vs_hold": 0.04283,
+     "fee_ret": 0.07967,
+     "win_rate": 0.336,
+     "median_ret": 0.0
+    },
+    "test": {
+     "n": 4613,
+     "owners": 294,
+     "tokens": 51,
+     "dep_usd": 1324052,
+     "ret_vs_usd": 0.02338,
+     "ret_vs_hold": 0.01663,
+     "fee_ret": 0.03201,
+     "win_rate": 0.305,
+     "median_ret": 0.0
+    }
+   },
+   "40-150%": {
+    "disc": {
+     "n": 45673,
+     "owners": 3462,
+     "tokens": 207,
+     "dep_usd": 44184268,
+     "ret_vs_usd": 0.04916,
+     "ret_vs_hold": 0.04508,
+     "fee_ret": 0.07551,
+     "win_rate": 0.62,
+     "median_ret": 0.00798
+    },
+    "test": {
+     "n": 10681,
+     "owners": 1379,
+     "tokens": 63,
+     "dep_usd": 5052631,
+     "ret_vs_usd": 0.02379,
+     "ret_vs_hold": 0.02905,
+     "fee_ret": 0.04555,
+     "win_rate": 0.559,
+     "median_ret": 0.00291
+    }
+   },
+   "<2%": {
+    "disc": {
+     "n": 5109,
+     "owners": 148,
+     "tokens": 71,
+     "dep_usd": 3897788,
+     "ret_vs_usd": 0.02777,
+     "ret_vs_hold": 0.02712,
+     "fee_ret": 0.0315,
+     "win_rate": 0.569,
+     "median_ret": 0.00044
+    },
+    "test": {
+     "n": 533,
+     "owners": 21,
+     "tokens": 12,
+     "dep_usd": 1703496,
+     "ret_vs_usd": 0.00184,
+     "ret_vs_hold": 0.00238,
+     "fee_ret": 0.00247,
+     "win_rate": 0.349,
+     "median_ret": 0.0
+    }
+   },
+   ">150%": {
+    "disc": {
+     "n": 11198,
+     "owners": 1317,
+     "tokens": 191,
+     "dep_usd": 21615272,
+     "ret_vs_usd": 0.04783,
+     "ret_vs_hold": 0.04445,
+     "fee_ret": 0.07038,
+     "win_rate": 0.638,
+     "median_ret": 0.00455
+    },
+    "test": {
+     "n": 2383,
+     "owners": 545,
+     "tokens": 59,
+     "dep_usd": 2087458,
+     "ret_vs_usd": 0.0306,
+     "ret_vs_hold": 0.02741,
+     "fee_ret": 0.04217,
+     "win_rate": 0.642,
+     "median_ret": 0.00544
+    }
+   }
+  },
+  "hold": {
+   "15m-2h": {
+    "disc": {
+     "n": 22558,
+     "owners": 2730,
+     "tokens": 210,
+     "dep_usd": 9377890,
+     "ret_vs_usd": 0.15707,
+     "ret_vs_hold": 0.14146,
+     "fee_ret": 0.21742,
+     "win_rate": 0.588,
+     "median_ret": 0.03973
+    },
+    "test": {
+     "n": 6997,
+     "owners": 1099,
+     "tokens": 59,
+     "dep_usd": 1527536,
+     "ret_vs_usd": 0.06185,
+     "ret_vs_hold": 0.05582,
+     "fee_ret": 0.09519,
+     "win_rate": 0.491,
+     "median_ret": 0.0
+    }
+   },
+   "2-12h": {
+    "disc": {
+     "n": 3667,
+     "owners": 928,
+     "tokens": 196,
+     "dep_usd": 2598990,
+     "ret_vs_usd": 0.1241,
+     "ret_vs_hold": 0.1129,
+     "fee_ret": 0.25973,
+     "win_rate": 0.609,
+     "median_ret": 0.0602
+    },
+    "test": {
+     "n": 1440,
+     "owners": 350,
+     "tokens": 61,
+     "dep_usd": 782851,
+     "ret_vs_usd": 0.04785,
+     "ret_vs_hold": 0.04545,
+     "fee_ret": 0.08617,
+     "win_rate": 0.503,
+     "median_ret": 0.00127
+    }
+   },
+   "<15m": {
+    "disc": {
+     "n": 106343,
+     "owners": 3454,
+     "tokens": 218,
+     "dep_usd": 83471668,
+     "ret_vs_usd": 0.02409,
+     "ret_vs_hold": 0.02396,
+     "fee_ret": 0.04136,
+     "win_rate": 0.455,
+     "median_ret": 0.0
+    },
+    "test": {
+     "n": 24493,
+     "owners": 1500,
+     "tokens": 63,
+     "dep_usd": 11132861,
+     "ret_vs_usd": 0.01308,
+     "ret_vs_hold": 0.01332,
+     "fee_ret": 0.02097,
+     "win_rate": 0.384,
+     "median_ret": 0.0
+    }
+   },
+   ">12h": {
+    "disc": {
+     "n": 1975,
+     "owners": 688,
+     "tokens": 202,
+     "dep_usd": 3489592,
+     "ret_vs_usd": 0.21311,
+     "ret_vs_hold": 0.21469,
+     "fee_ret": 0.28391,
+     "win_rate": 0.62,
+     "median_ret": 0.07699
+    },
+    "test": {
+     "n": 512,
+     "owners": 190,
+     "tokens": 60,
+     "dep_usd": 537345,
+     "ret_vs_usd": 0.02599,
+     "ret_vs_hold": 0.07363,
+     "fee_ret": 0.12494,
+     "win_rate": 0.529,
+     "median_ret": 0.01831
+    }
+   }
+  }
+ },
+ "first_hour_cells_ranked_on_disc": [
+  {
+   "cell": "straddle|40-150%|15m-2h",
+   "disc_n": 1371,
+   "disc_vs_usd": 0.28118,
+   "test_n": 183,
+   "test_vs_usd": 0.14282
+  },
+  {
+   "cell": "quote_only(bid)|40-150%|15m-2h",
+   "disc_n": 4857,
+   "disc_vs_usd": 0.13577,
+   "test_n": 1805,
+   "test_vs_usd": 0.05736
+  },
+  {
+   "cell": "quote_only(bid)|10-40%|2-12h",
+   "disc_n": 838,
+   "disc_vs_usd": 0.1335,
+   "test_n": 577,
+   "test_vs_usd": 0.10162
+  },
+  {
+   "cell": "quote_only(bid)|2-10%|2-12h",
+   "disc_n": 859,
+   "disc_vs_usd": 0.10212,
+   "test_n": 330,
+   "test_vs_usd": 0.00745
+  },
+  {
+   "cell": "quote_only(bid)|10-40%|15m-2h",
+   "disc_n": 6590,
+   "disc_vs_usd": 0.10185,
+   "test_n": 3261,
+   "test_vs_usd": 0.05631
+  },
+  {
+   "cell": "straddle|10-40%|<15m",
+   "disc_n": 2592,
+   "disc_vs_usd": 0.09884,
+   "test_n": 240,
+   "test_vs_usd": 0.02719
+  },
+  {
+   "cell": "token_only(ask)|10-40%|<15m",
+   "disc_n": 629,
+   "disc_vs_usd": 0.09441,
+   "test_n": 111,
+   "test_vs_usd": 0.05038
+  },
+  {
+   "cell": "quote_only(bid)|>150%|15m-2h",
+   "disc_n": 1251,
+   "disc_vs_usd": 0.09227,
+   "test_n": 375,
+   "test_vs_usd": 0.03736
+  },
+  {
+   "cell": "straddle|40-150%|<15m",
+   "disc_n": 2747,
+   "disc_vs_usd": 0.0911,
+   "test_n": 359,
+   "test_vs_usd": 0.06222
+  },
+  {
+   "cell": "quote_only(bid)|2-10%|15m-2h",
+   "disc_n": 5519,
+   "disc_vs_usd": 0.08719,
+   "test_n": 1090,
+   "test_vs_usd": 0.06121
+  },
+  {
+   "cell": "quote_only(bid)|40-150%|2-12h",
+   "disc_n": 642,
+   "disc_vs_usd": 0.08232,
+   "test_n": 347,
+   "test_vs_usd": 0.06444
+  },
+  {
+   "cell": "token_only(ask)|<2%|<15m",
+   "disc_n": 459,
+   "disc_vs_usd": 0.04682,
+   "test_n": 129,
+   "test_vs_usd": -0.00039
+  }
+ ]
+}

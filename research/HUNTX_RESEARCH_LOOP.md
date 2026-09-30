@@ -1,0 +1,145 @@
+# HUNTX research loop — pathway ledger and charter
+
+This is the single source of truth for the research loop. **Every iteration
+reads this file first and updates it last.** A path marked EXHAUSTED is not
+retried unless a new, specific reason is written next to it.
+
+## Goal
+
+Profit from LPing **new launches** on Robinhood Chain with a causal, repeatable,
+multi-position rule that survives rugs, executable exit costs and gas at $200
+scale. The HUNTX launch gate stays BLOCKED until the breakthrough bar is met
+**and** the forward test confirms it.
+
+## Breakthrough bar (all required)
+
+1. The rule is frozen in `docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md` before
+   its evaluation data is scored.
+2. Decisions use only information before the decision block (no survivorship:
+   the launch universe includes pools that later rug or die).
+3. Positive mean net at **executable** exit (V4Quoter at the exit block) after
+   gas, with a day-clustered 90% lower bound > 0 on **untouched** dates.
+4. ≥ 10 distinct profitable tokens, and a positive $200 portfolio (K ≤ 3).
+5. Positions still open in a pool that becomes drained (|tick| ≥ 700k) are
+   marked as a **total loss**.
+6. Fees are fork-validated for the position type (apply the measured haircut).
+
+## Standing rules
+
+* Read-only chain research and local forks only; never sign or broadcast.
+* RPC budget: ≤ 10k requests per iteration by default. State the count before
+  any larger fetch and prefer data already on disk. The QuickNode cap is 50/s.
+* Pre-register every hypothesis (append an amendment), then test, then record
+  the verdict here and in the pre-registration verdict log.
+* Mid-price marks are never evidence of profit. Always report executable values.
+* Report to the user after each iteration: path, verdict, numbers, next path.
+
+## Data on disk (reuse first)
+
+| Data | Location | Coverage |
+|---|---|---|
+| V4 pool registry (932k pools) | `huntx_edge_registry.json.gz` | to 2026-09-29 |
+| Swap logs, lean 1,471 pools | `huntx_edge_logs*` (npy) | 09-01 .. 09-29 |
+| Boundary state (fee growth, slot0) | `huntx_edge_state_panel.json.gz` | 09-01 .. 09-30 |
+| All LP episodes (1.31M) + owners | `huntx_lp_population/` | 09-01 .. 09-29 |
+| Krystal vault list + RAPTOR-X rules | `huntx_krystal_*` | snapshot 09-30 |
+| Forward shadow ledger | `huntx_forward/` | from 09-30, daily |
+| Quote/state cache | `huntx_edge_rpc_cache.json.gz` | — |
+
+## EXHAUSTED paths (do not repeat)
+
+| Path | Evidence | Why it failed |
+|---|---|---|
+| Launch-token swap probes, top-2 by day | `HUNTX-V3-CAUSAL-EDGE-REVIEW` | Hindsight; causally −10.8% of NAV |
+| Generic one-sided WETH bid, fee/calm filters | `HUNTX-RESEARCH-LOOP-2026-09-29` | −6 to −17 pp per fold |
+| Static LP ranked by displayed APR / volume / fees | old replay (void), C0 | Fees paid by dumping tokens |
+| Old `krystal_multi_pool_lp_replay` | fee validation | Wrong fee token; void |
+| H1 persistent fee flow | slice + OOS | Anti-predictive; 87% from 5 tokens |
+| H2 fee/liquidity spike | slice | −$14.70 / $100 |
+| H5 maker-only range-order cycling | slice | Drift, not fills |
+| H6 low-toxicity markouts | slice | ≈ H1 |
+| H7/A5 RAPTOR-X harvester clone | `huntx_harvester_clone.py` | −$2.08 / $100 at exit; Krystal "profit" = mid marks |
+| Copying Krystal leaderboard vaults | population study | Correlated copies; mid-marked |
+| **L1→L3 LP any launch in hour 1 (bid or straddle)** | `huntx_launch_l3.py`, 2,000 of 11,621 launches | −$4.16 / $100 per 2 h (bid), −$42 (straddle); L1's +2–5% was survivorship |
+| Population "early entry" stats as evidence | L1 vs L3 | Panel universe selected on later volume = survivorship |
+| **L7 survivor launches (24 h, survival + two-way flow observed)** | `huntx_launch_l7.py` | −$10.66 / $100 / 24 h; filled bids −$27.89 |
+| **L8 post-dump bids on launches** | mechanism = L3/L7 | Closed unscored: bids on launch tokens are filled by continued selling |
+| **Any LP that ends up holding third-party launch tokens (< 3 d old)** | L3, L7, H1-young stratum | Launch tokens dump; 96.5% dead by 3 h |
+
+## ACTIVE
+
+* **H3** (conditioned USDG bid, established pools) and **H8** (harvester gated by
+  H3 conditions): daily forward test, scheduled task, verdict after 30 scored
+  days (≈ early November). Fork-validated: bid fees overstated by a median of 4%.
+
+## OPEN QUEUE — new launches (ranked by information per RPC)
+
+| ID | Path | Cost | Question |
+|---|---|---|---|
+| L1 | Launch-age LP outcome with **per-episode rug marking**, split by side, width and hold, both halves | 0 RPC | Does the "enter in hour 1" edge survive rugs? Which position shape carries it? |
+| ~~L2~~ | DONE: closed. Bot `0x56bf…` is a contract with ≈ $3k of working capital recycled 89k times; mid-marked +$411k is not credible; high-frequency making is not a $200-vault strategy | — | — |
+| ~~L3~~ | DONE: falsified (see EXHAUSTED). The unbiased launch dataset (first 3.2 h of 62,884 launches) is on disk in `huntx_launch_l3/` | — | — |
+| ~~L7~~ | DONE: falsified. **Survivor launches:** pools aged 6 h–3 d that are *still* active and not trending down at decision time (causal survival conditioning). Extend the L3 logs to 72 h only for launches still trading at 3 h | ≈ 3–5k | Does the edge appear once survival is observed rather than assumed? |
+| ~~L8~~ | CLOSED (mechanism duplicate). **Post-dump mean reversion:** bid only after a launch has already fallen ≥ X% from its first-hour peak, with volume still two-way (uses the L3 data on disk) | 0 screen + ≈ 2k quotes | Are dumps followed by bounces that pay a bid? |
+| ~~L4~~ | CLOSED: issuer-managed (outsider liquidity events 8 of about 5.4k in the sample). Launchpad hook pools (`0x4e34…` 79k/month, others): can outsiders LP? Fee split? | < 1k | Is the biggest launch venue even accessible? |
+| L5 (deprioritized) | Exit-cost curve for young tokens at $10–$100 (mid vs executable gap by pool age) | ≈ 2k | How much of the early-LP mid edge is real at exit? |
+| L6 (not implementable) | Short-hold (< 1 h) narrow bids in launch bursts vs hold/quote costs | 0–2k | Is the edge a speed game HUNTX cannot play? |
+
+## Iteration log
+
+* **2026-09-30 artifact reconciliation (0 RPC; no new outcome).** The earlier
+  static Krystal replay handoff, saved JSON, script entry point, and canvas are
+  explicitly marked VOID to prevent their invalid fee-side rankings from being
+  reused. The H3 forward ledger still has zero matured exits; no decision rule,
+  APR, or launch gate changed.
+
+* **2026-09-30 #0 (reconnaissance, 0 RPC).** In the population data (drained
+  pools excluded at pool level, so rugs are MISSING), vs-USD return per episode
+  falls monotonically with pool age at entry: <1 h +4.9% / +2.1% (first / second
+  half), 1–6 h +3.2% / +1.0%, >7 d +0.7% / +0.1%. 387k pools were initialized in
+  September (256k unhooked; hook `0x4e34…` 79k). Bot `0x56bf…`: 89,781
+  episodes, 102 tokens, narrow (4%) USDG bids, 1.6 h holds, half in a pool's
+  first day, +2.85% vs USD at mid; it stopped on 09-08. **Next: L1.**
+* **#1 L1 (0 RPC): PASS, descriptive.** With per-episode rug marking, <1 h entry
+  is +4.6% / +2.1% vs USD (halves) vs >7 d +0.7% / +0.1%. First-hour wide bids
+  held 15 m–2 h: +10.2% → +5.6% (10–40% width), +13.6% → +5.7% (40–150%).
+  Mid-valued and panel-universe (survivorship-exposed), so it is not evidence
+  alone. **Promoted: L3 (A8 frozen).** L1 status: DONE.
+* **#2 L3 (≈ 7.4k RPC): FALSIFIED.** All launches 09-15..25: first-hour bid
+  −$4.16 / $100 per 2 h (win 9.8%, negative every day); straddle −$42; $200
+  portfolio −$918 recycled. L1 was survivorship. New paths added: L7 (survivor
+  launches, causal survival), L8 (post-dump bid). **Next: L2 (0 RPC)**, to see
+  what the one profitable launch bot conditioned on, which informs L7/L8.
+* **#3 L2 (≈ 40 RPC): CLOSED.** Bot `0x56bf…` peaked at about $1.3k USDG + 0.56 ETH
+  and was drained to about $1 by 09-15, over 89k positions. Its mid-marked +$411k is
+  not evidence, and it is not implementable at HUNTX scale. Fact found: only 1,289
+  of 36,931 traded launches (3.5%) are still active at hour 3.
+  **Next: L7 (A9 frozen), fetching 1,273 requests.**
+* **#4 L7 (≈ 1.5k RPC): FALSIFIED.** Survivors at 24 h: −$10.66 / $100; filled
+  bids −$27.89; $200 −$263. L8 closed as a mechanism duplicate. **Structural
+  finding:** on launches the profitable LP side is the *token-side* (ask)
+  liquidity of whoever already holds the token (issuers and launchpads), not the
+  bid side. **Next: L4** (launchpad hook pools: who LPs there, can outsiders, is
+  the fee split different), < 1k RPC.
+* **#5 L4 (≈ 6 RPC + Blockscout): CLOSED.** Launch venues are issuer-managed; the
+  hooks take swap deltas.
+* **LOOP STOPPED (queue exhausted) — launch conclusion:** no outside-LP edge on
+  third-party launches at $200 scale. The remaining live candidate is H3
+  (pools ≥ 3 d) in the forward test. **Re-open this file only with a
+  genuinely new mechanism**, e.g. HUNTX owning token-side supply (issuer or
+  maker-exit role), or new chain data showing launch survival rates changing.
+
+## VAULT PATHWAYS (opened 2026-09-30 at the user's request: "regular proven vault strategies, beat Krystal")
+
+| Path | Status | Evidence |
+|---|---|---|
+| Asset-class map (majors / stables / stocks / memes) | DONE | Stocks are the steadiest class; majors ≈ 0 vs hold |
+| Stock-token flow toxicity by US session | DONE | LP spread +10 to +41bp at 24 h in every session |
+| Stock LP vault S0/S1/S2 at $0.27 gas | FAIL (fixed costs) | LP alpha +$0.2–0.5 per $100 per 5 d |
+| Gas measured on fork | DONE | $0.0125/tx lean vault |
+| Management factorial (27 configs) | DONE | ±2.5% static best; swap-rebalance worst; session gating hurts |
+| **SLP25 confirmation (untouched)** | **CANDIDATE** | +$0.61 per $100 per 5 d, 90% +0.27 … +0.92, 18 symbols |
+| Beats Krystal-like manager (paired) | NOT PROVEN | +$0.14, 90% −0.24 … +0.51 |
+| $200 portfolio | UNDERPOWERED | K3 −$0.81, K5 +$1.39 |
+| **SLP25 forward test** | **ACTIVE (A14)** | Daily scheduled task |
+| Open, not yet tested | QUEUED | earnings-calendar exclusion; continuous operation; after-hours skew; stable-pair baseline |

@@ -1,0 +1,450 @@
+{
+ "method": "M-series (Amendment A11): LP management factorial on stock-token USDG pools.\n\nLevers: width (\u00b12.5/5/10%), rebanding after a whole day out of range (swap50 |\nmaker | static), session exposure (always | toxic_off | prime_only). Screening\non discovery decisions uses modeled costs (pool fee + impact measured from the\nunit's exact entry quote); confirmation uses exact V4Quoter quotes for every\nswap. Units are paired across configurations. Read-only.\nUsage: python huntx_stock_mgmt.py screen | confirm <width> <reband> <session>",
+ "discovery": [
+  "2026-09-08",
+  "2026-09-09",
+  "2026-09-10",
+  "2026-09-11",
+  "2026-09-12",
+  "2026-09-13",
+  "2026-09-14",
+  "2026-09-15"
+ ],
+ "units": 254,
+ "screen": {
+  "2.5|swap50|always": {
+   "n": 254,
+   "mean": 1.11,
+   "median": 1.321,
+   "vs_hold": 1.328,
+   "fees": 3.089,
+   "gas": 0.061,
+   "rebands": 0.287,
+   "win": 0.661,
+   "boot90": [
+    0.619,
+    1.596
+   ],
+   "symbols_profitable": 18,
+   "symbols": 28
+  },
+  "2.5|swap50|toxic_off": {
+   "n": 254,
+   "mean": 0.507,
+   "median": 0.186,
+   "vs_hold": 0.724,
+   "fees": 1.395,
+   "gas": 0.152,
+   "rebands": 0.287,
+   "win": 0.535,
+   "boot90": [
+    0.065,
+    0.997
+   ],
+   "symbols_profitable": 13,
+   "symbols": 28
+  },
+  "2.5|swap50|prime_only": {
+   "n": 254,
+   "mean": 0.16,
+   "median": -0.096,
+   "vs_hold": 0.377,
+   "fees": 0.629,
+   "gas": 0.143,
+   "rebands": 0.287,
+   "win": 0.472,
+   "boot90": [
+    -0.409,
+    0.754
+   ],
+   "symbols_profitable": 11,
+   "symbols": 28
+  },
+  "2.5|maker|always": {
+   "n": 254,
+   "mean": 1.184,
+   "median": 1.351,
+   "vs_hold": 1.401,
+   "fees": 2.962,
+   "gas": 0.059,
+   "rebands": 0.346,
+   "win": 0.685,
+   "boot90": [
+    0.65,
+    1.7
+   ],
+   "symbols_profitable": 20,
+   "symbols": 28
+  },
+  "2.5|maker|toxic_off": {
+   "n": 254,
+   "mean": 0.65,
+   "median": 0.21,
+   "vs_hold": 0.868,
+   "fees": 1.261,
+   "gas": 0.15,
+   "rebands": 0.358,
+   "win": 0.543,
+   "boot90": [
+    0.113,
+    1.186
+   ],
+   "symbols_profitable": 14,
+   "symbols": 28
+  },
+  "2.5|maker|prime_only": {
+   "n": 254,
+   "mean": 0.166,
+   "median": -0.099,
+   "vs_hold": 0.384,
+   "fees": 0.551,
+   "gas": 0.142,
+   "rebands": 0.394,
+   "win": 0.465,
+   "boot90": [
+    -0.419,
+    0.779
+   ],
+   "symbols_profitable": 12,
+   "symbols": 28
+  },
+  "2.5|static|always": {
+   "n": 254,
+   "mean": 1.208,
+   "median": 1.346,
+   "vs_hold": 1.425,
+   "fees": 2.733,
+   "gas": 0.05,
+   "rebands": 0,
+   "win": 0.701,
+   "boot90": [
+    0.543,
+    1.816
+   ],
+   "symbols_profitable": 21,
+   "symbols": 28
+  },
+  "2.5|static|toxic_off": {
+   "n": 254,
+   "mean": 0.662,
+   "median": 0.2,
+   "vs_hold": 0.879,
+   "fees": 1.15,
+   "gas": 0.141,
+   "rebands": 0,
+   "win": 0.539,
+   "boot90": [
+    0.017,
+    1.279
+   ],
+   "symbols_profitable": 14,
+   "symbols": 28
+  },
+  "2.5|static|prime_only": {
+   "n": 254,
+   "mean": 0.15,
+   "median": -0.096,
+   "vs_hold": 0.367,
+   "fees": 0.515,
+   "gas": 0.132,
+   "rebands": 0,
+   "win": 0.469,
+   "boot90": [
+    -0.447,
+    0.767
+   ],
+   "symbols_profitable": 11,
+   "symbols": 28
+  },
+  "5|swap50|always": {
+   "n": 254,
+   "mean": 0.686,
+   "median": 0.833,
+   "vs_hold": 0.925,
+   "fees": 2.177,
+   "gas": 0.054,
+   "rebands": 0.098,
+   "win": 0.654,
+   "boot90": [
+    0.13,
+    1.217
+   ],
+   "symbols_profitable": 17,
+   "symbols": 28
+  },
+  "5|swap50|toxic_off": {
+   "n": 254,
+   "mean": 0.174,
+   "median": -0.109,
+   "vs_hold": 0.413,
+   "fees": 0.886,
+   "gas": 0.145,
+   "rebands": 0.098,
+   "win": 0.469,
+   "boot90": [
+    -0.35,
+    0.712
+   ],
+   "symbols_profitable": 12,
+   "symbols": 28
+  },
+  "5|swap50|prime_only": {
+   "n": 254,
+   "mean": -0.015,
+   "median": -0.168,
+   "vs_hold": 0.223,
+   "fees": 0.413,
+   "gas": 0.136,
+   "rebands": 0.098,
+   "win": 0.437,
+   "boot90": [
+    -0.624,
+    0.613
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "5|maker|always": {
+   "n": 254,
+   "mean": 0.819,
+   "median": 0.963,
+   "vs_hold": 1.057,
+   "fees": 2.171,
+   "gas": 0.053,
+   "rebands": 0.106,
+   "win": 0.657,
+   "boot90": [
+    0.241,
+    1.364
+   ],
+   "symbols_profitable": 19,
+   "symbols": 28
+  },
+  "5|maker|toxic_off": {
+   "n": 254,
+   "mean": 0.235,
+   "median": -0.109,
+   "vs_hold": 0.474,
+   "fees": 0.863,
+   "gas": 0.144,
+   "rebands": 0.106,
+   "win": 0.472,
+   "boot90": [
+    -0.336,
+    0.801
+   ],
+   "symbols_profitable": 13,
+   "symbols": 28
+  },
+  "5|maker|prime_only": {
+   "n": 254,
+   "mean": -0.021,
+   "median": -0.168,
+   "vs_hold": 0.217,
+   "fees": 0.388,
+   "gas": 0.135,
+   "rebands": 0.122,
+   "win": 0.437,
+   "boot90": [
+    -0.63,
+    0.607
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "5|static|always": {
+   "n": 254,
+   "mean": 0.879,
+   "median": 0.985,
+   "vs_hold": 1.117,
+   "fees": 2.119,
+   "gas": 0.05,
+   "rebands": 0,
+   "win": 0.661,
+   "boot90": [
+    0.279,
+    1.443
+   ],
+   "symbols_profitable": 20,
+   "symbols": 28
+  },
+  "5|static|toxic_off": {
+   "n": 254,
+   "mean": 0.272,
+   "median": -0.097,
+   "vs_hold": 0.51,
+   "fees": 0.849,
+   "gas": 0.141,
+   "rebands": 0,
+   "win": 0.476,
+   "boot90": [
+    -0.333,
+    0.867
+   ],
+   "symbols_profitable": 13,
+   "symbols": 28
+  },
+  "5|static|prime_only": {
+   "n": 254,
+   "mean": -0.019,
+   "median": -0.168,
+   "vs_hold": 0.22,
+   "fees": 0.384,
+   "gas": 0.132,
+   "rebands": 0,
+   "win": 0.437,
+   "boot90": [
+    -0.629,
+    0.609
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "10|swap50|always": {
+   "n": 254,
+   "mean": 0.471,
+   "median": 0.306,
+   "vs_hold": 0.697,
+   "fees": 1.435,
+   "gas": 0.051,
+   "rebands": 0.02,
+   "win": 0.579,
+   "boot90": [
+    -0.036,
+    1.009
+   ],
+   "symbols_profitable": 17,
+   "symbols": 28
+  },
+  "10|swap50|toxic_off": {
+   "n": 254,
+   "mean": 0.008,
+   "median": -0.164,
+   "vs_hold": 0.234,
+   "fees": 0.594,
+   "gas": 0.142,
+   "rebands": 0.02,
+   "win": 0.449,
+   "boot90": [
+    -0.562,
+    0.611
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "10|swap50|prime_only": {
+   "n": 254,
+   "mean": -0.152,
+   "median": -0.192,
+   "vs_hold": 0.073,
+   "fees": 0.272,
+   "gas": 0.133,
+   "rebands": 0.02,
+   "win": 0.425,
+   "boot90": [
+    -0.787,
+    0.515
+   ],
+   "symbols_profitable": 9,
+   "symbols": 28
+  },
+  "10|maker|always": {
+   "n": 254,
+   "mean": 0.533,
+   "median": 0.306,
+   "vs_hold": 0.759,
+   "fees": 1.435,
+   "gas": 0.05,
+   "rebands": 0.02,
+   "win": 0.579,
+   "boot90": [
+    0.005,
+    1.076
+   ],
+   "symbols_profitable": 17,
+   "symbols": 28
+  },
+  "10|maker|toxic_off": {
+   "n": 254,
+   "mean": 0.032,
+   "median": -0.164,
+   "vs_hold": 0.258,
+   "fees": 0.592,
+   "gas": 0.142,
+   "rebands": 0.02,
+   "win": 0.449,
+   "boot90": [
+    -0.547,
+    0.646
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "10|maker|prime_only": {
+   "n": 254,
+   "mean": -0.142,
+   "median": -0.192,
+   "vs_hold": 0.084,
+   "fees": 0.268,
+   "gas": 0.133,
+   "rebands": 0.031,
+   "win": 0.425,
+   "boot90": [
+    -0.776,
+    0.521
+   ],
+   "symbols_profitable": 9,
+   "symbols": 28
+  },
+  "10|static|always": {
+   "n": 254,
+   "mean": 0.536,
+   "median": 0.306,
+   "vs_hold": 0.762,
+   "fees": 1.428,
+   "gas": 0.05,
+   "rebands": 0,
+   "win": 0.579,
+   "boot90": [
+    0.008,
+    1.08
+   ],
+   "symbols_profitable": 17,
+   "symbols": 28
+  },
+  "10|static|toxic_off": {
+   "n": 254,
+   "mean": 0.036,
+   "median": -0.164,
+   "vs_hold": 0.262,
+   "fees": 0.59,
+   "gas": 0.141,
+   "rebands": 0,
+   "win": 0.449,
+   "boot90": [
+    -0.546,
+    0.655
+   ],
+   "symbols_profitable": 10,
+   "symbols": 28
+  },
+  "10|static|prime_only": {
+   "n": 254,
+   "mean": -0.141,
+   "median": -0.192,
+   "vs_hold": 0.085,
+   "fees": 0.268,
+   "gas": 0.132,
+   "rebands": 0,
+   "win": 0.425,
+   "boot90": [
+    -0.775,
+    0.522
+   ],
+   "symbols_profitable": 9,
+   "symbols": 28
+  }
+ },
+ "selected": "2.5|static|always",
+ "baseline": "10|swap50|always"
+}

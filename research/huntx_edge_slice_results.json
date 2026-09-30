@@ -1,0 +1,412 @@
+{
+ "method": "HUNTX edge \u2014 pilot-slice study (Amendment A2; exploratory, fold F3 only).\n\nDecision days 2026-09-23..09-27 (00:00 UTC), 3-day hold, plus a frozen\nprospective decision at 2026-09-30 00:00. Inputs: complete Swap logs for\nprefilter-passing pools (huntx_edge_log_stage.py), archive state at every\nboundary (huntx_edge_state_panel.py, seeded into the RPC cache), and exact\nV4Quoter quotes at entry/exit archive blocks. Hypotheses H1, H2, H3, H5, H6\nand control C0 exactly as pre-registered (docs/HUNTX-EDGE-PREREGISTRATION-\n2026-09-30.md incl. amendments A1, A2). No threshold is tuned here.",
+ "pools": 796,
+ "eth_ref_pool": "0x24107d152f14a76d292123265ae3f3c71f863fc2f4ef7ba49d64e78d28ea379e",
+ "decision_days": [
+  "2026-09-23",
+  "2026-09-24",
+  "2026-09-25",
+  "2026-09-26",
+  "2026-09-27"
+ ],
+ "hypotheses": {
+  "H1": {
+   "n": 346,
+   "unique_pools": 171,
+   "unique_tokens": 104,
+   "profitable": 157,
+   "profitable_tokens": 56,
+   "mean_net_usd_per_100": -6.887,
+   "median_net_usd_per_100": -0.846,
+   "mean_vs_hold_usd_per_100": 1.6,
+   "worst": -95.804,
+   "best": 63.247,
+   "failed_exits": 1,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-23": -5.605,
+    "2026-09-24": -8.761,
+    "2026-09-25": -8.343,
+    "2026-09-26": -7.456,
+    "2026-09-27": -4.902
+   },
+   "positive_days": 0
+  },
+  "H2": {
+   "n": 20,
+   "unique_pools": 19,
+   "unique_tokens": 16,
+   "profitable": 6,
+   "profitable_tokens": 4,
+   "mean_net_usd_per_100": -14.704,
+   "median_net_usd_per_100": -2.436,
+   "mean_vs_hold_usd_per_100": -1.643,
+   "worst": -89.246,
+   "best": 10.742,
+   "failed_exits": 1,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-26": -9.14,
+    "2026-09-27": -23.051
+   },
+   "positive_days": 0
+  },
+  "H3": {
+   "n": 31,
+   "unique_pools": 31,
+   "unique_tokens": 16,
+   "profitable": 13,
+   "profitable_tokens": 8,
+   "mean_net_usd_per_100": 0.652,
+   "median_net_usd_per_100": -0.035,
+   "mean_vs_hold_usd_per_100": 0.652,
+   "worst": -48.703,
+   "best": 38.691,
+   "failed_exits": 0,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-27": 0.652
+   },
+   "positive_days": 1
+  },
+  "H5": {
+   "n": 484,
+   "unique_pools": 222,
+   "unique_tokens": 134,
+   "profitable": "172",
+   "profitable_tokens": 63,
+   "mean_net_usd_per_100": -6.369,
+   "median_net_usd_per_100": -1.485,
+   "mean_vs_hold_usd_per_100": -6.369,
+   "worst": -100.685,
+   "best": 106.045,
+   "failed_exits": 1,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-23": -6.135,
+    "2026-09-24": -8.532,
+    "2026-09-25": -6.002,
+    "2026-09-26": -6.841,
+    "2026-09-27": -5.056
+   },
+   "positive_days": "0"
+  },
+  "H6": {
+   "n": 291,
+   "unique_pools": 132,
+   "unique_tokens": 92,
+   "profitable": 132,
+   "profitable_tokens": 54,
+   "mean_net_usd_per_100": -7.971,
+   "median_net_usd_per_100": -0.816,
+   "mean_vs_hold_usd_per_100": 1.749,
+   "worst": -95.804,
+   "best": 53.187,
+   "failed_exits": 0,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-23": -5.308,
+    "2026-09-24": -10.049,
+    "2026-09-25": -8.515,
+    "2026-09-26": -9.33,
+    "2026-09-27": -6.847
+   },
+   "positive_days": 0
+  },
+  "C0": {
+   "n": 25,
+   "unique_pools": 15,
+   "unique_tokens": 14,
+   "profitable": 11,
+   "profitable_tokens": 10,
+   "mean_net_usd_per_100": -12.941,
+   "median_net_usd_per_100": -2.688,
+   "mean_vs_hold_usd_per_100": -0.371,
+   "worst": -67.193,
+   "best": 60.408,
+   "failed_exits": 0,
+   "failed_entries": 0,
+   "day_means": {
+    "2026-09-23": -24.747,
+    "2026-09-24": -4.623,
+    "2026-09-25": -3.022,
+    "2026-09-26": -3.928,
+    "2026-09-27": -28.383
+   },
+   "positive_days": 0
+  },
+  "H1_by_stratum": {
+   "major": {
+    "n": 19,
+    "unique_pools": 9,
+    "unique_tokens": 2,
+    "profitable": 15,
+    "profitable_tokens": 2,
+    "mean_net_usd_per_100": 0.128,
+    "median_net_usd_per_100": 0.151,
+    "mean_vs_hold_usd_per_100": 0.453,
+    "worst": -0.274,
+    "best": 0.505,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-25": 0.138,
+     "2026-09-26": 0.256,
+     "2026-09-27": 0.041
+    },
+    "positive_days": 3
+   },
+   "established": {
+    "n": 275,
+    "unique_pools": 130,
+    "unique_tokens": 89,
+    "profitable": 124,
+    "profitable_tokens": 47,
+    "mean_net_usd_per_100": -6.36,
+    "median_net_usd_per_100": -1.052,
+    "mean_vs_hold_usd_per_100": 1.844,
+    "worst": -89.246,
+    "best": 63.247,
+    "failed_exits": 0,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-23": -7.91,
+     "2026-09-24": -7.864,
+     "2026-09-25": -6.545,
+     "2026-09-26": -3.789,
+     "2026-09-27": -5.951
+    },
+    "positive_days": 0
+   },
+   "young": {
+    "n": 52,
+    "unique_pools": 35,
+    "unique_tokens": 24,
+    "profitable": 18,
+    "profitable_tokens": 11,
+    "mean_net_usd_per_100": -12.237,
+    "median_net_usd_per_100": -7.425,
+    "mean_vs_hold_usd_per_100": 0.728,
+    "worst": -95.804,
+    "best": 53.187,
+    "failed_exits": 1,
+    "failed_entries": 0,
+    "day_means": {
+     "2026-09-23": 4.5,
+     "2026-09-24": -12.351,
+     "2026-09-25": -33.005,
+     "2026-09-26": -38.401,
+     "2026-09-27": -3.184
+    },
+    "positive_days": 1
+   }
+  },
+  "H5_post_fill_median_24h_token_ret": -0.00819534708345604
+ },
+ "portfolios": {
+  "H1_K1": {
+   "net_usd_on_200": -59.014,
+   "positions": 2,
+   "profitable": 1,
+   "unique_tokens": 2,
+   "abstain_days": 3,
+   "worst_usd": -76.659
+  },
+  "H1_K2": {
+   "net_usd_on_200": -35.353,
+   "positions": 4,
+   "profitable": 2,
+   "unique_tokens": 4,
+   "abstain_days": 3,
+   "worst_usd": -59.508
+  },
+  "H1_K3": {
+   "net_usd_on_200": -101.493,
+   "positions": 6,
+   "profitable": 2,
+   "unique_tokens": 6,
+   "abstain_days": 3,
+   "worst_usd": -63.882
+  },
+  "H2_K1": {
+   "net_usd_on_200": -178.201,
+   "positions": 1,
+   "profitable": 0,
+   "unique_tokens": 1,
+   "abstain_days": 4,
+   "worst_usd": -178.201
+  },
+  "H2_K2": {
+   "net_usd_on_200": -98.136,
+   "positions": 2,
+   "profitable": 0,
+   "unique_tokens": 2,
+   "abstain_days": 4,
+   "worst_usd": -89.246
+  },
+  "H2_K3": {
+   "net_usd_on_200": -61.708,
+   "positions": 3,
+   "profitable": 1,
+   "unique_tokens": 3,
+   "abstain_days": 4,
+   "worst_usd": -59.577
+  },
+  "H3_K1": {
+   "net_usd_on_200": -16.47,
+   "positions": 1,
+   "profitable": 0,
+   "unique_tokens": 1,
+   "abstain_days": 4,
+   "worst_usd": -16.47
+  },
+  "H3_K2": {
+   "net_usd_on_200": -48.936,
+   "positions": 2,
+   "profitable": 0,
+   "unique_tokens": 2,
+   "abstain_days": 4,
+   "worst_usd": -41.068
+  },
+  "H3_K3": {
+   "net_usd_on_200": -6.483,
+   "positions": 3,
+   "profitable": 1,
+   "unique_tokens": 3,
+   "abstain_days": 4,
+   "worst_usd": -27.402
+  },
+  "H5_K1": {
+   "net_usd_on_200": -131.344,
+   "positions": 2,
+   "profitable": "0",
+   "unique_tokens": 2,
+   "abstain_days": 3,
+   "worst_usd": -98.662
+  },
+  "H5_K2": {
+   "net_usd_on_200": -54.586,
+   "positions": 4,
+   "profitable": "1",
+   "unique_tokens": 4,
+   "abstain_days": 3,
+   "worst_usd": -78.398
+  },
+  "H5_K3": {
+   "net_usd_on_200": -126.41,
+   "positions": 6,
+   "profitable": "1",
+   "unique_tokens": 6,
+   "abstain_days": 3,
+   "worst_usd": -65.018
+  },
+  "H6_K1": {
+   "net_usd_on_200": -157.506,
+   "positions": 2,
+   "profitable": 0,
+   "unique_tokens": 2,
+   "abstain_days": 3,
+   "worst_usd": -122.379
+  },
+  "H6_K2": {
+   "net_usd_on_200": -153.292,
+   "positions": 4,
+   "profitable": 0,
+   "unique_tokens": 4,
+   "abstain_days": 3,
+   "worst_usd": -69.507
+  },
+  "H6_K3": {
+   "net_usd_on_200": -144.104,
+   "positions": 6,
+   "profitable": 1,
+   "unique_tokens": 6,
+   "abstain_days": 3,
+   "worst_usd": -63.882
+  },
+  "C0_K1": {
+   "net_usd_on_200": -57.077,
+   "positions": 2,
+   "profitable": 1,
+   "unique_tokens": 2,
+   "abstain_days": 3,
+   "worst_usd": -58.59
+  },
+  "C0_K2": {
+   "net_usd_on_200": -66.66,
+   "positions": 4,
+   "profitable": 2,
+   "unique_tokens": 3,
+   "abstain_days": 3,
+   "worst_usd": -58.425
+  },
+  "C0_K3": {
+   "net_usd_on_200": -36.514,
+   "positions": 6,
+   "profitable": 4,
+   "unique_tokens": 5,
+   "abstain_days": 3,
+   "worst_usd": -39.019
+  }
+ },
+ "rejection_census": {
+  "2026-09-23": {
+   "PASS all gates": 245,
+   "G6": 276,
+   "G3": 116,
+   "G1": 111,
+   "no": 111,
+   "G7": 94,
+   "G5": 95,
+   "G4": 7
+  },
+  "2026-09-24": {
+   "PASS all gates": 256,
+   "G6": 280,
+   "G3": 110,
+   "G5": 101,
+   "G1": 95,
+   "no": 95,
+   "G7": 105,
+   "G4": 5
+  },
+  "2026-09-25": {
+   "PASS all gates": 255,
+   "G6": 303,
+   "G3": 107,
+   "G5": 95,
+   "G7": 131,
+   "G1": 70,
+   "no": 70,
+   "G4": 8
+  },
+  "2026-09-26": {
+   "PASS all gates": 256,
+   "G6": 321,
+   "G3": 114,
+   "G7": 165,
+   "G5": 89,
+   "G1": 52,
+   "no": 52,
+   "G4": 8
+  },
+  "2026-09-27": {
+   "PASS all gates": 251,
+   "G6": 357,
+   "G7": 190,
+   "G3": 94,
+   "G5": 89,
+   "G1": 39,
+   "no": 39,
+   "G4": 7
+  },
+  "2026-09-30": {
+   "G3": 114,
+   "G6": 389,
+   "G7": 209,
+   "PASS all gates": 230,
+   "G5": 109,
+   "G4": 7
+  }
+ }
+}

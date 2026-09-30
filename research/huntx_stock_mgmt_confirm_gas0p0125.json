@@ -1,0 +1,39 @@
+{
+ "selected": "2.5|static|always",
+ "baseline": "10|swap50|always",
+ "selected_summary": {
+  "n": 277,
+  "mean": 0.611,
+  "median": 0.967,
+  "vs_hold": 0.731,
+  "fees": 1.487,
+  "gas": 0.05,
+  "rebands": 0,
+  "win": 0.736,
+  "boot90": [
+   0.266,
+   0.922
+  ],
+  "symbols_profitable": 18,
+  "symbols": 26
+ },
+ "baseline_summary": {
+  "n": 277,
+  "mean": 0.472,
+  "median": 0.887,
+  "vs_hold": 0.598,
+  "fees": 1.023,
+  "gas": 0.052,
+  "rebands": 0.054,
+  "win": 0.661,
+  "boot90": [
+   -0.093,
+   1.059
+  ],
+  "symbols_profitable": 18,
+  "symbols": 26
+ },
+ "paired_difference": {
+  "n": 0
+ }
+}
