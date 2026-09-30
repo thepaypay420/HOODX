@@ -55,7 +55,13 @@ class Sleeve:
         self.last_reband = t0
 
     def _width(self, t):
-        if self.mode != "slp_vol":
+        if self.mode.startswith("fixed:"):
+            return 1 + float(self.mode.split(":")[1])
+        lo_hi = (0.025, 0.06)
+        if self.mode.startswith("vol:"):
+            _, k, lo, hi = self.mode.split(":")
+            lo_hi = (float(lo), float(hi))
+        if self.mode != "slp_vol" and not self.mode.startswith("vol:"):
             return 1.10 if self.mode == "krystal" else 1.025
         i0, i1 = self.p.idx(t - 72 * H), self.p.idx(t)
         sq = self.p.sq[i0:i1]
@@ -67,8 +73,8 @@ class Sleeve:
         hours = hours[hours >= 0]
         lp = np.log(sq[hours] ** 2)
         r = np.diff(lp)
-        sig = float(np.std(r) * math.sqrt(24)) if len(r) > 5 else 0.025
-        return 1 + min(max(sig, 0.025), 0.06)
+        sig = float(np.std(r) * math.sqrt(24)) if len(r) > 5 else lo_hi[0]
+        return 1 + min(max(sig, lo_hi[0]), lo_hi[1])
 
     def _mint(self, s):
         tu, qu = M.unit_units(self.p, s, self.sa, self.sb)
@@ -220,3 +226,42 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+def run_vault(pools, bounds, proto, start, end, K, mode, capital=200.0, symbols=None):
+    """Generic continuous vault run; returns net USD at exact exit plus per-sleeve detail."""
+    global DAYS, DAY_BLOCKS
+    days = sorted(bounds)
+    DAYS = days
+    DAY_BLOCKS = np.array([bounds[d] for d in days])
+    T0, T1 = bounds[start], bounds[end]
+    if symbols is None:
+        best = {}
+        for pid in V.eligible(pools, bounds, start):
+            y = M.trailing_yield25(pools[pid], bounds, start, proto)
+            sym = V.STOCKS[pools[pid].token]
+            if y is not None and (sym not in best or y > best[sym][0]):
+                best[sym] = (y, pid)
+        picks = [pid for _, (y, pid) in sorted(best.items(), key=lambda kv: -kv[1][0])[:K]]
+    else:
+        picks = symbols
+    sleeves = []
+    for pid in picks:
+        try:
+            sleeves.append(Sleeve(pools[pid], mode, capital / len(picks), T0, proto))
+        except RuntimeError:
+            continue
+    t = T0
+    while t < T1:
+        t2 = min(t + H, T1)
+        daily = any(bounds[d] <= t2 < bounds[d] + H for d in days if start < d < end)
+        for sl in sleeves:
+            sl.step(t, t2, daily)
+        t = t2
+    final = [sl.close(T1) for sl in sleeves]
+    save_cache()
+    return {"net_usd": sum(final) - capital * len(sleeves) / max(1, len(picks)), "sleeves": len(sleeves),
+            "symbols": [V.STOCKS[pools[pid].token] for pid in picks],
+            "per_sleeve": [round(x - capital / len(picks), 3) for x in final],
+            "rebands": [sl.rebands for sl in sleeves], "gas": round(sum(sl.gas for sl in sleeves), 3)}

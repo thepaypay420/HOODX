@@ -63,7 +63,8 @@ def main():
             cands.append(("centered", u["pool_id"], u["day"]))
     if os.environ.get("HUNTX_SOURCE") == "stock":
         u = json.load(gzip.open(ROOT / "huntx_stock_mgmt_confirm_units.json.gz", "rt"))["selected"]
-        cands = [("stock25", r["pool_id"], r["day"]) for r in u if r.get("fees_usd", 0) > 0.5]
+        kind_s = os.environ.get("HUNTX_KIND", "stock25")
+        cands = [(kind_s, r["pool_id"], r["day"]) for r in u if r.get("fees_usd", 0) > 0.5]
     random.Random(4).shuffle(cands)
     only = os.environ.get("HUNTX_KIND")
     if only:
@@ -82,7 +83,9 @@ def main():
         if s is None:
             continue
         V = 100e6 if pool.quote == S.USDG else 100 / 2600 * 1e18
-        if kind == "stock25":
+        if kind == "stock10":
+            sa, sb, ta, tb = __import__("huntx_edge_engine").snap_range(s, 1 / 1.01, 1.01, pool.spacing, pool.q1)
+        elif kind == "stock25":
             sa, sb, ta, tb = __import__("huntx_edge_engine").snap_range(s, 1 / 1.025, 1.025, pool.spacing, pool.q1)
         elif kind == "bid":
             sa, sb, ta, tb = S.bid_range(pool, s, *S.BID_RANGE)

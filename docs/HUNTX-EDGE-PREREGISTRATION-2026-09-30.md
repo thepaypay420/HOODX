@@ -638,3 +638,21 @@ picks SNDK/TSM/AMD/PLTR/MSTR (causal at 09-04). SLP-v2 +$8.91; **SLP-v2-vol
 USDG $0. Marks at 09-16: +2.53 / +3.29 / +0.35. Continuous stock LP earned about
 +5% while its stocks fell 10.6%. Management differences (±$1) are within noise.
 The venue and lean execution are the edge vs Krystal-style agents.
+
+## Amendment A16 — 2026-09-30, profit optimization of the continuous stock-LP vault (frozen before running)
+
+Engine: the A15 continuous simulator (hourly stepping, one-sided maker rebands
+after a 24 h breach with a 24 h cooldown, daily no-swap compounding, exact entry
+and exit quotes, measured gas $0.0125/tx, fees ÷ 1.03), $200, horizon 9 days.
+Rolling starts: 09-04, 09-07, 09-10 (**selection set**) and 09-13, 09-16, 09-19
+(**confirmation set**; each ends by 09-28).
+Grid (8 configurations):
+* width ∈ {±1%, ±1.5%, ±2.5%, vol = clamp(1.0 × trailing-3-day daily σ, 1.5%, 6%)};
+* K ∈ {5, 8} symbols (top-K by trailing-3-day fee yield of a ±2.5% position at
+  the start, one pool per symbol, equal weight).
+Selection: the highest mean net over the selection-set starts, provided its
+worst start is > −2% of capital. Confirmation: its mean net over the
+confirmation-set starts must be > 0, and it must beat the A15 reference
+configuration (±2.5%, K=5) on at least 2 of 3 confirmation starts.
+Separately (descriptive): an **SGOV/USDG cash sleeve** at ±0.5% and ±1.0%,
+continuous 09-04 → 09-28, vs holding USDG and vs holding SGOV.

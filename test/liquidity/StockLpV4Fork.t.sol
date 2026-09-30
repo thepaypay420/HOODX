@@ -8,6 +8,11 @@ import {HoodxLiquidityIndexV1} from "../../contracts/liquidity/HoodxLiquidityInd
 import {HoodxLiquiditySleeveV4} from "../../contracts/liquidity/v4/HoodxLiquiditySleeveV4.sol";
 import {HoodxStockLpControllerV1} from "../../contracts/liquidity/v4/HoodxStockLpControllerV1.sol";
 import {IPriceReference, IV4StateView, PoolKey} from "../../contracts/liquidity/v4/V4Types.sol";
+import {HoodxTwapV2} from "../../contracts/v2/HoodxTwapV2.sol";
+
+interface IV3FactoryLookup {
+    function getPool(address, address, uint24) external view returns (address);
+}
 
 struct SwapParamsT {
     bool zeroForOne;
@@ -219,6 +224,26 @@ contract StockLpV4ForkTest is Test {
         vm.prank(curator);
         vm.expectRevert(HoodxStockLpControllerV1.NotReady.selector);
         controller.executeReband(0, 1, block.timestamp);
+    }
+
+    /// @notice Production reference: the protocol's existing HoodxTwapV2 over each stock's V3 USDG pool
+    ///         (30-minute TWAP, quote = USDG). It must agree with the V4 pool the sleeve trades.
+    function test_productionTwapReferenceAgreesWithV4Pools() public {
+        if (!live) return;
+        address v3Factory = 0x1f7d7550B1b028f7571E69A784071F0205FD2EfA;
+        uint24[2] memory v3Fee = [uint24(3000), uint24(500)]; // META/USDG 0.30%, SPY/USDG 0.05%
+        for (uint256 i; i < 2; ++i) {
+            address v3Pool = IV3FactoryLookup(v3Factory).getPool(stock[i], USDG, v3Fee[i]);
+            assertTrue(v3Pool != address(0), "V3 USDG reference pool exists");
+            HoodxTwapV2 twap = new HoodxTwapV2(v3Factory, stock[i], USDG, v3Pool, address(0), 1800, 1, 0);
+            uint256 refValue = twap.value(stock[i], 1e18);
+            uint256 v4Value = ref.unitValue(stock[i]); // _syncRef mirrors the V4 spot
+            uint256 hi = Math.max(refValue, v4Value);
+            uint256 lo = Math.min(refValue, v4Value);
+            uint256 bps = Math.mulDiv(hi - lo, 10_000, hi);
+            emit log_named_uint("V3 TWAP vs V4 spot divergence (bps)", bps);
+            assertLt(bps, 150, "production reference agrees within the policy band");
+        }
     }
 
     function test_referenceDisagreementBlocksPriceSensitiveSteps() public {
