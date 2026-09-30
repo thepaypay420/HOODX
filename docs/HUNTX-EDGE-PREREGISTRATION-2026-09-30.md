@@ -712,3 +712,36 @@ equal total width. Valued daily at exact exit alongside SLP10-K8. After 30 days,
 the book with the higher exit value (with no sleeve below −10%) becomes the
 production policy candidate; if the two differ by < $1 on $200, prefer the
 lower-drawdown book.
+
+## Amendment A20 — 2026-09-30, capacity (descriptive; no selection)
+
+Books B0 and B2, the same 7 A18 windows and picks, total size $200, $2,000 and
+$20,000 (equal weight across 8 sleeves). Report net % per window by size. The
+engine models our dilution (L_ours / (L + L_ours)) and uses exact entry and exit
+quotes at each size. Limitation, stated up front: at large sizes our own liquidity
+would slow the price path, which is not replayed. Fork validation covered only
+$100-scale positions, so large-size fee estimates are optimistic.
+
+**A20 result (descriptive):** mean / worst net per 9 d. B0: $200 +3.06% / +0.49%;
+**$2k +3.27% / +0.45%**; $20k −0.23% / −13.60%. B2: $200 +2.51%; $2k +2.84%; $20k −0.29%.
+At $20k, 6 of 7 windows stay positive (+0.1% to +3.4%). The failure (09-20 window)
+is one sleeve: META picked in a thin 0.052% pool (active L 6.0e17), −$2,498 of
+$2,500, because entry and exit were forced through that same pool. META's main
+0.30% pool is deep. Capacity is limited by pool choice and routing, not the fee
+edge.
+
+## Amendment A21 — 2026-09-30, depth-aware pools + best-pool routing (frozen before running)
+
+Mechanism: capacity is lost to forced single-pool conversion in thin pools.
+Variant **D1** (built on B0: ±1%, K=8, maker rebands):
+* Pool choice per symbol at the start: among that symbol's A10-eligible USDG
+  pools, rank by trailing fee yield, but skip any pool whose exact reverse quote
+  (sell the sleeve-size token amount back to USDG at the start block) loses
+  > 1.0% beyond its fee tier. A symbol with no qualifying pool is skipped and the
+  next symbol takes its slot.
+* Entry and exit conversions use the best exact quote among **all** of that
+  symbol's USDG pools in the panel (the LP stays in its chosen pool).
+Evaluate D1 vs B0 at $2k and $20k on the 7 A18 windows (same starts).
+Pass: D1 at $20k has mean ≥ +1.5% per 9 d and worst window ≥ −2%, and D1 at $2k
+has mean ≥ B0 at $2k minus 0.2 pp. A pass makes depth-aware routing part of the
+production policy and raises the documented capacity.

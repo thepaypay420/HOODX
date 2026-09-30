@@ -34,8 +34,9 @@ def price_q(p, s):
 
 
 class Sleeve:
-    def __init__(self, p, mode, dollars, t0, proto):
+    def __init__(self, p, mode, dollars, t0, proto, route=None):
         self.p, self.mode, self.proto = p, mode, proto
+        self.route = route or [p]          # pools of the same token usable for conversions
         self.gas, self.fee_tok, self.fee_q, self.rebands = 0.0, 0.0, 0.0, 0
         s = p.sqrt_before(t0)
         self.width = self._width(t0)
@@ -47,7 +48,9 @@ class Sleeve:
         tu, qu = M.unit_units(p, s, sa, sb)
         V0 = dollars * 1e6
         swap_in = V0 * (tu * price_q(p, s)) / (qu + tu * price_q(p, s))
-        got = quote_exact_in(p.meta, not p.q1, int(swap_in), t0 - 1)
+        quotes = [quote_exact_in(r.meta, not r.q1, int(swap_in), t0 - 1) for r in self.route]
+        quotes = [q for q in quotes if q]
+        got = max(quotes) if quotes else None
         if got is None:
             raise RuntimeError("entry quote failed")
         self.tok, self.q = float(got), V0 - swap_in
@@ -172,7 +175,10 @@ class Sleeve:
         s = self.p.sqrt_before(t)
         self._withdraw(s)
         tok = self.tok + self.fee_tok
-        out = quote_exact_in(self.p.meta, self.p.q1, int(min(tok, 2**128 - 1)), t - 1) if tok >= 1 else 0
+        amt = int(min(tok, 2**128 - 1))
+        outs = [quote_exact_in(r.meta, r.q1, amt, t - 1) for r in self.route] if tok >= 1 else [0]
+        outs = [o for o in outs if o is not None]
+        out = max(outs) if outs else None
         self.gas += 2 * GAS
         return (self.q + self.fee_q + (out or 0)) / 1e6 - self.gas
 
@@ -236,7 +242,7 @@ if __name__ == "__main__":
 
 
 
-def run_vault(pools, bounds, proto, start, end, K, mode, capital=200.0, symbols=None):
+def run_vault(pools, bounds, proto, start, end, K, mode, capital=200.0, symbols=None, routes=None):
     """Generic continuous vault run; returns net USD at exact exit plus per-sleeve detail."""
     global DAYS, DAY_BLOCKS
     days = sorted(bounds)
@@ -256,7 +262,8 @@ def run_vault(pools, bounds, proto, start, end, K, mode, capital=200.0, symbols=
     sleeves = []
     for pid in picks:
         try:
-            sleeves.append(Sleeve(pools[pid], mode, capital / len(picks), T0, proto))
+            sleeves.append(Sleeve(pools[pid], mode, capital / len(picks), T0, proto,
+                                  route=(routes or {}).get(pid)))
         except RuntimeError:
             continue
     t = T0
