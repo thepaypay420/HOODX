@@ -4,9 +4,9 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {HoodxLiquidityIndexV1} from "../../contracts/liquidity/HoodxLiquidityIndexV1.sol";
 import {HoodxLiquiditySleeveV4} from "../../contracts/liquidity/v4/HoodxLiquiditySleeveV4.sol";
 import {HoodxStockLpControllerV1} from "../../contracts/liquidity/v4/HoodxStockLpControllerV1.sol";
+import {HoodxStockLpVaultV1} from "../../contracts/liquidity/v4/HoodxStockLpVaultV1.sol";
 import {IPriceReference, IV4StateView, PoolKey} from "../../contracts/liquidity/v4/V4Types.sol";
 import {HoodxTwapV2} from "../../contracts/v2/HoodxTwapV2.sol";
 
@@ -86,7 +86,12 @@ contract StockLpV4ForkTest is Test {
 
     address curator = address(0xC0FFEE);
     address user = address(0xBEEF);
-    HoodxLiquidityIndexV1 index;
+    address treasury = address(0x7EA5);
+    address alice = address(0xA11CE);
+    uint24 constant ETH_FEE = 100;
+    int24 constant ETH_SPACING = 1;
+    uint16 constant PERF_BPS = 1_000;
+    HoodxStockLpVaultV1 index;
     HoodxStockLpControllerV1 controller;
     HoodxLiquiditySleeveV4[2] sleeves;
     PoolKey[2] keys;
@@ -110,7 +115,8 @@ contract StockLpV4ForkTest is Test {
         for (uint256 i; i < 2; ++i) {
             int24 c = _floor(_tick(i), 60);
             sleeves[i] = new HoodxLiquiditySleeveV4(
-                address(this), PM, STATE_VIEW, keys[i], PROTOCOL_FEE, c - HALF, c + HALF, "HOODX Stock LP", "hxSLP"
+                address(this), PM, STATE_VIEW, keys[i], PROTOCOL_FEE, c - HALF, c + HALF, treasury, PERF_BPS,
+                "HOODX Stock LP", "hxSLP"
             );
             sl[i] = address(sleeves[i]);
             pol[i] = HoodxStockLpControllerV1.Policy({
@@ -125,7 +131,17 @@ contract StockLpV4ForkTest is Test {
             });
             _syncRef(i);
         }
-        index = new HoodxLiquidityIndexV1(address(this), USDG, sl, "HOODX Stock LP Index", "STKX");
+        PoolKey[] memory swapKeys = new PoolKey[](2);
+        swapKeys[0] = keys[0];
+        swapKeys[1] = keys[1];
+        index = new HoodxStockLpVaultV1(
+            address(this), PM, USDG, ETH_FEE, ETH_SPACING, sl, swapKeys, 10e6, 2_000e6, 50,
+            "8 tokenized stocks, +/-1% Uniswap V4 ranges, fees compound; 10% performance fee on LP fees only",
+            "HOODX Stock LP", "STKX"
+        );
+        for (uint256 i; i < 2; ++i) {
+            sleeves[i].setVault(address(index));
+        }
         controller = new HoodxStockLpControllerV1(address(index), curator, address(this), address(this), sl, pol);
         index.transferOwnership(address(controller));
         for (uint256 i; i < 2; ++i) {
@@ -135,7 +151,7 @@ contract StockLpV4ForkTest is Test {
         for (uint256 i; i < 2; ++i) {
             _seed(i, 40e6);
         }
-        controller.bootstrap(user, 200e18);
+        controller.bootstrap(user, 160e18); // ≈ $1 per share at seed
     }
 
     // ------------------------------------------------------------------ tests
@@ -156,7 +172,7 @@ contract StockLpV4ForkTest is Test {
         vm.prank(curator);
         controller.setManagementPaused(true);
         vm.startPrank(user);
-        index.unwrap(index.balanceOf(user) / 2, user);
+        index.exitToSleeveShares(index.balanceOf(user) / 2, user);
         for (uint256 i; i < 2; ++i) {
             uint256 shares = sleeves[i].balanceOf(user);
             assertGt(shares, 0);
@@ -269,6 +285,383 @@ contract StockLpV4ForkTest is Test {
         // Direct sleeve management is closed to everyone but the controller.
         vm.expectRevert();
         sleeves[0].reband(-600, 600, 1, block.timestamp);
+    }
+
+    // ------------------------------------------------------------------ one-click ETH product
+
+    function test_ethEntry_partialExit_fullExit() public {
+        if (!live) return;
+        uint256 budget = _ethFor(100e6); // $100 of ETH
+        vm.deal(alice, budget);
+        uint256 ppsBefore = _sleevePerShare();
+        uint256 shares = _sharesFor(budget);
+        uint256 g = gasleft();
+        vm.prank(alice);
+        uint256 used = index.depositEth{value: budget}(shares, alice, block.timestamp);
+        emit log_named_uint("gas: depositEth (2 sleeves)", g - gasleft());
+        assertEq(index.balanceOf(alice), shares, "exact shares minted");
+        assertEq(alice.balance, budget - used, "unused ETH refunded");
+        assertGe(used, budget * 95 / 100, "sizing uses most of the budget");
+        _assertNoResidue();
+        assertGe(_sleevePerShare(), ppsBefore, "existing holders not diluted");
+        emit log_named_uint("entry: ETH used (wei)", used);
+
+        uint256 half = shares / 2;
+        g = gasleft();
+        vm.prank(alice);
+        uint256 out1 = index.withdrawEth(half, payable(alice), 1, block.timestamp);
+        emit log_named_uint("gas: withdrawEth (2 sleeves)", g - gasleft());
+        assertEq(index.balanceOf(alice), shares - half, "partial exit burns only half");
+        assertGt(out1, 0);
+        _assertNoResidue();
+
+        vm.prank(alice);
+        uint256 out2 = index.withdrawEth(shares - half, payable(alice), 1, block.timestamp);
+        assertEq(index.balanceOf(alice), 0, "fully exited");
+        _assertNoResidue();
+        uint256 back = out1 + out2;
+        emit log_named_uint("round trip: ETH back / ETH used (bps)", back * 10_000 / used);
+        assertLt(back, used, "no free value on an immediate round trip");
+        assertGt(back, used * 97 / 100, "round-trip cost under 3%");
+        assertGe(_sleevePerShare(), ppsBefore, "remaining holders not harmed by entry+exit");
+    }
+
+    function test_minimumEntry_10usd() public {
+        if (!live) return;
+        uint256 small = _ethFor(6e6);
+        vm.deal(alice, small);
+        uint256 shares = _sharesFor(small);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.BelowMinimum.selector);
+        index.depositEth{value: small}(shares, alice, block.timestamp);
+
+        uint256 ok = _ethFor(12e6);
+        vm.deal(alice, ok);
+        shares = _sharesFor(ok);
+        vm.prank(alice);
+        index.depositEth{value: ok}(shares, alice, block.timestamp);
+        assertEq(index.balanceOf(alice), shares, "$12 entry accepted");
+    }
+
+    function test_cap_2000usd() public {
+        if (!live) return;
+        uint256 big = _ethFor(2_000e6); // seed NAV ~$160 + $2,000 > $2k cap
+        vm.deal(alice, big);
+        uint256 shares = _sharesFor(big);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.CapExceeded.selector);
+        index.depositEth{value: big}(shares, alice, block.timestamp);
+        uint256 mid = _ethFor(1_500e6);
+        vm.deal(alice, mid);
+        shares = _sharesFor(mid);
+        vm.prank(alice);
+        index.depositEth{value: mid}(shares, alice, block.timestamp);
+        assertEq(index.balanceOf(alice), shares, "$1,500 fits under the cap");
+    }
+
+    function test_slippageBounds() public {
+        if (!live) return;
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        vm.expectRevert();
+        index.depositEth{value: budget / 2}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.Slippage.selector);
+        index.withdrawEth(shares, payable(alice), budget * 2, block.timestamp);
+    }
+
+    function test_pausedStopsEntry_butExitsWork() public {
+        if (!live) return;
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(curator);
+        controller.setManagementPaused(true);
+        vm.deal(alice, budget);
+        vm.prank(alice);
+        vm.expectRevert();
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        uint256 out = index.withdrawEth(shares / 2, payable(alice), 1, block.timestamp);
+        assertGt(out, 0, "ETH exit works while paused");
+        vm.startPrank(alice);
+        index.exitToSleeveShares(index.balanceOf(alice), alice);
+        for (uint256 i; i < 2; ++i) {
+            uint256 s = sleeves[i].balanceOf(alice);
+            assertGt(s, 0);
+            sleeves[i].redeem(s, alice, 0, 0, block.timestamp);
+        }
+        vm.stopPrank();
+        assertEq(index.balanceOf(alice), 0);
+    }
+
+    function test_performanceFee_toTreasury_onFeesOnly() public {
+        if (!live) return;
+        for (uint256 i; i < 2; ++i) {
+            uint256 b0 = IERC20(keys[i].currency0).balanceOf(treasury);
+            uint256 b1 = IERC20(keys[i].currency1).balanceOf(treasury);
+            _churn(i, 20, 300e6);
+            _syncRef(i);
+            vm.prank(curator);
+            (uint256 a0, uint256 a1) = controller.harvest(i);
+            uint256 f0 = IERC20(keys[i].currency0).balanceOf(treasury) - b0;
+            uint256 f1 = IERC20(keys[i].currency1).balanceOf(treasury) - b1;
+            assertGt(f0 + f1, 0, "treasury received the performance fee");
+            // fee = floor(10% of gross); the sleeve keeps the rest (≈ 9x the fee)
+            assertApproxEqAbs(f0 * 9, a0, 10);
+            assertApproxEqAbs(f1 * 9, a1, 10);
+        }
+    }
+
+    function test_accessControl() public {
+        if (!live) return;
+        vm.expectRevert(HoodxLiquiditySleeveV4.Unauthorized.selector);
+        sleeves[0].depositShares(1, 0, 0);
+        vm.expectRevert();
+        sleeves[0].setVault(address(this));
+        vm.expectRevert();
+        index.bootstrap(alice, 1);
+        vm.expectRevert(HoodxStockLpVaultV1.Unauthorized.selector);
+        index.unlockCallback("");
+        vm.expectRevert(HoodxLiquiditySleeveV4.Unauthorized.selector);
+        sleeves[0].unlockCallback("");
+        vm.deal(alice, 1 ether);
+        vm.prank(alice);
+        (bool ok,) = address(index).call{value: 1 ether}("");
+        assertFalse(ok, "stray ETH rejected");
+        vm.expectRevert(HoodxLiquiditySleeveV4.Unauthorized.selector);
+        sleeves[0].simulateDeposit(1);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.withdrawEth(1, payable(alice), 0, block.timestamp);
+    }
+
+    function test_strategyIsDisplayable() public {
+        if (!live) return;
+        HoodxStockLpVaultV1.HoldingView[] memory h = index.holdings();
+        assertEq(h.length, 2);
+        for (uint256 i; i < 2; ++i) {
+            assertEq(h[i].stock, stock[i]);
+            assertGt(h[i].sleeveShares, 0);
+            assertTrue(h[i].tick >= h[i].tickLower && h[i].tick < h[i].tickUpper, "in range at seed");
+        }
+        assertGt(bytes(index.strategy()).length, 0);
+    }
+
+    // ------------------------------------------------------------------ product helpers
+
+    /// @dev Frontend stand-in: probe with eth_call, then scale shares to 98% of the budget.
+    function _sharesFor(uint256 budget) internal returns (uint256) {
+        uint256 probe = index.totalSupply() / 5; // ≈ $32 at seed (above the $10 minimum)
+        uint256 snap = vm.snapshotState();
+        uint256 probeValue = _ethFor(100e6);
+        vm.deal(address(0xD00D), probeValue);
+        vm.prank(address(0xD00D));
+        uint256 used = index.depositEth{value: probeValue}(probe, address(0xD00D), block.timestamp);
+        vm.revertToState(snap);
+        return probe * budget * 98 / 100 / used;
+    }
+
+    function _ethFor(uint256 usdgAmount) internal view returns (uint256) {
+        bytes32 id = keccak256(abi.encode(PoolKey(address(0), USDG, ETH_FEE, ETH_SPACING, address(0))));
+        (uint160 sqrtP,,,) = IV4StateView(STATE_VIEW).getSlot0(id);
+        return Math.mulDiv(usdgAmount, uint256(1) << 192, uint256(sqrtP) * uint256(sqrtP));
+    }
+
+    /// @dev Min over sleeves of (vault's sleeve shares per vault share): must never fall for holders.
+    function _sleevePerShare() internal view returns (uint256 m) {
+        m = type(uint256).max;
+        for (uint256 i; i < 2; ++i) {
+            uint256 r = Math.mulDiv(sleeves[i].balanceOf(address(index)), 1e36, index.totalSupply());
+            if (r < m) m = r;
+        }
+    }
+
+    function _assertNoResidue() internal view {
+        assertEq(IERC20(USDG).balanceOf(address(index)), 0, "vault holds no USDG");
+        assertEq(IERC20(META).balanceOf(address(index)), 0, "vault holds no META");
+        assertEq(IERC20(SPY).balanceOf(address(index)), 0, "vault holds no SPY");
+        assertEq(address(index).balance, 0, "vault holds no ETH");
+    }
+
+    // ------------------------------------------------------------------ adversarial (exploit-pattern) tests
+
+    /// @dev Bunni (2025) pattern: extreme manipulated price + many small exits must not leak value.
+    function test_bunniPattern_manyTinyExitsAtManipulatedPrice() public {
+        if (!live) return;
+        uint256 budget = _ethFor(200e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        index.exitToSleeveShares(shares, alice);
+        // Push sleeve 0's pool far out of range (attacker's flash-loan leg).
+        bool buyStock = keys[0].currency0 == USDG;
+        for (uint256 k; k < 60 && !_beyond(0, 600); ++k) {
+            _swap(0, buyStock, 100_000e6);
+        }
+        assertTrue(_beyond(0, 600), "manipulated far out of range");
+        (uint256 l0, uint256 i00, uint256 i01) = _backingPerShare(0);
+        uint256 s = sleeves[0].balanceOf(alice);
+        uint256 piece = s / 41;
+        vm.startPrank(alice);
+        for (uint256 k; k < 40; ++k) {
+            sleeves[0].redeem(piece, alice, 0, 0, block.timestamp);
+            (uint256 l1, uint256 i10, uint256 i11) = _backingPerShare(0);
+            assertGe(l1, l0, "liquidity per share never falls");
+            assertGe(i10, i00, "idle0 per share never falls");
+            assertGe(i11, i01, "idle1 per share never falls");
+            (l0, i00, i01) = (l1, i10, i11);
+        }
+        vm.stopPrank();
+    }
+
+    /// @dev Repeated small entries/exits: remaining holders' backing per share never decreases.
+    function test_repeatedSmallRoundTrips_noLeak() public {
+        if (!live) return;
+        uint256 pps = _sleevePerShare();
+        for (uint256 k; k < 6; ++k) {
+            uint256 budget = _ethFor(15e6);
+            vm.deal(alice, budget);
+            uint256 shares = _sharesFor(budget);
+            vm.prank(alice);
+            index.depositEth{value: budget}(shares, alice, block.timestamp);
+            assertGe(_sleevePerShare(), pps, "entry never dilutes");
+            pps = _sleevePerShare();
+            uint256 held = index.balanceOf(alice);
+            vm.prank(alice);
+            index.withdrawEth(held, payable(alice), 1, block.timestamp);
+            assertGe(_sleevePerShare(), pps, "exit never takes more than pro-rata");
+            pps = _sleevePerShare();
+        }
+        _assertNoResidue();
+    }
+
+    /// @dev Gamma (2024) pattern: a manipulated pool must not accept deposits.
+    function test_manipulatedPoolBlocksEntry_exitsStillWork() public {
+        if (!live) return;
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        bool buyStock = keys[0].currency0 == USDG;
+        for (uint256 k; k < 60 && controller.divergenceBps(0) <= 200; ++k) {
+            _swap(0, buyStock, 50_000e6);
+        }
+        assertGt(controller.divergenceBps(0), 150, "pool pushed beyond the reference band");
+        vm.deal(alice, budget);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.Divergence.selector);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        uint256 out = index.withdrawEth(shares, payable(alice), 1, block.timestamp);
+        assertGt(out, 0, "ETH exit never depends on the reference");
+    }
+
+    function test_brokenReferenceFailsClosedForEntryOnly() public {
+        if (!live) return;
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        ref.set(META, 0); // reference unavailable
+        vm.deal(alice, budget);
+        vm.prank(alice);
+        vm.expectRevert(HoodxStockLpControllerV1.Divergence.selector);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        index.withdrawEth(shares, payable(alice), 1, block.timestamp);
+        assertEq(index.balanceOf(alice), 0);
+    }
+
+    function test_liveVaultGuardsCarriedOver() public {
+        if (!live) return;
+        assertEq(index.balanceOf(address(0xdead)), index.DEAD_SHARES(), "dead shares locked at bootstrap");
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.startPrank(alice);
+        vm.expectRevert(HoodxStockLpVaultV1.Stale.selector);
+        index.depositEth{value: budget}(shares, alice, block.timestamp + 1 hours);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.depositEth{value: budget}(1e11, alice, block.timestamp); // below MIN_SHARES
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.depositEth{value: budget}(shares, address(index), block.timestamp); // bad recipient
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.withdrawEth(shares, payable(alice), 0, block.timestamp); // zero exit floor
+        vm.expectRevert(HoodxStockLpVaultV1.Stale.selector);
+        index.withdrawEth(shares, payable(alice), 1, block.timestamp + 1 hours);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.transfer(address(index), 1);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.transfer(address(0xdead), 1);
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.exitToSleeveShares(shares, address(0));
+        vm.stopPrank();
+        vm.prank(address(controller));
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.renounceOwnership();
+        vm.prank(address(controller));
+        vm.expectRevert(HoodxLiquiditySleeveV4.Invalid.selector);
+        sleeves[0].renounceOwnership();
+        vm.prank(address(controller));
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        index.bootstrap(alice, 1e18); // one-time only
+    }
+
+    /// @dev Donations to the vault or a sleeve cannot block entry/exit; sleeve donations accrue to holders.
+    function test_donationsCannotGrief() public {
+        if (!live) return;
+        vm.startPrank(PM);
+        IERC20(USDG).transfer(address(index), 5e6);
+        IERC20(META).transfer(address(index), 1e15);
+        IERC20(USDG).transfer(address(sleeves[0]), 5e6);
+        vm.stopPrank();
+        vm.deal(address(this), 1 ether);
+        (bool ok,) = address(index).call{value: 1 ether}("");
+        assertFalse(ok);
+        uint256 budget = _ethFor(100e6);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        uint256 out = index.withdrawEth(shares, payable(alice), 1, block.timestamp);
+        assertGt(out, 0);
+        assertEq(IERC20(USDG).balanceOf(address(index)), 5e6, "stray tokens untouched, not paid to users");
+    }
+
+    function test_constructorRejectsDynamicFeeAndHookedRoutes() public {
+        if (!live) return;
+        address[] memory sl = new address[](1);
+        sl[0] = address(sleeves[0]);
+        PoolKey[] memory k = new PoolKey[](1);
+        k[0] = PoolKey(USDG, META, 0x800000, 60, address(0));
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        new HoodxStockLpVaultV1(address(this), PM, USDG, ETH_FEE, ETH_SPACING, sl, k, 10e6, 2_000e6, 50, "", "x", "x");
+        k[0] = PoolKey(USDG, META, 3000, 60, address(0x1234));
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        new HoodxStockLpVaultV1(address(this), PM, USDG, ETH_FEE, ETH_SPACING, sl, k, 10e6, 2_000e6, 50, "", "x", "x");
+        k[0] = PoolKey(USDG, SPY, 3000, 60, address(0)); // wrong stock for this sleeve
+        vm.expectRevert(HoodxStockLpVaultV1.Invalid.selector);
+        new HoodxStockLpVaultV1(address(this), PM, USDG, ETH_FEE, ETH_SPACING, sl, k, 10e6, 2_000e6, 50, "", "x", "x");
+    }
+
+    function _backingPerShare(uint256 i) internal view returns (uint256 l, uint256 i0, uint256 i1) {
+        uint256 supply = sleeves[i].totalSupply();
+        l = Math.mulDiv(sleeves[i].positionLiquidity(), 1e36, supply);
+        i0 = Math.mulDiv(IERC20(keys[i].currency0).balanceOf(address(sleeves[i])), 1e36, supply);
+        i1 = Math.mulDiv(IERC20(keys[i].currency1).balanceOf(address(sleeves[i])), 1e36, supply);
     }
 
     // ------------------------------------------------------------------ helpers
