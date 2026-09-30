@@ -810,3 +810,52 @@ backtests would be overfitting; the forward test (A14/A17/A19) decides.**
 Untested but recommended risk control for October (earnings season): exclude
 symbols with scheduled earnings within the holding horizon (no September data
 to test it).
+
+## Profit loop v2 (re-opened 2026-09-30 at the user's request: "higher profit")
+
+Scope rule: September return-tuning is closed. Only (a) structural questions whose
+answer is driven by pool depth/dilution rather than by which month it was, (b)
+deterministic cost engineering measured on a fork, or (c) pre-registered variants
+judged on forward data (from 2026-10-01) may be tested.
+
+### A24 — breadth for capacity (V-H), registered before running
+
+Mechanism: dollar profit = yield x TVL. Above ~$2k, yield falls because our liquidity
+dilutes each pool's fee stream (A20/A21). Splitting the same capital across more pools
+cuts per-pool dilution; the cost is adding lower-ranked pools. The question is how the
+yield-vs-size curve shifts with K, a depth property.
+Engine: B0 (±1%, maker rebands, daily no-swap compounding), depth_picks (A21 filter
+at capital/K per sleeve) and best-pool routing for all conversions.
+Variants: K8 (production), K12, K16. Capital: $2k, $10k, $20k. Same 7 windows.
+Frozen rule: for each capital, K>8 replaces K8 only if its mean over the
+confirmation set (conf + down) is ≥ K8 + 0.25 pp and its worst window ≥ K8 worst
+− 0.25 pp. Adoption is size-dependent (a K schedule by TVL). The vault cap may be
+raised to the largest capital where the adopted K keeps mean ≥ +1.5% per 9 d and
+worst ≥ −1.0%. Selection windows are reported but not used to choose.
+
+### A25 — earnings exclusion (V-C), forward-only, registered before any October data
+
+Mechanism: a scheduled earnings release gaps the underlying outside our ±1% range in
+minutes; the pool is repriced by arbitrage against us (pure LVR, no fee offset), then
+the maker reband waits 24 h. Avoiding known gap events should cut tail losses at a
+small fee cost.
+Book E1: identical to the frozen SLP10-K8 forward book (B0 engine, $200, same ranking
+rule) except that at each 9-day decision any symbol with an earnings release dated
+inside [decision, decision + 9 d] is skipped and replaced by the next-ranked symbol.
+Calendar: research/huntx_forward/earnings_calendar.json, dates re-verified from the
+company's own announcement at most 7 days before each decision; an unconfirmed date
+counts as inside the window (conservative). Evaluation: forward only, the decisions
+whose windows contain at least 3 picked-symbol earnings events (expected ~10-20 Oct).
+Frozen rule: E1 replaces B0 if, over the evaluated windows, E1 net ≥ B0 net and E1
+worst single-sleeve loss is smaller. Reported regardless of outcome.
+
+**A24 verdict (frozen rule applied; 3,939 RPC):** confirmation mean / worst, % per 9 d.
+$2k: K8 +2.70 / +0.14; K12 +2.39 / +0.41; K16 +2.57 / +0.05 -> **K8 stays**.
+$10k: K8 +2.02 / -0.13; K12 +1.89 / -0.07; K16 +2.07 / -0.35 -> **K8 stays** (K16 +0.05 < +0.25).
+$20k: K8 +1.38 / -0.46; K12 +1.50 / -0.32; **K16 +1.77 / -0.52 -> adopted** (+0.39 pp, worst within 0.25 pp).
+Capacity: K8 meets the cap criterion (mean ≥ +1.5, worst ≥ -1.0) through $10k; K8 fails at
+$20k (+1.38); K16 meets it at $20k. Rule outcome: cap may rise to $10k with the current
+8-sleeve contract; $20k requires K16 (contract MAX_HOLDINGS change, ~2x entry gas).
+Selection-window means favoured K12/K16 strongly (+4.4 to +4.9 vs +3.0 to +3.4) and did
+not hold on confirmation: breadth is not a free lunch below $20k. Backtest only; per charter
+rule 5 the cap change needs forward confirmation before production.

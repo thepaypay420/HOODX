@@ -185,3 +185,27 @@ maker rebands after a 24 h breach, daily no-swap compounding. Forward-tested fro
   data.** Production candidate = static ±1% K8 + maker rebands + best-pool routing. Next evidence comes
   from the forward test (A17/A19 books, daily). Re-open with new data (≥ 10 forward days) or a new
   mechanism: earnings-calendar exclusion (needs external data), majors at low volatility (low prior).
+
+## PROFIT LOOP v2 CHARTER (2026-09-30, user: "higher profit, breakthrough discoveries")
+
+Target: raise dollar profit = (net yield per $) x (TVL the edge supports) + protocol fee,
+without buying it with overfitting. September return-tuning is CLOSED (see conclusion above).
+Admissible evidence, in priority order:
+1. Forward data (daily shadow books, from 2026-10-01). Outranks everything after 10 days.
+2. Deterministic fork measurements (costs, gas, routing, capacity at current depth).
+3. Structural backtests where the answer is driven by depth/dilution, not by the month.
+Every test is pre-registered (≤ 4 variants, frozen rule, hash-chained) and logged win or lose.
+
+Queue (ranked by expected $ uplift / cost):
+| ID | Lever | Mechanism | Evidence type | Status |
+|---|---|---|---|---|
+| A24 | Breadth for capacity | More pools = less dilution per pool -> higher cap | structural backtest | DONE: K8 to $10k (conf +2.02%/9d, worst -0.13); K16 only at $20k (+1.77 vs +1.38). Cap $2k->$10k supported by rule; forward-confirm first |
+| R1 | Cheapest entry/exit route per stock | 0.35% round trip is ~12% of a 9-day return; cheaper pools exist | fork quotes (deterministic) | RUNNING |
+| A25 | Earnings exclusion | Known gap events are pure LVR | forward (Oct 21-29 cluster) | REGISTERED |
+| V-N | Own-venue pools (dynamic-fee hook by session) | Be the venue: set the fee, keep 100% of LP fees | measure aggregator routing to new pools first; hooks = Cork-class risk | QUEUED (research only) |
+| V-J | Own-flow recapture | Route vault swaps through our own sleeve pools | fork | QUEUED (small) |
+| V-G | Majors at low vol | ETH/USDG volume | backtest | LOW PRIOR |
+
+Per-iteration protocol: read this charter + forward summary -> finish/verdict any running test
+(apply the frozen rule exactly) -> else run the top READY item -> commit locally -> report
+(what ran, verdict, numbers, next). RPC ≤ 10k/iteration, read-only, never sign/broadcast/push.
