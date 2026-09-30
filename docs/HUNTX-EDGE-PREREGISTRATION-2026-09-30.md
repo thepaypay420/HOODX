@@ -778,3 +778,35 @@ Mechanism failure: session re-minting without a swap strands capital each time
 price drifts, which costs more than the benign/toxic toxicity gap earns.
 Pattern across A11/A18/A22: a stable ±1% book beats session and management
 cleverness.
+
+## Amendment A23 — 2026-09-30, weekly rotation (frozen before running)
+
+Mechanism: per-pool fee yield decays (the population fee return roughly halved from the
+first half of September to the second); a static book keeps its day-1 picks.
+**R1:** B0 engine ($200, ±1%, maker rebands, daily compounding, best-pool routing
+for all conversions). Every 7 days at 00:00 UTC, re-rank symbols by trailing-3-day
+fee yield. Close any held sleeve whose symbol is outside the top 12 (hysteresis),
+and open the highest-ranked unheld symbols to refill 8 sleeves with the freed cash
+(equal split). All conversions use exact best-pool quotes.
+Baseline: B0 static with best-pool routing, same windows. Windows (14 days, one
+rotation at day 7): 09-04→18, 09-07→21, 09-10→24, 09-13→27.
+Pass: R1 mean ≥ B0 mean + $0.50 and R1 worst ≥ B0 worst. Otherwise rotation is
+rejected and the static book stays.
+
+**A23 verdict: REJECTED.** 14-day windows: B0 static mean +$8.083 (worst +$1.171);
+R1 rotation +$8.098 (worst +$0.970). Gain +$0.015 < $0.50 and worse worst.
+Extra conversions offset the fee-chasing.
+
+**Vault loop conclusion (2026-09-30, backtest queue exhausted on September data):**
+The production policy candidate is the **static ±1% book of 8 stock/USDG V4 pools,
+one-sided maker rebands after a 24 h breach, daily no-swap compounding, and
+best-pool routing for conversions** (B0; B2 bid-skew is its pre-registered twin by
+the A18 rule). Evidence: A16 confirmation +$6.3–9.1 per 9 d on $200; 14-day windows
++$8.08 mean; about +3% per 9 d at $2k; +1.9% per 9 d at $20k with routing; fees
+fork-validated at ±1%; production price reference = existing HoodxTwapV2 (6–20bp
+vs V4). Rejected management variants: SGOV mix (A18), session width (A22),
+rotation (A23); depth filter is size-dependent (A21). **Further September
+backtests would be overfitting; the forward test (A14/A17/A19) decides.**
+Untested but recommended risk control for October (earnings season): exclude
+symbols with scheduled earnings within the holding horizon (no September data
+to test it).

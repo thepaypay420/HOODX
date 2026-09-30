@@ -170,7 +170,7 @@ maker rebands after a 24 h breach, daily no-swap compounding. Forward-tested fro
 | V-B | Beta control (A18) | Hold less stock inventory | DONE: B2 bid-skew replaces B0 by rule (thin margin); SGOV mixes rejected; beta ≈ 0 over 9-day windows. Both B0 and B2 in the forward test (A19) |
 | V-C | Earnings / event avoidance | Single-name gaps (NFLX-type) drive tail losses | Needs an earnings calendar (external data) |
 | V-D | Session-aware width (A22) | Toxicity is 4× lower after-hours | REJECTED: re-minting strands capital (conf +$1.29 / +$2.33 vs B2 +$5.63) |
-| V-E | Rotation: weekly re-selection of the 8 names by fee yield | Fee yield decays; follow flow | Queued (costs conversions) |
+| V-E | Weekly rotation (A23) | Fee yield decays | REJECTED: +$0.015 mean, worse worst |
 | V-F | Capacity (A20) + depth routing (A21) | Dilution and forced thin-pool conversion | DONE: +3.1–3.3% per 9 d at $200–$2k; $20k broken by a thin pool (−13.6%) and fixed by routing (+1.92% mean, worst −0.46%). A21 formally FAIL on the $2k criterion (−0.08 pp). Best-pool routing adopted (dominant by construction); depth filter size-dependent |
 | V-G | Majors (ETH/USDG) at ±0.5% in low-volatility hours | Huge volume, tiny fee; vs hold ≈ 0 so far | Low prior |
 
@@ -181,3 +181,7 @@ maker rebands after a 24 h breach, daily no-swap compounding. Forward-tested fro
   (+1.92% per 9 d). A21 FAIL by rule (narrow). **Next: V-D session-aware width (A22).**
 * **Vault iteration A22 (session width):** rejected (W1 conf +1.29, W2 +2.33; worst −3.6 / −4.5).
   **Next: V-E weekly rotation (A23).**
+* **Vault iteration A23 (rotation):** rejected. **LOOP STOPPED: backtest queue exhausted on September
+  data.** Production candidate = static ±1% K8 + maker rebands + best-pool routing. Next evidence comes
+  from the forward test (A17/A19 books, daily). Re-open with new data (≥ 10 forward days) or a new
+  mechanism: earnings-calendar exclusion (needs external data), majors at low volatility (low prior).
