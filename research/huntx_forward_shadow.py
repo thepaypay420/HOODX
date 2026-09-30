@@ -32,10 +32,11 @@ import huntx_edge_slice_study as S
 import huntx_harvester_clone as C
 from feex_next_day_check import rpc
 from huntx_edge_chain import MANAGER, STATE_VIEW, SWAP_TOPIC, block_at
-from huntx_edge_engine import load_cache, save_cache
+from huntx_edge_engine import load_cache, quote_exact_in, save_cache
 from huntx_edge_log_stage import parse
 import huntx_stock_mgmt as M
 import huntx_stock_vault as V
+import huntx_slp_continuous as SC
 
 ROOT = Path(__file__).parent
 FWD = ROOT / "huntx_forward"
@@ -389,6 +390,48 @@ def portfolios(decisions, pools, state, days, bounds, eth, proto):
     return out
 
 
+def slp10k8_book(pools, state, days, bounds, proto):
+    """A17: frozen 8-symbol continuous book from 2026-10-01; daily exact-exit valuation."""
+    start = "2026-10-01"
+    if start not in bounds or days[-1] <= start:
+        return None
+    stock_pools = {pid: p for pid, p in pools.items() if p.quote == S.USDG and p.token in V.STOCKS}
+    pf = FWD / "slp10k8_picks.json"
+    if not pf.exists():
+        best = {}
+        for pid in V.eligible(stock_pools, bounds, start):
+            y = M.trailing_yield25(stock_pools[pid], bounds, start, proto)
+            sym = V.STOCKS[stock_pools[pid].token]
+            if y is not None and (sym not in best or y > best[sym][0]):
+                best[sym] = (y, pid)
+        picks = [{"symbol": s_, "pool_id": pid, "score": y}
+                 for s_, (y, pid) in sorted(best.items(), key=lambda kv: -kv[1][0])[:8]]
+        payload = {"start": start, "decision_block": bounds[start], "picks": picks,
+                   "rule": "A17 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"}
+        prev = chain_head()
+        h = hashlib.sha256((prev + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
+        pf.write_text(json.dumps({"prev_hash": prev, "hash": h, "payload": payload}, indent=1))
+        with CHAIN.open("a") as fh:
+            fh.write(f"slp10k8-picks {h}\n")
+    picks = json.loads(pf.read_text())["payload"]["picks"]
+    ids = [x["pool_id"] for x in picks if x["pool_id"] in stock_pools]
+    hist_f = FWD / "slp10k8_nav.json"
+    hist = json.loads(hist_f.read_text()) if hist_f.exists() else {}
+    end = days[-1]
+    if end not in hist:
+        r = SC.run_vault(stock_pools, bounds, proto, start, end, 8, "fixed:0.01", symbols=ids)
+        hold = 0.0
+        for pid in ids:
+            p = stock_pools[pid]
+            got = quote_exact_in(p.meta, not p.q1, int(200 / len(ids) * 1e6), bounds[start] - 1)
+            out = quote_exact_in(p.meta, p.q1, int(got or 0), bounds[end] - 1) if got else 0
+            hold += (out or 0) / 1e6
+        hist[end] = {"book_exit_value": round(200 + r["net_usd"], 4), "hold_stocks_value": round(hold, 4),
+                     "hold_usdg": 200.0, "per_sleeve": r["per_sleeve"], "rebands": r["rebands"]}
+        hist_f.write_text(json.dumps(hist, indent=1))
+    return hist
+
+
 def summarize(done, ports):
     summ = {"updated_utc": datetime.now(timezone.utc).isoformat()}
     for hyp in ("H3", "H8", "SLP25"):
@@ -452,6 +495,10 @@ def main():
     ports = portfolios(decisions, pools, state, days, bounds, eth, proto)
     save_cache()
     summ = summarize(done, ports)
+    book = slp10k8_book(pools, state, days, bounds, proto)
+    if book:
+        summ["SLP10K8_book"] = book[max(book)]
+        SUMMARY.write_text(json.dumps(summ, indent=1))
     print(json.dumps({"today": days[-1], "SLP25_today": len(decisions.get(days[-1], {}).get("SLP25", [])),
                       "H3_today": len(decisions.get(days[-1], {}).get("H3", [])),
                       "H8_today": len(decisions.get(days[-1], {}).get("H8", [])), "summary": summ}, indent=1))

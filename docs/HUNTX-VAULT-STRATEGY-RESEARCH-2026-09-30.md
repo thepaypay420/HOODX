@@ -123,3 +123,33 @@ Partly in-sample (width and reband style were chosen on 09-08..15).
 **Still required before any launch decision:** a production price reference
 (compose HOODX CL TWAPs over each stock's V3 pools with WETH/USDG), launcher and
 bootstrap script, an independent security review, and the A14 forward-test verdict.
+
+## Update — profit optimization (A16) and the stock-beta caveat
+
+**Optimized configuration: ±1% ranges, 8 stocks** (A16 grid of 8 configs × 6
+rolling 9-day starts, $200, exact entry and exit; all 48 runs positive):
+
+| | Selection starts 09-04/07/10 | Confirmation starts 09-13/16/19 |
+|---|---|---|
+| **±1%, K=8** | +$7.42 / +$8.54 / +$2.57 | **+$9.14 / +$7.87 / +$6.27** |
+| ±2.5%, K=5 (previous) | +$0.40 / +$1.76 / +$2.17 | +$7.92 / +$3.82 / +$5.94 |
+
+±1% fees are fork-validated (median model ÷ actual 1.000). Narrow ranges work
+because on-chain stock prices move little intraday and retail flow largely mean-reverts.
+
+**SGOV cash sleeve:** SGOV/USDG ±0.5% earned +$2.24 on $200 over 24 days vs +$0.18
+for holding SGOV and $0 for idle USDG. It is a low-risk home for idle capital.
+
+**Stock-beta caveat (untouched 09-25 → 09-29, stocks fell):** the ±1% K8 book was
+−$3.98 while holding the same stocks was −$9.43. LP alpha +$5.45 held, but about
+half the NAV is stock exposure, so dollar returns follow the market in sharp down
+weeks (cushioned, not avoided). Beta control (SGOV sleeve mix, bid-skewed
+ranges) is the next research lever.
+
+**Production price reference found:** the protocol's existing `HoodxTwapV2`
+over each stock's V3 USDG pool agrees with the V4 pools within 6–20bp on the
+fork (`test_productionTwapReferenceAgreesWithV4Pools`). No new oracle contract
+is needed.
+
+**Forward test:** the SLP10-K8 book is frozen at 2026-10-01 (A17) and valued daily
+at exact exit quotes against holding USDG and holding the same stocks.

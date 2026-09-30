@@ -656,3 +656,23 @@ confirmation-set starts must be > 0, and it must beat the A15 reference
 configuration (±2.5%, K=5) on at least 2 of 3 confirmation starts.
 Separately (descriptive): an **SGOV/USDG cash sleeve** at ±0.5% and ±1.0%,
 continuous 09-04 → 09-28, vs holding USDG and vs holding SGOV.
+
+**A16 verdict: PASS.** Selected `±1% | K=8` (selection mean +$6.17 per 9 d on $200;
+worst +$2.57). Confirmation starts 09-13/16/19: +$9.14 / +$7.87 / +$6.27 (mean
++$7.76), beating the ±2.5%/K5 reference on 3/3. All 48 grid runs were positive.
+±1% fees fork-validated (12 cases, 1,381 swaps, model ÷ actual median 1.000,
+0.94–1.11). Windows overlap, so the starts are not independent.
+SGOV/USDG cash sleeve 09-04 → 09-28: ±0.5% +$2.24, ±1% +$1.21, hold SGOV +$0.18.
+
+## Amendment A17 — 2026-09-30, forward test of the optimized book (frozen before 2026-10-01)
+
+**SLP10-K8 continuous book** (added to the daily A6 forward job): at the first
+forward decision (2026-10-01 00:00 UTC), pick the top 8 stock symbols by
+trailing-3-day fee yield of a ±2.5% position among A10-eligible USDG pools (one
+pool per symbol, equal weight), $200. The picks are frozen with a hash. Run the
+A15/A16 continuous engine: ±1% (snapped outward), one-sided maker reband after a
+24 h breach with a 24 h cooldown, daily no-swap compounding, exact entry quotes,
+measured gas, fees ÷ 1.03. Each day, record the book's exact-exit value (V4Quoter
+at that day's boundary) versus holding USDG and holding the same 8 stocks.
+Verdict after 30 days: exit value > $200 and > the stock-hold value, with no
+single sleeve below −10% of its capital.
