@@ -1,0 +1,1655 @@
+{
+ "block": 76917183,
+ "symbols": {
+  "AAPL": {
+   "live_pools": 4,
+   "pools": [
+    {
+     "pool": "0xda4116b5894ee7479e64eae9276e1a2944ef0e5ce863a299d296a15618deee01",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 291.6,
+     "rt_bps_250": 908.5,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 70.3,
+     "rt_bps_1000": 71.5
+    },
+    {
+     "pool": "0xaac266490da762145ec010f7b479fc33fbcb478e6f5c78e9c63e1c481acf64b6",
+     "fee": 15100,
+     "spacing": 151,
+     "rt_bps_25": 596.5,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xe5b9112909fde74416b44bb2169bb89870a1363e9897151a90126aa8e140d54f",
+     "fee": 250,
+     "spacing": 3,
+     "rt_bps_25": 954.1,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+     "fee": 3000,
+     "rt_bps": 69.9
+    },
+    "250": {
+     "pool": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+     "fee": 3000,
+     "rt_bps": 70.3
+    },
+    "1000": {
+     "pool": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+     "fee": 3000,
+     "rt_bps": 71.5
+    }
+   }
+  },
+  "AMD": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.7,
+     "rt_bps_250": 219.5,
+     "rt_bps_1000": 222.3
+    },
+    {
+     "pool": "0x0147d1038acac38d1a1c0082f5529d2ca5f6610a952a0ae632b6465306fa3c7d",
+     "fee": 375,
+     "spacing": 4,
+     "rt_bps_25": 9997.4,
+     "rt_bps_250": 9999.7,
+     "rt_bps_1000": 9999.9
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "fee": 10000,
+     "rt_bps": 218.7
+    },
+    "250": {
+     "pool": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "fee": 10000,
+     "rt_bps": 219.5
+    },
+    "1000": {
+     "pool": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "fee": 10000,
+     "rt_bps": 222.3
+    }
+   }
+  },
+  "AMZN": {
+   "live_pools": 4,
+   "pools": [
+    {
+     "pool": "0xd32646872e6712af8cf778e34b6bbef1d2ae0bddd83764e1b07333518ad59333",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 76.0,
+     "rt_bps_250": 130.9,
+     "rt_bps_1000": 304.9
+    },
+    {
+     "pool": "0x751e89b1e830a959e282377cf53bacc046ff7d6b67c6209504c3db692992c3cd",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+     "fee": 2400,
+     "spacing": 24,
+     "rt_bps_25": 56.2,
+     "rt_bps_250": 61.7,
+     "rt_bps_1000": 79.8
+    },
+    {
+     "pool": "0xcdb9b84202eb9ff8338b02327a10e40525f1e2a050d4d59933b6806662697fbf",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+     "fee": 2400,
+     "rt_bps": 56.2
+    },
+    "250": {
+     "pool": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+     "fee": 2400,
+     "rt_bps": 61.7
+    },
+    "1000": {
+     "pool": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+     "fee": 2400,
+     "rt_bps": 79.8
+    }
+   }
+  },
+  "ASML": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0x95dfd3468383956e449265b3e3d1dac182d0faad0eec5d409f943acaaec3104f",
+     "fee": 7000,
+     "spacing": 70,
+     "rt_bps_25": 254.4,
+     "rt_bps_250": 1016.7,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x5b8d43207e7a3026bddbfd202800f80d75e058e70051df0846c5d8b3979b73c9",
+     "fee": 4000,
+     "spacing": 40,
+     "rt_bps_25": 202.8,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x95dfd3468383956e449265b3e3d1dac182d0faad0eec5d409f943acaaec3104f",
+     "fee": 7000,
+     "rt_bps": 254.4
+    },
+    "250": {
+     "pool": "0x95dfd3468383956e449265b3e3d1dac182d0faad0eec5d409f943acaaec3104f",
+     "fee": 7000,
+     "rt_bps": 1016.7
+    },
+    "1000": null
+   }
+  },
+  "BABA": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0x126a5d1d403fd2ebc0615e2479eeac1de8ee640995f203e1c272b5e4fb55a7de",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 204.2,
+     "rt_bps_250": 252.7,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+     "fee": 1000,
+     "spacing": 10,
+     "rt_bps_25": 24.2,
+     "rt_bps_250": 27.6,
+     "rt_bps_1000": 38.9
+    },
+    {
+     "pool": "0xe631b433cd0ae30df841e6604fc86734a192d8f4043f51ab8a02cb2e644c88e5",
+     "fee": 3000,
+     "spacing": 30,
+     "rt_bps_25": 319.4,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+     "fee": 1000,
+     "rt_bps": 24.2
+    },
+    "250": {
+     "pool": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+     "fee": 1000,
+     "rt_bps": 27.6
+    },
+    "1000": {
+     "pool": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+     "fee": 1000,
+     "rt_bps": 38.9
+    }
+   }
+  },
+  "CLSK": {
+   "live_pools": 0,
+   "pools": [],
+   "best": {
+    "25": null,
+    "250": null,
+    "1000": null
+   }
+  },
+  "COIN": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.7,
+     "rt_bps_250": 219.7,
+     "rt_bps_1000": 223.0
+    },
+    {
+     "pool": "0x359ce3816696afc8f3c6990fd90888c6d8aee3bcd7530b5956910c77655feaee",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 251.7,
+     "rt_bps_250": 703.4,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xe2e1a0e32205e854525e0fb1d3667a53bd3b4919f032b9bcd2a038b6b6dac314",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 58.9,
+     "rt_bps_250": 67.4,
+     "rt_bps_1000": 95.9
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xe2e1a0e32205e854525e0fb1d3667a53bd3b4919f032b9bcd2a038b6b6dac314",
+     "fee": 2500,
+     "rt_bps": 58.9
+    },
+    "250": {
+     "pool": "0xe2e1a0e32205e854525e0fb1d3667a53bd3b4919f032b9bcd2a038b6b6dac314",
+     "fee": 2500,
+     "rt_bps": 67.4
+    },
+    "1000": {
+     "pool": "0xe2e1a0e32205e854525e0fb1d3667a53bd3b4919f032b9bcd2a038b6b6dac314",
+     "fee": 2500,
+     "rt_bps": 95.9
+    }
+   }
+  },
+  "CRCL": {
+   "live_pools": 7,
+   "pools": [
+    {
+     "pool": "0x628c98ab436ee34a6a7decd606242890582591bdf7c9a35d90e0d08021c31ea0",
+     "fee": 3000,
+     "spacing": 30,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 69.9,
+     "rt_bps_1000": 70.2
+    },
+    {
+     "pool": "0xb7498fd56b44046efb8370185e6a03f74d672bd1174cf815752bcb8c2820526b",
+     "fee": 20000,
+     "spacing": 200,
+     "rt_bps_25": 6974.9,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x447ede3c1eb7a15486e65e82898f8e52fa0db64175a50dd5de75e766d55f7c00",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 209.8,
+     "rt_bps_250": 328.5,
+     "rt_bps_1000": 962.3
+    },
+    {
+     "pool": "0x0112f42d2da7164a1e224ef55be60c10ef9607cabdadbc003123daa500750358",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 65.6,
+     "rt_bps_250": 134.2,
+     "rt_bps_1000": 356.4
+    },
+    {
+     "pool": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "fee": 2450,
+     "spacing": 25,
+     "rt_bps_25": 59.9,
+     "rt_bps_250": 88.4,
+     "rt_bps_1000": 181.9
+    },
+    {
+     "pool": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+     "fee": 1500,
+     "spacing": 15,
+     "rt_bps_25": 37.2,
+     "rt_bps_250": 54.6,
+     "rt_bps_1000": 107.8
+    },
+    {
+     "pool": "0xa0f328d46efbb392e91ea4c4b9c92f5c70c2c3800982cf8c540b1d8469878499",
+     "fee": 2300,
+     "spacing": 50,
+     "rt_bps_25": 427.2,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+     "fee": 1500,
+     "rt_bps": 37.2
+    },
+    "250": {
+     "pool": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+     "fee": 1500,
+     "rt_bps": 54.6
+    },
+    "1000": {
+     "pool": "0x628c98ab436ee34a6a7decd606242890582591bdf7c9a35d90e0d08021c31ea0",
+     "fee": 3000,
+     "rt_bps": 70.2
+    }
+   }
+  },
+  "CRWV": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0x237014478f7ef98afbe7412ac35b6a3f96b8fb111de48b7c4dbf49dba4bd9c4b",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 199.5,
+     "rt_bps_250": 206.1,
+     "rt_bps_1000": 227.8
+    },
+    {
+     "pool": "0x214cb0d273321ae3d5fb85a869e3853ed1a8ece7c3eda9dee0c77d7f0d8a4ae8",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 73.4,
+     "rt_bps_250": 210.5,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x214cb0d273321ae3d5fb85a869e3853ed1a8ece7c3eda9dee0c77d7f0d8a4ae8",
+     "fee": 2500,
+     "rt_bps": 73.4
+    },
+    "250": {
+     "pool": "0x237014478f7ef98afbe7412ac35b6a3f96b8fb111de48b7c4dbf49dba4bd9c4b",
+     "fee": 9000,
+     "rt_bps": 206.1
+    },
+    "1000": {
+     "pool": "0x237014478f7ef98afbe7412ac35b6a3f96b8fb111de48b7c4dbf49dba4bd9c4b",
+     "fee": 9000,
+     "rt_bps": 227.8
+    }
+   }
+  },
+  "DELL": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xa92d3c7b017afbee7e144e904d7a73dd73630d883c6ee15d6ab734705c7cd6f9",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 323.0,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "fee": 5000,
+     "spacing": 25,
+     "rt_bps_25": 117.8,
+     "rt_bps_250": 120.1,
+     "rt_bps_1000": 127.5
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "fee": 5000,
+     "rt_bps": 117.8
+    },
+    "250": {
+     "pool": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "fee": 5000,
+     "rt_bps": 120.1
+    },
+    "1000": {
+     "pool": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "fee": 5000,
+     "rt_bps": 127.5
+    }
+   }
+  },
+  "EWY": {
+   "live_pools": 5,
+   "pools": [
+    {
+     "pool": "0x3a8a5ae2bfec683c97cae706d5cd4775cf01abd691504a19860ec2218da0e858",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 1441.4,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x7a226cd760a4b81b6841dfca3b4ae9c05c1d1cb01def5a49154cecf8f8b50086",
+     "fee": 19990,
+     "spacing": 200,
+     "rt_bps_25": 424.8,
+     "rt_bps_250": 511.4,
+     "rt_bps_1000": 789.4
+    },
+    {
+     "pool": "0x3cba52145fb271e4a76f44df3d8b86f460a04e767841bcb8288a02729047dbbb",
+     "fee": 5000,
+     "spacing": 50,
+     "rt_bps_25": 135.0,
+     "rt_bps_250": 289.6,
+     "rt_bps_1000": 858.8
+    },
+    {
+     "pool": "0xde52c62a72be945c5a81d3149695e403de15c045ac9c31b80e05a45b6d8cb768",
+     "fee": 2000,
+     "spacing": 20,
+     "rt_bps_25": 94.2,
+     "rt_bps_250": 503.7,
+     "rt_bps_1000": 1653.6
+    },
+    {
+     "pool": "0x7a028e4523490f2737ddf4420cd118363dd71ef2e3f93e2e1503a63990579ba9",
+     "fee": 2200,
+     "spacing": 22,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xde52c62a72be945c5a81d3149695e403de15c045ac9c31b80e05a45b6d8cb768",
+     "fee": 2000,
+     "rt_bps": 94.2
+    },
+    "250": {
+     "pool": "0x3cba52145fb271e4a76f44df3d8b86f460a04e767841bcb8288a02729047dbbb",
+     "fee": 5000,
+     "rt_bps": 289.6
+    },
+    "1000": {
+     "pool": "0x7a226cd760a4b81b6841dfca3b4ae9c05c1d1cb01def5a49154cecf8f8b50086",
+     "fee": 19990,
+     "rt_bps": 789.4
+    }
+   }
+  },
+  "GME": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0x3d436b4fdc532c61a0bf15d6cae80a66eb8f28ee9daec34dbec4b5bc9964063b",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 250.0,
+     "rt_bps_250": 524.1,
+     "rt_bps_1000": 1313.4
+    },
+    {
+     "pool": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
+     "fee": 2120,
+     "spacing": 42,
+     "rt_bps_25": 162.0,
+     "rt_bps_250": 811.0,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x9a82aa6af873870874cf11cf9e99bb81c9ebf28cc5b394e4fa4996a6805c7c06",
+     "fee": 9800,
+     "spacing": 98,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
+     "fee": 2120,
+     "rt_bps": 162.0
+    },
+    "250": {
+     "pool": "0x3d436b4fdc532c61a0bf15d6cae80a66eb8f28ee9daec34dbec4b5bc9964063b",
+     "fee": 10000,
+     "rt_bps": 524.1
+    },
+    "1000": {
+     "pool": "0x3d436b4fdc532c61a0bf15d6cae80a66eb8f28ee9daec34dbec4b5bc9964063b",
+     "fee": 10000,
+     "rt_bps": 1313.4
+    }
+   }
+  },
+  "GOOGL": {
+   "live_pools": 5,
+   "pools": [
+    {
+     "pool": "0xef22239f96c6ac95dcd57b90c6b14c0cc8c3c16844def34daef68dc9dd945344",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 70.4,
+     "rt_bps_1000": 71.9
+    },
+    {
+     "pool": "0xfa29c8b263aee15ed167cbe5e90ea9d89e6eec484f7de64a3465ad6b1ac1a7f6",
+     "fee": 3499,
+     "spacing": 60,
+     "rt_bps_25": 85.4,
+     "rt_bps_250": 117.6,
+     "rt_bps_1000": 223.7
+    },
+    {
+     "pool": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+     "fee": 300,
+     "spacing": 3,
+     "rt_bps_25": 12.4,
+     "rt_bps_250": 55.1,
+     "rt_bps_1000": 195.1
+    },
+    {
+     "pool": "0x62415aa92f875212cb6831054333e4aeafca11034e76a82cab975d9d10c57283",
+     "fee": 250,
+     "spacing": 3,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+     "fee": 300,
+     "rt_bps": 12.4
+    },
+    "250": {
+     "pool": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+     "fee": 300,
+     "rt_bps": 55.1
+    },
+    "1000": {
+     "pool": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+     "fee": 3000,
+     "rt_bps": 71.9
+    }
+   }
+  },
+  "INTC": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.7,
+     "rt_bps_250": 219.6,
+     "rt_bps_1000": 222.5
+    },
+    {
+     "pool": "0xc2705064da0c2442137b8100b3ae932257d47fd6c22371a6effea96be4cca4eb",
+     "fee": 20000,
+     "spacing": 200,
+     "rt_bps_25": 487.0,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "fee": 10000,
+     "rt_bps": 218.7
+    },
+    "250": {
+     "pool": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "fee": 10000,
+     "rt_bps": 219.6
+    },
+    "1000": {
+     "pool": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "fee": 10000,
+     "rt_bps": 222.5
+    }
+   }
+  },
+  "IONQ": {
+   "live_pools": 0,
+   "pools": [],
+   "best": {
+    "25": null,
+    "250": null,
+    "1000": null
+   }
+  },
+  "META": {
+   "live_pools": 6,
+   "pools": [
+    {
+     "pool": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 69.9,
+     "rt_bps_1000": 70.1
+    },
+    {
+     "pool": "0xa808e67719941dbbf6a665d6ecf78d6767b176be7109fdd051bce211e6d696eb",
+     "fee": 2000,
+     "spacing": 10,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xb85fa44cbde163fbaa51b861b0fb997d8b2783bd914aba9e0038ffa8df735e09",
+     "fee": 600,
+     "spacing": 6,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xa0d0bf9947aed50801f5202e714ad04463ba8b5ab409712372af3e6bd66d1fa0",
+     "fee": 520,
+     "spacing": 5,
+     "rt_bps_25": 16.1,
+     "rt_bps_250": 44.4,
+     "rt_bps_1000": 137.6
+    },
+    {
+     "pool": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+     "fee": 310,
+     "spacing": 3,
+     "rt_bps_25": 8.0,
+     "rt_bps_250": 9.0,
+     "rt_bps_1000": 12.6
+    },
+    {
+     "pool": "0xafd18a1f86f63b8a4cfc4b80352cc845d19a08dbc87d1e76dadc236c47ff69c0",
+     "fee": 210,
+     "spacing": 2,
+     "rt_bps_25": 116.3,
+     "rt_bps_250": 1014.7,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+     "fee": 310,
+     "rt_bps": 8.0
+    },
+    "250": {
+     "pool": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+     "fee": 310,
+     "rt_bps": 9.0
+    },
+    "1000": {
+     "pool": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+     "fee": 310,
+     "rt_bps": 12.6
+    }
+   }
+  },
+  "MSFT": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0x9194a557b6a6bb2236b49ea7e2bbccec5d3eeb705aef00903be4b3de1d949579",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 70.8,
+     "rt_bps_1000": 73.5
+    },
+    {
+     "pool": "0xdd04fe28b7f5fcb07b492cfd434286ff1a54b12eaa69ff00a2807fa1f2adc6a8",
+     "fee": 900,
+     "spacing": 9,
+     "rt_bps_25": 33.1,
+     "rt_bps_250": 135.2,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xd181a99bb09d0badcb04ce583f732feea5f8a11b3ab5691d8d1e17e4f469a441",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xdd04fe28b7f5fcb07b492cfd434286ff1a54b12eaa69ff00a2807fa1f2adc6a8",
+     "fee": 900,
+     "rt_bps": 33.1
+    },
+    "250": {
+     "pool": "0x9194a557b6a6bb2236b49ea7e2bbccec5d3eeb705aef00903be4b3de1d949579",
+     "fee": 3000,
+     "rt_bps": 70.8
+    },
+    "1000": {
+     "pool": "0x9194a557b6a6bb2236b49ea7e2bbccec5d3eeb705aef00903be4b3de1d949579",
+     "fee": 3000,
+     "rt_bps": 73.5
+    }
+   }
+  },
+  "MSTR": {
+   "live_pools": 11,
+   "pools": [
+    {
+     "pool": "0x6d772a02e4db5db3d4de33f1e014eb67ae8cb88eea1f32dbf8e4f765d6947007",
+     "fee": 30000,
+     "spacing": 600,
+     "rt_bps_25": 624.4,
+     "rt_bps_250": 753.5,
+     "rt_bps_1000": 1167.1
+    },
+    {
+     "pool": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 58.0,
+     "rt_bps_250": 58.6,
+     "rt_bps_1000": 60.6
+    },
+    {
+     "pool": "0x0b7651084eb6758980efbccf73d95c680dd26e80800fbc91927d94a7f804d8bf",
+     "fee": 2010,
+     "spacing": 20,
+     "rt_bps_25": 69.4,
+     "rt_bps_250": 268.8,
+     "rt_bps_1000": 879.2
+    },
+    {
+     "pool": "0xaa47b7ab00a4390ee865c59d5be2bcffede8ea934491249a1c254886050900cc",
+     "fee": 2000,
+     "spacing": 1,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+     "fee": 2400,
+     "spacing": 24,
+     "rt_bps_25": 55.7,
+     "rt_bps_250": 56.3,
+     "rt_bps_1000": 58.1
+    },
+    {
+     "pool": "0x445d43a7720c2f88672591ece85f6da63abe778d86271e0bdcda62e9a1f7e65b",
+     "fee": 2001,
+     "spacing": 1,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x3c8ad6f7223c71a999333709edc6d06d3b6cac89712dd300a9751486fce43750",
+     "fee": 2002,
+     "spacing": 1,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x8df33a9c8fee87d06031a17d4d75001ce41748475e5a9c9ca666c8df651394c0",
+     "fee": 2003,
+     "spacing": 1,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xd54e725de99633dae34f6d3eeec4196027c7c05d92b1cbeb0052a65d7b2b3197",
+     "fee": 2004,
+     "spacing": 1,
+     "rt_bps_25": 70.7,
+     "rt_bps_250": 274.2,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xcb401d23495bd2bfa5005c55abf87e95e26eb3c8387bcb748227db4ff6d7488a",
+     "fee": 2005,
+     "spacing": 1,
+     "rt_bps_25": 63.4,
+     "rt_bps_250": 211.8,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xe4fea41a13401e4ff5324e75abb11e7dfa76efdd48e0cb5a5471e9b629e60abe",
+     "fee": 2006,
+     "spacing": 1,
+     "rt_bps_25": 68.0,
+     "rt_bps_250": 255.9,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+     "fee": 2400,
+     "rt_bps": 55.7
+    },
+    "250": {
+     "pool": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+     "fee": 2400,
+     "rt_bps": 56.3
+    },
+    "1000": {
+     "pool": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+     "fee": 2400,
+     "rt_bps": 58.1
+    }
+   }
+  },
+  "MU": {
+   "live_pools": 1,
+   "pools": [
+    {
+     "pool": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.8,
+     "rt_bps_250": 220.6,
+     "rt_bps_1000": 226.6
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "fee": 10000,
+     "rt_bps": 218.8
+    },
+    "250": {
+     "pool": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "fee": 10000,
+     "rt_bps": 220.6
+    },
+    "1000": {
+     "pool": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "fee": 10000,
+     "rt_bps": 226.6
+    }
+   }
+  },
+  "NBIS": {
+   "live_pools": 1,
+   "pools": [
+    {
+     "pool": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "fee": 9900,
+     "spacing": 99,
+     "rt_bps_25": 217.9,
+     "rt_bps_250": 229.5,
+     "rt_bps_1000": 268.1
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "fee": 9900,
+     "rt_bps": 217.9
+    },
+    "250": {
+     "pool": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "fee": 9900,
+     "rt_bps": 229.5
+    },
+    "1000": {
+     "pool": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "fee": 9900,
+     "rt_bps": 268.1
+    }
+   }
+  },
+  "NFLX": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xe4930a6215f21aa3b37c01adbded3362f56ae31b9a60066f5f9641e601d5111f",
+     "fee": 10000,
+     "spacing": 100,
+     "rt_bps_25": 219.3,
+     "rt_bps_250": 225.4,
+     "rt_bps_1000": 245.7
+    },
+    {
+     "pool": "0xc3ce6292ae631e73a6adc6faaad7d10e326a9d11517a6dfcd001345d20097df4",
+     "fee": 1500,
+     "spacing": 15,
+     "rt_bps_25": 70.6,
+     "rt_bps_250": 592.5,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xc3ce6292ae631e73a6adc6faaad7d10e326a9d11517a6dfcd001345d20097df4",
+     "fee": 1500,
+     "rt_bps": 70.6
+    },
+    "250": {
+     "pool": "0xe4930a6215f21aa3b37c01adbded3362f56ae31b9a60066f5f9641e601d5111f",
+     "fee": 10000,
+     "rt_bps": 225.4
+    },
+    "1000": {
+     "pool": "0xe4930a6215f21aa3b37c01adbded3362f56ae31b9a60066f5f9641e601d5111f",
+     "fee": 10000,
+     "rt_bps": 245.7
+    }
+   }
+  },
+  "NVDA": {
+   "live_pools": 8,
+   "pools": [
+    {
+     "pool": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 70.5,
+     "rt_bps_1000": 72.5
+    },
+    {
+     "pool": "0x2d6ec380a3dc18dc4a2067ba6884835b49455cd79c8afa1f7625b6b2f85670a6",
+     "fee": 500,
+     "spacing": 10,
+     "rt_bps_25": 2061.8,
+     "rt_bps_250": 7211.8,
+     "rt_bps_1000": 9118.4
+    },
+    {
+     "pool": "0x6a41bdbdf82850998dd5f30588cde7a38447ba6334258ba91775e090155eb796",
+     "fee": 10000,
+     "spacing": 100,
+     "rt_bps_25": 258.2,
+     "rt_bps_250": 587.7,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee": 100,
+     "spacing": 1,
+     "rt_bps_25": 2.7,
+     "rt_bps_250": 4.3,
+     "rt_bps_1000": 9.6
+    },
+    {
+     "pool": "0xf99f5f47f36d5325e799c54c6ea06513fe59f2157bcfeadef2b0abb51a9c40ce",
+     "fee": 3499,
+     "spacing": 60,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x33833d86c64846f507e8e862cfc6ed33f029f3d0d679b629e51cea9ad0b25a26",
+     "fee": 2000,
+     "spacing": 40,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xdf5c0bcd967d54774c139a4ef803ec994779736346fb4c21b50ed241b1fd2682",
+     "fee": 375,
+     "spacing": 4,
+     "rt_bps_25": 13.0,
+     "rt_bps_250": 44.3,
+     "rt_bps_1000": 146.4
+    },
+    {
+     "pool": "0x84e2847d2fe2dab492ca065326efa51b6f7e0924f200f983b9939530834df815",
+     "fee": 80,
+     "spacing": 1,
+     "rt_bps_25": 83.1,
+     "rt_bps_250": 757.5,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee": 100,
+     "rt_bps": 2.7
+    },
+    "250": {
+     "pool": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee": 100,
+     "rt_bps": 4.3
+    },
+    "1000": {
+     "pool": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "fee": 100,
+     "rt_bps": 9.6
+    }
+   }
+  },
+  "ORCL": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xc2ce4784e1e72cf0221b51b30c8aaadf6c0b12863cf03ab3687854fb7b1d850a",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 219.2,
+     "rt_bps_250": 224.7,
+     "rt_bps_1000": 242.9
+    },
+    {
+     "pool": "0x724e673b41c0cfb00d2c247871f7715c40b69668738d11ca8c704477f4add4e8",
+     "fee": 5000,
+     "spacing": 50,
+     "rt_bps_25": 130.1,
+     "rt_bps_250": 242.1,
+     "rt_bps_1000": 879.7
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x724e673b41c0cfb00d2c247871f7715c40b69668738d11ca8c704477f4add4e8",
+     "fee": 5000,
+     "rt_bps": 130.1
+    },
+    "250": {
+     "pool": "0xc2ce4784e1e72cf0221b51b30c8aaadf6c0b12863cf03ab3687854fb7b1d850a",
+     "fee": 10000,
+     "rt_bps": 224.7
+    },
+    "1000": {
+     "pool": "0xc2ce4784e1e72cf0221b51b30c8aaadf6c0b12863cf03ab3687854fb7b1d850a",
+     "fee": 10000,
+     "rt_bps": 242.9
+    }
+   }
+  },
+  "PLTR": {
+   "live_pools": 4,
+   "pools": [
+    {
+     "pool": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.6,
+     "rt_bps_250": 219.0,
+     "rt_bps_1000": 220.3
+    },
+    {
+     "pool": "0xc59eaeda6d1a6f031bc7e1d039772f2d675e7b4de2c8668610f4471bd60b3802",
+     "fee": 1500,
+     "spacing": 15,
+     "rt_bps_25": 35.6,
+     "rt_bps_250": 39.6,
+     "rt_bps_1000": 52.8
+    },
+    {
+     "pool": "0x16df9cbb3af623c0ef9138bce885a1da90de38c17f699e623d54df69586e56c4",
+     "fee": 11100,
+     "spacing": 111,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xb41bcb82327691fee3a7a47fc0b2d748739e942ee033d2f73a272a847fa428fc",
+     "fee": 1030,
+     "spacing": 10,
+     "rt_bps_25": 24.8,
+     "rt_bps_250": 27.2,
+     "rt_bps_1000": 35.1
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xb41bcb82327691fee3a7a47fc0b2d748739e942ee033d2f73a272a847fa428fc",
+     "fee": 1030,
+     "rt_bps": 24.8
+    },
+    "250": {
+     "pool": "0xb41bcb82327691fee3a7a47fc0b2d748739e942ee033d2f73a272a847fa428fc",
+     "fee": 1030,
+     "rt_bps": 27.2
+    },
+    "1000": {
+     "pool": "0xb41bcb82327691fee3a7a47fc0b2d748739e942ee033d2f73a272a847fa428fc",
+     "fee": 1030,
+     "rt_bps": 35.1
+    }
+   }
+  },
+  "QQQ": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0xd3d49eaab15eb8f4d1d480a8518fc3ce4e60ca81d69904b3e7dc53b4fc0ce2d9",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 1486.6,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xf9568ec0cba6e9ba30d9daabbf3e807813b8852e5737b7d83ea06529c73c9758",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 119.3,
+     "rt_bps_250": 545.8,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x05ff65d731121da3c9816429176f2d622db9bd58f08a63904dd131a6ad9215d9",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 10000.0,
+     "rt_bps_250": 10000.0,
+     "rt_bps_1000": 10000.0
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xf9568ec0cba6e9ba30d9daabbf3e807813b8852e5737b7d83ea06529c73c9758",
+     "fee": 3000,
+     "rt_bps": 119.3
+    },
+    "250": {
+     "pool": "0xf9568ec0cba6e9ba30d9daabbf3e807813b8852e5737b7d83ea06529c73c9758",
+     "fee": 3000,
+     "rt_bps": 545.8
+    },
+    "1000": {
+     "pool": "0x05ff65d731121da3c9816429176f2d622db9bd58f08a63904dd131a6ad9215d9",
+     "fee": 2500,
+     "rt_bps": 10000.0
+    }
+   }
+  },
+  "RGTI": {
+   "live_pools": 0,
+   "pools": [],
+   "best": {
+    "25": null,
+    "250": null,
+    "1000": null
+   }
+  },
+  "RKLB": {
+   "live_pools": 1,
+   "pools": [
+    {
+     "pool": "0xbbc15d66fef8391f53569e19016e86545be9de3f302b82db93ed6165236d22f3",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": 209.7,
+     "rt_bps_250": 306.2,
+     "rt_bps_1000": 615.2
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xbbc15d66fef8391f53569e19016e86545be9de3f302b82db93ed6165236d22f3",
+     "fee": 9000,
+     "rt_bps": 209.7
+    },
+    "250": {
+     "pool": "0xbbc15d66fef8391f53569e19016e86545be9de3f302b82db93ed6165236d22f3",
+     "fee": 9000,
+     "rt_bps": 306.2
+    },
+    "1000": {
+     "pool": "0xbbc15d66fef8391f53569e19016e86545be9de3f302b82db93ed6165236d22f3",
+     "fee": 9000,
+     "rt_bps": 615.2
+    }
+   }
+  },
+  "SGOV": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0x2a72510d7d92cc121f9733ab6d14227ef8963cfadf9d40ac574f02e20e6299a8",
+     "fee": 375,
+     "spacing": 4,
+     "rt_bps_25": 9.5,
+     "rt_bps_250": 9.7,
+     "rt_bps_1000": 10.2
+    },
+    {
+     "pool": "0x18e872d50133c12c1e265b671fb867162140fa4abbe2ffd91183d98f2a5f6572",
+     "fee": 2500,
+     "spacing": 2,
+     "rt_bps_25": 60.7,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x834b8424f719784726e0182701ca18416993a62b56b16e403ede94a48a5793a3",
+     "fee": 200,
+     "spacing": 2,
+     "rt_bps_25": 5.7,
+     "rt_bps_250": 15.2,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x834b8424f719784726e0182701ca18416993a62b56b16e403ede94a48a5793a3",
+     "fee": 200,
+     "rt_bps": 5.7
+    },
+    "250": {
+     "pool": "0x2a72510d7d92cc121f9733ab6d14227ef8963cfadf9d40ac574f02e20e6299a8",
+     "fee": 375,
+     "rt_bps": 9.7
+    },
+    "1000": {
+     "pool": "0x2a72510d7d92cc121f9733ab6d14227ef8963cfadf9d40ac574f02e20e6299a8",
+     "fee": 375,
+     "rt_bps": 10.2
+    }
+   }
+  },
+  "SLV": {
+   "live_pools": 3,
+   "pools": [
+    {
+     "pool": "0xf6f742665e3927ee7ee8da2a9caac0b68580af5249f1c70f4db02937bb1b0b58",
+     "fee": 20000,
+     "spacing": 400,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x0871c31296256801c7e892796fc59122dfa666ce359e4418ab5cf78933fececb",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x7ba01313dc121a75f254d7830c8099633a86b4f7ccac8568887938aa011c7ed5",
+     "fee": 375,
+     "spacing": 4,
+     "rt_bps_25": 5636.0,
+     "rt_bps_250": 9522.7,
+     "rt_bps_1000": 9880.7
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x7ba01313dc121a75f254d7830c8099633a86b4f7ccac8568887938aa011c7ed5",
+     "fee": 375,
+     "rt_bps": 5636.0
+    },
+    "250": {
+     "pool": "0x7ba01313dc121a75f254d7830c8099633a86b4f7ccac8568887938aa011c7ed5",
+     "fee": 375,
+     "rt_bps": 9522.7
+    },
+    "1000": {
+     "pool": "0x7ba01313dc121a75f254d7830c8099633a86b4f7ccac8568887938aa011c7ed5",
+     "fee": 375,
+     "rt_bps": 9880.7
+    }
+   }
+  },
+  "SNDK": {
+   "live_pools": 4,
+   "pools": [
+    {
+     "pool": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.9,
+     "rt_bps_250": 221.4,
+     "rt_bps_1000": 229.6
+    },
+    {
+     "pool": "0xc9c8c236fae910f6e293022414fd676a45fc277eef6cd1bd374eb19f0cceaffc",
+     "fee": 8000,
+     "spacing": 80,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xb0706c40f54819959de0ae02f4187a1ba5a17dd2d22bf726fbf54c40db77c099",
+     "fee": 2890,
+     "spacing": 29,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x6d65849d00b3407f060b5a5210f49c1cd67bd19f0c954e80db722373c6d03e17",
+     "fee": 4000,
+     "spacing": 40,
+     "rt_bps_25": 101.7,
+     "rt_bps_250": 172.5,
+     "rt_bps_1000": 401.6
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x6d65849d00b3407f060b5a5210f49c1cd67bd19f0c954e80db722373c6d03e17",
+     "fee": 4000,
+     "rt_bps": 101.7
+    },
+    "250": {
+     "pool": "0x6d65849d00b3407f060b5a5210f49c1cd67bd19f0c954e80db722373c6d03e17",
+     "fee": 4000,
+     "rt_bps": 172.5
+    },
+    "1000": {
+     "pool": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
+     "fee": 10000,
+     "rt_bps": 229.6
+    }
+   }
+  },
+  "SPCX": {
+   "live_pools": 5,
+   "pools": [
+    {
+     "pool": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
+     "fee": 10000,
+     "spacing": 200,
+     "rt_bps_25": 218.7,
+     "rt_bps_250": 219.3,
+     "rt_bps_1000": 221.6
+    },
+    {
+     "pool": "0x79406f0aa1fb2c69c08bb933182276ef1b1e6f50582d3a7186702000e54b44df",
+     "fee": 30000,
+     "spacing": 600,
+     "rt_bps_25": 975.9,
+     "rt_bps_250": 3319.8,
+     "rt_bps_1000": 6419.7
+    },
+    {
+     "pool": "0x8567e70dbf639a618ba5eaf9402743452b93ca45c9bf8b97462407f07d7b7448",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 71.0,
+     "rt_bps_250": 80.9,
+     "rt_bps_1000": 114.1
+    },
+    {
+     "pool": "0xc172fba1c12a3c34161a9140b9620acd1b03e2c7a5ed5c549b08dbcab7d30ec3",
+     "fee": 10990,
+     "spacing": 200,
+     "rt_bps_25": 9949.9,
+     "rt_bps_250": 9995.0,
+     "rt_bps_1000": 9998.7
+    },
+    {
+     "pool": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee": 250,
+     "spacing": 3,
+     "rt_bps_25": 6.6,
+     "rt_bps_250": 9.8,
+     "rt_bps_1000": 20.1
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee": 250,
+     "rt_bps": 6.6
+    },
+    "250": {
+     "pool": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee": 250,
+     "rt_bps": 9.8
+    },
+    "1000": {
+     "pool": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "fee": 250,
+     "rt_bps": 20.1
+    }
+   }
+  },
+  "SPY": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 69.9,
+     "rt_bps_1000": 70.0
+    },
+    {
+     "pool": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+     "fee": 500,
+     "spacing": 5,
+     "rt_bps_25": 12.5,
+     "rt_bps_250": 12.5,
+     "rt_bps_1000": 12.7
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+     "fee": 500,
+     "rt_bps": 12.5
+    },
+    "250": {
+     "pool": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+     "fee": 500,
+     "rt_bps": 12.5
+    },
+    "1000": {
+     "pool": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+     "fee": 500,
+     "rt_bps": 12.7
+    }
+   }
+  },
+  "TSLA": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+     "fee": 3000,
+     "spacing": 60,
+     "rt_bps_25": 69.9,
+     "rt_bps_250": 70.3,
+     "rt_bps_1000": 71.8
+    },
+    {
+     "pool": "0xbccda7f9d83db6a032a4f45d07a888b24b5f59cc81a44974dcb80ad526d34f7d",
+     "fee": 2950,
+     "spacing": 30,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+     "fee": 3000,
+     "rt_bps": 69.9
+    },
+    "250": {
+     "pool": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+     "fee": 3000,
+     "rt_bps": 70.3
+    },
+    "1000": {
+     "pool": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+     "fee": 3000,
+     "rt_bps": 71.8
+    }
+   }
+  },
+  "TSM": {
+   "live_pools": 6,
+   "pools": [
+    {
+     "pool": "0x7a048023759fe387c1e311e29a2354f3cbdfbe51324aafa88eec495d3af798b1",
+     "fee": 9000,
+     "spacing": 90,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x0ba5d53d2f6255f334b7c8ead4f56b6aef5af3402c5e4d11180afd38c6b85fb1",
+     "fee": 7500,
+     "spacing": 75,
+     "rt_bps_25": 169.3,
+     "rt_bps_250": 170.7,
+     "rt_bps_1000": 175.5
+    },
+    {
+     "pool": "0x78f4dd7dec56c8af7792cc288cca7b917ed9f759acc6dbd68394d24aa956e955",
+     "fee": 5500,
+     "spacing": 55,
+     "rt_bps_25": 167.0,
+     "rt_bps_250": 492.5,
+     "rt_bps_1000": 1436.8
+    },
+    {
+     "pool": "0x6933e062afeecc1c66ca0a9d7e269f9bfafb057bdb8f9d971426a977a2385a15",
+     "fee": 5022,
+     "spacing": 50,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0xd801072625f911a198b45ad51a7454d5d37ead5d6fc1e977b468f72cc024d39d",
+     "fee": 4980,
+     "spacing": 50,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x8055fe6b3c4079318536e2d1c13d32bffc82bc554e0a7619b9ed571cd3ba3eb1",
+     "fee": 4000,
+     "spacing": 40,
+     "rt_bps_25": 397.8,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x78f4dd7dec56c8af7792cc288cca7b917ed9f759acc6dbd68394d24aa956e955",
+     "fee": 5500,
+     "rt_bps": 167.0
+    },
+    "250": {
+     "pool": "0x0ba5d53d2f6255f334b7c8ead4f56b6aef5af3402c5e4d11180afd38c6b85fb1",
+     "fee": 7500,
+     "rt_bps": 170.7
+    },
+    "1000": {
+     "pool": "0x0ba5d53d2f6255f334b7c8ead4f56b6aef5af3402c5e4d11180afd38c6b85fb1",
+     "fee": 7500,
+     "rt_bps": 175.5
+    }
+   }
+  },
+  "USAR": {
+   "live_pools": 1,
+   "pools": [
+    {
+     "pool": "0x2133e207b02f5adfd92822cee2cae690b0b044494e8a04b9d27fab96e0be1a06",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": null,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    }
+   ],
+   "best": {
+    "25": null,
+    "250": null,
+    "1000": null
+   }
+  },
+  "USO": {
+   "live_pools": 2,
+   "pools": [
+    {
+     "pool": "0x1fb919c02c59434fb4df11765786a75836facdd6cd1648004eaed9d989a9a910",
+     "fee": 2500,
+     "spacing": 25,
+     "rt_bps_25": 796.4,
+     "rt_bps_250": null,
+     "rt_bps_1000": null
+    },
+    {
+     "pool": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "fee": 1200,
+     "spacing": 15,
+     "rt_bps_25": 28.6,
+     "rt_bps_250": 29.9,
+     "rt_bps_1000": 34.5
+    }
+   ],
+   "best": {
+    "25": {
+     "pool": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "fee": 1200,
+     "rt_bps": 28.6
+    },
+    "250": {
+     "pool": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "fee": 1200,
+     "rt_bps": 29.9
+    },
+    "1000": {
+     "pool": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "fee": 1200,
+     "rt_bps": 34.5
+    }
+   }
+  }
+ },
+ "rpc": 1279
+}

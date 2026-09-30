@@ -859,3 +859,22 @@ $20k (+1.38); K16 meets it at $20k. Rule outcome: cap may rise to $10k with the 
 Selection-window means favoured K12/K16 strongly (+4.4 to +4.9 vs +3.0 to +3.4) and did
 not hold on confirmation: breadth is not a free lunch below $20k. Backtest only; per charter
 rule 5 the cap change needs forward confirmation before production.
+
+**R1 result (measurement, block 76,917,183, 1,279 RPC):** best USDG -> stock -> USDG round trip
+at $250 per stock across all live hookless static-fee V4 pools. Cheap (<= 30 bp): NVDA 4, META 9,
+SGOV 10, SPCX 10, SPY 13, PLTR 27, BABA 28, USO 30. Standard 0.30% (55-70 bp): CRCL, GOOGL, MSTR,
+AMZN, COIN, AAPL, TSLA, MSFT. Expensive (1.2-10%): DELL, TSM, SNDK, AMD, INTC, MU, ORCL, NFLX,
+NBIS, EWY, RKLB, GME, QQQ, ASML, SLV. No live pool: CLSK, IONQ, RGTI, USAR. Production action
+(dominant by construction): each sleeve's swap route = its cheapest measured pool, re-measured
+at deployment.
+
+### A26 — ETH-entry cost gate, forward-only, registered before October data
+
+Mechanism: an ETH depositor pays the round trip on the stock half of every sleeve. A pick whose
+best route costs more than a few days of its fee yield transfers the depositor's edge to arbitrage.
+Book G1: identical to the frozen SLP10-K8 forward book except a symbol is admitted only if its
+best measured $250 round trip is <= 70 bp at the decision (R1 method, re-measured each decision);
+skipped symbols are replaced by the next-ranked admitted symbol.
+Scoring: net per 9 d on $200 AFTER charging each book one ETH entry + exit at the measured route
+costs. Frozen rule: G1 replaces B0 if, after >= 10 forward days, G1 net-after-entry >= B0
+net-after-entry and G1 worst window >= B0 worst window. Reported regardless of outcome.
