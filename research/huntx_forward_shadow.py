@@ -420,13 +420,17 @@ def slp10k8_book(pools, state, days, bounds, proto):
     end = days[-1]
     if end not in hist:
         r = SC.run_vault(stock_pools, bounds, proto, start, end, 8, "fixed:0.01", symbols=ids)
+        r_skew = SC.run_vault(stock_pools, bounds, proto, start, end, 8, "skew:0.985:1.005", symbols=ids)
         hold = 0.0
         for pid in ids:
             p = stock_pools[pid]
             got = quote_exact_in(p.meta, not p.q1, int(200 / len(ids) * 1e6), bounds[start] - 1)
             out = quote_exact_in(p.meta, p.q1, int(got or 0), bounds[end] - 1) if got else 0
             hold += (out or 0) / 1e6
-        hist[end] = {"book_exit_value": round(200 + r["net_usd"], 4), "hold_stocks_value": round(hold, 4),
+        hist[end] = {"book_exit_value": round(200 + r["net_usd"], 4),
+                     "skew_book_exit_value": round(200 + r_skew["net_usd"], 4),
+                     "skew_per_sleeve": r_skew["per_sleeve"],
+                     "hold_stocks_value": round(hold, 4),
                      "hold_usdg": 200.0, "per_sleeve": r["per_sleeve"], "rebands": r["rebands"]}
         hist_f.write_text(json.dumps(hist, indent=1))
     return hist

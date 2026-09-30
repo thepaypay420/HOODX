@@ -1,0 +1,171 @@
+{
+ "runs": {
+  "2026-09-04": {
+   "tag": "sel",
+   "end": "2026-09-13",
+   "hold_net": -1.817,
+   "symbols": [
+    "SNDK",
+    "TSM",
+    "AMD",
+    "PLTR",
+    "MSTR",
+    "GME",
+    "MU",
+    "COIN"
+   ],
+   "B0": 7.42,
+   "B1": 4.986,
+   "B2": 1.8,
+   "B3": 1.011
+  },
+  "2026-09-07": {
+   "tag": "sel",
+   "end": "2026-09-16",
+   "hold_net": -7.917,
+   "symbols": [
+    "GME",
+    "AMD",
+    "MSTR",
+    "COIN",
+    "BABA",
+    "NFLX",
+    "MU",
+    "INTC"
+   ],
+   "B0": 8.538,
+   "B1": 5.73,
+   "B2": 10.174,
+   "B3": 6.882
+  },
+  "2026-09-10": {
+   "tag": "sel",
+   "end": "2026-09-19",
+   "hold_net": 7.768,
+   "symbols": [
+    "DELL",
+    "SNDK",
+    "MU",
+    "COIN",
+    "SPCX",
+    "INTC",
+    "MSTR",
+    "AMD"
+   ],
+   "B0": 2.567,
+   "B1": 1.224,
+   "B2": 0.581,
+   "B3": -0.181
+  },
+  "2026-09-13": {
+   "tag": "conf",
+   "end": "2026-09-22",
+   "hold_net": 13.983,
+   "symbols": [
+    "EWY",
+    "GME",
+    "RKLB",
+    "MSTR",
+    "PLTR",
+    "COIN",
+    "SNDK",
+    "CRCL"
+   ],
+   "B0": 9.144,
+   "B1": 6.019,
+   "B2": 8.559,
+   "B3": 5.593
+  },
+  "2026-09-16": {
+   "tag": "conf",
+   "end": "2026-09-25",
+   "hold_net": -15.433,
+   "symbols": [
+    "CRCL",
+    "NFLX",
+    "GME",
+    "DELL",
+    "MSTR",
+    "USO",
+    "AMD",
+    "PLTR"
+   ],
+   "B0": 7.867,
+   "B1": 4.902,
+   "B2": 6.205,
+   "B3": 3.714
+  },
+  "2026-09-19": {
+   "tag": "conf",
+   "end": "2026-09-28",
+   "hold_net": 9.727,
+   "symbols": [
+    "NBIS",
+    "ORCL",
+    "META",
+    "INTC",
+    "PLTR",
+    "MSTR",
+    "AMD",
+    "CRCL"
+   ],
+   "B0": 6.272,
+   "B1": 3.752,
+   "B2": 6.411,
+   "B3": 3.858
+  },
+  "2026-09-20": {
+   "tag": "down",
+   "end": "2026-09-29",
+   "hold_net": 5.408,
+   "symbols": [
+    "NFLX",
+    "INTC",
+    "META",
+    "GME",
+    "PLTR",
+    "USO",
+    "AMD",
+    "MU"
+   ],
+   "B0": 0.977,
+   "B1": 0.153,
+   "B2": 1.343,
+   "B3": 0.389
+  }
+ },
+ "summary": {
+  "B0": {
+   "sel_mean": 6.175,
+   "conf_mean": 6.065,
+   "conf_worst": 0.977,
+   "down": 0.977,
+   "beta_vs_hold": -0.09,
+   "replaces_B0": false
+  },
+  "B1": {
+   "sel_mean": 3.98,
+   "conf_mean": 3.707,
+   "conf_worst": 0.153,
+   "down": 0.153,
+   "beta_vs_hold": -0.066,
+   "replaces_B0": false
+  },
+  "B2": {
+   "sel_mean": 4.185,
+   "conf_mean": 5.63,
+   "conf_worst": 1.343,
+   "down": 1.343,
+   "beta_vs_hold": -0.067,
+   "replaces_B0": true
+  },
+  "B3": {
+   "sel_mean": 2.571,
+   "conf_mean": 3.389,
+   "conf_worst": 0.389,
+   "down": 0.389,
+   "beta_vs_hold": -0.049,
+   "replaces_B0": false
+  }
+ }
+}

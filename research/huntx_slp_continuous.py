@@ -39,7 +39,11 @@ class Sleeve:
         self.gas, self.fee_tok, self.fee_q, self.rebands = 0.0, 0.0, 0.0, 0
         s = p.sqrt_before(t0)
         self.width = self._width(t0)
-        sa, sb, _, _ = snap_range(s, 1 / self.width, self.width, p.spacing, p.q1)
+        if mode.startswith("skew:"):
+            _, lo, hi = mode.split(":")
+            sa, sb, _, _ = snap_range(s, float(lo), float(hi), p.spacing, p.q1)
+        else:
+            sa, sb, _, _ = snap_range(s, 1 / self.width, self.width, p.spacing, p.q1)
         tu, qu = M.unit_units(p, s, sa, sb)
         V0 = dollars * 1e6
         swap_in = V0 * (tu * price_q(p, s)) / (qu + tu * price_q(p, s))
@@ -55,6 +59,9 @@ class Sleeve:
         self.last_reband = t0
 
     def _width(self, t):
+        if self.mode.startswith("skew:"):
+            _, lo, hi = self.mode.split(":")
+            return math.sqrt(float(hi) / float(lo))
         if self.mode.startswith("fixed:"):
             return 1 + float(self.mode.split(":")[1])
         lo_hi = (0.025, 0.06)

@@ -676,3 +676,39 @@ measured gas, fees ÷ 1.03. Each day, record the book's exact-exit value (V4Quot
 at that day's boundary) versus holding USDG and holding the same 8 stocks.
 Verdict after 30 days: exit value > $200 and > the stock-hold value, with no
 single sleeve below −10% of its capital.
+
+## Amendment A18 — 2026-09-30, beta control (frozen before running)
+
+Mechanism: the SLP10-K8 book carries about 50% stock inventory, so its USD result
+follows the market (09-25 → 09-29: book −$3.98 vs hold −$9.43). Reducing the
+inventory held while keeping fee capture should lift USD returns in down
+windows at a modest fee cost.
+Variants (all $200, 9-day continuous runs, same engine, exact entry and exit):
+* **B0** SLP10-K8 (current best, control).
+* **B1** 70% B0 book + 30% SGOV/USDG ±0.5% cash sleeve.
+* **B2** bid-skewed ranges: token-price band [0.985p, 1.005p] at entry (mostly
+  USDG, buys dips), maker rebands with the same total width, K=8.
+* **B3** B2 with the 30% SGOV sleeve.
+Starts: selection 09-04/07/10; confirmation 09-13/16/19 and the down window
+09-20 → 09-29. For each window, also record the exact-quote hold-stock result
+of the same picks, and report beta = slope(book net vs hold net).
+Replace B0 only if a variant, on the confirmation set, has mean net ≥ 90% of B0,
+worst-window net ≥ B0's, and down-window net ≥ B0's. Otherwise B0 stays and the
+variants are logged as tried.
+
+**A18 verdict (frozen rule applied exactly): B2 REPLACES B0 as the current best.**
+Confirmation mean: B0 +$6.065, B1 +$3.707, **B2 +$5.630** (≥ 90% of B0), B3 +$3.389.
+Worst/down window: B0 +$0.977, **B2 +$1.343**, B1 +$0.153, B3 +$0.389. Selection
+means: B0 +$6.175, B2 +$4.185. Margins are thin: the 7-window mean is B0 $6.11 vs
+B2 $5.01. Beta of window net vs holding the same stocks: B0 −0.09, B2 −0.07
+(≈ 0 over 9-day windows; e.g. 09-16 window hold −$15.43, B0 +$7.87). The SGOV
+mix (B1, B3) dilutes profit without a downside benefit: logged as tried, rejected.
+
+## Amendment A19 — 2026-09-30, forward test adds B2 (frozen before 2026-10-01)
+
+The forward job also runs **SLP-SKEW-K8**: the same frozen A17 picks and engine,
+with bid-skewed token-price band [0.985p, 1.005p] at entry and maker rebands of
+equal total width. Valued daily at exact exit alongside SLP10-K8. After 30 days,
+the book with the higher exit value (with no sleeve below −10%) becomes the
+production policy candidate; if the two differ by < $1 on $200, prefer the
+lower-drawdown book.

@@ -143,3 +143,37 @@ scale. The HUNTX launch gate stays BLOCKED until the breakthrough bar is met
 | $200 portfolio | UNDERPOWERED | K3 −$0.81, K5 +$1.39 |
 | **SLP25 forward test** | **ACTIVE (A14)** | Daily scheduled task |
 | Open, not yet tested | QUEUED | earnings-calendar exclusion; continuous operation; after-hours skew; stable-pair baseline |
+
+## VAULT LOOP CHARTER (from 2026-09-30; supersedes the launch focus)
+
+**Current best (frozen): SLP10-K8** = ±1% ranges, 8 stock/USDG V4 pools, one-sided
+maker rebands after a 24 h breach, daily no-swap compounding. Forward-tested from
+2026-10-01 (A17). Known risk: about 50% stock beta.
+
+**Anti-overfitting rules (mandatory each iteration):**
+1. ≤ 4 variants per iteration, pre-registered with the selection rule before
+   running. Every variant tried is logged here, winners and losers alike.
+2. Selection starts 09-04/07/10; confirmation starts 09-13/16/19 plus the down
+   window 09-20 → 09-29. Replace the current best only if the variant wins on the
+   confirmation set **and** does not worsen the worst start or the down window.
+3. Judge on the mean **and** the downside (worst start, down window, beta vs
+   holding the same stocks). Never on the best start.
+4. Mechanism first: each variant needs a first-principles reason, written
+   before running. Any threshold sweep beyond 4 values is data mining; don't.
+5. Forward data (A14/A17) outranks backtests once ≥ 10 days exist. After that,
+   backtest-only changes need forward confirmation.
+6. RPC ≤ 10k per iteration; read-only; never sign or broadcast.
+
+**Vault queue (ranked by expected information / cost):**
+| ID | Idea | Mechanism | Status |
+|---|---|---|---|
+| V-B | Beta control (A18) | Hold less stock inventory | DONE: B2 bid-skew replaces B0 by rule (thin margin); SGOV mixes rejected; beta ≈ 0 over 9-day windows. Both B0 and B2 in the forward test (A19) |
+| V-C | Earnings / event avoidance | Single-name gaps (NFLX-type) drive tail losses | Needs an earnings calendar (external data) |
+| V-D | Session-aware width (tight after-hours, wider pre-market/regular) | Toxicity is 4× lower after-hours | Queued |
+| V-E | Rotation: weekly re-selection of the 8 names by fee yield | Fee yield decays; follow flow | Queued (costs conversions) |
+| V-F | Capacity: how does $/day scale at $2k and $20k per sleeve | Dilution vs pool liquidity | Queued (0 RPC) |
+| V-G | Majors (ETH/USDG) at ±0.5% in low-volatility hours | Huge volume, tiny fee; vs hold ≈ 0 so far | Low prior |
+
+* **Vault iteration A18 (beta control, ~1k RPC):** B0 conf +6.07 / worst +0.98; **B2**
+  conf +5.63 / worst +1.34 (replaces by rule); B1 +3.71; B3 +3.39. Window-net beta vs
+  hold ≈ 0 (−0.09). Tried and rejected: SGOV mixing (B1, B3). **Next: V-F capacity (≈ 0.5k RPC).**
