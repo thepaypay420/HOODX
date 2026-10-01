@@ -901,3 +901,33 @@ weeks +9.84 bp [-14.81, +28.20]. Heterogeneous: BABA 0.10% new pool 100% capture
 0.50% 100% capture at -58.7 bp; EWY 5% and RKLB 5% pools still captured 18% / 53%. Flow is not
 fee-averse. Next (V-N3, fork/0-RPC only, no deployment): model capture as a function of depth and
 fee relative to incumbents, then design a sole-LP pool policy and test it on a fork.
+
+### V-N3 — does a pool win more flow than its depth share? (registered before running, 0 RPC)
+
+First principles: if routers split orders by marginal post-fee price, a pool's flow share ≈ its share of
+symbol depth, so an own pool is equivalent to adding the same depth to existing pools and offers no
+capacity gain (the ceiling is symbol volume x spread). An own pool has a structural advantage only if it
+captures MORE than its depth share.
+Measure, per Sept-new pool, week 1 after init: depth = median over its swaps of the quote needed to move
+its price 1% (from logged active L and sqrtP); depth_share = depth / (depth + same-week median depth of
+the symbol's other pools); R = capture / depth_share. Fee buckets: <= 5 bp, 5-25 bp, 25-60 bp, > 60 bp.
+Frozen rule: own pools have a structural advantage if some bucket with >= 5 pools has median R >= 1.5
+AND that bucket's pooled 24 h spread > 0. Otherwise conclude own pool ≈ added depth and park V-N with
+the capacity ceiling stated at symbol level. Also report Spearman(capture, depth_share).
+
+**V-N3 verdict (frozen rule): structural advantage = TRUE (0 RPC).** Spearman(capture, depth share)
+= 0.83 (depth drives flow). Buckets (n, median R, pooled 24 h spread): <= 5 bp (10, 2.27, +0.9 bp);
+5-25 bp (24, 1.21, +2.1 bp); 25-60 bp (4, 1.19, +23.5 bp); > 60 bp (6, 1.95, +246.5 bp). The rule is
+met by the <= 5 bp bucket (economically negligible spread) and the > 60 bp bucket. The > 60 bp result
+rests on 6 pools including one R = 18.6 outlier (EWY 5%) and is a known wash-trading signature, so it
+is NOT actionable until V-N4 passes.
+
+### V-N4 — flow authenticity audit of high-fee new pools (registered before running)
+
+For every Sept-new stock pool with fee > 60 bp from V-N2, sample up to 150 week-1 swaps (evenly spaced)
+and read each transaction's `from` (eth_getTransactionByHash; ≤ 1,000 RPC total). Classify a pool's flow
+as NON-ORGANIC if its top-3 senders account for > 80% of sampled volume OR the pool creator (init tx
+sender) is among its top-3 senders. Frozen rule: the > 60 bp own-pool advantage is ACTIONABLE only if at
+least 4 of the pools are organic and the organic subset still has median R >= 1.5 and pooled spread
+> 0. Otherwise the V-N3 > 60 bp result is attributed to non-organic flow and the own-pool path is
+limited to the <= 5 bp finding (not worth pursuing).
