@@ -878,3 +878,26 @@ skipped symbols are replaced by the next-ranked admitted symbol.
 Scoring: net per 9 d on $200 AFTER charging each book one ETH entry + exit at the measured route
 costs. Frozen rule: G1 replaces B0 if, after >= 10 forward days, G1 net-after-entry >= B0
 net-after-entry and G1 worst window >= B0 worst window. Reported regardless of outcome.
+
+### V-N2 — own hookless pool economics (sole-LP venue), registered before running
+
+Mechanism: the vault's capacity limit is dilution of other LPs' pools (A20/A24). A pool where the
+vault is the only LP has no dilution and its own fee; V-N showed new pools win flow (29.5% of
+2nd-half Sept volume). The question is whether newcomer pools win flow AND earn a positive spread
+after adverse selection.
+Sample: USDG stock pools (canonical rh_stocks tokens, hookless) initialized during September with
+≥ 50 swaps in their first 7 days. Incumbents: the same symbols' other pools over the same days.
+Measures (0 RPC, huntx_stock_sessions method at a 24 h horizon): (a) capture = the new pool's share
+of its symbol's USDG volume over days 1-7 after init; (b) pooled realized spread = (LP fee + 24 h
+markout) / volume, 90% CI by day-cluster bootstrap (2,000 draws, seed 7).
+Frozen rule: PASS only if (i) ≥ 1/3 of new pools reach ≥ 20% capture, (ii) new pools' pooled spread
+> 0 with 90% lower bound > 0, and (iii) new-pool spread ≥ incumbents' spread − 5 bp. PASS -> V-N3
+(design and fork-test a sole-LP pool; no deployment). FAIL -> park V-N with the reason.
+
+**V-N2 verdict: PASS (0 RPC).** 46 Sept-new USDG stock pools with ≥ 50 swaps in week 1.
+(i) 20/46 (43%) captured ≥ 20% of their symbol's week-1 volume. (ii) pooled 24 h realized spread
++10.11 bp, 90% CI [+0.19, +21.18] (lower bound barely positive). (iii) incumbents over the same
+weeks +9.84 bp [-14.81, +28.20]. Heterogeneous: BABA 0.10% new pool 100% capture at +9.6 bp; DELL
+0.50% 100% capture at -58.7 bp; EWY 5% and RKLB 5% pools still captured 18% / 53%. Flow is not
+fee-averse. Next (V-N3, fork/0-RPC only, no deployment): model capture as a function of depth and
+fee relative to incumbents, then design a sole-LP pool policy and test it on a fork.

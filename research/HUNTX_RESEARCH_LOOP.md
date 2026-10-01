@@ -204,7 +204,8 @@ Queue (ranked by expected $ uplift / cost):
 | A26 | ETH-entry cost gate | Expensive-to-enter picks hand the edge to arbitrage | forward (from 10-01) | WIRED into forward job (9-day cohorts 10-01/10/19/28, scored after ETH entry+exit) |
 | A25 | Earnings exclusion | Known gap events are pure LVR | forward (Oct 21-29 cluster) | WIRED (same cohorts; calendar research/huntx_forward/earnings_calendar.json, re-verify <= 7 d before 10-10/19/28) |
 | V-N | Where does flow go? | Venue choice | local swap logs (0 RPC) | DONE: Sept stock flow $634M, LP fees $1.88M. Flow is NOT cheapest-first: 0.25-0.30% pools 54% vol / 53% fees; 1% pools 8.8% vol / 30% fees (often the only venue); <=5bp pools ~25% vol / 3% fees. New Sept pools took 29.5% of 2nd-half volume (SPCX 78%, META 37%, CRCL/EWY/SGOV 100%) |
-| V-N2 | Own hookless pool (vault = sole LP) | Capacity limit is dilution of others' pools; a sole-LP pool has none and sets its own fee (e.g. 0.30% vs a 1% monopoly). No hook -> no Cork-class risk | cross-section of Sept-new pools: what depth/fee won share, what LP yield after LVR | READY (pre-register first) |
+| V-N2 | Own hookless pool (vault = sole LP) | Capacity limit is dilution of others' pools; a sole-LP pool has none and sets its own fee (e.g. 0.30% vs a 1% monopoly). No hook -> no Cork-class risk | cross-section of Sept-new pools | PASS: 20/46 new pools took >=20% share in week 1; pooled 24h spread +10.1bp [90% +0.19, +21.2] vs incumbents +9.8bp |
+| V-N3 | Sole-LP pool design | Capture depends on depth and fee vs incumbents | 0-RPC capture model (depth from logged L), then fork test; NO deployment | READY |
 | V-J | Own-flow recapture | Route vault swaps through our own sleeve pools | fork | QUEUED (small) |
 | V-G | Majors at low vol | ETH/USDG volume | backtest | LOW PRIOR |
 
@@ -220,3 +221,6 @@ Per-iteration protocol: read this charter + forward summary -> finish/verdict an
 * **Loop v2 iteration 3 (V-N, 0 RPC):** flow is sticky and fee-insensitive; 1% monopoly pools earn 30% of
   fees on 8.8% of volume; new pools capture flow within days (29.5% of 2nd-half volume). Opens V-N2: own
   hookless sole-LP pools as the capacity breakthrough candidate. **Next: pre-register and run V-N2.**
+
+* **Loop v2 iteration 4 (V-N2, 0 RPC): PASS.** New pools win flow and earn ≥ incumbents' spread (thin
+  margin: 90% LB +0.19bp). **Next: V-N3 capture model (depth & fee vs incumbents).**
