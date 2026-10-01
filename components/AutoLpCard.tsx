@@ -21,7 +21,7 @@ export function AutoLpCard() {
     </div>
     <div className="discovery-card-copy">
       <p><span className="autolp-live"><i aria-hidden />Autopilot · Automated LP</span></p>
-      <h3>Stock LP, on autopilot.</h3>
+      <h3>Hands-free LP.</h3>
       <span>Deposit ETH once. It earns trading fees on 8 tokenized stocks, rebalanced and compounded by on-chain rules.</span>
     </div>
     <div className="discovery-card-foot">
