@@ -4,8 +4,8 @@ import { parseAbi, type Address } from "viem";
 export const AUTO_LP = {
   slug: "autolp",
   symbol: "STKX",
-  vault: null as Address | null,
-  controller: null as Address | null,
+  vault: "0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80" as Address | null, // live 2026-10-01, verified on-chain
+  controller: "0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585" as Address | null,
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
   capUsd: 10_000,
   minUsd: 10,
