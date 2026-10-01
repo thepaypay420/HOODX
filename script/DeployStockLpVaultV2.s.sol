@@ -12,6 +12,14 @@ import {HoodxStockLpSeederV1, ISeedController} from "../contracts/liquidity/v4/H
 import {IPriceReference, IV4StateView, PoolKey} from "../contracts/liquidity/v4/V4Types.sol";
 import {HoodxTwapV2} from "../contracts/v2/HoodxTwapV2.sol";
 
+interface IV3ObservedPool {
+    function slot0()
+        external
+        view
+        returns (uint160, int24, uint16 observationIndex, uint16 observationCardinality, uint16, uint8, bool);
+    function observe(uint32[] calldata secondsAgos) external view returns (int56[] memory, uint160[] memory);
+}
+
 /// @notice Deploys the reviewed HOODX Stock LP vault V2 "autopilot" (deployer transactions only).
 /// @dev Creates one HoodxTwapV2 reference, one sleeve per manifest entry, the vault and the controller;
 ///      wires the vault into every sleeve, hands all ownership to the controller and activates it.
@@ -26,6 +34,7 @@ contract DeployStockLpVaultV2 is Script {
     address internal constant USDG = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address internal constant V3_FACTORY = 0x1f7d7550B1b028f7571E69A784071F0205FD2EfA;
     uint24 internal constant ETH_POOL_FEE = 100;
+    uint16 internal constant MIN_OBSERVATIONS = 300;
     int24 internal constant ETH_POOL_SPACING = 1;
 
     struct Entry {
@@ -78,6 +87,14 @@ contract DeployStockLpVaultV2 is Script {
         PoolKey[] memory swapKeys = new PoolKey[](n);
         HoodxStockLpControllerV2.Policy[] memory pol = new HoodxStockLpControllerV2.Policy[](n);
 
+        // Every TWAP reference must keep enough observations to serve a 30-minute TWAP after any trade.
+        for (uint256 i; i < n; ++i) {
+            (,,, uint16 card,,,) = IV3ObservedPool(e[i].v3Pool).slot0();
+            require(card >= MIN_OBSERVATIONS, string.concat("reference pool keeps too few observations: ", e[i].symbol));
+            uint32[] memory ago = new uint32[](2);
+            ago[0] = 1800;
+            IV3ObservedPool(e[i].v3Pool).observe(ago);
+        }
         vm.startBroadcast(DEPLOYER);
         d.seeder = new HoodxStockLpSeederV1(PM, USDG, DEPLOYER, ETH_POOL_FEE, ETH_POOL_SPACING);
         for (uint256 i; i < n; ++i) {

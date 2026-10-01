@@ -1,5 +1,7 @@
 {
- "status": "PENDING_E2E_AND_FUNDING",
+ "status": "APPROVED",
+ "approvedAt": "2026-10-01",
+ "reviewedBuild": "0x307ecf30f2053564b9c2147f4352f374045efb5fa783e469136756565406e8e8",
  "note": "V2 autopilot: same 8-stock basket the owner approved for V1 on 2026-09-30 (PLTR on its 0.15% pool). Rebands/compounding are permissionless rule-bound keeper cranks; curator keeps pause + rescue. Status becomes APPROVED only after the local-fork end-to-end launch + keeper test passes.",
  "perfFeeBps": 1000,
  "minDepositUsdg": 10000000,
@@ -20,7 +22,7 @@
     "fee": 100,
     "tickSpacing": 1
    },
-   "v3Pool": "0xc277560df3689a401ba7dedd7626168b234ceb5e",
+   "v3Pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
    "halfWidthTicks": 100
   },
   {
@@ -122,5 +124,6 @@
    "halfWidthTicks": 120
   }
  ],
- "version": "v2-autopilot"
+ "version": "v2-autopilot",
+ "referenceNote": "V3 TWAP references must keep >= 300 observations (checked by the deploy script). NVDA uses its 0.05% pool (7,200 observations; its 1% pool keeps only 1 and fails 30-min TWAPs after any trade); MSTR uses its 1% pool (1,801/7,200); all others their 0.30% pools (1,500-3,000)."
 }
