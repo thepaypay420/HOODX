@@ -5,7 +5,7 @@
 <h1 align="center">HOODX</h1>
 
 <p align="center">
-  <strong>Robinhood Chain · On-chain index tokens</strong><br />
+  <strong>Robinhood Chain · On-chain index tokens · Automated stock LP</strong><br />
   One token. A whole basket.
 </p>
 
@@ -13,51 +13,110 @@
   <img alt="Live" src="https://img.shields.io/badge/status-LIVE-1fd4c6?style=flat-square&labelColor=070b0c" />
   <img alt="Robinhood Chain 4663" src="https://img.shields.io/badge/chain-Robinhood%204663-e0b54a?style=flat-square&labelColor=070b0c" />
   <img alt="Uniswap V3 + V4" src="https://img.shields.io/badge/uniswap-V3%20%2B%20V4-ff007a?style=flat-square&labelColor=070b0c" />
-  <img alt="$696X Gen-0" src="https://img.shields.io/badge/%24696X-Gen--0-1fd4c6?style=flat-square&labelColor=070b0c" />
+  <img alt="Automated LP" src="https://img.shields.io/badge/%24STKX-Automated%20LP-b98cff?style=flat-square&labelColor=070b0c" />
+  <img alt="Verified" src="https://img.shields.io/badge/contracts-verified-1fd4c6?style=flat-square&labelColor=070b0c" />
 </p>
 
 <p align="center">
   <a href="https://www.xhoodindex.com">App</a> ·
+  <a href="https://www.xhoodindex.com/explore">Explore</a> ·
+  <a href="https://www.xhoodindex.com/autolp">Automated LP</a> ·
   <a href="https://www.xhoodindex.com/i/696x">$696X</a> ·
+  <a href="https://www.xhoodindex.com/create">Create</a> ·
   <a href="https://x.com/XHOODINDEX">X</a> ·
-  <a href="https://t.me/HOODXINDEX">Telegram</a> ·
-  <a href="https://x.com/696_eth/status/2100067116594725086">696 list</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A">Vault</a> ·
-  <a href="https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b">Factory</a>
+  <a href="https://t.me/HOODXINDEX">Telegram</a>
 </p>
 
 <p align="center">
   <img src="docs/hud-home.png" alt="HOODX — One token. A whole basket." width="920" />
 </p>
 
-HOODX is live on **Robinhood Chain (4663)**. Permissionless index funds — buy one token for exposure to a curated basket of RH-chain tokens, with a WETH cash sleeve, all on-chain. Anyone can mint 2–24 Uniswap V3 WETH/USDG or hookless V4 ETH/stock-quote names as a single ERC-20.
+HOODX is live on **Robinhood Chain (4663)**:
 
-**Not** Robinhood Markets, **not** tokenized HOOD stock (xStocks / Backed), **not** audited. Source-available experimental software — verify contracts yourself before joining.
+- **Index tokens.** One ERC-20 holds a curated basket of 2–24 tokenized stocks or RH-chain tokens, plus a WETH cash sleeve. Join with ETH, leave to ETH.
+- **Automated LP ($STKX).** One ETH deposit provides Uniswap V4 liquidity on eight tokenized stocks, rebalanced and compounded by on-chain rules.
+- **Create your own.** Anyone can mint an index from the factory, share `/i/yourslug` and earn a creator fee on every join.
 
-You drop `/i/yourslug`. You keep the basket from going thin. You earn a cut on every join. **Redeem is free, and it cannot be paused.**
+**Not** Robinhood Markets, **not** tokenized HOOD stock, **not** audited. Source-available experimental software. Verify contracts yourself before joining.
 
 ---
 
-## $696X is live
+## What's live
 
-**$696X** is index zero: [696_eth’s RH watchlist](https://x.com/696_eth/status/2100067116594725086) as one basket. The HUD carries 696’s X picture. One share starts at **$100 of ETH**. Join buys the mix. Leave sells your slice back to ETH.
+| Product | Where | Status |
+|---|---|---|
+| Official indexes (V2) | [/explore](https://www.xhoodindex.com/explore) | 12 deployed · $696X and $FAANGX seeded · 10 awaiting curator seed |
+| Automated LP · $STKX | [/autolp](https://www.xhoodindex.com/autolp) | Live · $10 minimum · $10,000 cap · hourly autopilot |
+| Create an index | [/create](https://www.xhoodindex.com/create) | Open · permissionless |
+| Liquidity Prime · Fee Machine | [/liquidity-prime](https://www.xhoodindex.com/liquidity-prime) · [/fee-machine](https://www.xhoodindex.com/fee-machine) | Pilots |
+
+---
+
+## Explore: pick a point of view
 
 <p align="center">
-  <img src="docs/hud-696x.png" alt="$696X — vault desk, ROI, basket, join and leave" width="920" />
+  <img src="docs/hud-explore.png" alt="Explore — HOODX collections and the Automated LP" width="920" />
 </p>
 
-| | On-chain now |
-|---|---|
-| Vault | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
-| Factory | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
-| Status | **Live** · joins open · redeem open |
-| Share | ~0.04 ETH · genesis peg **$100** of ETH |
-| Basket | 10 listed names · hooked/thin pools blocked · Uni V3 TWAP + hookless V4 · ~25% WETH cash |
-| Fees | 0.50% in · **0% out** |
-| First mint | Open · **0.08 ETH** (~$200). Later joins copy the live mix. |
-| Token image | On-chain `imageURI` / ERC-7572 `contractURI` · 696 PFP |
+| Index | Theme | Holdings | Join fee (creator + protocol) | Vault |
+|---|---|---|---|---|
+| **$696X** | The conviction list (culture) | PONS, AI, CASHCAT, INDEX, MEME, STONKBROKER, HOOKR, DELTA | 0.40% + 0.10% | [`0x5318…9292`](https://robinhoodchain.blockscout.com/address/0x531832cd20d33ee974afee7ba5720b8f3f2c9292) |
+| **$FAANGX** | Big tech conviction | META, AAPL, AMZN, NFLX, GOOGL | 0% + 0.10% | [`0xcb40…b0b0`](https://robinhoodchain.blockscout.com/address/0xcb40b8d79ff6f4c5db15bd8a9692b934b52cb0b0) |
+| $CHAINX | On-chain finance | MSTR, COIN, CRCL, GLXY | 0.40% + 0.10% | [`0xF77f…43d2`](https://robinhoodchain.blockscout.com/address/0xF77fb0e5cE0682B8D8064e754cF99d7F3EC643d2) |
+| $CHIPX | Silicon stack | NVDA, AMD, INTC, TSM, MU, AVGO | 0.40% + 0.10% | [`0xb70d…BBE`](https://robinhoodchain.blockscout.com/address/0xb70dD77B61ad2d2D70d14d1e74591fd173f2FBBE) |
+| $AIX | AI stack | NVDA, META, PLTR, MSFT, GOOGL | 0.40% + 0.10% | [`0x5B0a…82E7`](https://robinhoodchain.blockscout.com/address/0x5B0a7D7e596fc7E627716945644B3cEe738c82E7) |
+| $CULTX | Retail pulse | GME, AMC, RDDT, DJT, BB, RBLX | 0.40% + 0.10% | [`0xB8C2…052b`](https://robinhoodchain.blockscout.com/address/0xB8C2F95238A9076E73D60273C22724360a7A052b) |
+| $HLTHX | Health frontier | MRNA, LLY, HIMS, PFE, JNJ | 0.40% + 0.10% | [`0x8b53…0166`](https://robinhoodchain.blockscout.com/address/0x8b53F25665e0fE8A860A1120A0A08d0007570166) |
+| $CLOUDX | Cloud layer | SHOP, NET, SNOW, ORCL, MSFT | 0.40% + 0.10% | [`0x649b…a3ec`](https://robinhoodchain.blockscout.com/address/0x649be0E6396778Cf58cd5bdfD347cbe83508a3ec) |
+| $REALX | Real assets | GLD, SLV, USO, USAR | 0.40% + 0.10% | [`0x1a39…f1b9`](https://robinhoodchain.blockscout.com/address/0x1a396BfE4f79b1d12a27524217C4DED677BEF1b9) |
+| $COREX | Core & carry | SPY, QQQ, SGOV, GLD, VTI | 0.40% + 0.10% | [`0xD6b3…6789`](https://robinhoodchain.blockscout.com/address/0xD6b3ba50aFf684df5B53bAD77CA697F64F076789) |
+| $EDGE | Frontier systems | SPCX, TSLA, BA, LMT, RCAT, USAR | 0.40% + 0.10% | [`0xaabF…3AdC`](https://robinhoodchain.blockscout.com/address/0xaabFc490682AD036b421458F10E14dFc105E3AdC) |
+| $ICONX | Consumer icons | AAPL, AMZN, COST, META, NFLX, LULU | 0.40% + 0.10% | [`0xba12…bA15`](https://robinhoodchain.blockscout.com/address/0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15) |
 
-Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
+Fees are read from each vault on-chain (`creatorFeeBps`, `protocolFeeBps`). Indexes in plain type have a deployed vault but no curator seed yet, so joins open after the first seed.
+
+**How a V2 index works**
+
+```
+ETH in ── protocol fee (≤0.50%) + creator fee (≤0.50%)
+       └── net buys the basket through reviewed Uniswap V3 / V4 routes
+              ├── ~25% WETH cash sleeve for exits
+              └── NAV = every holding valued by its price reference + WETH
+Leave ──── sells your slice back to ETH · no exit fee · not blocked by a deposit pause
+Redeem in kind ── your share of every token + cash · no prices, no swaps
+```
+
+- ETH joins and ETH exits need every holding's on-chain price reference to pass its depth and history checks. If one cannot, the HUD names the asset, and **redeem in kind** stays available.
+- Routes and price references are append-only policy approvals. A self-healing controller can switch a token to a curator-pre-approved backup configuration.
+
+---
+
+## Automated LP · $STKX
+
+<p align="center">
+  <img src="docs/hud-autolp.png" alt="Automated LP — Stock LP on autopilot" width="920" />
+</p>
+
+Deposit ETH once. The vault splits it across eight Uniswap V4 stock/USDG positions: **NVDA, META, SPY, SPCX, PLTR, BABA, USO, MSTR**.
+
+- Each position sits in a ±1% range around price and earns trading fees while price is inside it.
+- **Autopilot:** harvest, compound, out-of-range signal and reband are permissionless cranks with on-chain rules:
+  - a position must be out of range for 24 hours before it is rebanded;
+  - each reband has a 1-hour cooldown;
+  - TWAP and spot prices must agree within 150 bp.
+- A stateless keeper runs the cranks hourly from GitHub Actions. Anyone else may run them too.
+- **Exit** to ETH in one transaction, or take the emergency exit straight to the underlying sleeve shares.
+- **Fees:** 10% performance fee on LP trading fees only. There is no deposit fee and no management fee.
+- **Limits:** $10 minimum deposit, $10,000 TVL cap.
+
+| Contract | Address | Verified |
+|---|---|---|
+| **$STKX vault** | [`0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80`](https://robinhoodchain.blockscout.com/address/0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80?tab=contract) | Blockscout ✓ · Sourcify exact match |
+| **Autopilot controller** | [`0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585`](https://robinhoodchain.blockscout.com/address/0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585?tab=contract) | Blockscout ✓ · Sourcify exact match |
+| Seeder | [`0xd026b1bf94d63bac3e3c9ee55efb427ce4fdc4ee`](https://robinhoodchain.blockscout.com/address/0xd026b1bf94d63bac3e3c9ee55efb427ce4fdc4ee?tab=contract) | Sourcify exact match |
+| Sleeves | NVDA [`0xaace…1ab3`](https://robinhoodchain.blockscout.com/address/0xaacee71743b165da07cb67e1516b0303c2be1ab3) · META [`0x5dc5…1b50`](https://robinhoodchain.blockscout.com/address/0x5dc58931df2751096a2a1592cdc7ce9673461b50) · SPY [`0x8459…6c4e`](https://robinhoodchain.blockscout.com/address/0x8459ebe7b2a8628410f2a15bc3f6487263516c4e) · SPCX [`0xc1bc…d09d`](https://robinhoodchain.blockscout.com/address/0xc1bc64d2af27cfe28c084e0530a2fad91ed9d09d) · PLTR [`0x5087…24d0`](https://robinhoodchain.blockscout.com/address/0x5087b8f98e317a1167085f9c1f709e05fb5224d0) · BABA [`0xc261…800b`](https://robinhoodchain.blockscout.com/address/0xc2610f562d9a6ec34114c9dcb6938273604c800b) · USO [`0x3fa2…0c8e`](https://robinhoodchain.blockscout.com/address/0x3fa2da43694934e1cb87f1de8415d8cc09ea0c8e) · MSTR [`0x99aa…7303`](https://robinhoodchain.blockscout.com/address/0x99aa2a30571994eedb614dec0932a68a6ee77303) | Sourcify exact match |
+
+Curator and fee recipient: [`0x134D…37C6`](https://robinhoodchain.blockscout.com/address/0x134D468B0bcaeA6DF127916f951F7938c06A37C6). The curator can pause autopilot management and rescue unrelated tokens sent by mistake. Rescue is hard-coded to refuse USDG, the stock tokens and sleeve shares, so it cannot take depositor positions. See [deployments/stock-lp-vault-v2-live.json](deployments/stock-lp-vault-v2-live.json) for the full deployment record and [docs/VERIFY.md](docs/VERIFY.md) for verification.
 
 ---
 
@@ -67,76 +126,41 @@ Telegram: [t.me/HOODXINDEX](https://t.me/HOODXINDEX)
   <tr>
     <td width="33%" valign="top">
       <h3>01 · Compose</h3>
-      <p>Pick 2–24 RH names with a Uni V3 WETH/USDG or hookless V4 ETH/stock-quote pool. Paste any <code>0x</code> the HUD can price. Names too small stay ETH.</p>
+      <p>Pick 2–24 RH names with a reviewed Uni V3 or hookless V4 route. Names too thin to price safely are blocked.</p>
     </td>
     <td width="33%" valign="top">
       <h3>02 · Share</h3>
-      <p>Every index lives at <code>/i/yourslug</code>. Friends ape ETH and receive one ERC-20. You curate. They don’t farm seventeen tickers.</p>
+      <p>Every index lives at <code>/i/yourslug</code>. Friends join with ETH and receive one ERC-20.</p>
     </td>
     <td width="33%" valign="top">
       <h3>03 · Earn</h3>
-      <p><strong>0.40%</strong> to you, <strong>0.10%</strong> to HOODX, on every join. Redeem is 0% and stays open if joins are paused.</p>
+      <p>Set your creator fee (0–0.50%) on every join. Exits carry no fee.</p>
     </td>
   </tr>
 </table>
 
-```
-ETH in ── 0.10% protocol
-       ── 0.40% creator
-       └── net buys the basket (Uni V3 TWAP / hookless V4, 3% max slip)
-              ├── thin names stay WETH
-              ├── cash sleeve for exits
-              └── Leave sells your slice back to ETH. Fee: 0.
-```
+1. Open [/create](https://www.xhoodindex.com/create) or the forge on the home page.
+2. Name, ticker, slug. Pick 2–24 names, or paste a token `0x`.
+3. Set your cut (0–50 bps).
+4. Launch and seed. Share `/i/yourslug`.
 
-| | $696X | Your index |
-|---|---|---|
-| First mint | 0.08 ETH | 0.02 ETH |
-| Share at genesis | $100 of ETH | $100 of ETH |
-| Join | 0.50% | 0.10% protocol + 0–0.50% you |
-| Redeem | **0% · cannot be paused** | same |
-| Basket | 2–24 names · curator rebalances | same |
-| Add a name | paste any RH `0x` with a safe V3 WETH or hookless V4 pool | same |
-
-A name that cannot fill inside 3% stays ETH. NAV is **every sleeve plus WETH** — not one pool token standing in for the fund. USD on the HUD is the live ETH tape, never a hardcoded price.
-
----
-
-## Why a factory, not one token
-
-A single watchlist coin is a fund you have to market forever. The loop that spreads:
-
-**you** pick the pack → drop `/i/yourslug` → friends ape → **you** earn.
-
-$696X is the proof. Then anyone mints their own basket. Creator fees and curation are separate keys: point the cut at 696 without handing add/remove.
-
-`696x` and `hoodx` are reserved.
-
----
-
-## Create yours
-
-1. Open `/create` or the forge on the home page.
-2. Name, ticker, slug. Pick 2–24 names — or paste a token `0x`.
-3. Set your cut (0–50 bps). HOODX always takes 10 bps.
-4. Mint. Share `/i/yourslug`.
-
-The factory is permissionless. `HoodxFactory.create` is for anyone. `create696x` is Gen-0.
+`696x` and `hoodx` are reserved slugs.
 
 ---
 
 ## HUD
 
-Next.js 15, viem, no private keys. Dark landing with teal `#1fd4c6`, gold `#e0b54a`, and the hat mark.
+Next.js 16, viem, no private keys in the browser. Dark UI in teal `#1fd4c6` and gold `#e0b54a`, with the HOODX X mark.
 
 Production: **[www.xhoodindex.com](https://www.xhoodindex.com)** (`xhoodindex.com` redirects there).
 
 | Route | |
 |---|---|
-| `/` | Landing · explore indexes · create |
-| `/i/696x` | You / ROI / vault / NAV · join · leave · basket |
-| `/i/[slug]` | any index |
-| `/create` | mint |
+| `/` | Landing · featured indexes · forge |
+| `/explore` | All collections, filters by point of view, Automated LP card |
+| `/i/[slug]` | Any index: your position, NAV, basket, join, leave, redeem in kind |
+| `/autolp` | Automated LP: live NAV and P/L, deposit and withdraw ETH, autopilot status |
+| `/create` | Launch an index |
 
 ```bash
 cp .env.example .env.local
@@ -144,89 +168,81 @@ npm install
 npm run dev     # http://127.0.0.1:3100
 ```
 
-Vercel builds this Next HUD from the repository root. `.env.example` points at the canonical factory, $696X vault, and `https://www.xhoodindex.com`. The HUD always serves those addresses — ignore copycat contracts from DMs or random links.
+Vercel builds the HUD from the repository root. The HUD only serves the addresses in this README; ignore copycat contracts from DMs or random links.
 
 ---
 
 ## Contracts
 
-Robinhood Chain **4663**. EIP-1167 clones of hardened `HoodxIndex`.
+Robinhood Chain **4663**. Verify on [robinhoodchain.blockscout.com](https://robinhoodchain.blockscout.com) or [robin.etherscan.io](https://robin.etherscan.io) only. **Verified source ≠ audited.**
 
-**Verify source:** see **[docs/VERIFY.md](docs/VERIFY.md)** — bytecode in this repo matches the canonical deployments (runtime diff after metadata strip). All four implementations are **verified on [Blockscout](https://robinhoodchain.blockscout.com)** (exact match, Sep 2026). The $696X vault is an EIP-1167 clone — read source on the implementation row.
-
-**How to check before you join**
-
-- Use only [robinhoodchain.blockscout.com](https://robinhoodchain.blockscout.com) (not third-party explorers).
-- Use only addresses from this table or [xhoodindex.com](https://www.xhoodindex.com).
-- `$696X` is an **EIP-1167 clone** of the implementation row — read source on the implementation, not a copycat vault.
-- On the vault: read `owner`, `creator`, `creatorRecipient`, `paused`, and a real `withdraw` tx.
-- Verified source **≠ audited**.
+**V2 index system (production)**
 
 | | Address |
 |---|---|
-| **Factory** | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
-| Implementation | [`0x7A5A47022E993401c5C6CFce0208c10fB032025E`](https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E) |
-| Swap logic | [`0x2505a3185136cE990077a71c4929a115d9AEDf75`](https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75) |
-| **$696X vault** | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
-| TWAP oracle | [`0x815A0D4909460B29c70868e24831f575cA86F3aD`](https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD) |
+| Factory | [`0x5e846680bf8d702072b65e1e403d07e5a5f98b90`](https://robinhoodchain.blockscout.com/address/0x5e846680bf8d702072b65e1e403d07e5a5f98b90) |
+| Atomic launch factory (create flow) | [`0x29349c79863b58e7ab470865f7c6df0b31dc7c17`](https://robinhoodchain.blockscout.com/address/0x29349c79863b58e7ab470865f7c6df0b31dc7c17) |
+| Index implementation | [`0x79439067baf81dc2f43b76c736cd5eb687e7b7ff`](https://robinhoodchain.blockscout.com/address/0x79439067baf81dc2f43b76c736cd5eb687e7b7ff) |
+| Policy (route + price-reference approvals) | [`0x8e36fb11545fc1683f35a079d3f9f1a715dbec70`](https://robinhoodchain.blockscout.com/address/0x8e36fb11545fc1683f35a079d3f9f1a715dbec70) |
+| Executor | [`0xa3e8761ce43d1a6afc5229d2aa83dcc5e2bbdd62`](https://robinhoodchain.blockscout.com/address/0xa3e8761ce43d1a6afc5229d2aa83dcc5e2bbdd62) |
+| Self-healing controller · $696X | [`0x32d806935f5118a60bB90137e699B81a0348e643`](https://robinhoodchain.blockscout.com/address/0x32d806935f5118a60bB90137e699B81a0348e643) |
+| Self-healing controller · $FAANGX | [`0xB0Db61D7AeE1714A285e52f92a7b971bf28bc783`](https://robinhoodchain.blockscout.com/address/0xB0Db61D7AeE1714A285e52f92a7b971bf28bc783) |
 | WETH | [`0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`](https://robinhoodchain.blockscout.com/address/0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73) |
-| Uni V3 SwapRouter02 | [`0xCaf681a66D020601342297493863E78C959E5cb2`](https://robinhoodchain.blockscout.com/address/0xCaf681a66D020601342297493863E78C959E5cb2) |
+| USDG | [`0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168`](https://robinhoodchain.blockscout.com/address/0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168) |
 | Uni V4 PoolManager | [`0x8366a39CC670B4001A1121B8F6A443A643e40951`](https://robinhoodchain.blockscout.com/address/0x8366a39CC670B4001A1121B8F6A443A643e40951) |
 
+Index vaults are listed under [Explore](#explore-pick-a-point-of-view); Automated LP contracts under [Automated LP](#automated-lp--stkx). Deployment records: [deployments/robinhood-4663-v2.json](deployments/robinhood-4663-v2.json), [deployments/SELF-HEALING-LIVE-RESULTS.md](deployments/SELF-HEALING-LIVE-RESULTS.md).
+
+<details>
+<summary><b>Legacy V1 contracts (superseded)</b></summary>
+
+The original Gen-0 system. Kept for holders and history; new joins use V2.
+
+| | Address |
+|---|---|
+| V1 factory | [`0x56809a2738A23650aF939F73588E72C67CafC19b`](https://robinhoodchain.blockscout.com/address/0x56809a2738A23650aF939F73588E72C67CafC19b) |
+| V1 index implementation | [`0x7A5A47022E993401c5C6CFce0208c10fB032025E`](https://robinhoodchain.blockscout.com/address/0x7A5A47022E993401c5C6CFce0208c10fB032025E) |
+| V1 swap logic | [`0x2505a3185136cE990077a71c4929a115d9AEDf75`](https://robinhoodchain.blockscout.com/address/0x2505a3185136cE990077a71c4929a115d9AEDf75) |
+| V1 $696X vault (EIP-1167 clone) | [`0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A`](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) |
+| V1 TWAP oracle | [`0x815A0D4909460B29c70868e24831f575cA86F3aD`](https://robinhoodchain.blockscout.com/address/0x815A0D4909460B29c70868e24831f575cA86F3aD) |
+
+</details>
+
 ```
-contracts/HoodxFactory.sol   permissionless clones · create / create696x · imageURI
-contracts/HoodxIndex.sol     ETH in / ETH out vault · deposit · withdraw
-contracts/HoodxSwap.sol      swap / bind / quote seeds (delegatecall)
-contracts/UniTwap.sol        V3 TWAP + V4 spot oracle
+contracts/v2/HoodxIndexV2.sol                    ETH in / ETH out vault · in-kind redemption
+contracts/v2/HoodxFactoryV2.sol                  index factory
+contracts/v2/HoodxPolicyV2.sol                   append-only route + price-reference approvals
+contracts/v2/HoodxSelfHealingControllerV2.sol    curator-approved config recovery
+contracts/v2/HoodxTwapV2.sol                     V3 TWAP reference with depth/history guards
+contracts/liquidity/v4/HoodxStockLpVaultV1.sol   $STKX vault (ETH in/out across sleeves)
+contracts/liquidity/v4/HoodxStockLpSleeveV2.sol  one Uniswap V4 stock/USDG range position
+contracts/liquidity/v4/HoodxStockLpControllerV2.sol  autopilot rules (harvest/compound/signal/reband)
 ```
 
-- `deposit(minShares)` — 97% of preview. Joins can close; **withdraw ignores pause**.
-- `withdraw(shares, minEthOut)` — sells the slice, 3% per swap.
-- Hooked V4 pools revert at bind. Thin pools and unsafe names are blocked in the HUD.
-- Two-step `owner` (nominate → Accept). Creator-only fee recipient and bps.
-- V3 TWAP + V4 spot (mint uses `max(spot, lastPx)`). `restoreCash` is V3-only.
-- Quote bind: V3 WETH, V3 USDG, V4 ETH/WETH, V4 stock quote (PROMETHEUS/SPCX), V4 USDG.
-- `imageURI` + ERC-7572 `contractURI` at create; curator can `setImageURI`.
-
-```bash
-python3 -m unittest tests.test_weights tests.test_vault tests.test_harden
-```
-
-Read **[DESIGN.md](DESIGN.md)** for mint math, oracle limits, and the drain catalog.  
-Read **[docs/VERIFY.md](docs/VERIFY.md)** for solc settings, constructor args, and Blockscout steps.
+Read **[docs/V2_ARCHITECTURE.md](docs/V2_ARCHITECTURE.md)**, **[docs/V2_SECURITY.md](docs/V2_SECURITY.md)** and **[docs/VERIFY.md](docs/VERIFY.md)**.
 
 ---
 
 ## Guarantees
 
-- **Redeem stays open** if joins are paused. User ETH is not a curator hostage.
-- A typo owner (zero, vault, WETH, dead) reverts. The new curator cannot steal the creator cut.
-- NAV sums every priced sleeve plus WETH. One dumped pool cannot mint the rest of the basket cheap.
-- Canonical $696X is only the vault in the table above — verify on [Blockscout](https://robinhoodchain.blockscout.com/address/0xAC45f6FffB17645057aa783b72b2Ce78BD7A1a3A) or on [xhoodindex.com/i/696x](https://www.xhoodindex.com/i/696x).
+- **Exits stay open.** A V2 deposit pause does not block withdrawals, and in-kind redemption never needs prices or swaps.
+- NAV sums every priced holding plus WETH, so one dumped pool cannot mint the rest of the basket cheap.
+- Price references are immutable and depth-guarded. If one fails its checks, joins and ETH exits fail closed instead of mispricing.
+- Automated LP rules are on-chain: no one can reband early, skip the 24-hour out-of-range wait, or act on a price that disagrees with its TWAP reference.
 
 ## Before you join
 
 | | |
 |---|---|
-| Official Robinhood product? | **No** — community index factory on Robinhood Chain |
-| Tokenized HOOD stock (xStocks)? | **No** — different product, same ticker confusion |
-| Audited? | **No** — read the code, assume bugs and basket risk |
-| Basket risk | RH-chain memecoins can rug, thin out, or go to zero |
-| Verify contracts | Only from this README or **xhoodindex.com** — not Telegram CAs |
-| Never | Import a seed phrase, install a random “HOODX wallet”, or trust a DM admin |
+| Official Robinhood product? | **No.** Community protocol on Robinhood Chain |
+| Tokenized HOOD stock? | **No.** Different product, same ticker confusion |
+| Audited? | **No.** Read the code; assume bugs, basket risk and impermanent loss |
+| Basket risk | RH-chain tokens can rug, thin out or go to zero; stock tokens track volatile equities |
+| Verify contracts | Only from this README or **xhoodindex.com**, never from Telegram CAs |
+| Never | Import a seed phrase, install a random "HOODX wallet", or trust a DM admin |
 
-Not HOOD10. Not a seeded Uni pool yet. Not financial advice.
-
----
+Not financial advice.
 
 <p align="center">
-  <a href="https://t.me/HOODXINDEX"><strong>t.me/HOODXINDEX</strong></a><br />
-  <sub>Private repository. All rights reserved.</sub>
+  <a href="https://t.me/HOODXINDEX"><strong>t.me/HOODXINDEX</strong></a>
 </p>
-
-
-## V2 hardening candidate
-
-The V2 implementation is under development on a dedicated branch. No V2 production deployment or frontend address activation has occurred. Read [architecture](docs/V2_ARCHITECTURE.md), [security evidence and limitations](docs/V2_SECURITY.md), and the [deployment runbook](docs/V2_DEPLOYMENT.md). The versioned deployment manifest explicitly records undeployed status.
-
-Development uses Node 24 and recursively checked-out, pinned Foundry/OpenZeppelin submodules. V2 local tests run with forge test --no-match-contract '.*Fork.*'; private-RPC fork tests require process-only environment configuration. Never add the paid endpoint to a browser bundle or repository file.

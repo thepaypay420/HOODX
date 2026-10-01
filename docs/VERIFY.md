@@ -187,3 +187,36 @@ Creation transaction hashes are in `docs/verify-out/report.json` (from Blockscou
 - [x] Blockscout verified (oracle, swap, implementation, factory)
 - [ ] Sourcify mirror (optional)
 - [x] Creation tx hashes in `docs/verify-out/report.json`
+
+---
+
+## Automated LP · $STKX (Auto LP V2, deployed 2026-10-01)
+
+Deployed with Foundry (`script/DeployStockLpVaultV2.s.sol`, broadcast `broadcast/DeployStockLpVaultV2.s.sol/4663/run-latest.json`). Build settings come from `foundry.toml`: solc **0.8.24**, optimizer **on**, runs **1**, viaIR **true**, evmVersion **cancun**, bytecodeHash **ipfs**.
+
+**Bytecode check (2026-10-01):** every one of the 19 contracts created by the deployment matches the local `forge build` runtime bytecode **exactly, including the metadata hash**. Immutable slots are excluded, as usual.
+
+| Contract | Address | Sourcify | Blockscout |
+|---|---|---|---|
+| $STKX vault (`HoodxStockLpVaultV1`) | `0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80` | exact match | verified ✓ |
+| Autopilot controller (`HoodxStockLpControllerV2`) | `0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585` | exact match | verified ✓ |
+| Seeder (`HoodxStockLpSeederV1`) | `0xd026b1bf94d63bac3e3c9ee55efb427ce4fdc4ee` | exact match | |
+| Sleeve NVDA (`HoodxStockLpSleeveV2`) | `0xaacee71743b165da07cb67e1516b0303c2be1ab3` | exact match | |
+| Sleeve META | `0x5dc58931df2751096a2a1592cdc7ce9673461b50` | exact match | |
+| Sleeve SPY | `0x8459ebe7b2a8628410f2a15bc3f6487263516c4e` | exact match | |
+| Sleeve SPCX | `0xc1bc64d2af27cfe28c084e0530a2fad91ed9d09d` | exact match | |
+| Sleeve PLTR | `0x5087b8f98e317a1167085f9c1f709e05fb5224d0` | exact match | |
+| Sleeve BABA | `0xc2610f562d9a6ec34114c9dcb6938273604c800b` | exact match | |
+| Sleeve USO | `0x3fa2da43694934e1cb87f1de8415d8cc09ea0c8e` | exact match | |
+| Sleeve MSTR | `0x99aa2a30571994eedb614dec0932a68a6ee77303` | exact match | |
+| TWAP references ×8 (`HoodxTwapV2`) | `0xec43…aa6b` `0xd443…a6bf` `0x1561…281b` `0xa915…7948` `0x95eb…3e72` `0x2cc0…7959` `0xe40b…a8a2` `0xcca5…1e6a` | exact match | |
+
+Re-check any of them yourself:
+
+```bash
+forge build
+forge verify-contract <address> contracts/liquidity/v4/HoodxStockLpVaultV1.sol:HoodxStockLpVaultV1 \
+  --chain 4663 --verifier sourcify            # Sourcify reports exact_match or already verified
+```
+
+Blockscout's API sits behind a Cloudflare browser check, so `forge --verifier blockscout` gets a 403 from the command line. Submit through the explorer's **Verify & publish** page instead (method: *Solidity, standard JSON input*), using the input Sourcify returns at `https://sourcify.dev/server/v2/contract/4663/<address>?fields=stdJsonInput`. For RobinScan (robin.etherscan.io), use `forge verify-contract … --verifier etherscan --chain 4663` with an Etherscan V2 API key.
