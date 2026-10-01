@@ -12,6 +12,7 @@ import {
   stockLpControllerAbi, stockLpSleeveAbi, stockLpVaultAbi,
 } from "@/lib/stockLp";
 import { fmtPct, fmtUsd, useAutoLpStats, useCountUp, useReveal, type AutoLpSleeveStat } from "@/lib/useAutoLp";
+import { AutoLpOrbit } from "@/components/AutoLpOrbit";
 
 const ZERO = 0n;
 const addr = (a: string) => `${EXPLORER}/address/${a}`;
@@ -32,21 +33,6 @@ function describe(s: AutoLpSleeveStat, now: number) {
     return { tone: "wait", label: `Out of range · ${left}h to rebalance`, hint: "Waiting 24h before moving, so short spikes don't cause costly churn." };
   }
   return { tone: "wait", label: "Waiting for price", hint: "Positioned next to the price, ready for it to come back." };
-}
-
-function Orbit({ sleeves }: { sleeves: AutoLpSleeveStat[] | undefined }) {
-  const names = sleeves?.map((s) => s.symbol) ?? AUTO_LP.stocks;
-  return <div className="ap-orbit" aria-hidden>
-    <div className="ap-orbit-ring ap-ring-1" /><div className="ap-orbit-ring ap-ring-2" /><div className="ap-orbit-ring ap-ring-3" />
-    <div className="ap-orbit-spin">
-      {names.map((n, i) => {
-        const s = sleeves?.[i];
-        const tone = !s ? "idle" : s.inRange && s.referenceAgrees ? "good" : "wait";
-        return <span key={n} className={`ap-node is-${tone}`} style={{ "--i": i, "--n": names.length } as CSSProperties}><b>{n}</b></span>;
-      })}
-    </div>
-    <div className="ap-core"><span className="ap-core-pulse" /><span className="ap-core-label">AUTO<br />PILOT</span></div>
-  </div>;
 }
 
 function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "up" | "down" }) {
@@ -200,7 +186,7 @@ export function AutoLpExperience() {
         </div>
         <div className="ap-cta"><a href="#trade" className="landing-btn-primary">Deposit ETH</a><a href={addr(vault)} target="_blank" rel="noreferrer" className="ap-link-btn">View vault on explorer ↗</a></div>
       </div>
-      <Orbit sleeves={sleeves} />
+      <AutoLpOrbit sleeves={sleeves} symbols={AUTO_LP.stocks} now={now} />
     </section>
 
     <section className="ap-strip" aria-label="Capacity">

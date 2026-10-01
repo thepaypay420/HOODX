@@ -1,6 +1,7 @@
 import { Hud } from "@/components/Hud";
 import { AutoLpExperience } from "@/components/AutoLpExperience";
 import "./autolp.css";
+import "./orbit.css";
 
 export const metadata = {
   title: "Automated LP",
