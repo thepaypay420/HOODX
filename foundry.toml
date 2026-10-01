@@ -6,6 +6,7 @@ optimizer_runs = 1
 via_ir = true
 evm_version = "cancun"
 bytecode_hash = "ipfs"
+fs_permissions = [{ access = "read", path = "./deployments" }]
 
 [profile.default.fuzz]
 runs = 1024

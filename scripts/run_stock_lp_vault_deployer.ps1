@@ -1,0 +1,37 @@
+param(
+  # Default: the named Foundry account used by every HOODX deployer runner.
+  [string]$Account = "hoodx-deployer-v2",
+  # Optional: a keystore file path instead (e.g. one saved on the Desktop).
+  [string]$Keystore = ""
+)
+$ErrorActionPreference = "Stop"
+$root = Split-Path -Parent $PSScriptRoot
+Set-Location -LiteralPath $root
+$forge = Join-Path $env:USERPROFILE ".foundry\bin\forge.exe"
+$cast = Join-Path $env:USERPROFILE ".foundry\bin\cast.exe"
+$deployer = "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19"
+
+$manifestPath = if ($env:HOODX_STOCK_LP_MANIFEST) { $env:HOODX_STOCK_LP_MANIFEST } else { "deployments\stock-lp-vault-manifest.json" }
+$manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+if ($manifest.status -ne "APPROVED") {
+  throw "Manifest status is '$($manifest.status)'. Finalize the basket and set status to APPROVED (with reviewedBuild) first."
+}
+if (-not $manifest.reviewedBuild) { throw "Manifest has no reviewedBuild fingerprint." }
+
+$env:ROBINHOOD_RPC_URL = (Get-Content -LiteralPath "C:\Users\lukey\Desktop\RH RPC.txt" -Raw).Trim()
+$env:HOODX_STOCK_LP_DEPLOYER_NONCE = (& $cast nonce $deployer --rpc-url $env:ROBINHOOD_RPC_URL).Trim()
+$env:HOODX_LIVE_BROADCAST = "1"
+$env:HOODX_DEPLOY_STAGE = "stock-lp-vault-v1"
+$env:HOODX_REVIEWED_BUILD = $manifest.reviewedBuild
+
+Write-Host "HOODX Stock LP vault - reviewed deployer transactions" -ForegroundColor Cyan
+Write-Host "Basket: $($manifest.count) stocks. Creates price references, sleeves, the vault and the controller,"
+Write-Host "hands ownership to the controller and activates it. Value: 0 ETH; no funds are seeded."
+Write-Host "Curator and fee recipient: 0x134D468B0bcaeA6DF127916f951F7938c06A37C6."
+Write-Host "Your keystore password is entered only in Foundry's own prompt below.`n"
+
+$wallet = if ($Keystore) { @("--keystore", $Keystore) } else { @("--account", $Account) }
+& $forge script "script/DeployStockLpVaultV1.s.sol:DeployStockLpVaultV1" `
+  --rpc-url $env:ROBINHOOD_RPC_URL @wallet --sender $deployer --broadcast --slow -vv
+if ($LASTEXITCODE -ne 0) { throw "Deployment did not complete. Do not continue to seeding." }
+Write-Host "`nDeployment submitted. Record the printed addresses, then run the treasury seeding step." -ForegroundColor Green
