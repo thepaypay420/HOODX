@@ -8,7 +8,7 @@ import { EXPLORER } from "@/lib/config";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { walletPnl } from "@/lib/autolpNav";
 import {
-  AUTO_LP, AUTO_LP_V1, deadline, minOut, sizeShares,
+  AUTO_LP, AUTO_LP_V1, deadline, initialProbeShares, minOut, sizeShares,
   stockLpControllerAbi, stockLpSleeveAbi, stockLpVaultAbi,
 } from "@/lib/stockLp";
 import { fmtPct, fmtUsd, useAutoLpStats, useCountUp, useReveal, type AutoLpSleeveStat } from "@/lib/useAutoLp";
@@ -104,13 +104,25 @@ export function AutoLpExperience() {
     if (value <= ZERO) { setMsg("Enter an ETH amount."); return; }
     setBusy(true); setMsg("Finding the best entry…");
     try {
-      const supply = BigInt(Math.floor(stats.supply * 1e6)) * 10n ** 12n;
-      let probe = supply / 50n, used = ZERO;
-      for (let k = 0; k < 8 && used === ZERO && probe > ZERO; k++) {
+      // Probe near the real size: too small reverts BelowMinimum (grow), too large reverts on ETH (shrink).
+      let probe = initialProbeShares(value, stats.perShareEth), used = ZERO, last = "", lo = ZERO, hi = ZERO;
+      if (probe === ZERO) probe = BigInt(Math.floor(stats.supply * 1e6)) * 10n ** 12n / 50n;
+      for (let k = 0; k < 12 && used === ZERO && probe > ZERO; k++) {
         try { used = (await publicClient.simulateContract({ account: address, address: vault, abi: stockLpVaultAbi, functionName: "depositEth", args: [probe, address, deadline()], value })).result; }
-        catch (e) { probe = errName(e) === "BelowMinimum" ? probe * 3n : probe / 3n; }
+        catch (e) {
+          // Bisect between the largest size known too small and the smallest known too large.
+          last = errName(e);
+          if (last === "BelowMinimum") lo = probe; else hi = probe;
+          probe = lo > ZERO && hi > ZERO ? (lo + hi) / 2n : last === "BelowMinimum" ? probe * 2n : probe / 2n;
+        }
       }
-      if (used === ZERO) { setMsg("Entry unavailable right now (minimum $10, $10k cap, or a pool is thin). Try another amount."); setBusy(false); return; }
+      if (used === ZERO) {
+        setMsg(lo > ZERO ? "That amount is too close to the $10 minimum to enter. Try a little more ETH."
+          : last === "CapExceeded" ? "The vault is at its $10,000 cap right now."
+          : last === "Illiquid" || last === "Slippage" || last === "Divergence" ? "A stock pool can't take this size right now. Try a smaller amount or retry shortly."
+          : `Entry unavailable right now${last ? ` (${last})` : ""}. Try another amount.`);
+        setBusy(false); return;
+      }
       const shares = sizeShares(probe, used, value);
       await publicClient.simulateContract({ account: address, address: vault, abi: stockLpVaultAbi, functionName: "depositEth", args: [shares, address, deadline()], value });
       setBusy(false);

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BaseError, erc20Abi, formatEther, parseEther, parseUnits, zeroAddress, type Address } from "viem";
 import { robinhood } from "@/lib/chain";
 import { publicClient, useWallet } from "@/lib/wallet";
-import { preflightV2Routes } from "@/lib/v2Preflight";
+import { blockedPriceReferences, blockedReferenceMessage, preflightV2Routes, type BlockedReference } from "@/lib/v2Preflight";
 import { V2CuratorDesk } from "@/components/V2CuratorDesk";
 import { VaultPerformance } from "@/components/VaultPerformance";
 import { VaultOverview } from "@/components/VaultOverview";
@@ -13,7 +13,7 @@ import { withdrawalFloor } from "@/lib/withdrawMinimum";
 import { classifyWithdrawalQuoteFailure, protectedWithdrawalMinimum, quoteWithdrawalWithRetry, type WithdrawalQuoteFailure } from "@/lib/v2WithdrawalQuote";
 import { rebalanceControllerAbi, resolveVaultAuthority } from "@/lib/rebalanceController";
 
-type Snapshot = { account: Address; vault: Address; owner: Address; curator: Address; controller?: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[] };
+type Snapshot = { account: Address; vault: Address; owner: Address; curator: Address; controller?: Address; walletEth?: bigint; block: bigint; firstMinimum: bigint; shares: bigint; supply: bigint; paused: boolean; assets?: bigint; valuationFailed?: boolean; quoteAssets?: bigint; quoteSupply?: bigint; quoteTime?: number; tokens: Address[]; claims: { token: Address; amount: bigint }[]; blocked?: BlockedReference[] };
 const deadline = () => BigInt(Math.floor(Date.now() / 1000) + 600);
 
 export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
@@ -57,7 +57,9 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     })));
     if (ticket !== generation.current) return;
     setSnap({ account, vault, owner, curator: authority.curator, controller: authority.controller, walletEth, block, firstMinimum, shares, supply, paused, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
-    const assets = await publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "totalAssets" }).catch(() => undefined);
+    const assets = await publicClient.readContract({ address: vault, abi: v2VaultAbi, blockNumber: block, functionName: "totalAssets" }).catch(() => undefined);
+    // Name the constituents whose price check fails, so holders know why ETH paths are closed.
+    const blocked = assets === undefined ? await blockedPriceReferences(vault).catch(() => undefined) : [];
     let quoteAssets: bigint | undefined, quoteSupply: bigint | undefined, quoteTime: number | undefined;
     if (assets === undefined) {
       try {
@@ -69,7 +71,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       } catch { /* Never substitute a partial or stale valuation. */ }
     }
     if (ticket !== generation.current) return;
-    setSnap({ account, vault, owner, curator: authority.curator, controller: authority.controller, walletEth, block, firstMinimum, shares, supply, paused, assets, quoteAssets, quoteSupply, quoteTime, valuationFailed: assets === undefined, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })) });
+    setSnap({ account, vault, owner, curator: authority.curator, controller: authority.controller, walletEth, block, firstMinimum, shares, supply, paused, assets, quoteAssets, quoteSupply, quoteTime, valuationFailed: assets === undefined, tokens: [...tokens], claims: claimTokens.map((token, i) => ({ token, amount: amounts[i] })), blocked });
   }, [address, vault]);
   useEffect(() => { let cancelled = false; setSnap(undefined); setRecipient(address); read().catch(() => { if (!cancelled) setMessage("Unable to read vault balances. Retry before transacting."); }); return () => { cancelled = true; generation.current++; }; }, [read, address]);
   useEffect(() => {
@@ -104,11 +106,11 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         if (!active) return;
         const failure = classifyWithdrawalQuoteFailure(error);
         setWithdrawalFailure(failure);
-        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
+        setQuoteMessage(failure === "invalid-reference" ? blockedReferenceMessage(snap?.blocked ?? []) : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
       }).finally(() => { if (active) setQuoting(false); });
     }, 400);
     return () => { active = false; clearTimeout(timer); };
-  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, snap?.block]);
+  }, [address, vault, percent, snap?.shares, snap?.assets, snap?.supply, snap?.block, snap?.blocked]);
   async function transact(action: "deposit" | "withdraw" | "assets" | "claim" | "pause" | "unwind", token?: Address) {
     if (!address || !walletClient || !snap) return;
     if (chainId !== robinhood.id) { await switchToRobinhood(); return; }
@@ -180,7 +182,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       if (action === "withdraw") {
         const failure = classifyWithdrawalQuoteFailure(error);
         setWithdrawalFailure(failure);
-        setQuoteMessage(failure === "invalid-reference" ? "ETH exit unavailable · use direct assets below" : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
+        setQuoteMessage(failure === "invalid-reference" ? blockedReferenceMessage(snap?.blocked ?? []) : failure === "protected-floor" ? "Protected route floor not met · use direct assets below" : "Route unavailable · try again");
         setMessage("Withdrawal was not submitted. Your shares are unchanged.");
       } else {
         setMessage(error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : "Transaction failed.");
@@ -199,7 +201,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
     {!address ? <button className={button} onClick={() => void connect()}>Connect wallet</button> : chainId !== robinhood.id ? <button className={button} onClick={() => void switchToRobinhood()}>Switch to Robinhood Chain</button> : null}
     {snap && <>
 
-      {snap.assets === undefined && <p className="vault-notice">Pricing is unavailable. Direct asset redemption remains available.</p>}
+      {snap.assets === undefined && <p className="vault-notice">{snap.blocked?.length ? `ETH deposits and ETH exits are paused while ${snap.blocked.map(b => b.symbol).join(", ")} ${snap.blocked.length === 1 ? "is" : "are"} below safe pricing liquidity. You can still exit as tokens and cash.` : "Pricing is unavailable. Direct asset redemption remains available."}</p>}
       {snap.paused && <p>Deposits are paused. You can still withdraw.</p>}
       {address?.toLowerCase() === snap.curator.toLowerCase() && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}
       {address?.toLowerCase() === snap.curator.toLowerCase() && snap.paused && <div className="vault-recovery">
@@ -227,9 +229,9 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
         <button className={`${button} wallet-card-action`} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("withdraw")}>{busy ? "Preparing withdrawal…" : `Withdraw ${percent}% as ETH`}</button>
       </div>
       </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(Number(e.target.value)); }} /></label>
-      <div className="vault-recovery">
-        <h2 className="text-lg">Receive assets directly</h2>
-        <p>Exit without swaps. Receive your share of every asset and the cash reserve.</p>
+      <div className={`vault-recovery${(withdrawalFailure === "invalid-reference" || !!snap.blocked?.length) ? " is-recommended" : ""}`}>
+        <h2 className="text-lg">{(withdrawalFailure === "invalid-reference" || !!snap.blocked?.length) ? "Recommended exit right now" : "Receive assets directly"}</h2>
+        <p>Exit without swaps. Receive your share of every asset and the cash reserve. This works even when prices are unavailable.</p>
         <button className={button} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("assets")}>{withdrawalFailure === "invalid-reference" ? `Exit ${percent}% safely as tokens and cash` : `Redeem ${percent}% as tokens and cash`}</button>
       </div>
       {snap.claims.some(c => c.amount > 0n) && <div className="space-y-2">

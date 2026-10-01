@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deadline, minOut, sizeShares, sleeveState } from "./stockLp";
+import { deadline, initialProbeShares, minOut, sizeShares, sleeveState, stockLpVaultAbi } from "./stockLp";
 
 describe("stockLp helpers", () => {
   it("sizes shares proportionally with a margin", () => {
@@ -22,5 +22,25 @@ describe("stockLp helpers", () => {
     expect(sleeveState({ ...base, referenceAgrees: false }, 0).tone).toBe("warn");
     expect(sleeveState({ ...base, inRange: false, breachStart: 1000n }, 1000 + 5 * 3600).label).toBe("Waiting · 5h of 24h");
     expect(sleeveState({ ...base, inRange: false, rebandReady: true }, 0).label).toBe("Rebalance due");
+  });
+});
+
+describe("initialProbeShares", () => {
+  it("asks for ~60% of the shares the deposit buys at the live price", () => {
+    // 0.02 ETH at 0.00037059 ETH/share buys ~53.97 shares; the probe is 60% of that.
+    const probe = initialProbeShares(20_000_000_000_000_000n, 0.00037059093108327);
+    expect(Number(probe) / 1e18).toBeCloseTo(32.38, 1);
+  });
+  it("returns 0 when the price is unknown or the amount is empty", () => {
+    expect(initialProbeShares(10n ** 18n, 0)).toBe(0n);
+    expect(initialProbeShares(10n ** 18n, Number.NaN)).toBe(0n);
+    expect(initialProbeShares(0n, 0.0004)).toBe(0n);
+  });
+});
+
+describe("stockLpVaultAbi", () => {
+  it("decodes the vault custom errors the deposit sizer relies on", () => {
+    const names = stockLpVaultAbi.filter((x) => x.type === "error").map((x) => x.name);
+    expect(names).toEqual(expect.arrayContaining(["BelowMinimum", "CapExceeded", "Illiquid", "Slippage", "Stale"]));
   });
 });

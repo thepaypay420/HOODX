@@ -43,6 +43,16 @@ export const stockLpVaultAbi = parseAbi([
   "function depositEth(uint256 shares,address receiver,uint256 deadline) payable returns (uint256 ethUsed)",
   "function withdrawEth(uint256 shares,address receiver,uint256 minEthOut,uint256 deadline) returns (uint256 ethOut)",
   "function exitToSleeveShares(uint256 shares,address receiver)",
+  // Vault + sleeve custom errors, so reverts decode by name (the deposit sizer depends on BelowMinimum).
+  "error BelowMinimum()",
+  "error CapExceeded()",
+  "error Divergence()",
+  "error Illiquid()",
+  "error Invalid()",
+  "error QuoteResult(uint256 need0, uint256 need1)",
+  "error Slippage()",
+  "error Stale()",
+  "error Unauthorized()",
 ]);
 
 export const stockLpControllerAbi = parseAbi([
@@ -73,6 +83,14 @@ export const deadline = (nowSec = Math.floor(Date.now() / 1000)) => BigInt(nowSe
  * Shares to request for `amountWei`, from a probe simulation that minted `probeShares` for `probeUsedWei`.
  * Keeps `marginBps` of the amount unspent as slippage headroom (the vault refunds unused ETH).
  */
+/** First deposit probe: ~60% of the shares `amountWei` buys at the live per-share ETH price, so the probe
+ *  clears the vault minimum but never asks for more ETH than is sent. Returns 0 when the price is unknown. */
+export function initialProbeShares(amountWei: bigint, perShareEth: number): bigint {
+  if (amountWei <= 0n || !Number.isFinite(perShareEth) || perShareEth <= 0) return 0n;
+  const perShareWei = BigInt(Math.round(perShareEth * 1e18));
+  return perShareWei > 0n ? (amountWei * 6n * 10n ** 18n) / (perShareWei * 10n) : 0n;
+}
+
 export function sizeShares(probeShares: bigint, probeUsedWei: bigint, amountWei: bigint, marginBps = 300n): bigint {
   if (probeShares <= 0n || probeUsedWei <= 0n || amountWei <= 0n) return 0n;
   return (probeShares * amountWei * (10_000n - marginBps)) / (probeUsedWei * 10_000n);
