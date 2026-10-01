@@ -238,3 +238,11 @@ Per-iteration protocol: read this charter + forward summary -> finish/verdict an
   A17/A19 frozen book (10+ days -> ~10-11), A25/A26 cohorts (first window closes 10-10), V-N5 (>= 3 Oct
   weeks -> ~10-22), A24 cap change (needs forward confirmation). Re-verify the earnings calendar <= 7 days
   before the 10-10, 10-19 and 10-28 cohorts. Restart the loop when the first cohort window closes.
+
+* **2026-10-01 forward integrity check (0 RPC; no matured outcome).** The cloud
+  job succeeded and froze H3/SLP25 October 1 decisions, but skipped A17/A19 and
+  A25/A26 stock-book pick files because their functions returned on the first
+  decision day. A27 fixes the timing and labels any later October 1 stock pick
+  `late_exploratory`; it cannot count as prospective confirmation. Two local
+  regression tests pass. Next evidence remains the completed forward exits and
+  timely October 10 cohort freeze; no rule or launch gate changed.

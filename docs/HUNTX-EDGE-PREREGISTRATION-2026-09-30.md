@@ -947,3 +947,23 @@ reported net of a one-time entry at the measured best round trip (R1 method).
 Frozen rule: a high-fee LP sleeve (in existing pools or a vault-owned hookless pool) is admitted to
 design only if, over ≥ 3 October weeks, pooled spread > 0 with 90% lower bound > 0 AND median weekly
 yield on capital after entry amortized over 4 weeks ≥ 1.0%. Until then, no product change.
+
+### A27 — forward-book freeze integrity (2026-10-01 16:08 UTC; before October 1 closes)
+
+This is an evidence-control correction, not a trading-rule change. The first
+October 1 cloud run saved H3/SLP25 decisions but the A17/A19 continuous stock
+book and A25/A26 nine-day cohort code deferred pick-file creation until
+`days[-1] > start`. That means October 1 stock picks were **not recorded at the
+decision date**. Any October 1 stock-book result is classified
+`late_exploratory` and excluded from confirmatory forward evidence, even though
+the selection function reads only the pre-decision block. It cannot be
+retroactively promoted.
+
+The runner now writes stock-book pick files and their hash-chain entries on
+the first decision date, before scoring. Each file records actual `frozen_utc`
+and `evidence_status`. A freeze within one hour of the decision boundary is
+tagged `prospective`; a later or unverifiable freeze is `late_exploratory` and
+must not count toward the forward confirmation gate. The one-hour grace is an
+operational latency allowance for the read-only daily job, not a new market
+signal. Existing A17/A19/A25/A26 eligibility, ranking, routes, costs and
+holding periods remain fixed. The next planned cohort starts October 10.

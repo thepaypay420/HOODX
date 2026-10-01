@@ -68,6 +68,19 @@ def log(*a):
     print(datetime.now(timezone.utc).strftime("%H:%M:%S"), *a, flush=True)
 
 
+def freeze_metadata(day, observed_at=None):
+    """Disclose whether a pick was recorded promptly after its decision block.
+
+    A late historical recomputation can be useful diagnostically, but is not
+    independent prospective evidence even if its features use prior blocks.
+    """
+    observed_at = observed_at or datetime.now(timezone.utc)
+    decision_at = datetime.fromisoformat(day).replace(tzinfo=timezone.utc)
+    timely = decision_at <= observed_at <= decision_at + timedelta(hours=1)
+    return {"frozen_utc": observed_at.isoformat(),
+            "evidence_status": "prospective" if timely else "late_exploratory"}
+
+
 def day_str(d):
     return d.date().isoformat()
 
@@ -400,10 +413,10 @@ def portfolios(decisions, pools, state, days, bounds, eth, proto):
     return out
 
 
-def slp10k8_book(pools, state, days, bounds, proto):
+def slp10k8_book(pools, state, days, bounds, proto, freeze_only=False):
     """A17: frozen 8-symbol continuous book from 2026-10-01; daily exact-exit valuation."""
     start = "2026-10-01"
-    if start not in bounds or days[-1] <= start:
+    if start not in bounds or days[-1] < start:
         return None
     stock_pools = {pid: p for pid, p in pools.items() if p.quote == S.USDG and p.token in V.STOCKS}
     pf = FWD / "slp10k8_picks.json"
@@ -417,13 +430,19 @@ def slp10k8_book(pools, state, days, bounds, proto):
         picks = [{"symbol": s_, "pool_id": pid, "score": y}
                  for s_, (y, pid) in sorted(best.items(), key=lambda kv: -kv[1][0])[:8]]
         payload = {"start": start, "decision_block": bounds[start], "picks": picks,
+                   **freeze_metadata(start),
                    "rule": "A17 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"}
         prev = chain_head()
         h = hashlib.sha256((prev + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
         pf.write_text(json.dumps({"prev_hash": prev, "hash": h, "payload": payload}, indent=1))
         with CHAIN.open("a") as fh:
             fh.write(f"slp10k8-picks {h}\n")
-    picks = json.loads(pf.read_text())["payload"]["picks"]
+    frozen = json.loads(pf.read_text())["payload"]
+    picks = frozen["picks"]
+    # The first decision day has no completed forward outcome yet. Persist the
+    # pick hash now rather than waiting for the next day's scoring run.
+    if freeze_only or days[-1] <= start:
+        return None
     ids = [x["pool_id"] for x in picks if x["pool_id"] in stock_pools]
     hist_f = FWD / "slp10k8_nav.json"
     hist = json.loads(hist_f.read_text()) if hist_f.exists() else {}
@@ -437,7 +456,8 @@ def slp10k8_book(pools, state, days, bounds, proto):
             got = quote_exact_in(p.meta, not p.q1, int(200 / len(ids) * 1e6), bounds[start] - 1)
             out = quote_exact_in(p.meta, p.q1, int(got or 0), bounds[end] - 1) if got else 0
             hold += (out or 0) / 1e6
-        hist[end] = {"book_exit_value": round(200 + r["net_usd"], 4),
+        hist[end] = {"evidence_status": frozen.get("evidence_status", "unverified_freeze_time"),
+                     "book_exit_value": round(200 + r["net_usd"], 4),
                      "skew_book_exit_value": round(200 + r_skew["net_usd"], 4),
                      "skew_per_sleeve": r_skew["per_sleeve"],
                      "hold_stocks_value": round(hold, 4),
@@ -464,7 +484,7 @@ def _earnings_excluded(sym, d):
     return start - timedelta(days=7) <= when <= start + timedelta(days=16)
 
 
-def cohort_books(pools, state, days, bounds, proto):
+def cohort_books(pools, state, days, bounds, proto, freeze_only=False):
     """A25/A26: every 9 days freeze B0 / E1 (earnings exclusion) / G1 (ETH-entry cost gate) picks; value daily,
     scored after one ETH entry + exit at the routes measured at the decision block."""
     import huntx_route_costs as RC
@@ -472,7 +492,7 @@ def cohort_books(pools, state, days, bounds, proto):
     nav_f = FWD / "cohort_nav.json"
     nav = json.loads(nav_f.read_text()) if nav_f.exists() else {}
     for d in COHORTS:
-        if d not in bounds or days[-1] <= d:
+        if d not in bounds or days[-1] < d:
             continue
         pf = FWD / f"cohort_{d}.json"
         if not pf.exists():
@@ -491,6 +511,7 @@ def cohort_books(pools, state, days, bounds, proto):
             if missing:
                 rt.update(RC.best_round_trip_bps(missing, bounds[d] - 1))
             payload = {"start": d, "decision_block": bounds[d],
+                       **freeze_metadata(d),
                        "books": {k: [{"symbol": s_, "pool_id": best[s_][1], "score": best[s_][0]} for s_ in v]
                                  for k, v in (("B0", b0), ("E1", e1), ("G1", g1))},
                        "round_trip_bps_at_250": rt, "rule": "A25/A26 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"}
@@ -501,10 +522,12 @@ def cohort_books(pools, state, days, bounds, proto):
                 fh.write(f"cohort-{d} {h}" + chr(10))
             save_cache()
         payload = json.loads(pf.read_text())["payload"]
+        if freeze_only or days[-1] <= d:
+            continue
         end = min((datetime.fromisoformat(d) + timedelta(days=9)).date().isoformat(), days[-1])
         if end not in bounds or end in nav.get(d, {}):
             continue
-        row = {}
+        row = {"evidence_status": payload.get("evidence_status", "unverified_freeze_time")}
         for book, picks in payload["books"].items():
             ids = [x["pool_id"] for x in picks if x["pool_id"] in stock_pools]
             if not ids:
@@ -580,6 +603,14 @@ def main():
                 save_cache()
                 freeze(d, payload)
             decisions[d] = json.loads(f.read_text())["payload"]
+    # Freeze stock-book choices before any potentially long scoring work. The
+    # October 1 cloud run previously skipped these when no forward day had
+    # closed; that cohort must be labeled late/exploratory if frozen later.
+    slp10k8_book(pools, state, days, bounds, proto, freeze_only=True)
+    try:
+        cohort_books(pools, state, days, bounds, proto, freeze_only=True)
+    except Exception as exc:
+        log("cohort freeze failed:", repr(exc))
     done = score(decisions, pools, state, days, bounds, eth, proto)
     save_cache()
     ports = portfolios(decisions, pools, state, days, bounds, eth, proto)
