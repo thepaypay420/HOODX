@@ -404,19 +404,43 @@ contract StockLpV4ForkTest is Test {
     function test_performanceFee_toTreasury_onFeesOnly() public {
         if (!live) return;
         for (uint256 i; i < 2; ++i) {
-            uint256 b0 = IERC20(keys[i].currency0).balanceOf(treasury);
-            uint256 b1 = IERC20(keys[i].currency1).balanceOf(treasury);
             _churn(i, 20, 300e6);
             _syncRef(i);
             vm.prank(curator);
             (uint256 a0, uint256 a1) = controller.harvest(i);
-            uint256 f0 = IERC20(keys[i].currency0).balanceOf(treasury) - b0;
-            uint256 f1 = IERC20(keys[i].currency1).balanceOf(treasury) - b1;
-            assertGt(f0 + f1, 0, "treasury received the performance fee");
-            // fee = floor(10% of gross); the sleeve keeps the rest (≈ 9x the fee)
+            uint256 f0 = sleeves[i].feeOwed0();
+            uint256 f1 = sleeves[i].feeOwed1();
+            assertGt(f0 + f1, 0, "performance fee set aside");
+            // fee = floor(10% of gross); the sleeve keeps the rest (~9x the fee)
             assertApproxEqAbs(f0 * 9, a0, 10);
             assertApproxEqAbs(f1 * 9, a1, 10);
+            uint256 b0 = IERC20(keys[i].currency0).balanceOf(treasury);
+            uint256 b1 = IERC20(keys[i].currency1).balanceOf(treasury);
+            sleeves[i].claimFees(); // anyone may trigger the pull
+            assertEq(IERC20(keys[i].currency0).balanceOf(treasury) - b0, f0, "treasury paid token0 fee");
+            assertEq(IERC20(keys[i].currency1).balanceOf(treasury) - b1, f1, "treasury paid token1 fee");
+            assertEq(sleeves[i].feeOwed0() + sleeves[i].feeOwed1(), 0);
         }
+    }
+
+    /// @dev Issuer blocklists the treasury on a stock token: fees become unclaimable, exits keep working.
+    function test_blockedTreasuryNeverBlocksExits() public {
+        if (!live) return;
+        _churn(0, 10, 300e6);
+        _syncRef(0);
+        vm.prank(curator);
+        controller.harvest(0);
+        vm.mockCallRevert(META, abi.encodeWithSelector(IERC20.transfer.selector, treasury), "blocklisted");
+        vm.mockCallRevert(USDG, abi.encodeWithSelector(IERC20.transfer.selector, treasury), "blocklisted");
+        vm.expectRevert();
+        sleeves[0].claimFees();
+        uint256 owed = sleeves[0].feeOwed0() + sleeves[0].feeOwed1();
+        assertGt(_aliceEthRoundTrip(100e6), 0, "ETH exit works while the fee recipient is blocked");
+        assertGe(sleeves[0].feeOwed0() + sleeves[0].feeOwed1(), owed, "owed fee preserved");
+        _userInKindExitSleeve0();
+        vm.clearMockedCalls();
+        sleeves[0].claimFees(); // once unblocked, the treasury is paid in full
+        assertEq(sleeves[0].feeOwed0() + sleeves[0].feeOwed1(), 0);
     }
 
     function test_accessControl() public {
@@ -452,6 +476,25 @@ contract StockLpV4ForkTest is Test {
             assertTrue(h[i].tick >= h[i].tickLower && h[i].tick < h[i].tickUpper, "in range at seed");
         }
         assertGt(bytes(index.strategy()).length, 0);
+    }
+
+    function _aliceEthRoundTrip(uint256 usd) internal returns (uint256 out) {
+        uint256 budget = _ethFor(usd);
+        vm.deal(alice, budget);
+        uint256 shares = _sharesFor(budget);
+        vm.prank(alice);
+        index.depositEth{value: budget}(shares, alice, block.timestamp);
+        vm.prank(alice);
+        out = index.withdrawEth(shares, payable(alice), 1, block.timestamp);
+    }
+
+    function _userInKindExitSleeve0() internal {
+        uint256 half = index.balanceOf(user) / 2;
+        vm.prank(user);
+        index.exitToSleeveShares(half, user);
+        uint256 s0 = sleeves[0].balanceOf(user);
+        vm.prank(user);
+        sleeves[0].redeem(s0, user, 0, 0, block.timestamp);
     }
 
     // ------------------------------------------------------------------ product helpers

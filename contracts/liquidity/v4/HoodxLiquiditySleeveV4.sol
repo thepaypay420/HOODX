@@ -25,8 +25,9 @@ import {
 ///        - `depositShares`: pro-rata deposits by the single configured vault (no dilution: the
 ///          depositor supplies ceil(pro-rata) of both the position and idle balances);
 ///        - `quoteDepositShares`: exact on-chain quote via the revert pattern (state fully unwound);
-///        - performance fee: `feeBps` of LP trading fees is sent to `feeRecipient` whenever fees are
-///          realized. Principal is never charged and exits never depend on the fee path.
+///        - performance fee: `feeBps` of LP trading fees is set aside as an owed balance whenever fees
+///          are realized and pulled to `feeRecipient` with `claimFees`. Principal is never charged, owed
+///          fees are excluded from every pro-rata balance, and no exit ever depends on a fee transfer.
 contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4UnlockCallback {
     using SafeERC20 for IERC20;
 
@@ -51,6 +52,9 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
     uint128 public positionLiquidity;
     bool public managementPaused;
     address public vault;
+    // Performance fee set aside for `feeRecipient`; held here, excluded from all holder balances.
+    uint256 public feeOwed0;
+    uint256 public feeOwed1;
 
     // Only set while this contract is inside its own unlock.
     bool private _unlocking;
@@ -68,6 +72,7 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
     event PositionFunded(uint128 liquidityAdded, uint256 sharesMinted);
     event FeesCollected(uint256 amount0, uint256 amount1);
     event PerformanceFee(uint256 amount0, uint256 amount1);
+    event FeesClaimed(uint256 amount0, uint256 amount1);
     event Compounded(uint128 liquidityAdded, uint256 amount0Used, uint256 amount1Used);
     event PositionRebanded(int24 tickLower, int24 tickUpper, uint128 liquidity);
     event Deposited(address indexed payer, uint256 shares, uint128 liquidityAdded, uint256 paid0, uint256 paid1);
@@ -143,8 +148,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         if (managementPaused || funder == address(0) || receiver == address(0) || liquidity == 0) revert Invalid();
         _validateEconomics();
         _validateDeadline(deadline);
-        uint256 b0 = IERC20(token0).balanceOf(address(this));
-        uint256 b1 = IERC20(token1).balanceOf(address(this));
+        uint256 b0 = _idle0();
+        uint256 b1 = _idle1();
         if (max0 != 0) IERC20(token0).safeTransferFrom(funder, address(this), max0);
         if (max1 != 0) IERC20(token1).safeTransferFrom(funder, address(this), max1);
 
@@ -159,8 +164,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         if (shares == 0) revert Slippage();
         _mint(receiver, shares);
 
-        uint256 excess0 = IERC20(token0).balanceOf(address(this)) - b0;
-        uint256 excess1 = IERC20(token1).balanceOf(address(this)) - b1;
+        uint256 excess0 = _idle0() - b0;
+        uint256 excess1 = _idle1() - b1;
         if (excess0 != 0) IERC20(token0).safeTransfer(funder, excess0);
         if (excess1 != 0) IERC20(token1).safeTransfer(funder, excess1);
         emit PositionFunded(liquidity, shares);
@@ -186,6 +191,7 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         _collect();
         (used0, used1) = _modify(tickLower, tickUpper, int256(uint256(liquidityToAdd)));
         positionLiquidity += liquidityToAdd;
+        _requireFeeBacked();
         emit Compounded(liquidityToAdd, used0, used1);
     }
 
@@ -204,12 +210,24 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         tickUpper = newUpper;
         _modify(newLower, newUpper, int256(uint256(newLiquidity)));
         positionLiquidity = newLiquidity;
+        _requireFeeBacked();
         emit PositionRebanded(newLower, newUpper, newLiquidity);
     }
 
     function setManagementPaused(bool paused) external onlyOwner {
         managementPaused = paused;
         emit ManagementPauseSet(paused);
+    }
+
+    /// @notice Pays the owed performance fee to `feeRecipient`. Anyone may call; a failure here (e.g. a
+    ///         token blocking the recipient) affects only this claim, never deposits, rebands or exits.
+    function claimFees() external nonReentrant returns (uint256 amount0, uint256 amount1) {
+        (amount0, amount1) = (feeOwed0, feeOwed1);
+        if (amount0 + amount1 == 0) revert Invalid();
+        (feeOwed0, feeOwed1) = (0, 0);
+        if (amount0 != 0) IERC20(token0).safeTransfer(feeRecipient, amount0);
+        if (amount1 != 0) IERC20(token1).safeTransfer(feeRecipient, amount1);
+        emit FeesClaimed(amount0, amount1);
     }
 
     function rescueUnexpectedToken(address token, address receiver, uint256 amount) external onlyOwner {
@@ -232,8 +250,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         _validateEconomics();
         if (positionLiquidity != 0) _collect();
         (uint128 dL, uint256 idle0, uint256 idle1) = _proRata(shares, supply);
-        uint256 b0 = IERC20(token0).balanceOf(address(this));
-        uint256 b1 = IERC20(token1).balanceOf(address(this));
+        uint256 b0 = _idle0();
+        uint256 b1 = _idle1();
         if (max0 != 0) IERC20(token0).safeTransferFrom(msg.sender, address(this), max0);
         if (max1 != 0) IERC20(token1).safeTransferFrom(msg.sender, address(this), max1);
         uint256 l0;
@@ -246,8 +264,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         paid1 = l1 + idle1;
         if (paid0 > max0 || paid1 > max1) revert Slippage();
         // Refund everything received beyond what the pro-rata contribution requires.
-        uint256 refund0 = IERC20(token0).balanceOf(address(this)) - b0 - idle0;
-        uint256 refund1 = IERC20(token1).balanceOf(address(this)) - b1 - idle1;
+        uint256 refund0 = _idle0() - b0 - idle0;
+        uint256 refund1 = _idle1() - b1 - idle1;
         if (refund0 != 0) IERC20(token0).safeTransfer(msg.sender, refund0);
         if (refund1 != 0) IERC20(token1).safeTransfer(msg.sender, refund1);
         _mint(msg.sender, shares);
@@ -296,8 +314,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         uint256 supply = totalSupply();
         if (shares == 0 || shares > balanceOf(msg.sender) || receiver == address(0) || supply == 0) revert Invalid();
         if (positionLiquidity != 0) _collect();
-        uint256 idle0 = Math.mulDiv(IERC20(token0).balanceOf(address(this)), shares, supply);
-        uint256 idle1 = Math.mulDiv(IERC20(token1).balanceOf(address(this)), shares, supply);
+        uint256 idle0 = Math.mulDiv(_idle0(), shares, supply);
+        uint256 idle1 = Math.mulDiv(_idle1(), shares, supply);
         uint128 liquidityOut = uint128(Math.mulDiv(positionLiquidity, shares, supply));
         uint256 p0;
         uint256 p1;
@@ -310,8 +328,8 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         if (amount0 < min0 || amount1 < min1) revert Slippage();
         _burn(msg.sender, shares);
         if (totalSupply() == 0) {
-            amount0 = IERC20(token0).balanceOf(address(this));
-            amount1 = IERC20(token1).balanceOf(address(this));
+            amount0 = _idle0();
+            amount1 = _idle1();
         }
         if (amount0 != 0) IERC20(token0).safeTransfer(receiver, amount0);
         if (amount1 != 0) IERC20(token1).safeTransfer(receiver, amount1);
@@ -334,11 +352,13 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
         }
         uint256 perf0 = _perfFee(V4Delta.amount0(feesAccrued));
         uint256 perf1 = _perfFee(V4Delta.amount1(feesAccrued));
-        if (perf0 != 0) poolManager.take(token0, feeRecipient, perf0);
-        if (perf1 != 0) poolManager.take(token1, feeRecipient, perf1);
-        if (perf0 != 0 || perf1 != 0) emit PerformanceFee(perf0, perf1);
-        uint256 paid0 = _settle(token0, V4Delta.amount0(callerDelta), perf0);
-        uint256 paid1 = _settle(token1, V4Delta.amount1(callerDelta), perf1);
+        if (perf0 != 0 || perf1 != 0) {
+            feeOwed0 += perf0;
+            feeOwed1 += perf1;
+            emit PerformanceFee(perf0, perf1);
+        }
+        uint256 paid0 = _settle(token0, V4Delta.amount0(callerDelta));
+        uint256 paid1 = _settle(token1, V4Delta.amount1(callerDelta));
         return abi.encode(paid0, paid1);
     }
 
@@ -357,38 +377,52 @@ contract HoodxLiquiditySleeveV4 is ERC20, Ownable2Step, ReentrancyGuard, IV4Unlo
     }
 
     function _collect() internal returns (uint256 amount0, uint256 amount1) {
-        uint256 b0 = IERC20(token0).balanceOf(address(this));
-        uint256 b1 = IERC20(token1).balanceOf(address(this));
+        uint256 b0 = _idle0();
+        uint256 b1 = _idle1();
         _modify(tickLower, tickUpper, 0);
-        amount0 = IERC20(token0).balanceOf(address(this)) - b0;
-        amount1 = IERC20(token1).balanceOf(address(this)) - b1;
+        amount0 = _idle0() - b0;
+        amount1 = _idle1() - b1;
     }
 
     function _removeTo(uint128 liquidity) internal returns (uint256 amount0, uint256 amount1) {
-        uint256 b0 = IERC20(token0).balanceOf(address(this));
-        uint256 b1 = IERC20(token1).balanceOf(address(this));
+        uint256 b0 = _idle0();
+        uint256 b1 = _idle1();
         _modify(tickLower, tickUpper, -int256(uint256(liquidity)));
-        amount0 = IERC20(token0).balanceOf(address(this)) - b0;
-        amount1 = IERC20(token1).balanceOf(address(this)) - b1;
+        amount0 = _idle0() - b0;
+        amount1 = _idle1() - b1;
+    }
+
+    /// @dev Holder-owned balances: everything held except the performance fee set aside.
+    function _idle0() internal view returns (uint256) {
+        return IERC20(token0).balanceOf(address(this)) - feeOwed0;
+    }
+
+    function _idle1() internal view returns (uint256) {
+        return IERC20(token1).balanceOf(address(this)) - feeOwed1;
+    }
+
+    function _requireFeeBacked() internal view {
+        if (IERC20(token0).balanceOf(address(this)) < feeOwed0 || IERC20(token1).balanceOf(address(this)) < feeOwed1) {
+            revert Slippage();
+        }
     }
 
     function _proRata(uint256 shares, uint256 supply) internal view returns (uint128 dL, uint256 idle0, uint256 idle1) {
         dL = uint128(Math.mulDiv(positionLiquidity, shares, supply, Math.Rounding.Ceil));
-        idle0 = Math.mulDiv(IERC20(token0).balanceOf(address(this)), shares, supply, Math.Rounding.Ceil);
-        idle1 = Math.mulDiv(IERC20(token1).balanceOf(address(this)), shares, supply, Math.Rounding.Ceil);
+        idle0 = Math.mulDiv(_idle0(), shares, supply, Math.Rounding.Ceil);
+        idle1 = Math.mulDiv(_idle1(), shares, supply, Math.Rounding.Ceil);
     }
 
-    /// @dev `d` is the caller delta (fees included); `alreadyTaken` is the performance fee already sent
-    ///      to the fee recipient out of that credit. Settles the remainder in either direction.
-    function _settle(address token, int128 d, uint256 alreadyTaken) internal returns (uint256 paid) {
-        int256 net = int256(d) - int256(alreadyTaken);
-        if (net < 0) {
-            paid = uint256(-net);
+    /// @dev `d` is the caller delta (fees included). The performance fee share of any credit stays in this
+    ///      contract as `feeOwed`; settlement itself is always exact.
+    function _settle(address token, int128 d) internal returns (uint256 paid) {
+        if (d < 0) {
+            paid = uint256(uint128(-d));
             poolManager.sync(token);
             IERC20(token).safeTransfer(address(poolManager), paid);
             poolManager.settle();
-        } else if (net > 0) {
-            poolManager.take(token, address(this), uint256(net));
+        } else if (d > 0) {
+            poolManager.take(token, address(this), uint256(uint128(d)));
         }
     }
 
