@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -21,7 +22,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CAST = str(Path.home() / ".foundry" / "bin" / ("cast.exe" if os.name == "nt" else "cast"))
+_LOCAL_CAST = Path.home() / ".foundry" / "bin" / ("cast.exe" if os.name == "nt" else "cast")
+CAST = str(_LOCAL_CAST) if _LOCAL_CAST.exists() else (shutil.which("cast") or "cast")
 DAY = 24 * 3600
 WEEK = 7 * DAY
 
@@ -80,9 +82,13 @@ class Chain:
         return float(r.stdout.strip() or 0)
 
 
-def run_once(chain: Chain, controller: str, state_path: Path, min_gas_eth: float) -> dict:
-    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth: float) -> dict:
+    """With state_path=None (cloud, stateless): compound at the 00 UTC run, claim fees at the Monday 00 UTC run."""
+    state = json.loads(state_path.read_text()) if state_path and state_path.exists() else {}
     now = int(time.time())
+    utc = datetime.now(timezone.utc)
+    daily_due = (lambda key: utc.hour == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= DAY)
+    weekly_due = (lambda key: utc.hour == 0 and utc.weekday() == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= WEEK)
     keeper = chain.address()
     bal = chain.balance_eth(keeper)
     if bal < min_gas_eth:
@@ -113,7 +119,7 @@ def run_once(chain: Chain, controller: str, state_path: Path, min_gas_eth: float
     # 3) Daily harvest + compound per sleeve.
     for i in range(n):
         key = f"compound_{sleeves[i].lower()}"
-        if now - state.get(key, 0) >= DAY:
+        if daily_due(key):
             chain.send(controller, "harvest(uint256)", i)
             if chain.send(controller, "compound(uint256)", i):
                 summary["sent"].append(f"compound({i})")
@@ -121,13 +127,14 @@ def run_once(chain: Chain, controller: str, state_path: Path, min_gas_eth: float
     # 4) Weekly: push the performance fee to the treasury (anyone may; failures never affect users).
     for i in range(n):
         key = f"claim_{sleeves[i].lower()}"
-        if now - state.get(key, 0) >= WEEK:
+        if weekly_due(key):
             if chain.send(sleeves[i], "claimFees()"):
                 summary["sent"].append(f"claimFees({i})")
             state[key] = now
-    state["lastRun"] = now
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    state_path.write_text(json.dumps(state, indent=1))
+    if state_path is not None:
+        state["lastRun"] = now
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text(json.dumps(state, indent=1))
     return summary
 
 
@@ -139,6 +146,7 @@ def main() -> int:
     ap.add_argument("--private-key-env", help="ENV var holding a key (local fork tests only)")
     ap.add_argument("--rpc-env", default="ROBINHOOD_RPC_URL")
     ap.add_argument("--state", default=str(Path.home() / ".hoodx" / "stock_lp_keeper_state.json"))
+    ap.add_argument("--stateless", action="store_true", help="cloud mode: schedule daily/weekly steps by the UTC clock")
     ap.add_argument("--min-gas-eth", type=float, default=0.002)
     ap.add_argument("--gas-price-wei", type=int, help="fixed legacy gas price (local forks without fee history)")
     a = ap.parse_args()
@@ -159,9 +167,13 @@ def main() -> int:
         return 2
     if a.gas_price_wei:
         signer = [*signer, "--legacy", "--gas-price", str(a.gas_price_wei)]
-    controller = a.controller or json.loads((ROOT / "deployments" / "stock-lp-vault-v2-live.json").read_text())["controller"]
+    live = ROOT / "deployments" / "stock-lp-vault-v2-live.json"
+    if not a.controller and not live.exists():
+        log("Automated LP V2 is not live yet; nothing to do")
+        return 0
+    controller = a.controller or json.loads(live.read_text())["controller"]
     try:
-        summary = run_once(Chain(rpc, signer), controller, Path(a.state), a.min_gas_eth)
+        summary = run_once(Chain(rpc, signer), controller, None if a.stateless else Path(a.state), a.min_gas_eth)
     except Exception as exc:  # one bad run must never crash the schedule
         log(f"ERROR {str(exc)[:300]}")
         return 1
