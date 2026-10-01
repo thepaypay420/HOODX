@@ -1,0 +1,49 @@
+{
+ "updated_utc": "2026-10-01T15:17:55.543753+00:00",
+ "H3": {
+  "scored_decision_days": 0,
+  "positions": 0,
+  "mean_net_per_100": null,
+  "day_cluster_90": null,
+  "tokens": 0,
+  "profitable_tokens": 0,
+  "portfolio_on_200": {
+   "realized_net_usd_on_200": 0.0,
+   "positions": 3,
+   "matured": 0,
+   "profitable": 0
+  },
+  "verdict_ready": false
+ },
+ "H8": {
+  "scored_decision_days": 0,
+  "positions": 0,
+  "mean_net_per_100": null,
+  "day_cluster_90": null,
+  "tokens": 0,
+  "profitable_tokens": 0,
+  "portfolio_on_200": {
+   "realized_net_usd_on_200": 0.0,
+   "positions": 3,
+   "matured": 0,
+   "profitable": 0
+  },
+  "verdict_ready": false
+ },
+ "SLP25": {
+  "scored_decision_days": 0,
+  "positions": 0,
+  "mean_net_per_100": null,
+  "day_cluster_90": null,
+  "tokens": 0,
+  "profitable_tokens": 0,
+  "portfolio_on_200": {
+   "realized_net_usd_on_200": 0.0,
+   "positions": 5,
+   "matured": 0,
+   "profitable": 0,
+   "worst_position_usd": 0
+  },
+  "verdict_ready": false
+ }
+}
