@@ -63,5 +63,5 @@ jobs:
           git add research/huntx_forward
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "forward: daily run $(date -u +%Y-%m-%d)"
-          git pull --rebase origin "$RESEARCH_BRANCH"
+          git pull --rebase --autostash origin "$RESEARCH_BRANCH"
           git push origin "HEAD:$RESEARCH_BRANCH"

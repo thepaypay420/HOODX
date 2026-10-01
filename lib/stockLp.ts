@@ -11,6 +11,19 @@ export const AUTO_LP = {
   minUsd: 10,
   perfFeePct: 10,
   stocks: ["NVDA", "META", "SPY", "SPCX", "PLTR", "BABA", "USO", "MSTR"],
+  /** First block of the V2 deployment (event scans start here). */
+  deployBlock: 77_213_266n,
+  /** Static per-sleeve config (from deployments/stock-lp-vault-v2-live.json), in controller order. */
+  sleeves: [
+    { symbol: "NVDA", sleeve: "0xaAceE71743B165dA07Cb67e1516b0303C2bE1aB3", token: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC", usdgIsToken0: true },
+    { symbol: "META", sleeve: "0x5dc58931dF2751096A2A1592cDc7Ce9673461b50", token: "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35", usdgIsToken0: true },
+    { symbol: "SPY", sleeve: "0x8459EbE7B2a8628410f2A15bC3F6487263516c4e", token: "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C", usdgIsToken0: false },
+    { symbol: "SPCX", sleeve: "0xc1Bc64D2af27cfE28c084E0530A2FaD91eD9D09d", token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", usdgIsToken0: false },
+    { symbol: "PLTR", sleeve: "0x5087B8f98e317A1167085F9c1f709E05FB5224d0", token: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A", usdgIsToken0: true },
+    { symbol: "BABA", sleeve: "0xc2610F562D9a6ec34114C9Dcb6938273604c800B", token: "0xad25Ac6C84D497db898fa1E8387bf6Af3532a1c4", usdgIsToken0: true },
+    { symbol: "USO", sleeve: "0x3fA2dA43694934E1cB87f1DE8415d8cc09Ea0c8E", token: "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344", usdgIsToken0: true },
+    { symbol: "MSTR", sleeve: "0x99aA2A30571994eeDB614DeC0932A68A6ee77303", token: "0xec262a75e413fAfD0dF80480274532C79D42da09", usdgIsToken0: true },
+  ] as { symbol: string; sleeve: Address; token: Address; usdgIsToken0: boolean }[],
 } as const;
 
 /** Retired V1 (curator-signed management). Kept so the treasury can withdraw its seed. */

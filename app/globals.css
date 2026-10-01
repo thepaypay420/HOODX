@@ -1924,13 +1924,13 @@ body {
 .autolp-card::before { content:""; position:absolute; inset:0; z-index:-1; padding:1px; border-radius:inherit; background:conic-gradient(from var(--autolp-angle),#b98cff,#4fd7cb,#8dd8ff,#b98cff); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:autolp-spin 7s linear infinite; }
 .autolp-card:hover { transform:translateY(-3px); }
 .autolp-card-glow { position:absolute; z-index:-2; width:26rem; aspect-ratio:1; right:-9rem; top:-12rem; border-radius:50%; background:radial-gradient(circle,rgba(185,140,255,.24),transparent 65%); }
-.autolp-card-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.autolp-card-head { display:flex; align-items:flex-start; gap:1rem; }
 .autolp-kind { color:#b98cff; font-size:.64rem; font-weight:650; letter-spacing:.14em; text-transform:uppercase; }
-.autolp-card-body { display:grid; grid-template-columns:1.3fr 1fr; gap:2rem; align-items:end; }
+.autolp-card-body { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:1.5rem 2rem; align-items:end; }
 .autolp-card-body h3 { font-size:clamp(2rem,4.4vw,3.1rem); line-height:.95; letter-spacing:-.055em; font-weight:560; }
 .autolp-card-body p { max-width:34rem; margin-top:.9rem; color:#b8c6c3; font-size:.9rem; line-height:1.6; }
-.autolp-facts { display:grid; gap:.5rem; list-style:none; margin:0; padding:0; }
-.autolp-facts li { display:flex; align-items:baseline; gap:.7rem; padding:.6rem .85rem; border:1px solid rgba(185,140,255,.18); border-radius:.85rem; background:rgba(12,10,22,.55); }
+.autolp-facts { display:grid; grid-template-columns:repeat(3,auto); gap:.5rem; list-style:none; margin:0; padding:0; }
+.autolp-facts li { display:flex; flex-direction:column; gap:.2rem; padding:.6rem .85rem; border:1px solid rgba(185,140,255,.18); border-radius:.85rem; background:rgba(12,10,22,.55); }
 .autolp-facts b { min-width:3.2rem; color:#e9ddff; font-size:1.05rem; }
 .autolp-facts span { color:var(--dim); font-size:.74rem; }
 .autolp-card-foot { display:flex; align-items:center; justify-content:space-between; gap:1rem; color:#e9ddff; font-size:.82rem; }
@@ -1969,14 +1969,22 @@ body {
 .autolp-curator { margin-top:2rem; padding:1.3rem; border:1px dashed rgba(185,140,255,.35); border-radius:1.2rem; }
 .autolp-risks { margin-top:1.5rem; padding:2rem 3rem; border:1px solid var(--line); border-radius:2rem; background:rgba(11,20,22,.9); }
 .autolp-risks ul { display:grid; gap:.6rem; margin-top:1rem; padding-left:1.1rem; color:var(--dim); font-size:.82rem; line-height:1.55; }
+.autolp-card-side { display:grid; gap:.7rem; }
+.autolp-perf { display:flex; flex-direction:column; align-items:flex-end; gap:.15rem; margin-left:auto; }
+.autolp-perf b { font-size:clamp(1.6rem,3.2vw,2.2rem); font-weight:560; letter-spacing:-.04em; font-variant-numeric:tabular-nums; color:var(--paper); }
+.autolp-perf b.is-up { color:#7be6ae; } .autolp-perf b.is-down { color:#ff8a8a; }
+.autolp-perf span { color:var(--dim); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; }
 @media (max-width:760px) {
-  .autolp-card { padding:1.2rem; }
-  .autolp-card-body { grid-template-columns:1fr; gap:1.2rem; }
-  .autolp-card-foot { flex-direction:column; align-items:flex-start; }
-  .autolp-page { padding:1.25rem 1rem 5rem; }
-  .autolp-panel { padding:1.1rem; border-radius:1.4rem; }
-  .autolp-actions { grid-template-columns:1fr; }
-  .autolp-sleeves { grid-template-columns:repeat(2,1fr); }
-  .autolp-risks { padding:1.5rem 1.2rem; }
+  .autolp-card { gap:.9rem; padding:1.1rem; }
+  .autolp-card-head { flex-wrap:wrap; gap:.5rem; }
+  .autolp-kind { font-size:.58rem; }
+  .autolp-card-body { grid-template-columns:minmax(0,1fr); gap:.4rem; }
+  .autolp-card-head { align-items:center; }
+  .autolp-card-body h3 { font-size:1.55rem; line-height:1; }
+  .autolp-card-desc, .autolp-facts { display:none; }
+  .autolp-perf b { font-size:1.35rem; }
+  .autolp-perf span { font-size:.56rem; }
+  .autolp-card-foot { flex-direction:column; align-items:flex-start; gap:.6rem; }
+  .autolp-tickers { flex-wrap:nowrap; overflow:hidden; max-width:100%; mask-image:linear-gradient(90deg,#000 85%,transparent); }
 }
 @media (prefers-reduced-motion:reduce) { .autolp-card::before, .autolp-badge i { animation:none; } }
