@@ -14,7 +14,7 @@ export function IndexClient({ slug }: { slug: string; gen0: boolean }) {
   const [resolved, setResolved] = useState<{ slug: string; vault?: Address; proportional?: ProportionalRelease; error?: string }>();
   const [directSymbol, setDirectSymbol] = useState("");
   useEffect(() => {
-    if (official || direct) return;
+    if (direct) return;
     let cancelled = false;
     const find = async () => {
       if (atomicFactoryAddress) {
@@ -24,12 +24,14 @@ export function IndexClient({ slug }: { slug: string; gen0: boolean }) {
         ]);
         if (vault !== zeroAddress) return { slug: clean, vault, proportional: { vault, implementation, factory: atomicFactoryAddress, slug: clean, launchBlock: atomicFactoryStartBlock } };
       }
+      // An official slug keeps its V2 vault until a proportional vault with the same slug exists in the atomic factory.
+      if (official) return { slug: clean, vault: official };
       const vault = await publicClient.readContract({ address: productionV2Factory, abi: v2FactoryAbi, functionName: "bySlug", args: [clean] });
       return { slug: clean, vault: vault === zeroAddress ? undefined : vault, error: vault === zeroAddress ? "This index has not been created." : undefined };
     };
     find()
       .then(next => { if (!cancelled) setResolved(next); })
-      .catch(() => { if (!cancelled) setResolved({ slug: clean, error: "Unable to load this index. Please reload to retry." }); });
+      .catch(() => { if (!cancelled) setResolved(official ? { slug: clean, vault: official } : { slug: clean, error: "Unable to load this index. Please reload to retry." }); });
     return () => { cancelled = true; };
   }, [clean, official, direct]);
   useEffect(() => {
@@ -40,8 +42,11 @@ export function IndexClient({ slug }: { slug: string; gen0: boolean }) {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [direct]);
-  const vault = official ?? direct ?? (resolved?.slug === clean ? resolved.vault : undefined);
+  const vault = direct ?? (resolved?.slug === clean ? resolved.vault : undefined);
+  // The proportional vault replaced a V2 vault with this slug: holders of the old one keep a direct way out.
+  const legacy = resolved?.slug === clean && resolved.proportional && official ? official : undefined;
   return <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
+    {legacy && <p className="vault-notice" role="note">This is the new {clean.toUpperCase()} vault. Still holding the previous {clean.toUpperCase()}? <a className="landing-path-link" href={`/i/${legacy}`}>Open the previous vault to redeem →</a></p>}
     {resolved?.slug === clean && resolved.proportional ? <ProportionalVaultDesk release={resolved.proportional} /> : vault ? <V2VaultDesk vault={vault} slug={directSymbol || clean} /> : <p role="status">{resolved?.slug === clean ? resolved.error : "Loading index…"}</p>}
   </div>;
 }
