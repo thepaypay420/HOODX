@@ -208,7 +208,7 @@ Queue (ranked by expected $ uplift / cost):
 | V-N3 | Sole-LP pool design | Capture depends on depth and fee vs incumbents | 0-RPC capture model | DONE: depth drives flow (Spearman 0.83); rule TRUE via <=5bp (R 2.27, +0.9bp: uneconomic) and >60bp (R 1.95, +246bp, n=6, wash-trade signature) |
 | V-N4 | Authenticity audit of >60bp new pools | Wash trading would fake both capture and spread | tx senders, 906 RPC | ACTIONABLE: all 6 organic (58-75 senders/75 swaps, top-3 19-49%, no creator self-trading); median R 1.95, +246bp |
 | V-N5 | High-fee venue economics | Persistence + yield on capital net of 3-10% entry | forward Oct (>= 3 weeks) | REGISTERED (needs forward data) |
-| V-J | Own-flow recapture | Route vault swaps through our own sleeve pools | fork | QUEUED (small) |
+| V-J | Own-flow recapture | Route vault swaps through our own sleeve pools | analytic | REJECTED: recapture ≈ our L share (~5%) x 30bp ≈ 1.5bp vs paying 30bp instead of the 1-5bp cheapest route (R1). Dominated |
 | V-G | Majors at low vol | ETH/USDG volume | backtest | LOW PRIOR |
 
 Per-iteration protocol: read this charter + forward summary -> finish/verdict any running test
@@ -233,3 +233,8 @@ Per-iteration protocol: read this charter + forward summary -> finish/verdict an
 * **Loop v2 iteration 6 (V-N4, 906 RPC): ACTIONABLE.** High-fee flow in thin stocks is organic.
   V-N5 registered (needs >= 3 October weeks). **Queue now waits on forward data**: A25/A26 cohorts
   (first verdicts ~10-10), V-N5 (~10-22). Cheap READY items remaining: V-J own-flow recapture (small).
+
+* **Loop v2 paused 2026-09-30 (all READY items done).** Remaining tests are forward-gated:
+  A17/A19 frozen book (10+ days -> ~10-11), A25/A26 cohorts (first window closes 10-10), V-N5 (>= 3 Oct
+  weeks -> ~10-22), A24 cap change (needs forward confirmation). Re-verify the earnings calendar <= 7 days
+  before the 10-10, 10-19 and 10-28 cohorts. Restart the loop when the first cohort window closes.
