@@ -252,3 +252,10 @@ Per-iteration protocol: read this charter + forward summary -> finish/verdict an
   produce a timely frozen forward ledger rather than an indefinitely invalid
   October 1 book. The October 1 A25/A26 cohort remains exploratory; no
   completed forward PnL was inspected to select the restart date.
+
+* **2026-10-01 A29 (0 RPC; no matured outcome).** Applied the same freeze
+  integrity gate to H3/H8/SLP25: September 30 and October 1 decisions were
+  recorded hours after their boundaries, so they are diagnostic only. The
+  forward summary and $200 shadow portfolios now count only timely decisions;
+  three regression tests pass. Earliest clean decision is October 2 if the
+  scheduled cloud job completes within the one-hour window.

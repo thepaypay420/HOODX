@@ -301,6 +301,7 @@ def decide(day, pools, state, days, bounds, eth, proto):
             key = reason.split(" ")[0]
             census[key] = census.get(key, 0) + 1
     return {"day": day, "decision_block": bounds[day], "universe": len(pools),
+            **freeze_metadata(day),
             "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
             "H3": sorted(h3, key=lambda x: -x["score"]), "H8": sorted(h8, key=lambda x: -x["score"]),
             "SLP25": sorted(slp, key=lambda x: -x["score"]),
@@ -328,6 +329,7 @@ def score(decisions, pools, state, days, bounds, eth, proto):
                     r = C.run_unit(pool, state, days, bounds, eth, proto, d, 100.0)
                     net = r.get("net_exec_usd")
                 done[key] = {"hyp": hyp, "day": d, "pool_id": pick["pool_id"], "token": pick["token"],
+                             "evidence_status": dec.get("evidence_status", "unverified_freeze_time"),
                              "net_usd_per_100": net, **{k: v for k, v in r.items() if k != "post_fill_24h_token_ret"}}
     clock = V.Clock(bounds)
     V.GAS = 0.0125
@@ -340,6 +342,7 @@ def score(decisions, pools, state, days, bounds, eth, proto):
                 continue
             r = M.run(pools[pick["pool_id"]], d, bounds, clock, proto, 1.025, "static", "always", True, 0.0, 100.0)
             done[key] = {"hyp": "SLP25", "day": d, "pool_id": pick["pool_id"], "token": pick["symbol"],
+                         "evidence_status": dec.get("evidence_status", "unverified_freeze_time"),
                          "net_usd_per_100": r.get("net_usd"), **r}
     res_file.write_text(json.dumps(done, indent=1, default=str))
     return done
@@ -357,6 +360,8 @@ def portfolios(decisions, pools, state, days, bounds, eth, proto):
             for p in [p for p in held if p["exit_idx"] <= di]:
                 nav += p["net"] or 0.0
             held = [p for p in held if p["exit_idx"] > di]
+            if decisions[d].get("evidence_status") != "prospective":
+                continue
             for pick in decisions[d].get(hyp, []):
                 if len(held) >= 3:
                     break
@@ -389,6 +394,8 @@ def portfolios(decisions, pools, state, days, bounds, eth, proto):
         for p in [p for p in held if p["exit_idx"] <= di]:
             nav += p["net"] or 0.0
         held = [p for p in held if p["exit_idx"] > di]
+        if decisions[d].get("evidence_status") != "prospective":
+            continue
         for pick in decisions[d].get("SLP25", []):
             if len(held) >= 5:
                 break
@@ -548,7 +555,10 @@ def cohort_books(pools, state, days, bounds, proto, freeze_only=False):
 def summarize(done, ports):
     summ = {"updated_utc": datetime.now(timezone.utc).isoformat()}
     for hyp in ("H3", "H8", "SLP25"):
-        rows = [r for r in done.values() if r["hyp"] == hyp and r.get("net_usd_per_100") is not None]
+        rows = [r for r in done.values() if r["hyp"] == hyp and r.get("net_usd_per_100") is not None
+                and r.get("evidence_status") == "prospective"]
+        excluded = sum(r["hyp"] == hyp and r.get("net_usd_per_100") is not None
+                       and r.get("evidence_status") != "prospective" for r in done.values())
         byd = {}
         for r in rows:
             byd.setdefault(r["day"], []).append(r["net_usd_per_100"])
@@ -562,6 +572,7 @@ def summarize(done, ports):
         for r in rows:
             tok.setdefault(r["token"], []).append(r["net_usd_per_100"])
         summ[hyp] = {"scored_decision_days": len(byd), "positions": len(rows),
+                     "exploratory_positions_excluded": excluded,
                      "mean_net_per_100": round(statistics.mean(r["net_usd_per_100"] for r in rows), 3) if rows else None,
                      "day_cluster_90": boot, "tokens": len(tok),
                      "profitable_tokens": sum(statistics.mean(v) > 0 for v in tok.values()),
@@ -592,7 +603,8 @@ def main():
     log("pools", len(pools), "days", days[0], "->", days[-1])
     decisions = {}
     day0 = json.loads(DAY0.read_text())["frozen"]
-    decisions["2026-09-30"] = {"H3": [{"pool_id": c["pool_id"], "token": c["token"], "score": c["flags"]["H3"],
+    decisions["2026-09-30"] = {"evidence_status": "late_exploratory",
+                               "H3": [{"pool_id": c["pool_id"], "token": c["token"], "score": c["flags"]["H3"],
                                        "initializer": c.get("initializer")}
                                       for c in day0["selected"] if c["flags"].get("H3") is not None], "H8": []}
     for d in days:
@@ -603,6 +615,9 @@ def main():
                 save_cache()
                 freeze(d, payload)
             decisions[d] = json.loads(f.read_text())["payload"]
+            # The October 1 dispatch was 15 h late and predates the timestamp
+            # field. Missing freeze metadata is never promoted prospectively.
+            decisions[d].setdefault("evidence_status", "unverified_freeze_time")
     # Freeze stock-book choices before any potentially long scoring work. The
     # October 1 cloud run previously skipped these when no forward day had
     # closed; that cohort must be labeled late/exploratory if frozen later.

@@ -977,3 +977,17 @@ maker rebands, daily compounding, execution costs, and comparison book are
 unchanged. This date correction was made before October 1 closed and before
 any October stock-book outcome was scored. The nine-day A25/A26 October 1
 cohort remains late/exploratory; its next scheduled cohort is October 10.
+
+### A29 — all forward decisions use the same freeze standard (2026-10-01, before October 2)
+
+The H3 September 30 pretest was recorded at 09:10 UTC, and the October 1 cloud
+dispatch saved H3/H8/SLP25 decisions around 15:17 UTC. Both missed the one-hour
+decision-boundary standard in A27; the October 1 decision file also lacks an
+actual freeze timestamp. They remain useful exploratory observations but are
+**excluded** from prospective position counts, day-cluster statistics, the
+$200 forward portfolio, and the launch gate. Starting with the October 2 daily
+run, each new decision payload records `frozen_utc` and `evidence_status`.
+Missing status is conservatively unverified. The script can still score late
+decisions for diagnostics, but the verdict reads only `prospective` rows.
+No completed October forward outcome was available when this exclusion was
+adopted; H3/H8/SLP25 economic rules are unchanged.

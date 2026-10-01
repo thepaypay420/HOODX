@@ -16,6 +16,20 @@ class ForwardFreezeTest(unittest.TestCase):
         self.assertEqual(F.freeze_metadata("2026-10-01", datetime(2026, 10, 1, 0, 40, tzinfo=timezone.utc))["evidence_status"], "prospective")
         self.assertEqual(F.freeze_metadata("2026-10-01", datetime(2026, 10, 1, 16, 0, tzinfo=timezone.utc))["evidence_status"], "late_exploratory")
 
+    def test_late_result_cannot_enter_forward_verdict(self):
+        done = {
+            "late": {"hyp": "H3", "day": "2026-10-01", "token": "A", "net_usd_per_100": 50.0,
+                     "evidence_status": "late_exploratory"},
+            "clean": {"hyp": "H3", "day": "2026-10-02", "token": "B", "net_usd_per_100": -2.0,
+                      "evidence_status": "prospective"},
+        }
+        ports = {hyp: {"realized_net_usd_on_200": 0.0, "ledger": []} for hyp in ("H3", "H8", "SLP25")}
+        with tempfile.TemporaryDirectory() as directory, patch.object(F, "SUMMARY", Path(directory) / "summary.json"):
+            summary = F.summarize(done, ports)
+        self.assertEqual(summary["H3"]["positions"], 1)
+        self.assertEqual(summary["H3"]["mean_net_per_100"], -2.0)
+        self.assertEqual(summary["H3"]["exploratory_positions_excluded"], 1)
+
     def test_first_day_freezes_books_before_any_scoring(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
