@@ -25,8 +25,11 @@ $env:HOODX_DEPLOY_STAGE = "stock-lp-vault-v1"
 $env:HOODX_REVIEWED_BUILD = $manifest.reviewedBuild
 
 Write-Host "HOODX Stock LP vault - reviewed deployer transactions" -ForegroundColor Cyan
-Write-Host "Basket: $($manifest.count) stocks. Creates price references, sleeves, the vault and the controller,"
-Write-Host "hands ownership to the controller and activates it. Value: 0 ETH; no funds are seeded."
+$seedEth = [decimal]$manifest.seedEthWei / 1e18
+Write-Host "Basket: $($manifest.count) stocks, cap `$$([decimal]$manifest.tvlCapUsdg / 1e6)."
+Write-Host "Creates price references, sleeves, the vault, the controller and a one-shot seeder; activates the"
+Write-Host "controller; then seeds every sleeve with $seedEth ETH and mints the first shares to the treasury."
+Write-Host "Leftovers are sold back and refunded in the same transaction. Total cost ~ $seedEth ETH + ~0.0025 ETH gas."
 Write-Host "Curator and fee recipient: 0x134D468B0bcaeA6DF127916f951F7938c06A37C6."
 Write-Host "Your keystore password is entered only in Foundry's own prompt below.`n"
 
@@ -34,4 +37,4 @@ $wallet = if ($Keystore) { @("--keystore", $Keystore) } else { @("--account", $A
 & $forge script "script/DeployStockLpVaultV1.s.sol:DeployStockLpVaultV1" `
   --rpc-url $env:ROBINHOOD_RPC_URL @wallet --sender $deployer --broadcast --slow -vv
 if ($LASTEXITCODE -ne 0) { throw "Deployment did not complete. Do not continue to seeding." }
-Write-Host "`nDeployment submitted. Record the printed addresses, then run the treasury seeding step." -ForegroundColor Green
+Write-Host "`nDeployed and seeded. Record the printed Vault and Controller addresses." -ForegroundColor Green

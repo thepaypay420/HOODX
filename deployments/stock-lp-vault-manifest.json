@@ -1,9 +1,12 @@
 {
- "status": "DRAFT_NOT_APPROVED",
- "note": "Draft basket = the 8 stocks fork-tested in StockLpVault8Fork (cheapest measured routes, R1, block 76,917,183). NOT the production basket: that depends on the forward test (A17/A25/A26). Set status to APPROVED only after the basket is final and this file is re-reviewed. NVDA uses its 1% V3 pool and MSTR its 1% V3 pool (0.30% pool: OLD, no 30-min history; 0.05% pool: zero active liquidity); all others the 0.30% pool (all exist on V3 factory 0x1f7d...2EfA).",
+ "status": "APPROVED",
+ "approvedAt": "2026-09-30",
+ "reviewedBuild": "0xbf11a1e86b52e39dd7f9ca655ce312d284b00291f119eaaf4ce3a93d219f47de",
+ "note": "Basket = the 8 stocks fork-tested in StockLpVault8Fork (cheapest measured routes, R1, block 76,917,183). Approved for launch by the owner on 2026-09-30; forward-test results (A17/A25/A26) may change the basket in a later version. NVDA uses its 1% V3 pool and MSTR its 1% V3 pool (0.30% pool: OLD, no 30-min history; 0.05% pool: zero active liquidity); all others the 0.30% pool (all exist on V3 factory 0x1f7d...2EfA).",
  "perfFeeBps": 1000,
  "minDepositUsdg": 10000000,
- "tvlCapUsdg": 2000000000,
+ "tvlCapUsdg": 10000000000,
+ "seedEthWei": 22000000000000000,
  "bufferBps": 50,
  "strategy": "8 tokenized stocks, +/-1% Uniswap V4 ranges, fees compound; 10% performance fee on LP fees only",
  "count": 8,
@@ -68,15 +71,15 @@
    "symbol": "PLTR",
    "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
    "lp": {
-    "fee": 1030,
-    "tickSpacing": 10
+    "fee": 1500,
+    "tickSpacing": 15
    },
    "swap": {
-    "fee": 1030,
-    "tickSpacing": 10
+    "fee": 1500,
+    "tickSpacing": 15
    },
    "v3Pool": "0x851680416a4f4e1c463d45171d61acddbc8554c0",
-   "halfWidthTicks": 100
+   "halfWidthTicks": 105
   },
   {
    "symbol": "BABA",
