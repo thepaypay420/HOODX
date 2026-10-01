@@ -28,10 +28,8 @@ def _counted_post(*a, **k):
     return _post(*a, **k)
 
 
-requests.post = _counted_post
-
-
 def main():
+    requests.post = _counted_post  # standalone runs only; importing this module must not cap callers
     block = int(fx.rpc("eth_blockNumber", []), 16)
     stocks = {t["token"].lower(): t["symbol"] for t in json.loads((ROOT.parent / "public" / "rh_stocks.json").read_text())["tokens"]}
     reg = json.load(gzip.open(ROOT / "huntx_edge_registry.json.gz"))
@@ -75,3 +73,31 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def best_round_trip_bps(symbols, block, usd=250):
+    """Cheapest USDG->stock->USDG round trip (bps) per symbol at `block`, over live hookless static pools."""
+    stocks = {t["token"].lower(): t["symbol"] for t in json.loads((ROOT.parent / "public" / "rh_stocks.json").read_text())["tokens"]}
+    reg = json.load(gzip.open(ROOT / "huntx_edge_registry.json.gz"))
+    want = set(symbols)
+    out = {s: None for s in symbols}
+    for p in reg["pools"]:
+        c0, c1 = p["currency0"], p["currency1"]
+        if USDG not in (c0, c1) or int(p["hooks"], 16) != 0 or p["fee"] > 30_000:
+            continue
+        tok = c1 if c0 == USDG else c0
+        sym = stocks.get(tok)
+        if sym not in want:
+            continue
+        (liq,) = eth_call(STATE_VIEW, "getLiquidity(bytes32)", ["bytes32"], [bytes.fromhex(p["pool_id"][2:])], ["uint128"], block)
+        if liq == 0:
+            continue
+        usdg_is0 = c0 == USDG
+        amt = usd * 10**6
+        got = quote_exact_in(p, usdg_is0, amt, block)
+        back = quote_exact_in(p, not usdg_is0, got, block) if got else None
+        if back:
+            bps = 10_000 * (1 - back / amt)
+            if out[sym] is None or bps < out[sym]:
+                out[sym] = round(bps, 1)
+    return out

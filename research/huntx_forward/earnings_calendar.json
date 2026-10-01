@@ -1,0 +1,14 @@
+{
+ "note": "A25 calendar. status=estimated until the company announces; re-verify <= 7 days before each cohort decision (10-01, 10-10, 10-19, 10-28). Rule operationalization (fixed before October data): a symbol is excluded from a cohort starting d if a confirmed date lies in [d, d+9], or an estimated date lies in [d-7, d+16] (estimate uncertainty counts as inside).",
+ "sources": ["https://www.wallstreethorizon.com/tesla-earnings-calendar", "https://www.tradingview.com/earnings-calendar/"],
+ "events": {
+  "NFLX": {"date": "2026-10-21", "status": "estimated"},
+  "GOOGL": {"date": "2026-10-27", "status": "estimated"},
+  "MSFT": {"date": "2026-10-28", "status": "estimated"},
+  "TSLA": {"date": "2026-10-28", "status": "estimated"},
+  "META": {"date": "2026-10-28", "status": "estimated"},
+  "AMZN": {"date": "2026-10-29", "status": "estimated"},
+  "AAPL": {"date": "2026-10-29", "status": "estimated"},
+  "NVDA": {"date": "2026-11-18", "status": "estimated"}
+ }
+}

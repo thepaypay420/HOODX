@@ -201,8 +201,8 @@ Queue (ranked by expected $ uplift / cost):
 |---|---|---|---|---|
 | A24 | Breadth for capacity | More pools = less dilution per pool -> higher cap | structural backtest | DONE: K8 to $10k (conf +2.02%/9d, worst -0.13); K16 only at $20k (+1.77 vs +1.38). Cap $2k->$10k supported by rule; forward-confirm first |
 | R1 | Cheapest entry/exit route per stock | 0.35% round trip is ~12% of a 9-day return; cheaper pools exist | fork quotes (deterministic) | DONE: only 8/36 stocks round-trip <= 30bp (NVDA 4bp ... USO 30bp); 8 at ~70bp; 15 cost 1.2-10%; 4 no pool. Swap route = cheapest pool (adopted). Entry-cost gate -> A26 forward |
-| A26 | ETH-entry cost gate | Expensive-to-enter picks hand the edge to arbitrage | forward (from 10-01) | REGISTERED |
-| A25 | Earnings exclusion | Known gap events are pure LVR | forward (Oct 21-29 cluster) | REGISTERED |
+| A26 | ETH-entry cost gate | Expensive-to-enter picks hand the edge to arbitrage | forward (from 10-01) | WIRED into forward job (9-day cohorts 10-01/10/19/28, scored after ETH entry+exit) |
+| A25 | Earnings exclusion | Known gap events are pure LVR | forward (Oct 21-29 cluster) | WIRED (same cohorts; calendar research/huntx_forward/earnings_calendar.json, re-verify <= 7 d before 10-10/19/28) |
 | V-N | Own-venue pools (dynamic-fee hook by session) | Be the venue: set the fee, keep 100% of LP fees | measure aggregator routing to new pools first; hooks = Cork-class risk | QUEUED (research only) |
 | V-J | Own-flow recapture | Route vault swaps through our own sleeve pools | fork | QUEUED (small) |
 | V-G | Majors at low vol | ETH/USDG volume | backtest | LOW PRIOR |
@@ -210,3 +210,8 @@ Queue (ranked by expected $ uplift / cost):
 Per-iteration protocol: read this charter + forward summary -> finish/verdict any running test
 (apply the frozen rule exactly) -> else run the top READY item -> commit locally -> report
 (what ran, verdict, numbers, next). RPC ≤ 10k/iteration, read-only, never sign/broadcast/push.
+
+* **Loop v2 iteration 2 (cohort wiring):** A25/A26 books added to huntx_forward_shadow.py as 9-day cohorts
+  (B0/E1/G1, hash-chained picks, scored after measured ETH entry+exit). Dry run on 09-28 (scratch dir,
+  523 RPC) passed; observation only: the B0 yield ranking admits INTC/SNDK/AMD (1.7-2.2% round trip).
+  **Next: V-N (does aggregator flow reach new/low-fee pools?) — research measurement only.**

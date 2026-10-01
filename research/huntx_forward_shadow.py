@@ -436,6 +436,82 @@ def slp10k8_book(pools, state, days, bounds, proto):
     return hist
 
 
+COHORTS = ["2026-10-01", "2026-10-10", "2026-10-19", "2026-10-28"]
+ENTRY_GATE_BPS = 70.0  # A26
+ETH_LEG_BPS = 2.0  # ETH/USDG 0.01% pool, in and out
+
+
+def _earnings_excluded(sym, d):
+    """A25 rule as fixed in research/huntx_forward/earnings_calendar.json before October data."""
+    cal = json.loads((FWD / "earnings_calendar.json").read_text())["events"]
+    ev = cal.get(sym)
+    if not ev:
+        return False
+    start = datetime.fromisoformat(d).date()
+    when = datetime.fromisoformat(ev["date"]).date()
+    if ev["status"] == "confirmed":
+        return start <= when <= start + timedelta(days=9)
+    return start - timedelta(days=7) <= when <= start + timedelta(days=16)
+
+
+def cohort_books(pools, state, days, bounds, proto):
+    """A25/A26: every 9 days freeze B0 / E1 (earnings exclusion) / G1 (ETH-entry cost gate) picks; value daily,
+    scored after one ETH entry + exit at the routes measured at the decision block."""
+    import huntx_route_costs as RC
+    stock_pools = {pid: p for pid, p in pools.items() if p.quote == S.USDG and p.token in V.STOCKS}
+    nav_f = FWD / "cohort_nav.json"
+    nav = json.loads(nav_f.read_text()) if nav_f.exists() else {}
+    for d in COHORTS:
+        if d not in bounds or days[-1] <= d:
+            continue
+        pf = FWD / f"cohort_{d}.json"
+        if not pf.exists():
+            best = {}
+            for pid in V.eligible(stock_pools, bounds, d):
+                y = M.trailing_yield25(stock_pools[pid], bounds, d, proto)
+                sym = V.STOCKS[stock_pools[pid].token]
+                if y is not None and (sym not in best or y > best[sym][0]):
+                    best[sym] = (y, pid)
+            ranked = sorted(best, key=lambda s_: -best[s_][0])
+            rt = RC.best_round_trip_bps(ranked[:20], bounds[d] - 1)
+            b0 = ranked[:8]
+            e1 = [s_ for s_ in ranked if not _earnings_excluded(s_, d)][:8]
+            g1 = [s_ for s_ in ranked if rt.get(s_) is not None and rt[s_] <= ENTRY_GATE_BPS][:8]
+            missing = [s_ for s_ in set(e1 + g1) if s_ not in rt]
+            if missing:
+                rt.update(RC.best_round_trip_bps(missing, bounds[d] - 1))
+            payload = {"start": d, "decision_block": bounds[d],
+                       "books": {k: [{"symbol": s_, "pool_id": best[s_][1], "score": best[s_][0]} for s_ in v]
+                                 for k, v in (("B0", b0), ("E1", e1), ("G1", g1))},
+                       "round_trip_bps_at_250": rt, "rule": "A25/A26 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"}
+            prev = chain_head()
+            h = hashlib.sha256((prev + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
+            pf.write_text(json.dumps({"prev_hash": prev, "hash": h, "payload": payload}, indent=1))
+            with CHAIN.open("a") as fh:
+                fh.write(f"cohort-{d} {h}" + chr(10))
+            save_cache()
+        payload = json.loads(pf.read_text())["payload"]
+        end = min((datetime.fromisoformat(d) + timedelta(days=9)).date().isoformat(), days[-1])
+        if end not in bounds or end in nav.get(d, {}):
+            continue
+        row = {}
+        for book, picks in payload["books"].items():
+            ids = [x["pool_id"] for x in picks if x["pool_id"] in stock_pools]
+            if not ids:
+                continue
+            r = SC.run_vault(stock_pools, bounds, proto, d, end, len(ids), "fixed:0.01", symbols=ids)
+            per = 200 / len(ids)
+            rts = payload["round_trip_bps_at_250"]
+            entry = sum(per / 2 * (rts.get(x["symbol"]) if rts.get(x["symbol"]) is not None else 10_000) / 1e4
+                        for x in picks) + 200 * ETH_LEG_BPS / 1e4
+            row[book] = {"net_usd": round(r["net_usd"], 4), "entry_exit_cost_usd": round(entry, 4),
+                         "net_after_entry_usd": round(r["net_usd"] - entry, 4),
+                         "worst_sleeve_usd": round(min(r["per_sleeve"].values()) if isinstance(r["per_sleeve"], dict) else min(r["per_sleeve"]), 4)}
+        nav.setdefault(d, {})[end] = row
+        nav_f.write_text(json.dumps(nav, indent=1))
+    return nav
+
+
 def summarize(done, ports):
     summ = {"updated_utc": datetime.now(timezone.utc).isoformat()}
     for hyp in ("H3", "H8", "SLP25"):
@@ -503,6 +579,15 @@ def main():
     if book:
         summ["SLP10K8_book"] = book[max(book)]
         SUMMARY.write_text(json.dumps(summ, indent=1))
+    try:
+        cohorts = cohort_books(pools, state, days, bounds, proto)
+        if cohorts:
+            summ["cohorts_A25_A26"] = {d: v[max(v)] for d, v in cohorts.items() if v}
+            SUMMARY.write_text(json.dumps(summ, indent=1))
+    except Exception as exc:  # the A17 book above must never be blocked by the new books
+        log("cohort books failed:", repr(exc))
+    finally:
+        save_cache()
     print(json.dumps({"today": days[-1], "SLP25_today": len(decisions.get(days[-1], {}).get("SLP25", [])),
                       "H3_today": len(decisions.get(days[-1], {}).get("H3", [])),
                       "H8_today": len(decisions.get(days[-1], {}).get("H8", [])), "summary": summ}, indent=1))
