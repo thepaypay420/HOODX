@@ -1,0 +1,66 @@
+name: HUNTX forward shadow
+# Daily, read-only forward test of the stock-LP strategy books (A17/A19/A25/A26). Runs on GitHub's servers so no
+# local PC has to stay on. It signs nothing and holds no keys: the only secret is the read RPC endpoint.
+on:
+  schedule:
+    - cron: "40 0 * * *" # 00:40 UTC, after each UTC day closes
+  workflow_dispatch:
+permissions:
+  contents: write # commits the small daily result files back to the research branch
+concurrency:
+  group: forward-shadow
+  cancel-in-progress: false
+env:
+  RESEARCH_BRANCH: research/stock-lp-vault
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.RESEARCH_BRANCH }}
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - run: pip install numpy==1.26.4 requests==2.32.3 web3==6.10.0 eth-abi==5.2.0
+      - name: Restore forward state (logs, state, RPC cache)
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            research/huntx_forward/logs
+            research/huntx_forward/state.json.gz
+            research/huntx_edge_rpc_cache.json.gz
+          key: forward-state-${{ github.run_id }}
+          restore-keys: forward-state-
+      - name: Bootstrap history (cheap after the first run)
+        working-directory: research
+        env:
+          ROBINHOOD_RPC_URL: ${{ secrets.ROBINHOOD_RPC_URL }}
+          PYTHONUTF8: "1"
+        run: python forward_bootstrap.py
+      - name: Daily forward run
+        working-directory: research
+        env:
+          ROBINHOOD_RPC_URL: ${{ secrets.ROBINHOOD_RPC_URL }}
+          PYTHONUTF8: "1"
+        run: python huntx_forward_shadow.py
+      - name: Save forward state
+        if: always()
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            research/huntx_forward/logs
+            research/huntx_forward/state.json.gz
+            research/huntx_edge_rpc_cache.json.gz
+          key: forward-state-${{ github.run_id }}
+      - name: Commit daily results to the research branch
+        run: |
+          git config user.name "hoodx-forward-bot"
+          git config user.email "hoodx-forward-bot@users.noreply.github.com"
+          git add research/huntx_forward
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "forward: daily run $(date -u +%Y-%m-%d)"
+          git pull --rebase origin "$RESEARCH_BRANCH"
+          git push origin "HEAD:$RESEARCH_BRANCH"
