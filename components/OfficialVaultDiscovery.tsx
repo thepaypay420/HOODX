@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { AssetChips } from "@/components/AssetChips";
 import { AutoLpCard } from "@/components/AutoLpCard";
 import { BrandMark } from "@/components/BrandMark";
 import { TokenArt } from "@/components/TokenArt";
@@ -29,7 +30,7 @@ function Card({ vault, featured = false, liveReturn }: { vault: VaultMeta; featu
   return <Link id={vault.slug} href={href} className={`discovery-card ${featured ? "is-featured" : ""}`} style={styleFor(vault)}>
     <div className="discovery-card-top">{vault.image ? <TokenArt slug={vault.slug} src={vault.image} size={featured ? "md" : "sm"} /> : <ThemeMark vault={vault} />}<Model vault={vault} liveReturn={liveReturn} /></div>
     <div className="discovery-card-copy"><p>{vault.flair}</p><h3>{vault.name}</h3><span>{vault.thesis}</span></div>
-    <div className="discovery-card-foot"><div className="discovery-tokens" aria-label={`${vault.assets.length} assets: ${vault.assets.join(", ")}`}>{vault.assets.slice(0, 6).map((asset) => <b key={asset}>{asset.slice(0, 2)}</b>)}</div><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : vault.status === "pilot" ? `${vault.assets.length} LP sleeves` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
+    <div className="discovery-card-foot"><AssetChips assets={vault.assets} /><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : vault.status === "pilot" ? `${vault.assets.length} LP sleeves` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
   </Link>;
 }
 function CreateCard() {
