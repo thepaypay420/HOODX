@@ -1,0 +1,521 @@
+{
+ "summary": {
+  "total_volume_usd": 634145662,
+  "total_lp_fees_usd": 1878746,
+  "by_tier": {
+   "1.0": {
+    "volume_share": 0.037,
+    "fee_share": 0.001
+   },
+   "2.0": {
+    "volume_share": 0.01,
+    "fee_share": 0.001
+   },
+   "2.5": {
+    "volume_share": 0.015,
+    "fee_share": 0.001
+   },
+   "3.0": {
+    "volume_share": 0.011,
+    "fee_share": 0.001
+   },
+   "3.1": {
+    "volume_share": 0.057,
+    "fee_share": 0.006
+   },
+   "3.75": {
+    "volume_share": 0.023,
+    "fee_share": 0.003
+   },
+   "5.0": {
+    "volume_share": 0.096,
+    "fee_share": 0.016
+   },
+   "5.2": {
+    "volume_share": 0.027,
+    "fee_share": 0.005
+   },
+   "10.0": {
+    "volume_share": 0.007,
+    "fee_share": 0.002
+   },
+   "12.0": {
+    "volume_share": 0.013,
+    "fee_share": 0.005
+   },
+   "15.0": {
+    "volume_share": 0.01,
+    "fee_share": 0.005
+   },
+   "24.0": {
+    "volume_share": 0.015,
+    "fee_share": 0.012
+   },
+   "24.5": {
+    "volume_share": 0.007,
+    "fee_share": 0.006
+   },
+   "25.0": {
+    "volume_share": 0.099,
+    "fee_share": 0.084
+   },
+   "30.0": {
+    "volume_share": 0.436,
+    "fee_share": 0.441
+   },
+   "50.0": {
+    "volume_share": 0.005,
+    "fee_share": 0.009
+   },
+   "75.0": {
+    "volume_share": 0.013,
+    "fee_share": 0.032
+   },
+   "100.0": {
+    "volume_share": 0.088,
+    "fee_share": 0.297
+   }
+  },
+  "new_pools_share_of_2nd_half_volume": 0.295
+ },
+ "symbols": {
+  "AAPL": {
+   "volume_usd": 24650080,
+   "lp_fees_usd": 73490.59,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.993,
+   "cheapest_active_fee_bps": 30.0,
+   "cheapest_active_share": 0.993,
+   "fee_share_by_tier": {
+    "30.0": 0.999,
+    "4.2": 0.001
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "AMD": {
+   "volume_usd": 7094362,
+   "lp_fees_usd": 65526.25,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 0.91,
+   "cheapest_active_fee_bps": 15.0,
+   "cheapest_active_share": 0.09,
+   "fee_share_by_tier": {
+    "100.0": 0.985,
+    "15.0": 0.015
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 0.027
+  },
+  "AMZN": {
+   "volume_usd": 1331915,
+   "lp_fees_usd": 3196.6,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 24.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 24.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "24.0": 1.0
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "BABA": {
+   "volume_usd": 4313904,
+   "lp_fees_usd": 4313.9,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 10.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 10.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "10.0": 1.0
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "COIN": {
+   "volume_usd": 5043594,
+   "lp_fees_usd": 50435.94,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 100.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "100.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "CRCL": {
+   "volume_usd": 9890781,
+   "lp_fees_usd": 21899.11,
+   "pools_with_flow": 3,
+   "top_pool_fee_bps": 24.5,
+   "top_pool_share": 0.395,
+   "cheapest_active_fee_bps": 15.0,
+   "cheapest_active_share": 0.266,
+   "fee_share_by_tier": {
+    "24.5": 0.437,
+    "25.0": 0.383,
+    "15.0": 0.18
+   },
+   "new_pools": 3,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "DELL": {
+   "volume_usd": 1928800,
+   "lp_fees_usd": 9644.0,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 50.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 50.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "50.0": 1.0
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "EWY": {
+   "volume_usd": 5629542,
+   "lp_fees_usd": 80508.73,
+   "pools_with_flow": 6,
+   "top_pool_fee_bps": 24.0,
+   "top_pool_share": 0.293,
+   "cheapest_active_fee_bps": 20.0,
+   "cheapest_active_share": 0.087,
+   "fee_share_by_tier": {
+    "500.0": 0.6,
+    "199.9": 0.224,
+    "50.0": 0.087,
+    "24.0": 0.049
+   },
+   "new_pools": 6,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "GME": {
+   "volume_usd": 2447639,
+   "lp_fees_usd": 11534.2,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 21.2,
+   "top_pool_share": 0.671,
+   "cheapest_active_fee_bps": 21.2,
+   "cheapest_active_share": 0.671,
+   "fee_share_by_tier": {
+    "100.0": 0.698,
+    "21.2": 0.302
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "GOOGL": {
+   "volume_usd": 35988540,
+   "lp_fees_usd": 83290.82,
+   "pools_with_flow": 3,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.747,
+   "cheapest_active_fee_bps": 2.5,
+   "cheapest_active_share": 0.053,
+   "fee_share_by_tier": {
+    "30.0": 0.968,
+    "3.0": 0.026,
+    "2.5": 0.006
+   },
+   "new_pools": 2,
+   "new_pools_share_2nd_half": 0.058
+  },
+  "INTC": {
+   "volume_usd": 4380591,
+   "lp_fees_usd": 43805.91,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 100.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "100.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "META": {
+   "volume_usd": 169016950,
+   "lp_fees_usd": 360283.68,
+   "pools_with_flow": 7,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.667,
+   "cheapest_active_fee_bps": 3.1,
+   "cheapest_active_share": 0.215,
+   "fee_share_by_tier": {
+    "30.0": 0.939,
+    "3.1": 0.031,
+    "5.2": 0.025,
+    "6.0": 0.002
+   },
+   "new_pools": 6,
+   "new_pools_share_2nd_half": 0.372
+  },
+  "MSFT": {
+   "volume_usd": 14793786,
+   "lp_fees_usd": 37193.27,
+   "pools_with_flow": 3,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.769,
+   "cheapest_active_fee_bps": 8.9,
+   "cheapest_active_share": 0.018,
+   "fee_share_by_tier": {
+    "30.0": 0.917,
+    "9.0": 0.076,
+    "8.9": 0.007
+   },
+   "new_pools": 2,
+   "new_pools_share_2nd_half": 0.085
+  },
+  "MSTR": {
+   "volume_usd": 69892933,
+   "lp_fees_usd": 172660.04,
+   "pools_with_flow": 11,
+   "top_pool_fee_bps": 25.0,
+   "top_pool_share": 0.851,
+   "cheapest_active_fee_bps": 20.1,
+   "cheapest_active_share": 0.024,
+   "fee_share_by_tier": {
+    "25.0": 0.861,
+    "24.0": 0.088,
+    "23.0": 0.019,
+    "20.1": 0.019
+   },
+   "new_pools": 10,
+   "new_pools_share_2nd_half": 0.262
+  },
+  "MU": {
+   "volume_usd": 6363724,
+   "lp_fees_usd": 61531.14,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 0.959,
+   "cheapest_active_fee_bps": 20.0,
+   "cheapest_active_share": 0.041,
+   "fee_share_by_tier": {
+    "100.0": 0.991,
+    "20.0": 0.009
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "NBIS": {
+   "volume_usd": 602127,
+   "lp_fees_usd": 5961.06,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 99.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 99.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "99.0": 1.0
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "NFLX": {
+   "volume_usd": 2152482,
+   "lp_fees_usd": 21524.82,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 100.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "100.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "NVDA": {
+   "volume_usd": 32848860,
+   "lp_fees_usd": 23089.15,
+   "pools_with_flow": 3,
+   "top_pool_fee_bps": 1.0,
+   "top_pool_share": 0.711,
+   "cheapest_active_fee_bps": 1.0,
+   "cheapest_active_share": 0.711,
+   "fee_share_by_tier": {
+    "30.0": 0.851,
+    "1.0": 0.101,
+    "3.75": 0.048
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "ORCL": {
+   "volume_usd": 831057,
+   "lp_fees_usd": 8310.57,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 100.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "100.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "PLTR": {
+   "volume_usd": 16351161,
+   "lp_fees_usd": 136345.44,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 0.805,
+   "cheapest_active_fee_bps": 15.0,
+   "cheapest_active_share": 0.195,
+   "fee_share_by_tier": {
+    "100.0": 0.965,
+    "15.0": 0.035
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 0.309
+  },
+  "QQQ": {
+   "volume_usd": 825765,
+   "lp_fees_usd": 1734.24,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.64,
+   "cheapest_active_fee_bps": 5.0,
+   "cheapest_active_share": 0.36,
+   "fee_share_by_tier": {
+    "30.0": 0.914,
+    "5.0": 0.086
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "RKLB": {
+   "volume_usd": 1534598,
+   "lp_fees_usd": 34457.95,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 90.0,
+   "top_pool_share": 0.669,
+   "cheapest_active_fee_bps": 90.0,
+   "cheapest_active_share": 0.669,
+   "fee_share_by_tier": {
+    "497.0": 0.732,
+    "90.0": 0.268
+   },
+   "new_pools": 2,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "SGOV": {
+   "volume_usd": 19040422,
+   "lp_fees_usd": 5849.95,
+   "pools_with_flow": 4,
+   "top_pool_fee_bps": 3.75,
+   "top_pool_share": 0.603,
+   "cheapest_active_fee_bps": 1.5,
+   "cheapest_active_share": 0.042,
+   "fee_share_by_tier": {
+    "3.75": 0.737,
+    "2.0": 0.217,
+    "3.74": 0.026,
+    "1.5": 0.02
+   },
+   "new_pools": 4,
+   "new_pools_share_2nd_half": 1.0
+  },
+  "SNDK": {
+   "volume_usd": 4508719,
+   "lp_fees_usd": 45087.19,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 100.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "100.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "SPCX": {
+   "volume_usd": 19719208,
+   "lp_fees_usd": 123645.88,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 100.0,
+   "top_pool_share": 0.617,
+   "cheapest_active_fee_bps": 2.5,
+   "cheapest_active_share": 0.383,
+   "fee_share_by_tier": {
+    "100.0": 0.985,
+    "2.5": 0.015
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 0.784
+  },
+  "SPY": {
+   "volume_usd": 134811916,
+   "lp_fees_usd": 253720.81,
+   "pools_with_flow": 2,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 0.553,
+   "cheapest_active_fee_bps": 5.0,
+   "cheapest_active_share": 0.447,
+   "fee_share_by_tier": {
+    "30.0": 0.881,
+    "5.0": 0.119
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "TSLA": {
+   "volume_usd": 19241722,
+   "lp_fees_usd": 57725.17,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 30.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 30.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "30.0": 1.0
+   },
+   "new_pools": 0,
+   "new_pools_share_2nd_half": 0.0
+  },
+  "TSM": {
+   "volume_usd": 10484634,
+   "lp_fees_usd": 71868.98,
+   "pools_with_flow": 5,
+   "top_pool_fee_bps": 75.0,
+   "top_pool_share": 0.759,
+   "cheapest_active_fee_bps": 40.0,
+   "cheapest_active_share": 0.08,
+   "fee_share_by_tier": {
+    "75.0": 0.831,
+    "55.0": 0.059,
+    "40.0": 0.047,
+    "49.8": 0.039
+   },
+   "new_pools": 2,
+   "new_pools_share_2nd_half": 0.168
+  },
+  "USO": {
+   "volume_usd": 8425850,
+   "lp_fees_usd": 10111.02,
+   "pools_with_flow": 1,
+   "top_pool_fee_bps": 12.0,
+   "top_pool_share": 1.0,
+   "cheapest_active_fee_bps": 12.0,
+   "cheapest_active_share": 1.0,
+   "fee_share_by_tier": {
+    "12.0": 1.0
+   },
+   "new_pools": 1,
+   "new_pools_share_2nd_half": 1.0
+  }
+ }
+}
