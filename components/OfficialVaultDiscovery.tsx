@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { AutoLpCard } from "@/components/AutoLpCard";
 import { BrandMark } from "@/components/BrandMark";
 import { TokenArt } from "@/components/TokenArt";
 import { FEATURED_VAULTS, type VaultCategory, type VaultMeta } from "@/lib/vaults";
@@ -9,8 +10,9 @@ import { publicClient } from "@/lib/wallet";
 import { verifiedV2Vaults, v2VaultAbi } from "@/lib/v2";
 import { launchReturnBps } from "@/lib/v2Performance";
 
-const FILTERS: { label: string; value: "all" | VaultCategory }[] = [
-  { label: "All", value: "all" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
+type Filter = "all" | "automated" | VaultCategory;
+const FILTERS: { label: string; value: Filter }[] = [
+  { label: "All", value: "all" }, { label: "Automated LP", value: "automated" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
 ];
 const styleFor = (vault: VaultMeta) => ({ "--vault-accent": vault.accent }) as CSSProperties;
 
@@ -50,10 +52,12 @@ export function OfficialVaultDiscovery() {
   })).then(rows=>{if(active)setLiveReturns(Object.fromEntries(rows.filter((row):row is readonly[string,number]=>row[1]!==undefined)));}).catch(()=>{});return()=>{active=false;};},[]);
   const lead = FEATURED_VAULTS.find((vault) => vault.slug === "chainfin")!;
   const visible = useMemo(() => FEATURED_VAULTS.filter((vault) => vault.slug !== lead.slug && (filter === "all" || vault.category === filter)), [filter, lead.slug]);
+  const showAuto = filter === "all" || filter === "automated";
   const showLead = filter === "all" || lead.category === filter;
   return <section className="discovery-shell" data-testid="official-vault-discovery">
     <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a point of view.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
     <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div>
+    {showAuto && <AutoLpCard />}
     {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
     <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>
     <p className="discovery-footnote">696X shows live per-share return since launch. FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
