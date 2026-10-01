@@ -931,3 +931,19 @@ sender) is among its top-3 senders. Frozen rule: the > 60 bp own-pool advantage 
 least 4 of the pools are organic and the organic subset still has median R >= 1.5 and pooled spread
 > 0. Otherwise the V-N3 > 60 bp result is attributed to non-organic flow and the own-pool path is
 limited to the <= 5 bp finding (not worth pursuing).
+
+**V-N4 verdict: ACTIONABLE (906 RPC).** All 6 > 60 bp new pools are organic: 58-75 unique tx senders
+per 75 sampled week-1 swaps, top-3 sender share 19-49%, pool creators absent from the top 3 (creator
+share 0-3.3%). Organic subset: median R 1.95, pooled 24 h spread +246.5 bp. Thin names (EWY, RKLB,
+NBIS) trade at 1-5% fees with real, diverse takers.
+
+### V-N5 — high-fee venue economics on capital, forward (registered before October data)
+
+Two questions before any product change. (a) Persistence: for every hookless USDG stock pool with
+fee > 60 bp and ≥ $100k September volume, measure October weekly volume and pooled 24 h realized
+spread from the forward job's daily logs (prospective). (b) Yield on capital: per pool per week,
+LP profit (fees + 24 h markout, $) divided by the pool's median in-range quote depth within ±5% ($),
+reported net of a one-time entry at the measured best round trip (R1 method).
+Frozen rule: a high-fee LP sleeve (in existing pools or a vault-owned hookless pool) is admitted to
+design only if, over ≥ 3 October weeks, pooled spread > 0 with 90% lower bound > 0 AND median weekly
+yield on capital after entry amortized over 4 weeks ≥ 1.0%. Until then, no product change.
