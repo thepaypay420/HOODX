@@ -24,8 +24,7 @@ class ForwardFreezeTest(unittest.TestCase):
             token = "0x" + "2" * 40
             pool = SimpleNamespace(quote=F.S.USDG, token=token, pid=pid)
             pools = {pid: pool}
-            bounds = {"2026-10-01": 100}
-            days = ["2026-10-01"]
+            bounds = {"2026-10-01": 100, "2026-10-02": 200}
             with (patch.object(F, "FWD", root),
                   patch.object(F, "CHAIN", root / "chain.txt"),
                   patch.object(F, "chain_head", return_value="genesis"),
@@ -34,8 +33,8 @@ class ForwardFreezeTest(unittest.TestCase):
                   patch.object(F.M, "trailing_yield25", return_value=1.0),
                   patch("huntx_route_costs.best_round_trip_bps", return_value={"TEST": 10.0}),
                   patch.object(F, "save_cache")):
-                self.assertIsNone(F.slp10k8_book(pools, {}, days, bounds, None, freeze_only=True))
-                self.assertEqual(F.cohort_books(pools, {}, days, bounds, None, freeze_only=True), {})
+                self.assertEqual(F.cohort_books(pools, {}, ["2026-10-01"], bounds, None, freeze_only=True), {})
+                self.assertIsNone(F.slp10k8_book(pools, {}, ["2026-10-02"], bounds, None, freeze_only=True))
             self.assertEqual(json.loads((root / "slp10k8_picks.json").read_text())["payload"]["picks"][0]["symbol"], "TEST")
             self.assertEqual(json.loads((root / "cohort_2026-10-01.json").read_text())["payload"]["books"]["B0"][0]["symbol"], "TEST")
             self.assertFalse((root / "slp10k8_nav.json").exists())

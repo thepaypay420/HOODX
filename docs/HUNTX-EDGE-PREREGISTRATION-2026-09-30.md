@@ -967,3 +967,13 @@ must not count toward the forward confirmation gate. The one-hour grace is an
 operational latency allowance for the read-only daily job, not a new market
 signal. Existing A17/A19/A25/A26 eligibility, ranking, routes, costs and
 holding periods remain fixed. The next planned cohort starts October 10.
+
+### A28 — continuous-book clean restart (2026-10-01 16:12 UTC; before October 2 begins)
+
+Because the A17/A19 October 1 pick file was not frozen on time, the continuous
+stock book begins on **October 2 at the same UTC boundary**. October 1 is not
+scored for A17/A19. The universe, yield ranking, eight symbols, position widths,
+maker rebands, daily compounding, execution costs, and comparison book are
+unchanged. This date correction was made before October 1 closed and before
+any October stock-book outcome was scored. The nine-day A25/A26 October 1
+cohort remains late/exploratory; its next scheduled cohort is October 10.

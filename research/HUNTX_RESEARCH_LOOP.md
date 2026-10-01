@@ -246,3 +246,9 @@ Per-iteration protocol: read this charter + forward summary -> finish/verdict an
   `late_exploratory`; it cannot count as prospective confirmation. Two local
   regression tests pass. Next evidence remains the completed forward exits and
   timely October 10 cohort freeze; no rule or launch gate changed.
+
+* **2026-10-01 A28 (0 RPC; before October 2).** The A17/A19 continuous book
+  restarts October 2 with unchanged selection and execution rules, so it can
+  produce a timely frozen forward ledger rather than an indefinitely invalid
+  October 1 book. The October 1 A25/A26 cohort remains exploratory; no
+  completed forward PnL was inspected to select the restart date.

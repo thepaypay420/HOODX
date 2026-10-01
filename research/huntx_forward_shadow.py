@@ -414,8 +414,8 @@ def portfolios(decisions, pools, state, days, bounds, eth, proto):
 
 
 def slp10k8_book(pools, state, days, bounds, proto, freeze_only=False):
-    """A17: frozen 8-symbol continuous book from 2026-10-01; daily exact-exit valuation."""
-    start = "2026-10-01"
+    """A17/A28: continuous book restarts 2026-10-02 after the missed first freeze."""
+    start = "2026-10-02"
     if start not in bounds or days[-1] < start:
         return None
     stock_pools = {pid: p for pid, p in pools.items() if p.quote == S.USDG and p.token in V.STOCKS}
