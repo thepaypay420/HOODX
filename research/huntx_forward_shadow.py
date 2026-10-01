@@ -50,6 +50,14 @@ HIST_DIRS = ["huntx_edge_logs", "huntx_edge_logs_gap", "huntx_edge_logs_gap2"]
 START = "2026-09-20"          # earliest day loaded (trailing features need 8 days)
 FIRST_DECISION = "2026-10-01"
 DAY0 = ROOT / "huntx_edge_prospective_2026-09-30.json"
+# ETH/USDG reference pool (native ETH, 0.01%): always fetched, since ETH pricing depends on it and it may not be
+# in the state panel's tracked list (locally its history came from the large log folders).
+ETH_REF_POOL = "0x24107d152f14a76d292123265ae3f3c71f863fc2f4ef7ba49d64e78d28ea379e"
+
+
+def tracked_pools():
+    panel = json.load(gzip.open(ROOT / "huntx_edge_state_panel.json.gz", "rt", encoding="utf-8"))["pools"]
+    return sorted(set(panel) | {ETH_REF_POOL})
 H3_HOLD, H8_HOLD = 3, 5
 RATE = 40
 SEL_S0 = "0x" + __import__("web3").Web3.keccak(text="getSlot0(bytes32)")[:4].hex().removeprefix("0x")
@@ -194,9 +202,11 @@ def load_pools(days):
     metas, parts = {}, {}
     for d in HIST_DIRS:
         for pid, m in json.loads((ROOT / d / "meta.json").read_text())["pools"].items():
+            # Metadata is registered even without historical arrays: on a cloud runner all swaps come from
+            # the forward logs (LOGS/<day>), and pools created after the historical snapshot must load too.
+            metas.setdefault(pid, m)
             f = ROOT / d / f"{pid}.npy"
             if f.exists():
-                metas.setdefault(pid, m)
                 parts.setdefault(pid, []).append(np.load(f))
     for day in days:
         for f in (LOGS / day).glob("0x*.npy") if (LOGS / day).exists() else []:
@@ -542,7 +552,7 @@ def main():
     FWD.mkdir(parents=True, exist_ok=True)
     load_cache()
     bounds = extend_bounds()
-    lean = sorted(json.load(gzip.open(ROOT / "huntx_edge_state_panel.json.gz", "rt"))["pools"])
+    lean = tracked_pools()
     complete = [d for d in sorted(bounds) if d >= "2026-09-30" and
                 (datetime.fromisoformat(d) + timedelta(days=1)).date().isoformat() in bounds]
     for d in complete:

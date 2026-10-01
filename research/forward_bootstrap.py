@@ -22,7 +22,7 @@ def main() -> int:
     bounds = dict(json.loads((ROOT / "huntx_edge_activity_screen.json").read_text())["day_bounds"])
     if F.BOUNDS.exists():
         bounds.update(json.loads(F.BOUNDS.read_text()))
-    lean = sorted(json.load(gzip.open(ROOT / "huntx_edge_state_panel.json.gz", "rt", encoding="utf-8"))["pools"])
+    lean = F.tracked_pools()
     d = FIRST
     while d <= LAST:
         day = d.isoformat()
