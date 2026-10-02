@@ -43,10 +43,7 @@ export function IndexClient({ slug }: { slug: string; gen0: boolean }) {
     return () => { cancelled = true; };
   }, [direct]);
   const vault = direct ?? (resolved?.slug === clean ? resolved.vault : undefined);
-  // The proportional vault replaced a V2 vault with this slug: holders of the old one keep a direct way out.
-  const legacy = resolved?.slug === clean && resolved.proportional && official ? official : undefined;
   return <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
-    {legacy && <p className="vault-notice" role="note">This is the new {clean.toUpperCase()} vault. Still holding the previous {clean.toUpperCase()}? <a className="landing-path-link" href={`/i/${legacy}`}>Open the previous vault to redeem →</a></p>}
     {resolved?.slug === clean && resolved.proportional ? <ProportionalVaultDesk release={resolved.proportional} /> : vault ? <V2VaultDesk vault={vault} slug={directSymbol || clean} /> : <p role="status">{resolved?.slug === clean ? resolved.error : "Loading index…"}</p>}
   </div>;
 }
