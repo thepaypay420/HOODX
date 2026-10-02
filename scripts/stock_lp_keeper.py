@@ -1,4 +1,4 @@
-"""HOODX Stock LP V2 keeper ("autopilot"). Run hourly.
+"""HOODX Stock LP V2 keeper ("autopilot"). Run every 15 minutes (the contracts need a breach check at least every 2 hours).
 
 Every action it sends is a permissionless, rule-bound crank on HoodxStockLpControllerV2: the contracts decide
 whether a reband/compound is allowed and how much liquidity to use, so the keeper wallet chooses nothing and
@@ -87,8 +87,10 @@ def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth
     state = json.loads(state_path.read_text()) if state_path and state_path.exists() else {}
     now = int(time.time())
     utc = datetime.now(timezone.utc)
-    daily_due = (lambda key: utc.hour == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= DAY)
-    weekly_due = (lambda key: utc.hour == 0 and utc.weekday() == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= WEEK)
+    # Stateless runs may come every 15 minutes, so the daily/weekly steps belong to the first quarter of the 00 UTC hour only.
+    first = utc.hour == 0 and utc.minute < 15
+    daily_due = (lambda key: first) if state_path is None else (lambda key: now - state.get(key, 0) >= DAY)
+    weekly_due = (lambda key: first and utc.weekday() == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= WEEK)
     keeper = chain.address()
     bal = chain.balance_eth(keeper)
     if bal < min_gas_eth:
