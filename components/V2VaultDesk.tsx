@@ -30,6 +30,7 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
   const [recipient, setRecipient] = useState<Address>();
   const [busy, setBusy] = useState(false);
   const [curatorOpen, setCuratorOpen] = useState(false);
+  const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
   const [message, setMessage] = useState("");
   const [unwindToken, setUnwindToken] = useState<Address>();
   const [unwindAmount, setUnwindAmount] = useState("");
@@ -189,62 +190,65 @@ export function V2VaultDesk({ vault, slug }: { vault: Address; slug: string }) {
       }
     } finally { setBusy(false); }
   }
-  const button = "vault-button";
-  return <section className="vault-dashboard">
-    <VaultOverview vault={vault} slug={slug} shares={snap?.shares} assets={snap?.assets ?? snap?.quoteAssets} quoteTime={snap?.quoteTime} valuationFailed={snap?.valuationFailed} supply={snap?.supply} paused={snap?.paused} connected={!!address} curator={!!address && address.toLowerCase() === snap?.curator.toLowerCase()}>
-    <VaultPerformance estimated={snap?.quoteAssets !== undefined} valuationFailed={snap?.valuationFailed && snap?.quoteAssets === undefined} vault={vault} account={address} assets={snap?.assets ?? snap?.quoteAssets} shares={snap?.shares} supply={snap?.quoteSupply ?? snap?.supply} block={snap?.block} />
-    </VaultOverview>
-    {snap && address?.toLowerCase() === snap.curator.toLowerCase() && <details id="curator-workspace" className="vault-curator-panel" open={curatorOpen} onToggle={event=>setCuratorOpen(event.currentTarget.open)}><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary>{curatorOpen&&<V2CuratorDesk key={`${vault}:${address}:${snap.controller ?? "direct"}`} vault={vault} controller={snap.controller} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} />}</details>}
-    <div id="wallet-actions" className="vault-actions desk">
-    <div className="vault-section-heading"><div><p className="vault-eyebrow">YOUR POSITION</p><h2>Make your next move.</h2></div><span className="vault-tag">{slug.toUpperCase()}</span></div>
-
-    {!address ? <button className={button} onClick={() => void connect()}>Connect wallet</button> : chainId !== robinhood.id ? <button className={button} onClick={() => void switchToRobinhood()}>Switch to Robinhood Chain</button> : null}
-    {snap && <>
-
-      {snap.assets === undefined && <p className="vault-notice">{snap.blocked?.length ? `ETH deposits and ETH exits are paused while ${snap.blocked.map(b => b.symbol).join(", ")} ${snap.blocked.length === 1 ? "is" : "are"} below safe pricing liquidity. You can still exit as tokens and cash.` : "Pricing is unavailable. Direct asset redemption remains available."}</p>}
-      {snap.paused && <p>Deposits are paused. You can still withdraw.</p>}
-      {address?.toLowerCase() === snap.curator.toLowerCase() && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}
-      {address?.toLowerCase() === snap.curator.toLowerCase() && snap.paused && <div className="vault-recovery">
-        <h2>Curator emergency unwind</h2>
-        <p>Sell a constituent into WETH kept inside the vault. This does not send shareholder assets to your wallet. Oracle and output protections still apply.</p>
-        <label className="block">Constituent <select className="w-full bg-black" value={unwindToken ?? ""} onChange={e => setUnwindToken(e.target.value as Address)}><option value="">Select an asset</option>{snap.tokens.map(token => <option key={token} value={token}>{token}</option>)}</select></label>
-        <label className="block">Token amount <input className="vault-input" value={unwindAmount} onChange={e => setUnwindAmount(e.target.value)} inputMode="decimal" /></label>
-        <label className="block">Minimum WETH received by vault <input className="vault-input" value={unwindMinimum} onChange={e => setUnwindMinimum(e.target.value)} inputMode="decimal" /></label>
-        <button className={button} disabled={busy || !unwindToken || !unwindAmount || !unwindMinimum} onClick={() => void transact("unwind")}>Review emergency unwind</button>
-      </div>}
-      <div className="vault-trade-grid wallet-trade-grid"><div className="vault-trade-card wallet-trade-card">
-        <div className="wallet-card-head"><p className="vault-eyebrow">01 / JOIN</p><h3>Deposit</h3></div>
-        <p className="wallet-balance"><span>Available</span><b>{address ? (snap.walletEth === undefined ? "—" : `${Number(formatEther(snap.walletEth)).toLocaleString(undefined,{maximumFractionDigits:6})} ETH`) : "Connect wallet"}</b></p>
-        <label className="block wallet-primary-field">Deposit ETH <input aria-label="Deposit ETH" className="vault-input" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /></label>
-        <div className="vault-presets">{["0.02", "0.05", "0.08", "0.1"].map(value => <button className="vault-button" key={value} disabled={busy || parseEther(value) < (snap.supply === 0n ? snap.firstMinimum : parseEther("0.02")) || (snap.walletEth !== undefined && parseEther(value) > snap.walletEth)} onClick={() => setEth(value)}>{value} ETH</button>)}</div>
-        <p className="wallet-helper">Minimum {formatEther(snap.supply === 0n ? snap.firstMinimum : parseEther("0.02"))} ETH</p>
-        <button className={`${button} wallet-card-action`} disabled={busy || !address || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>Deposit ETH</button>
-      </div>
-      <div className="vault-trade-card wallet-trade-card">
-        <div className="wallet-card-head"><p className="vault-eyebrow">02 / EXIT</p><h3>Withdraw</h3></div>
-        <p className="wallet-balance"><span>Available</span><b>{Number(formatEther(snap.shares)).toLocaleString(undefined,{maximumFractionDigits:6})} {slug.toUpperCase()}</b></p>
-        <label className="block wallet-primary-field">Minimum ETH to receive <input aria-label="Minimum ETH to receive" className="vault-input" value={minimum} readOnly placeholder={quoting ? "Calculating…" : withdrawalFailure === "invalid-reference" ? "Unavailable" : "Calculated securely"} inputMode="decimal" /></label>
-        <div className="vault-presets">{[25,50,75,100].map(value => <button className="vault-button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(value); }}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
-        <p className={`wallet-helper ${withdrawalFailure?"error":""}`} role="status">{quoting ? "Checking routes…" : withdrawalFailure ? quoteMessage : minimum ? `${percent}% selected · protected minimum` : `${percent}% selected`}</p>
-        <button className={`${button} wallet-card-action`} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("withdraw")}>{busy ? "Preparing withdrawal…" : `Withdraw ${percent}% as ETH`}</button>
-      </div>
-      </div><label className="vault-percent">Portion to redeem: {percent}% <input aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(Number(e.target.value)); }} /></label>
-      <div className={`vault-recovery${(withdrawalFailure === "invalid-reference" || !!snap.blocked?.length) ? " is-recommended" : ""}`}>
-        <h2 className="text-lg">{(withdrawalFailure === "invalid-reference" || !!snap.blocked?.length) ? "Recommended exit right now" : "Receive assets directly"}</h2>
-        <p>Exit without swaps. Receive your share of every asset and the cash reserve. This works even when prices are unavailable.</p>
-        <button className={button} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("assets")}>{withdrawalFailure === "invalid-reference" ? `Exit ${percent}% safely as tokens and cash` : `Redeem ${percent}% as tokens and cash`}</button>
-      </div>
-      {snap.claims.some(c => c.amount > 0n) && <div className="space-y-2">
-        <h2>Pending asset claims</h2>
-        <label>Recipient <input aria-label="Claim recipient" className="w-full bg-black p-2" value={recipient ?? ""} onChange={e => setRecipient(e.target.value as Address)} /></label>
-        {snap.claims.filter(c => c.amount > 0n).map(c => <div key={c.token} className="break-all">
-          <p>{c.token === zeroAddress ? "Native ETH" : c.token}: {c.amount.toString()} base units</p>
-          <button className={button} disabled={busy} onClick={() => void transact("claim", c.token)}>Retry this claim</button>
-        </div>)}
-      </div>}
-    </>}
-    <button className={button} disabled={busy} onClick={() => void read().catch(() => setMessage("Unable to refresh balances."))}>Refresh balances</button>
-    <p className={message ? "vault-notice" : ""} role="status" aria-live="polite">{message}</p>
-    </div>
-  </section>;
-}
+  const button = "vault-button";
+  const symbol = slug.toUpperCase();
+  const isCurator = !!address && address.toLowerCase() === snap?.curator.toLowerCase();
+  const exitAsTokens = withdrawalFailure === "invalid-reference" || !!snap?.blocked?.length;
+  const lowest = snap ? (snap.supply === 0n ? snap.firstMinimum : parseEther("0.02")) : parseEther("0.02");
+  const selected = snap ? snap.shares * BigInt(percent) / 100n : 0n;
+  const eth6 = (v: bigint) => Number(formatEther(v)).toLocaleString(undefined, { maximumFractionDigits: 6 });
+  const pick = (value: number) => { setMinimum(""); setQuoteMessage(""); setWithdrawalFailure(undefined); setPercent(value); };
+  const tokenExit = snap && <div className={exitAsTokens ? "vp-token-exit" : undefined}>
+    <h3>{exitAsTokens ? "Recommended exit right now" : "Withdraw as tokens"}</h3>
+    <p>Exit without swaps. Receive your share of every asset and the cash reserve. This works even when prices are unavailable.</p>
+    <button className={exitAsTokens ? "vp-primary" : button} disabled={busy || !address || snap.shares === 0n} onClick={() => void transact("assets")}>Withdraw {percent}% as tokens and cash</button>
+  </div>;
+  const connectButton = !address ? <button className="vp-primary" onClick={() => void connect()}>Connect wallet</button> : chainId !== robinhood.id ? <button className="vp-primary" onClick={() => void switchToRobinhood()}>Switch to Robinhood Chain</button> : null;
+  const trade = <section id="wallet-actions" className="vp-trade desk">
+    <div className="vp-tabs" role="tablist">{(["deposit", "withdraw"] as const).map(name => <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => { setMessage(""); setTab(name); }}>{name === "deposit" ? "Deposit" : "Withdraw"}</button>)}</div>
+    {snap?.assets === undefined && snap && <p className="vp-hint is-warn">{snap.blocked?.length ? `ETH deposits and ETH exits are paused while ${snap.blocked.map(b => b.symbol).join(", ")} ${snap.blocked.length === 1 ? "is" : "are"} below safe pricing liquidity. You can still exit as tokens and cash.` : "Pricing is unavailable. You can still exit as tokens and cash."}</p>}
+    {tab === "deposit" ? <>
+      <label className="vp-field"><span className="vp-field-top"><span>You pay</span><span>{address && snap?.walletEth !== undefined ? `Balance ${eth6(snap.walletEth)} ETH` : ""}</span></span><span className="vp-amount"><input aria-label="Deposit ETH" value={eth} onChange={e => setEth(e.target.value)} inputMode="decimal" /><b>ETH</b></span></label>
+      <div className="vp-chips">{["0.02", "0.05", "0.1", "0.25"].map(value => <button type="button" key={value} aria-pressed={eth === value} disabled={busy || parseEther(value) < lowest || (snap?.walletEth !== undefined && parseEther(value) > snap.walletEth)} onClick={() => setEth(value)}>{value}</button>)}</div>
+      {connectButton ?? <button className="vp-primary" disabled={busy || !snap || snap.paused || snap.assets === undefined} onClick={() => void transact("deposit")}>{snap?.paused ? "Deposits paused" : busy ? "Working…" : "Deposit"}</button>}
+      <p className="vp-hint">One deposit buys the whole basket. Minimum {formatEther(lowest)} ETH, plus gas.</p>
+    </> : <>
+      <div className="vp-field"><span className="vp-field-top"><span>You withdraw</span><span>{address && snap ? `Balance ${eth6(snap.shares)} ${symbol}` : ""}</span></span><span className="vp-amount"><output>{eth6(selected)}</output><b>{symbol}</b></span></div>
+      <div className="vp-chips">{[25,50,75,100].map(value => <button type="button" aria-pressed={percent === value} key={value} disabled={busy} onClick={() => pick(value)}>{value === 100 ? "Max" : `${value}%`}</button>)}</div>
+      <input className="vp-range" aria-label="Portion to redeem" type="range" min="1" max="100" value={percent} disabled={busy} onChange={e => pick(Number(e.target.value))} />
+      <dl className="vp-lines"><div><dt>You receive at least</dt><dd>{quoting ? "Calculating…" : minimum ? `${minimum} ETH` : withdrawalFailure === "invalid-reference" ? "Unavailable" : "—"}</dd></div></dl>
+      {withdrawalFailure && <p className="vp-hint is-warn" role="status">{quoteMessage}</p>}
+      {exitAsTokens ? tokenExit : null}
+      {connectButton ?? <button className={exitAsTokens ? button : "vp-primary"} disabled={busy || !snap || snap.shares === 0n} onClick={() => void transact("withdraw")}>{busy ? "Working…" : snap?.shares === 0n ? "Nothing to withdraw" : `Withdraw ${percent}% as ETH`}</button>}
+      <p className="vp-hint">Sells your share of every holding for ETH in one transaction.</p>
+    </>}
+    {snap?.paused && <p className="vp-hint">Deposits are paused. You can still withdraw.</p>}
+    {message && <p className="vp-message" role="status" aria-live="polite">{message}</p>}
+    {snap?.claims.some(c => c.amount > 0n) && <div className="vp-claims">
+      <h3>Pending asset claims</h3>
+      <label>Recipient <input aria-label="Claim recipient" className="vault-input" value={recipient ?? ""} onChange={e => setRecipient(e.target.value as Address)} /></label>
+      {snap.claims.filter(c => c.amount > 0n).map(c => <div key={c.token} className="vp-claim">
+        <span>{c.token === zeroAddress ? "Native ETH" : c.token}: {c.amount.toString()} base units</span>
+        <button className={button} disabled={busy} onClick={() => void transact("claim", c.token)}>Retry</button>
+      </div>)}
+    </div>}
+    <details className="vp-more"><summary>More options</summary>
+      {!exitAsTokens && tokenExit}
+      {isCurator && snap?.paused && <div className="vault-recovery">
+        <h2>Curator emergency unwind</h2>
+        <p>Sell a constituent into WETH kept inside the vault. This does not send shareholder assets to your wallet. Oracle and output protections still apply.</p>
+        <label className="block">Constituent <select className="w-full bg-black" value={unwindToken ?? ""} onChange={e => setUnwindToken(e.target.value as Address)}><option value="">Select an asset</option>{snap.tokens.map(token => <option key={token} value={token}>{token}</option>)}</select></label>
+        <label className="block">Token amount <input className="vault-input" value={unwindAmount} onChange={e => setUnwindAmount(e.target.value)} inputMode="decimal" /></label>
+        <label className="block">Minimum WETH received by vault <input className="vault-input" value={unwindMinimum} onChange={e => setUnwindMinimum(e.target.value)} inputMode="decimal" /></label>
+        <button className={button} disabled={busy || !unwindToken || !unwindAmount || !unwindMinimum} onClick={() => void transact("unwind")}>Review emergency unwind</button>
+      </div>}
+      <div className="vp-more-row">{isCurator && snap && <button className={button} disabled={busy} onClick={() => void transact("pause")}>{snap.paused ? "Resume deposits" : "Pause deposits"}</button>}<button className={button} disabled={busy} onClick={() => void read().catch(() => setMessage("Unable to refresh balances."))}>Refresh balances</button></div>
+    </details>
+  </section>;
+  return <section className="vault-dashboard">
+    <VaultOverview vault={vault} slug={slug} assets={snap?.assets ?? snap?.quoteAssets} quoteTime={snap?.quoteTime} valuationFailed={snap?.valuationFailed} supply={snap?.quoteSupply ?? snap?.supply} paused={snap?.paused} curator={isCurator} aside={trade}>
+    <VaultPerformance estimated={snap?.quoteAssets !== undefined} valuationFailed={snap?.valuationFailed && snap?.quoteAssets === undefined} vault={vault} symbol={symbol} account={address} assets={snap?.assets ?? snap?.quoteAssets} shares={snap?.shares} supply={snap?.quoteSupply ?? snap?.supply} block={snap?.block} />
+    </VaultOverview>
+    {snap && isCurator && <details id="curator-workspace" className="vault-curator-panel" open={curatorOpen} onToggle={event=>setCuratorOpen(event.currentTarget.open)}><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary>{curatorOpen&&<V2CuratorDesk key={`${vault}:${address}:${snap.controller ?? "direct"}`} vault={vault} controller={snap.controller} paused={snap.paused} busy={busy} onBusy={setBusy} onRefresh={read} />}</details>}
+  </section>;
+}
