@@ -1,0 +1,161 @@
+{
+ "prev_hash": "b96447435f0d4b1c6b799a3ad54701954afc4286a1331ccd73c202bef04a93b2",
+ "hash": "d09eab55d0795699245629a434cd62c2596f15263d5cf56e252515692e116657",
+ "payload": {
+  "start": "2026-10-01",
+  "decision_block": 76928651,
+  "frozen_utc": "2026-10-02T06:20:59.304933+00:00",
+  "evidence_status": "late_exploratory",
+  "books": {
+   "B0": [
+    {
+     "symbol": "NBIS",
+     "pool_id": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "score": 0.013616014960263172
+    },
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.011010733797291393
+    },
+    {
+     "symbol": "COIN",
+     "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "score": 0.010758955141978908
+    },
+    {
+     "symbol": "GME",
+     "pool_id": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
+     "score": 0.010225190047260597
+    },
+    {
+     "symbol": "USO",
+     "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "score": 0.008146090559688195
+    },
+    {
+     "symbol": "INTC",
+     "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "score": 0.007356458887185621
+    },
+    {
+     "symbol": "SPCX",
+     "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "score": 0.00701288826116863
+    },
+    {
+     "symbol": "CRCL",
+     "pool_id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "score": 0.0069187075452516985
+    }
+   ],
+   "E1": [
+    {
+     "symbol": "NBIS",
+     "pool_id": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+     "score": 0.013616014960263172
+    },
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.011010733797291393
+    },
+    {
+     "symbol": "COIN",
+     "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "score": 0.010758955141978908
+    },
+    {
+     "symbol": "GME",
+     "pool_id": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
+     "score": 0.010225190047260597
+    },
+    {
+     "symbol": "USO",
+     "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "score": 0.008146090559688195
+    },
+    {
+     "symbol": "INTC",
+     "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "score": 0.007356458887185621
+    },
+    {
+     "symbol": "SPCX",
+     "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "score": 0.00701288826116863
+    },
+    {
+     "symbol": "CRCL",
+     "pool_id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "score": 0.0069187075452516985
+    }
+   ],
+   "G1": [
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.011010733797291393
+    },
+    {
+     "symbol": "COIN",
+     "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "score": 0.010758955141978908
+    },
+    {
+     "symbol": "USO",
+     "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "score": 0.008146090559688195
+    },
+    {
+     "symbol": "SPCX",
+     "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+     "score": 0.00701288826116863
+    },
+    {
+     "symbol": "CRCL",
+     "pool_id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "score": 0.0069187075452516985
+    },
+    {
+     "symbol": "META",
+     "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+     "score": 0.005002948170945826
+    },
+    {
+     "symbol": "PLTR",
+     "pool_id": "0xc59eaeda6d1a6f031bc7e1d039772f2d675e7b4de2c8668610f4471bd60b3802",
+     "score": 0.004146930323611542
+    },
+    {
+     "symbol": "NVDA",
+     "pool_id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+     "score": 0.0032335098524907784
+    }
+   ]
+  },
+  "round_trip_bps_at_250": {
+   "NBIS": 229.5,
+   "MSTR": 56.3,
+   "COIN": 67.4,
+   "GME": 524.1,
+   "USO": 29.9,
+   "INTC": 219.6,
+   "SPCX": 9.8,
+   "CRCL": 55.1,
+   "MU": 220.6,
+   "META": 9.0,
+   "DELL": 120.1,
+   "AMD": 219.5,
+   "PLTR": 27.2,
+   "TSLA": 70.3,
+   "NVDA": 4.3,
+   "GOOGL": 55.1,
+   "MSFT": 70.8,
+   "BABA": 27.6,
+   "AAPL": 70.3,
+   "AMZN": 61.7
+  },
+  "rule": "A25/A26 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"
+ }
+}

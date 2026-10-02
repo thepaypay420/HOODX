@@ -1,0 +1,53 @@
+{
+ "prev_hash": "482512b94b55e0780338d6b71134bba57936b199748ea8fe3c566a566f47566c",
+ "hash": "b96447435f0d4b1c6b799a3ad54701954afc4286a1331ccd73c202bef04a93b2",
+ "payload": {
+  "start": "2026-10-02",
+  "decision_block": 77787157,
+  "picks": [
+   {
+    "symbol": "NBIS",
+    "pool_id": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+    "score": 0.011519214009821333
+   },
+   {
+    "symbol": "MU",
+    "pool_id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+    "score": 0.011302245652329118
+   },
+   {
+    "symbol": "MSTR",
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "score": 0.010432704518854138
+   },
+   {
+    "symbol": "INTC",
+    "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+    "score": 0.010000415676531161
+   },
+   {
+    "symbol": "COIN",
+    "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+    "score": 0.008786607080940341
+   },
+   {
+    "symbol": "CRCL",
+    "pool_id": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+    "score": 0.007379434748461563
+   },
+   {
+    "symbol": "DELL",
+    "pool_id": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+    "score": 0.006959589596066777
+   },
+   {
+    "symbol": "USO",
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "score": 0.006006178673278576
+   }
+  ],
+  "frozen_utc": "2026-10-02T06:09:46.137958+00:00",
+  "evidence_status": "late_exploratory",
+  "rule": "A17 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"
+ }
+}

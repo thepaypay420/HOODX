@@ -1,121 +1,24 @@
 {
  "H3": {
   "realized_net_usd_on_200": 0.0,
-  "positions": 3,
+  "positions": 0,
   "matured": 0,
   "profitable": 0,
-  "ledger": [
-   {
-    "day": "2026-09-30",
-    "pool_id": "0x1318b3ffba2a8f04a9ce03b2370705c4e17040c5303436ab84e7831912c6c1c3",
-    "token": "0x27495511b8a2e163efc75d788706a40dd100bc27",
-    "init": "0xf8df127b13a8f45a070cc24eee0ce73b5c25e168",
-    "exit_idx": 13,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-09-30",
-    "pool_id": "0x34f1cb2f36d84c981252255cdc33d5df2730179de1bed5e0e66aa06345a9ff4f",
-    "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
-    "init": "0x50e8ec441a3d153998a554535ba7c002a265c1bc",
-    "exit_idx": 13,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-09-30",
-    "pool_id": "0x71f9660f9535e3e81d720696a58ea80274da8b2c6eb7c3acb22611d977439a5c",
-    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
-    "init": "0x6b25245f600e2e9ef91d4aaf851f4f6677721b2d",
-    "exit_idx": 13,
-    "matured": false,
-    "net": null
-   }
-  ]
+  "ledger": []
  },
  "H8": {
   "realized_net_usd_on_200": 0.0,
-  "positions": 3,
+  "positions": 0,
   "matured": 0,
   "profitable": 0,
-  "ledger": [
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x55c3f1a6edde5c8619fe00945f3f554e3681a735e06e0c8ce41fa19c29273697",
-    "token": "0xe02c53d448a62067b2ac10ed70f5bc6c29471386",
-    "init": null,
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0xf59a318d36c589cf136714cb0f732d8311ba5ccbda598cd7b2fa762cf0d01d5b",
-    "token": "0xb7eaecc89d3e2f9fd597d61726ae824900db8360",
-    "init": null,
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317",
-    "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
-    "init": null,
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   }
-  ]
+  "ledger": []
  },
  "SLP25": {
   "realized_net_usd_on_200": 0.0,
-  "positions": 5,
+  "positions": 0,
   "matured": 0,
   "profitable": 0,
   "worst_position_usd": 0,
-  "ledger": [
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
-    "token": "NBIS",
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
-    "token": "MSTR",
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
-    "token": "COIN",
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
-    "token": "GME",
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   },
-   {
-    "day": "2026-10-01",
-    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
-    "token": "USO",
-    "exit_idx": 16,
-    "matured": false,
-    "net": null
-   }
-  ]
+  "ledger": []
  }
 }

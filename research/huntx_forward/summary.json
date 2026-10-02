@@ -1,15 +1,16 @@
 {
- "updated_utc": "2026-10-01T15:17:55.543753+00:00",
+ "updated_utc": "2026-10-02T06:21:00.682663+00:00",
  "H3": {
   "scored_decision_days": 0,
   "positions": 0,
+  "exploratory_positions_excluded": 0,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
   "profitable_tokens": 0,
   "portfolio_on_200": {
    "realized_net_usd_on_200": 0.0,
-   "positions": 3,
+   "positions": 0,
    "matured": 0,
    "profitable": 0
   },
@@ -18,13 +19,14 @@
  "H8": {
   "scored_decision_days": 0,
   "positions": 0,
+  "exploratory_positions_excluded": 0,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
   "profitable_tokens": 0,
   "portfolio_on_200": {
    "realized_net_usd_on_200": 0.0,
-   "positions": 3,
+   "positions": 0,
    "matured": 0,
    "profitable": 0
   },
@@ -33,17 +35,41 @@
  "SLP25": {
   "scored_decision_days": 0,
   "positions": 0,
+  "exploratory_positions_excluded": 0,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
   "profitable_tokens": 0,
   "portfolio_on_200": {
    "realized_net_usd_on_200": 0.0,
-   "positions": 5,
+   "positions": 0,
    "matured": 0,
    "profitable": 0,
    "worst_position_usd": 0
   },
   "verdict_ready": false
+ },
+ "cohorts_A25_A26": {
+  "2026-10-01": {
+   "evidence_status": "late_exploratory",
+   "B0": {
+    "net_usd": 0.0405,
+    "entry_exit_cost_usd": 1.5296,
+    "net_after_entry_usd": -1.4891,
+    "worst_sleeve_usd": -0.246
+   },
+   "E1": {
+    "net_usd": 0.0405,
+    "entry_exit_cost_usd": 1.5296,
+    "net_after_entry_usd": -1.4891,
+    "worst_sleeve_usd": -0.246
+   },
+   "G1": {
+    "net_usd": 0.6207,
+    "entry_exit_cost_usd": 0.3637,
+    "net_after_entry_usd": 0.257,
+    "worst_sleeve_usd": -0.232
+   }
+  }
  }
 }
