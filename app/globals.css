@@ -2103,3 +2103,34 @@ body {
   .vp-details>summary span {display:none;}
   .vp-holdings th:first-child,.vp-holdings td:first-child {width:auto;}
 }
+/* Explore cards: sized to their content, so no card carries an empty band. The two lead cards share a row on wide screens. */
+.discovery-leads {display:flex;flex-wrap:wrap;gap:.7rem;}
+.discovery-leads>.discovery-card {flex:1 1 24rem;min-width:0;margin:0;}
+.discovery-leads>.discovery-card.is-featured {height:16.5rem;}
+.discovery-leads .discovery-card-copy h3 {max-width:none;font-size:clamp(2rem,3.3vw,2.6rem);}
+.discovery-leads>.discovery-card:only-child .discovery-card-copy h3 {font-size:clamp(2.2rem,4.4vw,3.4rem);}
+@media(min-width:761px) {
+  .discovery-grid .discovery-card {height:16.5rem;}
+  .discovery-grid .discovery-create-mark {width:2.5rem;height:2.5rem;}
+  .discovery-grid .discovery-create-mark>* {transform:scale(.6);}
+}
+@media(min-width:960px) {
+  .discovery-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+  .discovery-grid .discovery-card {padding:1.1rem;}
+  .discovery-grid .discovery-card.is-create {grid-column:span 2;}
+  .discovery-grid .discovery-card-copy {padding-top:1rem;}
+  .discovery-grid .discovery-card-copy h3 {font-size:1.5rem;}
+  .discovery-grid .discovery-card-copy>span {margin-top:.65rem;font-size:.8rem;}
+  .discovery-grid .discovery-card-foot {margin-top:1rem;}
+}
+@media(max-width:760px) {
+  .discovery-card,.discovery-grid .discovery-card,.discovery-card.is-featured,.discovery-leads>.discovery-card.is-featured,.discovery-card.is-autolp {display:flex;height:15.75rem;min-height:0;padding:1.15rem;}
+  .discovery-leads>.discovery-card {flex-basis:100%;}
+  .is-featured .discovery-card-top {flex-direction:row;align-items:flex-start;}
+  .discovery-card .discovery-card-top>span[data-testid="token-art"],.discovery-card .discovery-mark,.discovery-card .autolp-mark,.discovery-card .discovery-create-mark {width:2.75rem;height:2.75rem;font-size:1.05rem;border-radius:50%;animation:none;}
+  .discovery-card .autolp-mark>*,.discovery-card .discovery-create-mark>* {transform:scale(.62);}
+  .discovery-card-copy,.is-featured .discovery-card-copy {align-self:stretch;margin:0;padding-top:.95rem;}
+  .discovery-card-copy h3,.is-featured .discovery-card-copy h3,.discovery-leads .discovery-card-copy h3,.discovery-leads>.discovery-card:only-child .discovery-card-copy h3 {max-width:none;font-size:1.6rem;-webkit-line-clamp:1;}
+  .discovery-card-copy>span,.is-featured .discovery-card-copy>span {margin-top:.6rem;-webkit-line-clamp:2;}
+  .discovery-card .discovery-card-foot {width:100%;margin-top:auto;}
+}
