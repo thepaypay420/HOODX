@@ -22,7 +22,7 @@ export function AutoLpCard() {
     <div className="discovery-card-copy">
       <p><span className="autolp-live"><i aria-hidden />Autopilot · Automated LP</span></p>
       <h3>Hands-free LP.</h3>
-      <span>Deposit ETH once. It earns trading fees on 8 tokenized stocks, rebalanced and compounded by on-chain rules.</span>
+      <span>Deposit ETH once. Earn trading fees on 8 tokenized stocks, rebalanced and compounded on-chain.</span>
     </div>
     <div className="discovery-card-foot">
       <AssetChips assets={AUTO_LP.stocks} max={8} />

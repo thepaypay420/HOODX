@@ -58,8 +58,10 @@ export function OfficialVaultDiscovery() {
   return <section className="discovery-shell" data-testid="official-vault-discovery">
     <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a point of view.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
     <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div>
-    {showAuto && <AutoLpCard />}
-    {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
+    {(showAuto || showLead) && <div className="discovery-leads">
+      {showAuto && <AutoLpCard />}
+      {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
+    </div>}
     <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>
     <p className="discovery-footnote">FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
   </section>;
