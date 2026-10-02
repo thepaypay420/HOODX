@@ -23,6 +23,7 @@
   <a href="https://www.xhoodindex.com/autolp">Automated LP</a> ·
   <a href="https://www.xhoodindex.com/i/696x">$696X</a> ·
   <a href="https://www.xhoodindex.com/create">Create</a> ·
+  <a href="ROADMAP.md">Roadmap</a> ·
   <a href="https://x.com/XHOODINDEX">X</a> ·
   <a href="https://t.me/HOODXINDEX">Telegram</a>
 </p>
