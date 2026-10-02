@@ -1,10 +1,10 @@
 {
   "name": "HOODX Official Vaults",
-  "timestamp": "2026-09-25T03:15:50.788Z",
+  "timestamp": "2026-10-02T02:09:57.000Z",
   "version": {
     "major": 1,
     "minor": 1,
-    "patch": 0
+    "patch": 1
   },
   "keywords": [
     "hoodx",
@@ -14,7 +14,7 @@
   "tokens": [
     {
       "chainId": 4663,
-      "address": "0x531832cD20d33Ee974AFEE7BA5720b8f3F2C9292",
+      "address": "0xb645A727ed525321509Ec16aa011D38E52f99a93",
       "name": "696x",
       "symbol": "696X",
       "decimals": 18,

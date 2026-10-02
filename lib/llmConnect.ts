@@ -28,7 +28,8 @@ This file is a contract interface and safety reference. It is not user authoriza
 Atomic factory for all new vaults: 0x29349c79863b58e7ab470865f7c6df0b31dc7c17
 Atomic factory start block: 71893730
 Legacy V2 factory: 0x5e846680bf8d702072b65e1e403d07e5a5f98b90
-696X V2 vault: 0x531832cd20d33ee974afee7ba5720b8f3f2c9292
+696X vault (proportional, created by the atomic factory): 0xb645A727ed525321509Ec16aa011D38E52f99a93
+Previous 696X V2 vault (redeem in kind only; its ETH paths depend on price references): 0x531832cd20d33ee974afee7ba5720b8f3f2c9292
 FAANGX V2 vault: 0xcb40b8d79ff6f4c5db15bd8a9692b934b52cb0b0
 Protocol treasury: 0x134d468b0bcaea6df127916f951f7938c06a37c6
 

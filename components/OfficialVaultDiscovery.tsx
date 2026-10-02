@@ -44,7 +44,7 @@ function CreateCard() {
 export function OfficialVaultDiscovery() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["value"]>("all");
   const [liveReturns,setLiveReturns]=useState<Record<string,number>>({});
-  useEffect(()=>{let active=true;void Promise.all(Object.entries(verifiedV2Vaults).map(async([slug,vault])=>{
+  useEffect(()=>{let active=true;void Promise.all(Object.entries(verifiedV2Vaults).filter(([slug])=>slug!=='696x'/* 696X moved to a proportional vault: no on-chain NAV to chart */).map(async([slug,vault])=>{
     const supply=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalSupply'});
     let assets=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalAssets'}).catch(()=>undefined);
     if(assets===undefined){const response=await fetch(`/api/vault-quote?vault=${vault}`);if(response.ok)assets=BigInt((await response.json()).assets);}
@@ -61,6 +61,6 @@ export function OfficialVaultDiscovery() {
     {showAuto && <AutoLpCard />}
     {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
     <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>
-    <p className="discovery-footnote">696X shows live per-share return since launch. FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
+    <p className="discovery-footnote">FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
   </section>;
 }
