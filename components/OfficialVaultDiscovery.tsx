@@ -10,6 +10,24 @@ import { FEATURED_VAULTS, type VaultCategory, type VaultMeta } from "@/lib/vault
 import { publicClient } from "@/lib/wallet";
 import { verifiedV2Vaults, v2VaultAbi } from "@/lib/v2";
 import { launchReturnBps } from "@/lib/v2Performance";
+import { zeroAddress, type Address } from "viem";
+import { atomicFactoryAbi, atomicFactoryAddress } from "@/lib/atomicFactory";
+import { quoteProportionalRebalance, readProportionalState } from "@/lib/proportionalQuote";
+import { resolveVaultAuthority } from "@/lib/rebalanceController";
+
+/** An oracle-free vault has no on-chain NAV, so its return is measured the way its own page does it:
+ *  live quotes to sell every holding, plus cash, per share against the launch price. */
+async function proportionalReturn(slug: string): Promise<number | undefined> {
+  if (!atomicFactoryAddress) return undefined;
+  const vault: Address = await publicClient.readContract({ address: atomicFactoryAddress, abi: atomicFactoryAbi, functionName: "bySlug", args: [slug] });
+  if (vault === zeroAddress) return undefined;
+  const state = await readProportionalState(publicClient, vault, zeroAddress);
+  const { controller } = await resolveVaultAuthority(publicClient, vault, state.owner, state.blockNumber);
+  if (!controller) return undefined;
+  const values = await Promise.all(state.tokens.map((token, i) => state.balances[i] === 0n ? Promise.resolve(0n) : quoteProportionalRebalance(publicClient, state, controller, token, false, state.balances[i])));
+  const bps = launchReturnBps(state.cash + values.reduce((sum, v) => sum + v, 0n), state.supply);
+  return bps === undefined ? undefined : Number(bps) / 100;
+}
 
 type Filter = "all" | "automated" | VaultCategory;
 const FILTERS: { label: string; value: Filter }[] = [
@@ -44,13 +62,15 @@ function CreateCard() {
 export function OfficialVaultDiscovery() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["value"]>("all");
   const [liveReturns,setLiveReturns]=useState<Record<string,number>>({});
-  useEffect(()=>{let active=true;void Promise.all(Object.entries(verifiedV2Vaults).filter(([slug])=>slug!=='696x'/* 696X moved to a proportional vault: no on-chain NAV to chart */).map(async([slug,vault])=>{
+  useEffect(()=>{let active=true;
+    void proportionalReturn('696x').then(value=>{if(active&&value!==undefined)setLiveReturns(old=>({...old,'696x':value}));}).catch(()=>{});
+    void Promise.all(Object.entries(verifiedV2Vaults).filter(([slug])=>slug!=='696x'/* 696X moved to a proportional vault, valued above */).map(async([slug,vault])=>{
     const supply=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalSupply'});
     let assets=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalAssets'}).catch(()=>undefined);
     if(assets===undefined){const response=await fetch(`/api/vault-quote?vault=${vault}`);if(response.ok)assets=BigInt((await response.json()).assets);}
     const bps=assets===undefined?undefined:launchReturnBps(assets,supply);
     return [slug,bps===undefined?undefined:Number(bps)/100] as const;
-  })).then(rows=>{if(active)setLiveReturns(Object.fromEntries(rows.filter((row):row is readonly[string,number]=>row[1]!==undefined)));}).catch(()=>{});return()=>{active=false;};},[]);
+  })).then(rows=>{if(active)setLiveReturns(old=>({...old,...Object.fromEntries(rows.filter((row):row is readonly[string,number]=>row[1]!==undefined))}));}).catch(()=>{});return()=>{active=false;};},[]);
   const lead = FEATURED_VAULTS.find((vault) => vault.slug === "chainfin")!;
   const visible = useMemo(() => FEATURED_VAULTS.filter((vault) => vault.slug !== lead.slug && (filter === "all" || vault.category === filter)), [filter, lead.slug]);
   const showAuto = filter === "all" || filter === "automated";
