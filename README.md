@@ -60,7 +60,7 @@ HOODX is live on **Robinhood Chain (4663)**:
 
 | Index | Theme | Holdings | Join fee (creator + protocol) | Vault |
 |---|---|---|---|---|
-| **$696X** | The conviction list (culture) | PONS, AI, CASHCAT, INDEX, MEME, STONKBROKER, HOOKR, DELTA | 0.40% + 0.10% | [`0x5318…9292`](https://robinhoodchain.blockscout.com/address/0x531832cd20d33ee974afee7ba5720b8f3f2c9292) |
+| **$696X** | The conviction list (culture) | PONS, AI, CASHCAT, INDEX, MEME, STONKBROKER, HOOKR, DELTA | 0.40% + 0.10% | [`0xb645…9a93`](https://robinhoodchain.blockscout.com/address/0xb645A727ed525321509Ec16aa011D38E52f99a93) |
 | **$FAANGX** | Big tech conviction | META, AAPL, AMZN, NFLX, GOOGL | 0% + 0.10% | [`0xcb40…b0b0`](https://robinhoodchain.blockscout.com/address/0xcb40b8d79ff6f4c5db15bd8a9692b934b52cb0b0) |
 | $CHAINX | On-chain finance | MSTR, COIN, CRCL, GLXY | 0.40% + 0.10% | [`0xF77f…43d2`](https://robinhoodchain.blockscout.com/address/0xF77fb0e5cE0682B8D8064e754cF99d7F3EC643d2) |
 | $CHIPX | Silicon stack | NVDA, AMD, INTC, TSM, MU, AVGO | 0.40% + 0.10% | [`0xb70d…BBE`](https://robinhoodchain.blockscout.com/address/0xb70dD77B61ad2d2D70d14d1e74591fd173f2FBBE) |
@@ -73,7 +73,7 @@ HOODX is live on **Robinhood Chain (4663)**:
 | $EDGE | Frontier systems | SPCX, TSLA, BA, LMT, RCAT, USAR | 0.40% + 0.10% | [`0xaabF…3AdC`](https://robinhoodchain.blockscout.com/address/0xaabFc490682AD036b421458F10E14dFc105E3AdC) |
 | $ICONX | Consumer icons | AAPL, AMZN, COST, META, NFLX, LULU | 0.40% + 0.10% | [`0xba12…bA15`](https://robinhoodchain.blockscout.com/address/0xba12dD90Af13C89662Cb89b85f940c3b8b9bbA15) |
 
-Fees are read from each vault on-chain (`creatorFeeBps`, `protocolFeeBps`). Indexes in plain type have a deployed vault but no curator seed yet, so joins open after the first seed.
+Fees are read from each vault on-chain (`creatorFeeBps`, `protocolFeeBps`). **$696X** and the ten newer collections are proportional vaults from the atomic factory: joins buy your exact slice of every holding and exits sell it, so no price reference can block them. $FAANGX is a V2 vault (below). The previous V2 $696X vault ([`0x5318…9292`](https://robinhoodchain.blockscout.com/address/0x531832cd20d33ee974afee7ba5720b8f3f2c9292)) is retired; any remaining shares redeem in kind. Indexes in plain type have a deployed vault but no curator seed yet, so joins open after the first seed.
 
 **How a V2 index works**
 
