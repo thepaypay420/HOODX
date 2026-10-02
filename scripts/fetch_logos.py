@@ -71,10 +71,15 @@ def token_logo(addr):
     return None
 
 
+INSET = {"STONKBROKER"}
+
+
 def save(sym, raw):
     im = Image.open(io.BytesIO(raw)).convert("RGBA")
     side = max(im.size); sq = Image.new("RGBA", (side, side), (0, 0, 0, 0)); sq.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
     sq = sq.resize((128, 128), Image.LANCZOS)
+    if sym in INSET:  # artwork that fills the square is shrunk onto its own background so a round chip does not crop it
+        bg = Image.new("RGBA", (128, 128), sq.getpixel((2, 2))); small = sq.resize((84, 84), Image.LANCZOS); bg.paste(small, (22, 22)); sq = bg
     buf = io.BytesIO(); sq.save(buf, "WEBP", quality=90, method=6); b = buf.getvalue()
     (OUT / f"{sym}.webp").write_bytes(b)
     return b
