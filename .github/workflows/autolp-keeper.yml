@@ -1,37 +1,87 @@
 name: Automated LP keeper
-# Hourly "autopilot" for the HOODX Automated LP vault (V2). Every action is a permissionless, rule-bound crank on
+# "Autopilot" for the HOODX Automated LP vault (V2). Every action is a permissionless, rule-bound crank on
 # HoodxStockLpControllerV2: the contracts decide whether a rebalance/compound is allowed and how much to move, so
 # the keeper key only pays gas and cannot move vault funds. Each transaction is simulated first.
+#
+# Timing. The contracts restart a sleeve's 24 h out-of-range clock if it is not re-checked within 2 h, and GitHub's
+# scheduler is best-effort (runs can arrive hours late or not at all). So this workflow does not rely on the
+# schedule for timing: one job keeps its own clock, running the keeper every 15 minutes for about five hours, then
+# starts its successor. The schedule below is only a watchdog that restarts the loop if it ever stops.
 # Secrets: ROBINHOOD_RPC_URL (read/write RPC), AUTOLP_KEEPER_PRIVATE_KEY (gas-only keeper wallet).
 on:
   schedule:
-    - cron: "7 * * * *" # hourly; the contracts tolerate up to a 2 h gap between breach checks
+    - cron: "7,37 * * * *" # watchdog: starts a loop only when none is running
   workflow_dispatch:
+    inputs:
+      chain:
+        description: "Internal: set by a finishing loop when it starts its successor"
+        type: boolean
+        default: false
 permissions:
   contents: read
-concurrency:
-  group: autolp-keeper
-  cancel-in-progress: false
+  actions: write # list this workflow's runs and start the successor
 jobs:
   keeper:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 345
     steps:
+      - name: Yield if a loop is already running
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHAIN: ${{ inputs.chain }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ "$CHAIN" = "true" ]; then echo "run=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          others=$(gh api "repos/$REPO/actions/workflows/autolp-keeper.yml/runs?status=in_progress&per_page=20" --jq "[.workflow_runs[] | select(.id != $RUN_ID)] | length")
+          if [ "$others" -gt 0 ]; then
+            echo "A keeper loop is already running; nothing to do."
+            echo "run=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=1" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: steps.gate.outputs.run == '1'
         with:
           ref: research/stock-lp-vault
           fetch-depth: 1
           persist-credentials: false
       - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
+        if: steps.gate.outputs.run == '1'
         with:
           version: v1.8.3
           cache: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: steps.gate.outputs.run == '1'
         with:
           python-version: "3.12"
-      - name: Run keeper
+      - name: Run keeper every 15 minutes
+        id: loop
+        if: steps.gate.outputs.run == '1'
         env:
           ROBINHOOD_RPC_URL: ${{ secrets.ROBINHOOD_RPC_URL }}
           AUTOLP_KEEPER_PRIVATE_KEY: ${{ secrets.AUTOLP_KEEPER_PRIVATE_KEY }}
           PYTHONUTF8: "1"
-        run: python scripts/stock_lp_keeper.py --private-key-env AUTOLP_KEEPER_PRIVATE_KEY --stateless
+        run: |
+          end=$(( $(date +%s) + 5 * 3600 ))
+          fails=0
+          while [ "$(date +%s)" -lt "$end" ]; do
+            python scripts/stock_lp_keeper.py --private-key-env AUTOLP_KEEPER_PRIVATE_KEY --stateless || fails=$((fails + 1))
+            # wake shortly after the next quarter-hour, so runs land at the same minutes every hour
+            sleep $(( 900 - $(date +%s) % 900 + 20 ))
+          done
+          echo "fails=$fails" >> "$GITHUB_OUTPUT"
+      - name: Start the next loop
+        if: ${{ !cancelled() && steps.gate.outputs.run == '1' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run autolp-keeper.yml --repo "$REPO" --ref main -f chain=true
+      - name: Report failed keeper runs
+        if: steps.loop.outputs.fails != '' && steps.loop.outputs.fails != '0'
+        env:
+          FAILS: ${{ steps.loop.outputs.fails }}
+        run: |
+          echo "$FAILS keeper run(s) in this loop reported an error; see the log above."
+          exit 1
