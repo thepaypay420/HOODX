@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BaseError, encodeAbiParameters, formatEther, formatUnits, keccak256, parseAbi, parseAbiItem, parseUnits, type Address, type Hex } from "viem";
+import { BaseError, encodeAbiParameters, formatEther, formatUnits, keccak256, parseAbi, parseAbiItem, parseUnits, zeroAddress, type Address, type Hex } from "viem";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { robinhood } from "@/lib/chain";
 import { allocation } from "@/lib/v2Allocation";
 import { capBuyPlan, distribute, driftBps, harvestProfitPlan, plannedTrade, restorePlan, skippedAtMinimumDeposit, groupedAllocation, type AllocationGroup } from "@/lib/curatorPlanner";
-import { rebalanceControllerAbi } from "@/lib/rebalanceController";
+import { protectedRebalanceMinimum, rebalanceControllerAbi, rebalanceControllerV3Abi } from "@/lib/rebalanceController";
+import { quoteProportionalRebalance, readProportionalState } from "@/lib/proportionalQuote";
+import { atomicFactoryAbi, atomicFactoryAddress } from "@/lib/atomicFactory";
 import { CuratorReserveVisual } from "@/components/CuratorReserveVisual";
 
 const abi = parseAbi([
@@ -44,7 +46,9 @@ function CuratorActionMotion({kind}: {kind:AtomicPlaybook}) {
   return <div className="curator-action-motion custom-motion" aria-hidden="true"><svg viewBox="0 0 240 118"><path className="custom-link" d="M45 81 82 35l42 34 39-43 35 55"/><g className="custom-bars"><rect x="35" y="65" width="20" height="28" rx="5"/><rect x="72" y="24" width="20" height="69" rx="5"/><rect x="114" y="54" width="20" height="39" rx="5"/><rect x="153" y="16" width="20" height="77" rx="5"/><rect x="188" y="68" width="20" height="25" rx="5"/></g></svg><span>YOUR MIX · ONE SIGNATURE</span></div>;
 }
 
-export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefresh }: { vault: Address; controller?: Address; paused: boolean; busy: boolean; onBusy: (value: boolean) => void; onRefresh: () => Promise<void> }) {
+/** `proportional`: the vault has no price oracle. Holdings are valued, and trade floors derived, from live
+ *  sell/buy quotes through its V3 controller; trades use the V3 controller signatures (plan nonce + cash floor). */
+export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefresh, proportional = false }: { vault: Address; controller?: Address; paused: boolean; busy: boolean; onBusy: (value: boolean) => void; onRefresh: () => Promise<void>; proportional?: boolean }) {
   const { address, chainId, walletClient, switchToRobinhood } = useWallet();
   const [rows, setRows] = useState<Row[]>([]);
   const [cash, setCash] = useState("25");
@@ -109,8 +113,16 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       return { token, symbol, decimals, balance, held, reserved, value, nav, target: (target / 100).toFixed(2) };
     }));
     const balance = await publicClient.readContract({ blockNumber, address: vault, abi, functionName: "freeBalance", args: [weth] });
+    if (proportional) {
+      if (!controller) return { list: list.map(r => ({ ...r, value: undefined, nav: undefined })), balance, fees:creatorFee+protocolFee, cash: (cashBps / 100).toFixed(2) };
+      const state = await readProportionalState(publicClient, vault, address ?? zeroAddress);
+      const values = await Promise.all(list.map(r => r.balance === 0n ? Promise.resolve<bigint | undefined>(0n)
+        : quoteProportionalRebalance(publicClient, state, controller, r.token, false, r.balance).catch(() => undefined)));
+      const quotedNav = values.every(v => v !== undefined) ? state.cash + values.reduce<bigint>((sum, v) => sum + (v ?? 0n), 0n) : undefined;
+      return { list: list.map((r, i) => ({ ...r, value: values[i], nav: quotedNav })), balance: state.cash, fees:creatorFee+protocolFee, cash: (cashBps / 100).toFixed(2) };
+    }
     return { list, balance, fees:creatorFee+protocolFee, cash: (cashBps / 100).toFixed(2) };
-  }, [vault]);
+  }, [vault, proportional, controller, address]);
   const apply = (data: Awaited<ReturnType<typeof load>>) => {
     setFees(data.fees); setRows(data.list); setGroups(data.list.map(r=>r.target==="0.00"?"Excluded":"Core")); setLocked([]); setWeights(data.list.map(r => r.target)); setCash(data.cash); setSavedCash(data.cash); setWethBalance(data.balance); setLoaded(true); setUpdated(Date.now()); setPreview(undefined);
   };
@@ -158,6 +170,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     if(!row || busy) return; onBusy(true); setPreview(undefined);
     try {
       const input=parseUnits(amount,buy?18:row.decimals);if(input<=0n) throw new Error("Enter a positive trade amount.");
+      if(proportional){const floor=await protectedFloor(row,buy,input);setMinimum(formatUnits(floor,buy?row.decimals:18));setMessage("Protected minimum filled from a fresh route quote (3% below it). Preview checks the full trade.");return;}
       const policy=await publicClient.readContract({address:vault,abi,functionName:"policy"});
       const id=await publicClient.readContract({address:vault,abi,functionName:"configId",args:[row.token]});
       const [,oracle]=await publicClient.readContract({address:policy,abi,functionName:"config",args:[id]});
@@ -168,11 +181,24 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       setMinimum(formatUnits(floor,buy?row.decimals:18));setMessage("Contract-protected minimum filled from a fresh oracle read. Preview checks whether the route can meet it.");
     } catch(e) {setMessage(e instanceof BaseError?e.shortMessage:(e as Error).message);}finally{onBusy(false);}
   }
+  /** V3 single trade: also binds the plan nonce and a cash floor (cash can only fall by the ETH a buy spends). */
+  async function v3TradeArgs(token: Address, isBuy: boolean, input: bigint, floor: bigint) {
+    const state=await readProportionalState(publicClient,vault,address??zeroAddress);
+    const minCashAfter=isBuy?(state.cash>input?(state.cash-input)*99n/100n:0n):state.cash;
+    return [token,isBuy,input,floor,minCashAfter,state.nonce,BigInt(Math.floor(Date.now()/1000)+300)] as const;
+  }
   async function previewTrade() {
     if(!row || !address || busy) return;onBusy(true);setPreview(undefined);
     try {
       const args=[row.token,buy,parseUnits(amount,buy?18:row.decimals),parseUnits(minimum,buy?row.decimals:18),BigInt(Math.floor(Date.now()/1000)+600)] as const;
       if(args[2]<=0n || args[3]<=0n) throw new Error("Enter positive input and minimum output amounts.");
+      if(proportional){
+        if(!controller)throw new Error("Atomic controller unavailable.");
+        const v3=await v3TradeArgs(args[0],args[1],args[2],args[3]);
+        await publicClient.simulateContract({address:controller,abi:rebalanceControllerV3Abi,account:address,functionName:"rebalance",args:v3});
+        const gasV3=await publicClient.estimateContractGas({address:controller,abi:rebalanceControllerV3Abi,account:address,functionName:"rebalance",args:v3});
+        const priceV3=await publicClient.getGasPrice();setPreview({key:previewKey,at:Date.now(),fee:formatEther(gasV3*priceV3)});setMessage("Simulation passed. Review the trade below. Nothing has been signed.");return;
+      }
       const target=controller??vault, targetAbi=controller?rebalanceControllerAbi:abi;
       await publicClient.simulateContract({address:target,abi:targetAbi,account:address,functionName:"rebalance",args});
       const gas=await publicClient.estimateContractGas({address:target,abi:targetAbi,account:address,functionName:"rebalance",args});
@@ -180,6 +206,11 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     }catch(e){setMessage(e instanceof BaseError?e.shortMessage:(e as Error).message);}finally{onBusy(false);}
   }
   async function protectedFloor(r: Row, isBuy: boolean, input: bigint) {
+    if(proportional){
+      if(!controller)throw new Error("Atomic controller unavailable.");
+      const state=await readProportionalState(publicClient,vault,address??zeroAddress);
+      return protectedRebalanceMinimum(await quoteProportionalRebalance(publicClient,state,controller,r.token,isBuy,input));
+    }
     const policy=await publicClient.readContract({address:vault,abi,functionName:"policy"});
     const id=await publicClient.readContract({address:vault,abi,functionName:"configId",args:[r.token]});
     const [,oracle]=await publicClient.readContract({address:policy,abi,functionName:"config",args:[id]});
@@ -234,7 +265,9 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       const basketHash=keccak256(encodeAbiParameters([{type:"address[]"}],[rows.map(r=>r.token)]));
       const minCashAfter=nav*BigInt(draft.cashBps)/10000n;
       const contractSteps=steps.map(step=>({token:step.token,buy:step.buy,amount:step.amount,minOut:step.minimum}));
-      const atomicGas=await publicClient.estimateContractGas({address:controller,abi:rebalanceControllerAbi,account:address,functionName:"atomicRebalance",args:[draft.cashBps,draft.weights,contractSteps,basketHash,minCashAfter,deadline]});
+      const atomicGas=proportional
+        ? await publicClient.estimateContractGas({address:controller,abi:rebalanceControllerV3Abi,account:address,functionName:"atomicRebalance",args:[draft.cashBps,draft.weights,contractSteps,basketHash,(await readProportionalState(publicClient,vault,address)).nonce,minCashAfter,BigInt(Math.floor(Date.now()/1000)+300)]})
+        : await publicClient.estimateContractGas({address:controller,abi:rebalanceControllerAbi,account:address,functionName:"atomicRebalance",args:[draft.cashBps,draft.weights,contractSteps,basketHash,minCashAfter,deadline]});
       const result:CardSimulation={status:"ready",steps,gasPrice,atomicGas,allocation:{cashBps:draft.cashBps,weights:draft.weights,basketHash,minCashAfter},context,targetCash,createdAt:Date.now()};
       if(runId===simulationRun.current)setCardSimulations(previous=>({...previous,[kind]:result}));
       return result;
@@ -285,8 +318,9 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
       }
       const plan=simulation.allocation;
       const args=[plan.cashBps,plan.weights,steps,plan.basketHash,plan.minCashAfter,deadline] as const;
-      const {request}=await publicClient.simulateContract({address:controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"atomicRebalance",args});
-      const hash=await walletClient.writeContract(request);setLastHash(hash);setMessage(`${kind==="harvest"?"Harvest":kind==="restore"?"Restore":kind==="deploy-cash"?"Deploy":"Custom mix"} submitted. Waiting for confirmation.`);
+      const hash=proportional
+        ? await walletClient.writeContract((await publicClient.simulateContract({address:controller,abi:rebalanceControllerV3Abi,account:address,chain:robinhood,functionName:"atomicRebalance",args:[plan.cashBps,plan.weights,steps,plan.basketHash,(await readProportionalState(publicClient,vault,address)).nonce,plan.minCashAfter,BigInt(Math.floor(Date.now()/1000)+300)]})).request)
+        : await walletClient.writeContract((await publicClient.simulateContract({address:controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"atomicRebalance",args})).request);setLastHash(hash);setMessage(`${kind==="harvest"?"Harvest":kind==="restore"?"Restore":kind==="deploy-cash"?"Deploy":"Custom mix"} submitted. Waiting for confirmation.`);
       const receipt=await publicClient.waitForTransactionReceipt({hash});
       if(receipt.status!=="success")throw new Error("Atomic action reverted. No targets or trades were changed.");
       simulationRun.current++;setCardSimulations({});simulatedContext.current="";
@@ -304,6 +338,11 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     if (rows.some(r => r.token.toLowerCase() === tokenAddress.toLowerCase())) { setMessage("This token is already configured. Set its target in the allocation planner."); return; }
     onBusy(true);
     try {
+      if (proportional) {
+        const registered = await publicClient.readContract({address:atomicFactoryAddress,abi:atomicFactoryAbi,functionName:"configIdByToken",args:[tokenAddress as Address]});
+        if (/^0x0+$/.test(registered)) throw new Error("No approved route is registered for this token. It needs route approval before it can be added; pasting an address cannot bypass that requirement.");
+        setConfig(registered); setMessage("Approved route found. Review adding this token below, then assign its allocation."); return;
+      }
       const policy = await publicClient.readContract({address:vault,abi,functionName:"policy"});
       const end = await publicClient.getBlockNumber();
       const event = parseAbiItem("event ConfigApproved(bytes32 indexed id,address indexed token,address oracle,bytes32 evidence)");
@@ -348,10 +387,14 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
         if (input <= 0n || floor <= 0n) throw new Error("Amount and minimum output must be positive.");
         if (buy && paused) throw new Error("Resume deposits before buying assets.");
         const tradeArgs=[row.token,buy,input,floor,BigInt(Math.floor(Date.now()/1000)+600)] as const;
-        const { request } = controller
-          ? await publicClient.simulateContract({address:controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"rebalance",args:tradeArgs})
-          : await publicClient.simulateContract({address:vault,abi,account:address,chain:robinhood,functionName:"rebalance",args:tradeArgs});
-        hash = await walletClient.writeContract(request);
+        if (proportional && controller) {
+          hash = await walletClient.writeContract((await publicClient.simulateContract({address:controller,abi:rebalanceControllerV3Abi,account:address,chain:robinhood,functionName:"rebalance",args:await v3TradeArgs(row.token,buy,input,floor)})).request);
+        } else {
+          const { request } = controller
+            ? await publicClient.simulateContract({address:controller,abi:rebalanceControllerAbi,account:address,chain:robinhood,functionName:"rebalance",args:tradeArgs})
+            : await publicClient.simulateContract({address:vault,abi,account:address,chain:robinhood,functionName:"rebalance",args:tradeArgs});
+          hash = await walletClient.writeContract(request);
+        }
       } else if (action === "add") {
         if (!/^0x[0-9a-fA-F]{64}$/.test(config)) throw new Error("Enter an approved route configuration ID.");
         const id=config as `0x${string}`;
@@ -399,7 +442,7 @@ export function V2CuratorDesk({ vault, controller, paused, busy, onBusy, onRefre
     {!loaded ? <p>Loading curator tools…</p> : <>
       {tab!=="Overview"&&<div className="curator-flow-nav"><button onClick={()=>setTab("Overview")}>← Curator home</button><span>{tab==="Manual"?"Manual trade":tab==="Allocation"?"Allocation":"Basket management"}</span></div>}
       {tab==="Overview"&&<div className="curator-overview curator-simple">
-        <div className="curator-metrics simple"><div><span>Vault value</span><strong>{nav===undefined?"—":`${Number(formatEther(nav)).toFixed(5)} ETH`}</strong><small>Live oracle value</small></div><div><span>Unrealized gain</span><strong className={unrealizedGain!==undefined&&unrealizedGain<0n?"vault-loss":""}>{gainPercent===undefined?"—":`${gainPercent>=0?"+":""}${gainPercent.toFixed(2)}%`}</strong><small>{costBasis?.verified?`${Number(formatEther(unrealizedGain??0n)).toFixed(5)} ETH · reconciled basis`:costBasis?"History needs review":"Verifying confirmed history"}</small></div><div><span>Cash reserve</span><strong>{currentCash===undefined?"—":`${currentCash.toFixed(2)}%`}</strong><small>{savedCash}% saved target</small></div></div>
+        <div className="curator-metrics simple"><div><span>Vault value</span><strong>{nav===undefined?"—":`${Number(formatEther(nav)).toFixed(5)} ETH`}</strong><small>{proportional?"Live sell-quote value":"Live oracle value"}</small></div><div><span>Unrealized gain</span><strong className={unrealizedGain!==undefined&&unrealizedGain<0n?"vault-loss":""}>{gainPercent===undefined?"—":`${gainPercent>=0?"+":""}${gainPercent.toFixed(2)}%`}</strong><small>{costBasis?.verified?`${Number(formatEther(unrealizedGain??0n)).toFixed(5)} ETH · reconciled basis`:costBasis?"History needs review":"Verifying confirmed history"}</small></div><div><span>Cash reserve</span><strong>{currentCash===undefined?"—":`${currentCash.toFixed(2)}%`}</strong><small>{savedCash}% saved target</small></div></div>
         {(recommendation==="sync"||recommendation==="steady")&&<div className="curator-action-card featured status-only"><div><p className="vault-eyebrow"><span className="curator-status-dot" />RECOMMEND</p><h3>{recommendationCopy.title}</h3><p>{recommendationCopy.body}</p></div><CuratorReserveVisual current={currentCash} target={Number(savedCash)} active={false}/></div>}
         <div className="curator-action-grid">
           {orderedCards.map((card,index)=>{const featured=card.kind===recommendation;const simulation=cardSimulations[card.kind];const planValue=simulation?.steps.reduce((sum,step)=>sum+step.estimatedValue,0n)??0n;const planFee=(simulation?.atomicGas??0n)*(simulation?.gasPrice??0n);const canExecute=simulation?.status==="ready"||(card.kind==="custom"&&!dirty);return <article key={card.kind} className={`curator-action-card ${featured?"featured":""}`}>

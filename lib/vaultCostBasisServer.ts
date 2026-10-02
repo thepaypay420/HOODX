@@ -39,10 +39,19 @@ async function indexedTransfers(vault:Address,fromBlock:bigint,tracked:Set<strin
 
 async function rpcTransfers(client:PublicClient,vault:Address,addresses:Address[],from:bigint,end:bigint):Promise<VaultTransfer[]> {
   const logs:VaultTransfer[]=[];const seen=new Set<string>();
-  const chunks=from>end?0:Number((end-from)/10000n)+1;
-  if(chunks>MAX_RPC_CHUNKS)throw new Error("RPC history budget exceeded");
-  for(let start=from;start<=end;start+=10000n){const stop=start+9999n>end?end:start+9999n;
-    const parts=await Promise.all([
+  if(from>end)return logs;
+  // The chain RPC answers address- and topic-filtered ranges in one call; chunk only if it refuses the range.
+  const ranges:Array<[bigint,bigint]>=[];
+  const whole=await Promise.all([
+    client.getLogs({address:addresses,event:transferEvent,args:{from:vault},fromBlock:from,toBlock:end}),
+    client.getLogs({address:addresses,event:transferEvent,args:{to:vault},fromBlock:from,toBlock:end}),
+  ]).catch(()=>undefined);
+  if(!whole){
+    if(Number((end-from)/10000n)+1>MAX_RPC_CHUNKS)throw new Error("RPC history budget exceeded");
+    for(let start=from;start<=end;start+=10000n)ranges.push([start,start+9999n>end?end:start+9999n]);
+  }
+  for(const [start,stop] of whole?[[from,end] as [bigint,bigint]]:ranges){
+    const parts=whole??await Promise.all([
       client.getLogs({address:addresses,event:transferEvent,args:{from:vault},fromBlock:start,toBlock:stop}),
       client.getLogs({address:addresses,event:transferEvent,args:{to:vault},fromBlock:start,toBlock:stop}),
     ]);
@@ -51,8 +60,21 @@ async function rpcTransfers(client:PublicClient,vault:Address,addresses:Address[
   return logs;
 }
 
-export async function readVaultCostBasis(client:PublicClient,vault:Address){
-  const saved=Object.values(snapshot.vaults).find(v=>v.vault.toLowerCase()===vault.toLowerCase()) as SavedVault|undefined;
+const createdEvent=parseAbiItem("event AtomicCreated(address indexed vault,address indexed controller,string slug,address curator,address creator)");
+export type VaultOrigin={factory:Address;startBlock:bigint};
+
+/** A vault with no saved snapshot (every atomic-factory vault) is indexed from the block its factory created it in.
+ *  The creation event is used because the public RPC does not serve historical state. */
+async function unsavedVault(client:PublicClient,vault:Address,origin:VaultOrigin):Promise<SavedVault>{
+  const [created]=await client.getLogs({address:origin.factory,event:createdEvent,args:{vault},fromBlock:origin.startBlock,toBlock:"latest"});
+  if(!created||created.blockNumber===null)throw new Error("Unknown vault");
+  const weth=await client.readContract({address:vault,abi,functionName:"weth"});
+  return {slug:"",vault,weth,indexedBlock:String(created.blockNumber-1n),transactionCount:0,assets:[]};
+}
+
+export async function readVaultCostBasis(client:PublicClient,vault:Address,origin?:VaultOrigin){
+  const saved=(Object.values(snapshot.vaults).find(v=>v.vault.toLowerCase()===vault.toLowerCase()) as SavedVault|undefined)
+    ??(origin===undefined?undefined:await unsavedVault(client,vault,origin));
   if(!saved)throw new Error("Unknown vault");
   const end=await client.getBlockNumber(), from=BigInt(saved.indexedBlock)+1n;
   const current=await client.readContract({address:vault,abi,functionName:"constituents",blockNumber:end});
