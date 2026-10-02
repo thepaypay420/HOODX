@@ -16,7 +16,7 @@ type Review={state:ProportionalState;kind:'join';plan:JoinPlan}|{state:Proportio
 type Asset={token:Address;symbol:string;decimals:number|undefined;balance:bigint;claim:bigint};
 class PreviewInputError extends Error {}
 const display=(value:bigint)=>Number(formatEther(value)).toLocaleString(undefined,{maximumFractionDigits:7});
-const button='rounded-xl border border-teal-400/30 px-4 py-3 text-sm disabled:opacity-40';
+const button='vault-button';
 
 export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const {address,walletClient,chainId,connect,switchToRobinhood}=useWallet();
@@ -34,6 +34,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   // No oracle NAV on a proportional vault: value it from live sell-quotes of every holding plus cash.
   const [estimate,setEstimate]=useState<{vault:Address;assets:bigint;time:number}>();
   const [curatorOpen,setCuratorOpen]=useState(false);
+  const [tab,setTab]=useState<'deposit'|'withdraw'>('deposit');
   const lock=useRef(false),generation=useRef(0);
   const current=state?.account===(address??zeroAddress)&&state.vault===release.vault?state:undefined;
   const selected=current?current.walletShares*BigInt(percent)/100n:0n;
@@ -98,7 +99,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       }
       const result:Review=kind==='join'?{kind,state:snap,plan:snap.supply===0n?await quoteProportionalBootstrap(publicClient,snap,amount):await quoteProportionalDeposit(publicClient,snap,amount)}:{kind,state:snap,plan:await quoteProportionalWithdrawal(publicClient,snap,snap.walletShares*BigInt(portion)/100n)};
       if(ticket!==generation.current)return;
-      setReview(result);setMessage('Review the amounts below. Nothing has been submitted.');
+      setReview(result);setMessage('');
     }catch(error){if(ticket===generation.current)setMessage(error instanceof PreviewInputError?error.message:'The complete basket could not be quoted within its limits. Refresh and try again.');}
     finally{lock.current=false;setBusy(false);}
   }
@@ -152,23 +153,44 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   }
   const isCurator=!!address&&owner?.toLowerCase()===address.toLowerCase();
   const valued=estimate?.vault===release.vault?estimate:undefined;
+  const symbol=release.slug.toUpperCase();
+  const onChain=!!address&&chainId===4663;
+  const joinReady=ready&&review?.kind==='join'?review:undefined,exitReady=ready&&review?.kind==='exit'?review:undefined;
+  const minimum=current?.supply===0n?formatEther(current.minFirstDeposit):'0.02';
+  const trade=<section id="wallet-actions" className="vp-trade desk">
+    <div className="vp-tabs" role="tablist">{(['deposit','withdraw'] as const).map(name=><button key={name} type="button" role="tab" aria-selected={tab===name} disabled={busy} onClick={()=>{invalidate();setMessage('');setTab(name);}}>{name==='deposit'?'Deposit':'Withdraw'}</button>)}</div>
+    {tab==='deposit'?<>
+      <label className="vp-field"><span className="vp-field-top"><span>You pay</span><span>{address?`Balance ${display(ethBalance)} ETH`:''}</span></span><span className="vp-amount"><input aria-label="ETH to deposit" inputMode="decimal" value={eth} disabled={busy} onChange={e=>{invalidate();setEth(e.target.value);}}/><b>ETH</b></span></label>
+      <div className="vp-chips">{['0.02','0.05','0.1','0.25'].map(amount=><button key={amount} type="button" aria-pressed={eth===amount} disabled={busy} onClick={()=>{invalidate();setEth(amount);}}>{amount}</button>)}</div>
+      {joinReady&&<dl className="vp-lines"><div><dt>You receive</dt><dd>{display(joinReady.plan.shares)} {symbol}</dd></div><div><dt>Estimated cost</dt><dd>{display(joinReady.plan.grossSpent)} ETH</dd></div><div><dt>Fee included</dt><dd>{display(joinReady.plan.fee)} ETH</dd></div><div><dt>Unused ETH returned</dt><dd>{display(joinReady.plan.ethRefund)} ETH</dd></div></dl>}
+      {!address?<button className="vp-primary" onClick={()=>void connect()}>Connect wallet</button>
+        :chainId!==4663?<button className="vp-primary" onClick={()=>void switchToRobinhood()}>Switch to Robinhood Chain</button>
+        :joinReady?<button className="vp-primary" disabled={busy||pending} onClick={()=>void confirm()}>Confirm deposit</button>
+        :<button className="vp-primary" disabled={busy||pending||!current||current.paused||(current.supply===0n&&!canBootstrap)} onClick={()=>void preview('join')}>{current?.paused?'Deposits paused':current?.supply===0n&&!canBootstrap?'Awaiting curator seed':busy?'Working…':'Review deposit'}</button>}
+      {seedShortfall>0n&&address&&<p className="vp-hint is-warn">Add at least {display(seedShortfall)} ETH plus gas to seed this vault.</p>}
+      <p className="vp-hint">{joinReady?'Leftover tokens from the buys are returned to you. Every buy keeps a protected minimum.':`One deposit buys the whole basket. Minimum ${minimum} ETH, plus gas.`}</p>
+    </>:<>
+      <div className="vp-field"><span className="vp-field-top"><span>You withdraw</span><span>{address?`Balance ${current?display(current.walletShares):'—'} ${symbol}`:''}</span></span><span className="vp-amount"><output>{display(selected)}</output><b>{symbol}</b></span></div>
+      <div className="vp-chips">{[25,50,75,100].map(n=><button key={n} type="button" disabled={busy} aria-pressed={percent===n} onClick={()=>{invalidate();setPercent(n);if(onChain&&current&&current.walletShares>0n)void preview('exit',n);}}>{n===100?'Max':`${n}%`}</button>)}</div>
+      {exitReady&&<dl className="vp-lines"><div><dt>You receive</dt><dd>≈ {display(exitReady.plan.quotedEth)} ETH</dd></div><div><dt>Protected minimum</dt><dd>{display(exitReady.plan.minEthOut)} ETH</dd></div></dl>}
+      {!address?<button className="vp-primary" onClick={()=>void connect()}>Connect wallet</button>
+        :chainId!==4663?<button className="vp-primary" onClick={()=>void switchToRobinhood()}>Switch to Robinhood Chain</button>
+        :exitReady?<button className="vp-primary" disabled={busy||pending} onClick={()=>void confirm()}>Confirm withdrawal</button>
+        :<button className="vp-primary" disabled={busy||pending||selected===0n} onClick={()=>void preview('exit')}>{busy?'Working…':selected===0n?'Nothing to withdraw':'Review withdrawal'}</button>}
+      <p className="vp-hint">Sells your share of every holding for ETH in one transaction.</p>
+    </>}
+    {review&&!ready&&<p className="vp-hint is-warn">This quote has expired. Review again for a fresh one.</p>}
+    {(message||hash||pending)&&<p className="vp-message" role="status" aria-live="polite">{message}{hash&&<> <a href={`https://robin.etherscan.io/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a></>}{pending&&<button className={button} disabled={busy} onClick={()=>void checkReceipt()}>Check pending transaction</button>}</p>}
+    {assets.filter(a=>a.claim>0n).map(a=><div key={a.token} className="vp-claim"><span>{a.decimals===undefined?'Balance available':formatUnits(a.claim,a.decimals)} {a.symbol} to claim</span><button className={button} disabled={busy||pending||chainId!==4663||!recipient} onClick={()=>void manage('claim',a.token)}>Claim</button></div>)}
+    <details className="vp-more"><summary>More options</summary>
+      <div><h3>Withdraw as tokens</h3><p>Receive {percent}% of your position as the underlying tokens and cash, without selling. Works while deposits are paused. Transfers that cannot complete stay claimable.</p><label>Send to<input className="vault-input" value={recoveryRecipient} spellCheck={false} onChange={e=>setRecoveryRecipient(e.target.value.trim())}/></label>{recoveryRecipient&&!recipient&&<p className="is-warn">Enter a valid recipient address.</p>}<button className={button} disabled={busy||pending||!onChain||selected===0n||!recipient} onClick={()=>void manage('assets')}>Withdraw {percent}% as tokens</button></div>
+      <div className="vp-more-row">{isCurator&&<button className={button} disabled={busy||pending||chainId!==4663} onClick={()=>void manage('pause')}>{current?.paused?'Resume deposits':'Pause deposits'}</button>}<button className={button} disabled={busy} onClick={()=>void refresh().catch(()=>setMessage('Unable to refresh balances.'))}>Refresh balances</button></div>
+    </details>
+  </section>;
   return <section className="vault-dashboard">
-    <VaultOverview proportional vault={release.vault} slug={release.slug} shares={current?.walletShares} assets={valued?.assets} quoteTime={valued?.time} supply={current?.supply} paused={current?.paused} connected={!!address} curator={isCurator}>
-      <VaultPerformance estimated vault={release.vault} account={address} assets={valued?.assets} shares={current?.walletShares} supply={current?.supply} block={current?.blockNumber}/>
+    <VaultOverview proportional vault={release.vault} slug={release.slug} assets={valued?.assets} quoteTime={valued?.time} supply={current?.supply} paused={current?.paused} curator={isCurator} aside={trade}>
+      <VaultPerformance estimated vault={release.vault} symbol={symbol} account={address} assets={valued?.assets} shares={current?.walletShares} supply={current?.supply} block={current?.blockNumber}/>
     </VaultOverview>
     {isCurator&&current&&<details id="curator-workspace" className="vault-curator-panel" open={curatorOpen} onToggle={event=>setCuratorOpen(event.currentTarget.open)}><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary>{curatorOpen&&<V2CuratorDesk proportional key={`${release.vault}:${address}:${controller??'direct'}`} vault={release.vault} controller={controller} paused={current.paused} busy={busy} onBusy={setBusy} onRefresh={refresh}/>}</details>}
-    <section id="wallet-actions" className="vault-actions desk"><div className="flex flex-wrap justify-between gap-4"><div><p className="vault-eyebrow">YOUR POSITION</p><h2 className="text-2xl">Join. Hold. Exit.</h2></div><div className="text-sm">Wallet: {display(ethBalance)} ETH<br/>{current?display(current.walletShares):'—'} shares</div></div>
-      {!address?<button className={button} onClick={()=>void connect()}>Connect wallet</button>:chainId!==4663?<button className={button} onClick={()=>void switchToRobinhood()}>Switch to Robinhood Chain</button>:null}
-      <div className="grid gap-5 py-6 md:grid-cols-2">
-        <div className="vault-trade-card"><h3 className="text-xl">Deposit ETH</h3><label className="block py-3">Maximum ETH to spend<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" inputMode="decimal" value={eth} disabled={busy} onChange={e=>{invalidate();setEth(e.target.value);}}/></label><div className="flex flex-wrap gap-2">{['0.02','0.05','0.08','0.1'].map(amount=><button key={amount} className={button} disabled={busy} onClick={()=>{invalidate();setEth(amount);}}>{amount}</button>)}</div><p className="pt-3 text-sm opacity-70">Minimum {current?.supply===0n?formatEther(current.minFirstDeposit):'0.02'} ETH. Keep additional ETH for gas.</p>{seedShortfall>0n&&<p className="py-2 text-sm text-amber-300">Add at least {display(seedShortfall)} ETH plus gas to seed this vault.</p>}<button className={button} disabled={busy||pending||!address||chainId!==4663||!current||current.paused||(current.supply===0n&&!canBootstrap)} onClick={()=>void preview('join')}>{current?.supply===0n?(canBootstrap?'Preview first deposit':'Awaiting curator seed'):'Preview deposit'}</button>{current?.paused&&<p>Deposits are paused.</p>}</div>
-        <div className="vault-trade-card"><h3 className="text-xl">Withdraw ETH</h3><div className="flex gap-2 py-4">{[25,50,75,100].map(n=><button className={button} key={n} disabled={busy} aria-pressed={percent===n} onClick={()=>{invalidate();setPercent(n);if(address&&chainId===4663)void preview('exit',n);}}>{n===100?'Max':`${n}%`}</button>)}</div><p>{display(selected)} shares selected</p><label className="block py-3">Minimum ETH to receive<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" readOnly value={ready&&review?.kind==='exit'?formatEther(review.plan.minEthOut):''} placeholder="Calculated when you preview"/></label><button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n} onClick={()=>void preview('exit')}>Preview withdrawal</button></div>
-      </div>
-      {review&&<div className="vault-recovery"><h3 className="text-xl">Review {review.kind==='join'?'deposit':'withdrawal'}</h3><dl className="grid grid-cols-2 gap-3 py-4"><dt>Shares {review.kind==='join'?'received':'redeemed'}</dt><dd>{formatEther(review.plan.shares)}</dd>{review.kind==='join'?<><dt>Estimated ETH spent</dt><dd>{formatEther(review.plan.grossSpent)}</dd><dt>Included protocol + creator fee</dt><dd>{formatEther(review.plan.fee)} ETH</dd><dt>Estimated unused ETH returned</dt><dd>{formatEther(review.plan.ethRefund)}</dd></>:<><dt>Estimated ETH received</dt><dd>{formatEther(review.plan.quotedEth)}</dd><dt>Minimum ETH received</dt><dd>{formatEther(review.plan.minEthOut)}</dd></>}</dl>{review.kind==='join'&&<p className="text-sm opacity-70">Any extra tokens from the buys are returned separately. Transfer taxes may reduce what arrives in your wallet. Fees and refunds can change within your signed spending limit.</p>}<p className="py-3 text-sm">{ready?'Each sale or buy keeps its protected minimum.':'This quote has expired. Request a new preview.'}</p><button className={button} disabled={busy||pending||!ready} onClick={()=>void confirm()}>Confirm in wallet</button></div>}
-      <details className="vault-recovery"><summary>Receive your tokens and cash directly</summary><p className="py-3 text-sm">Redeem the selected {percent}% without selling the basket. Available while paused. Transfers that cannot complete remain claimable.</p><label className="block py-3 text-sm">Recovery recipient<input className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-4" value={recoveryRecipient} spellCheck={false} onChange={e=>setRecoveryRecipient(e.target.value.trim())}/></label>{recoveryRecipient&&!recipient&&<p className="pb-3 text-sm text-amber-300">Enter a valid recipient address.</p>}<button className={button} disabled={busy||pending||!address||chainId!==4663||selected===0n||!recipient} onClick={()=>void manage('assets')}>Redeem {percent}% as assets</button></details>
-      {assets.filter(a=>a.claim>0n).map(a=><div key={a.token} className="flex items-center justify-between py-2"><span>{a.decimals===undefined?'Balance available':formatUnits(a.claim,a.decimals)} {a.symbol} available to claim</span><button className={button} disabled={busy||pending||chainId!==4663||!recipient} onClick={()=>void manage('claim',a.token)}>Claim to recipient</button></div>)}
-      {address&&owner?.toLowerCase()===address.toLowerCase()&&<button className={button} disabled={busy||pending||chainId!==4663} onClick={()=>void manage('pause')}>{current?.paused?'Resume deposits':'Pause deposits'}</button>}
-      <button className={button} disabled={busy} onClick={()=>void refresh().catch(()=>setMessage('Unable to refresh balances.'))}>Refresh balances</button>
-      <p className="py-3 text-sm" role="status" aria-live="polite">{busy?'Working… ':''}{message}</p>{hash&&<a className="text-sm underline" href={`https://robin.etherscan.io/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}{pending&&<button className={button} disabled={busy} onClick={()=>void checkReceipt()}>Check pending transaction</button>}
-    </section>
   </section>;
 }
