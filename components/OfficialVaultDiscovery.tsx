@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { AssetChips } from "@/components/AssetChips";
 import { AutoLpCard } from "@/components/AutoLpCard";
+import { MyVaults, holdings, useMyVaults } from "@/components/MyVaults";
+import { useAutoLpStats } from "@/lib/useAutoLp";
+import { useWallet } from "@/lib/wallet";
 import { BrandMark } from "@/components/BrandMark";
 import { TokenArt } from "@/components/TokenArt";
 import { FEATURED_VAULTS, type VaultCategory, type VaultMeta } from "@/lib/vaults";
@@ -29,7 +32,7 @@ async function proportionalReturn(slug: string): Promise<number | undefined> {
   return bps === undefined ? undefined : Number(bps) / 100;
 }
 
-type Filter = "all" | "automated" | VaultCategory;
+type Filter = "all" | "mine" | "automated" | VaultCategory;
 const FILTERS: { label: string; value: Filter }[] = [
   { label: "All", value: "all" }, { label: "Automated LP", value: "automated" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
 ];
@@ -60,7 +63,14 @@ function CreateCard() {
 }
 
 export function OfficialVaultDiscovery() {
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]["value"]>("all");
+  const [filter, setFilter] = useState<Filter>("all");
+  // "My Vaults" appears beside "All" once a connected wallet is found to hold any HOODX vault token
+  const { address } = useWallet();
+  const mine = useMyVaults(address);
+  const { stats } = useAutoLpStats(120_000);
+  const myList = useMemo(() => holdings(mine.data, stats), [mine.data, stats]);
+  const hasMine = !!address && myList.length > 0;
+  useEffect(() => { if (filter === "mine" && !hasMine) setFilter("all"); }, [filter, hasMine]);
   const [liveReturns,setLiveReturns]=useState<Record<string,number>>({});
   useEffect(()=>{let active=true;
     void proportionalReturn('696x').then(value=>{if(active&&value!==undefined)setLiveReturns(old=>({...old,'696x':value}));}).catch(()=>{});
@@ -77,12 +87,16 @@ export function OfficialVaultDiscovery() {
   const showLead = filter === "all" || lead.category === filter;
   return <section className="discovery-shell" data-testid="official-vault-discovery">
     <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a point of view.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
-    <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>)}</div>
-    {(showAuto || showLead) && <div className="discovery-leads">
+    <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.flatMap((item) => {
+      const chip = <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>;
+      return item.value === "all" && hasMine ? [chip, <button key="mine" type="button" className="mv-chip" aria-pressed={filter === "mine"} onClick={() => setFilter("mine")}>My Vaults<span>{myList.length}</span></button>] : [chip];
+    })}</div>
+    {filter === "mine" && hasMine && <MyVaults list={myList} loading={mine.loading} updatedAt={mine.data?.updatedAt} onRefresh={mine.refresh} ethUsd={stats?.ethUsd} />}
+    {filter !== "mine" && (showAuto || showLead) && <div className="discovery-leads">
       {showAuto && <AutoLpCard />}
       {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
     </div>}
-    <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>
-    <p className="discovery-footnote">FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>
+    {filter !== "mine" && <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>}
+    {filter !== "mine" && <p className="discovery-footnote">FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>}
   </section>;
 }

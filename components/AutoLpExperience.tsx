@@ -70,7 +70,9 @@ export function AutoLpExperience() {
         valueWei = (await publicClient.simulateContract({ account: address, address: vault, abi: stockLpVaultAbi, functionName: "withdrawEth", args: [shares, address, 1n, deadline()] })).result;
       } catch { valueWei = null; }
     }
-    setMine({ shares, valueWei, ethBal, deposited: BigInt(basis?.depositedWei ?? 0), withdrawn: BigInt(basis?.withdrawnWei ?? 0) });
+    // "average" means shares also moved by transfer or in-kind exit: measure against the cost of the shares held now
+    const avg = basis?.mode === "average" && basis.basisWei;
+    setMine({ shares, valueWei, ethBal, deposited: BigInt(avg ? basis.basisWei : basis?.depositedWei ?? 0), withdrawn: avg ? 0n : BigInt(basis?.withdrawnWei ?? 0) });
     if (isCurator) {
       const [v1, p] = await Promise.all([
         publicClient.readContract({ address: AUTO_LP_V1.vault, abi: stockLpVaultAbi, functionName: "balanceOf", args: [address] }),
