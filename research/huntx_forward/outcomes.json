@@ -1,1 +1,154 @@
-{}
+{
+ "H3|2026-09-30|0x1318b3ffba2a8f04a9ce03b2370705c4e17040c5303436ab84e7831912c6c1c3": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0x1318b3ffba2a8f04a9ce03b2370705c4e17040c5303436ab84e7831912c6c1c3",
+  "token": "0x27495511b8a2e163efc75d788706a40dd100bc27",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": -32.44385721960078,
+  "status": "ok",
+  "net_usd": -32.44385721960078,
+  "vs_hold_usd": -32.44385721960078,
+  "hold_net_usd": 0.0,
+  "fees_usd": 2.5108346089001725,
+  "cal": [
+   1.0000086508658341,
+   0.9999868478032738
+  ],
+  "token_ret": -0.37200720401406095,
+  "in_range_exit": false
+ },
+ "H3|2026-09-30|0x34f1cb2f36d84c981252255cdc33d5df2730179de1bed5e0e66aa06345a9ff4f": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0x34f1cb2f36d84c981252255cdc33d5df2730179de1bed5e0e66aa06345a9ff4f",
+  "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": -1.6627184814626306,
+  "status": "ok",
+  "net_usd": -1.6627184814626306,
+  "vs_hold_usd": -1.6627184814626306,
+  "hold_net_usd": 0.0,
+  "fees_usd": 4.316242225062358,
+  "cal": [
+   0.9114267051054002,
+   1.0419078125591617
+  ],
+  "token_ret": -0.10393160120716471,
+  "in_range_exit": true
+ },
+ "H3|2026-09-30|0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317",
+  "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": 2.049465630743459,
+  "status": "ok",
+  "net_usd": 2.049465630743459,
+  "vs_hold_usd": 2.049465630743459,
+  "hold_net_usd": 0.0,
+  "fees_usd": 7.5634385746703945,
+  "cal": [
+   0.9717983025863208,
+   1.0266551625834892
+  ],
+  "token_ret": -0.10254404882227752,
+  "in_range_exit": true
+ },
+ "H3|2026-09-30|0x71f9660f9535e3e81d720696a58ea80274da8b2c6eb7c3acb22611d977439a5c": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0x71f9660f9535e3e81d720696a58ea80274da8b2c6eb7c3acb22611d977439a5c",
+  "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": -0.16354747735145686,
+  "status": "ok",
+  "net_usd": -0.16354747735145686,
+  "vs_hold_usd": -0.16354747735145686,
+  "hold_net_usd": 0.0,
+  "fees_usd": 0.04799335149521443,
+  "cal": [
+   0.999614815009209,
+   1.000160364422672
+  ],
+  "token_ret": 0.029308441935249396,
+  "in_range_exit": false
+ },
+ "H3|2026-09-30|0x75094adc6dc87cb4473b501fea5461aa312175adbc8f2ae9967ea9060f196f95": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0x75094adc6dc87cb4473b501fea5461aa312175adbc8f2ae9967ea9060f196f95",
+  "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": -0.8823079442097337,
+  "status": "ok",
+  "net_usd": -0.8823079442097337,
+  "vs_hold_usd": -0.8823079442097337,
+  "hold_net_usd": 0.0,
+  "fees_usd": 4.213801036877527,
+  "cal": [
+   0.9845194722837167,
+   1.0151866218815466
+  ],
+  "token_ret": -0.09439154187040566,
+  "in_range_exit": true
+ },
+ "H3|2026-09-30|0xad6958fdc24fc0d8dae007d33bb42d7cb2136203288f286f0c4551b3c4f05f7e": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0xad6958fdc24fc0d8dae007d33bb42d7cb2136203288f286f0c4551b3c4f05f7e",
+  "token": "0x7163ae1b5aea2f09ebc609c52b4dcac0a7a4bc2d",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": 18.69117487097457,
+  "status": "ok",
+  "net_usd": 18.69117487097457,
+  "vs_hold_usd": 18.69117487097457,
+  "hold_net_usd": 0.0,
+  "fees_usd": 19.177683573079868,
+  "cal": [
+   1.046749898130767,
+   0.8479228905973798
+  ],
+  "token_ret": 0.019038477961794253,
+  "in_range_exit": false
+ },
+ "H3|2026-09-30|0xbe31b92e39df5df6803772f89d25f0a54e03a22704f7f5b1715b07c07cb2ced3": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0xbe31b92e39df5df6803772f89d25f0a54e03a22704f7f5b1715b07c07cb2ced3",
+  "token": "0xfe09fb328be1c286b4f597ed34764b7472ae72c5",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": 0.44395969053296747,
+  "status": "ok",
+  "net_usd": 0.44395969053296747,
+  "vs_hold_usd": 0.44395969053296747,
+  "hold_net_usd": 0.0,
+  "fees_usd": 0.8868229761052676,
+  "cal": [
+   0.9641019495696667,
+   1.001935627219615
+  ],
+  "token_ret": -0.029610440538341165,
+  "in_range_exit": true
+ },
+ "H3|2026-09-30|0xc19d1d77bfdaeb66c285a17286d325062c1cd0c7ce88c1fe60ef70797ee8f215": {
+  "hyp": "H3",
+  "day": "2026-09-30",
+  "pool_id": "0xc19d1d77bfdaeb66c285a17286d325062c1cd0c7ce88c1fe60ef70797ee8f215",
+  "token": "0xd17c81cb01d44cc6e822936e8f098960001b47d2",
+  "evidence_status": "late_exploratory",
+  "net_usd_per_100": -46.86423706489604,
+  "status": "ok",
+  "net_usd": -46.86423706489604,
+  "vs_hold_usd": -46.86423706489604,
+  "hold_net_usd": 0.0,
+  "fees_usd": 0.49356242989200144,
+  "cal": [
+   1.0465937493856114,
+   0.9491232285718625
+  ],
+  "token_ret": -0.500418880097472,
+  "in_range_exit": false
+ }
+}
