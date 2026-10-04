@@ -2345,13 +2345,13 @@ body {
 }
 @keyframes coin-reverse-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 @keyframes coin-reverse-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-.coin-flipper { position: absolute; left: 28%; top: 27%; z-index: 2; width: 210px; height: 210px; margin: -105px 0 0 -105px; transform-style: preserve-3d; will-change: transform;
+.coin-flipper { --coin-t: 18px; position: absolute; left: 28%; top: 27%; z-index: 2; width: 210px; height: 210px; margin: -105px 0 0 -105px; transform-style: preserve-3d; will-change: transform;
   transform: perspective(900px) rotateY(-12deg) rotateX(6deg) rotateZ(-8deg); animation: coin-flip 14s cubic-bezier(.55, 0, .3, 1) infinite; }
-.studio-home .coin-flipper .landing-coin { left: 0; top: 0; width: 100%; height: 100%; transform: none; animation: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.studio-home .coin-flipper .landing-coin { left: 0; top: 0; width: 100%; height: 100%; transform: translateZ(calc(var(--coin-t) / 2)); animation: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 /* its own rule: the CSS optimiser drops `translate` from a rule that also sets `transform` */
 .studio-home .coin-flipper > .landing-coin { translate: 0 0; }
 .coin-reverse { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .3rem; border-radius: 50%; pointer-events: none;
-  transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;
+  transform: rotateY(180deg) translateZ(calc(var(--coin-t) / 2)); -webkit-backface-visibility: hidden; backface-visibility: hidden;
   background: radial-gradient(ellipse at 31% 18%, #ffffff2e 0%, #b7c7ca12 24%, transparent 43%), radial-gradient(circle at 50% 55%, #28dec526 0%, transparent 60%), linear-gradient(145deg, #29343a 0%, #111a1f 46%, #05080b 100%);
   box-shadow: inset 2px 2px 4px #ffffff38, inset -10px -13px 30px #000b, inset 0 0 42px #32d9c015, 0 36px 65px #000a, 0 0 74px #45dcc51c, 0 0 0 1px #dce7e838, 0 0 0 9px #46d8c20a; }
 .coin-reverse::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; border: 1px solid #dbe8e824; box-shadow: inset 0 0 24px #46ddc512; }
@@ -2360,6 +2360,12 @@ body {
 .coin-reverse-skeleton { width: 6.5rem; height: 2.4rem; border-radius: .5rem; background: linear-gradient(90deg, rgba(238, 248, 246, .05), rgba(238, 248, 246, .14), rgba(238, 248, 246, .05)) 0 0 / 200% 100%; animation: coin-reverse-shimmer 1.6s linear infinite; }
 .coin-reverse-sub { display: inline-flex; align-items: center; gap: .35rem; color: var(--dim); font-size: 9.5px; letter-spacing: .06em; }
 .coin-reverse-sub i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: coin-reverse-pulse 2.4s ease-in-out infinite; }
-@media (max-width: 639px) { .coin-flipper { width: 170px; height: 170px; margin: -85px 0 0 -85px; } .coin-reverse strong { font-size: 2.2rem; } }
+/* the coin's edge: thin discs stacked between the faces, alternating light and dark like a reeded rim, so the turn
+   shows a solid metal edge instead of a sheet of paper */
+.coin-edge { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.coin-edge i { position: absolute; inset: 1px; border-radius: 50%; transform: translateZ(calc((var(--k) - .5) * var(--coin-t)));
+  background: radial-gradient(circle at 50% 50%, #0a1012 0 86%, #3c4a4e 93%, #7f9599 100%); box-shadow: 0 0 0 1px #24302f; }
+.coin-edge i:nth-child(odd) { background: radial-gradient(circle at 50% 50%, #0a1012 0 86%, #56686c 93%, #b7c9cc 100%); box-shadow: 0 0 0 1px #3d4c4f; }
+@media (max-width: 639px) { .coin-flipper { --coin-t: 15px; width: 170px; height: 170px; margin: -85px 0 0 -85px; } .coin-reverse strong { font-size: 2.2rem; } }
 /* reduced motion: the coin rests on its HOODX face */
 @media (prefers-reduced-motion: reduce) { .coin-flipper { animation: none !important; transform: rotate(-6deg); } }

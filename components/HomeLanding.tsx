@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { HomeFeatured } from "@/components/HomeFeatured";
@@ -15,6 +16,9 @@ const FLOAT_TOKENS = [
   { label: "CHIPX", right: "2%", y: "50%", delay: "1.6s" },
   { label: "696X", x: "62%", y: "62%", delay: "1s" },
 ];
+
+/** layers of the spinning coin's edge, back face to front */
+const COIN_EDGE = Array.from({ length: 16 }, (_, i) => i);
 
 const VALUE_PROPS = [
   {
@@ -98,6 +102,9 @@ export function HomeLanding() {
               <div className="landing-coin">
                 <div className="landing-coin-rim" aria-hidden /><div className="studio-coin-light" aria-hidden />
                 <BrandMark size={112} priority className="landing-coin-mark" />
+              </div>
+              <div className="coin-edge" aria-hidden>
+                {COIN_EDGE.map((k) => <i key={k} style={{ "--k": k / (COIN_EDGE.length - 1) } as CSSProperties} />)}
               </div>
               <OrbitValue />
             </div>
