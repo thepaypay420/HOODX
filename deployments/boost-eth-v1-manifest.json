@@ -1,0 +1,31 @@
+{
+ "status": "DRAFT",
+ "reviewedBuild": "",
+ "name": "HOODX Boosted ETH",
+ "symbol": "BOOSTX",
+ "chainId": 4663,
+ "curatorAndFeeRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+ "seedEthWei": "75000000000000000",
+ "minDepositWei": "5000000000000000",
+ "tvlCapUsdg": "1000000000000",
+ "maxSliceUsdg": "100000000000",
+ "minIntervalSec": 3300,
+ "maxSlipBps": 50,
+ "emergencySlipBps": 300,
+ "maxDivBps": 100,
+ "morpho": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+ "marketId": "0x7c820d6a09502d63be80bb8025ec479d29d7c06e70f8df65a92aaeed23a366e2",
+ "pool": "0x52e65B17fB6E5BA00Ed806f37Afcd2DaA50271Ca",
+ "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+ "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+ "cash": "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+ "ethUsdFeed": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9",
+ "btcUsdFeed": "0xa2c5184bF03d373Dc9dE4876eb4Bce595B460251",
+ "feedMaxStaleSec": 90000,
+ "seedFile": "deployments/boost-eth-seed.json",
+ "notes": [
+  "Regenerate the seed right before deploying: python research/boost/boost_seed.py (the signal rejects a seed more than 3% from the live feeds).",
+  "Set status to APPROVED and reviewedBuild to the commit of the reviewed build only after FOUNDRY_PROFILE=boost forge test passes on it.",
+  "Seed is ~$200 of ETH (the curator's first deposit, held at 1x until the first rebalance). TVL cap $1M (the measured capacity point)."
+ ]
+}

@@ -2,6 +2,7 @@ import { parseAbiItem, zeroAddress, type Address } from "viem";
 import { scanLogs } from "@/lib/logScan";
 import { AUTO_LP } from "@/lib/stockLp";
 import { AUTO_LP_LAUNCH } from "@/lib/autolpNav";
+import { BOOST } from "@/lib/boost";
 
 /* A wallet's cost basis in one HOODX vault, rebuilt from the vault's own events.
  *
@@ -14,7 +15,7 @@ import { AUTO_LP_LAUNCH } from "@/lib/autolpNav";
  *               now, giving a cost for the current position; return = value now / that cost - 1.
  *  - "none":    nothing was ever deposited by this wallet (all shares came by transfer), so there is no cost to measure from. */
 
-export type Kind = "v2" | "v3" | "autolp";
+export type Kind = "v2" | "v3" | "autolp" | "boost";
 export type Accounting = { mode: "exact" | "average" | "none"; depositedWei: string; withdrawnWei: string; basisWei: string | null; deposits: number; withdrawals: number; seeded: boolean };
 
 const INDEX_START = 67_761_602n;
@@ -24,23 +25,27 @@ const withdraw = parseAbiItem("event Withdraw(address indexed user, uint256 shar
 const lpDeposit = parseAbiItem("event DepositedEth(address indexed account, address indexed receiver, uint256 shares, uint256 ethUsed, uint256 usdgValue)");
 const lpWithdraw = parseAbiItem("event WithdrawnEth(address indexed account, address indexed receiver, uint256 shares, uint256 ethOut)");
 const lpSeed = parseAbiItem("event Bootstrapped(address indexed receiver, uint256 shares)");
+const bxDeposit = parseAbiItem("event Deposited(address indexed account, address indexed receiver, uint256 ethIn, uint256 shares, uint256 navAddedUsdg)");
+const bxWithdraw = parseAbiItem("event Withdrawn(address indexed account, address indexed receiver, uint256 shares, uint256 ethOut)");
+const bxSeed = parseAbiItem("event Bootstrapped(address indexed receiver, uint256 shares, uint256 ethIn, uint256 navUsdg)");
 const E18 = 10n ** 18n;
 const LAUNCH_PRICE_WEI = BigInt(Math.round(AUTO_LP_LAUNCH.perShareEth * 1e18));                // ETH per Auto LP share at launch, 1e18-scaled
 
 export async function accountFor(wallet: Address, vault: Address, kind: Kind, currentShares: bigint): Promise<Accounting> {
-  const lp = kind === "autolp";
-  const from = lp ? AUTO_LP.deployBlock : INDEX_START;
+  const lp = kind === "autolp", bx = kind === "boost";
+  const from = lp ? AUTO_LP.deployBlock : bx ? BOOST.deployBlock : INDEX_START;
   const [tin, tout, ins, outs, seeds] = await Promise.all([
     scanLogs(vault, transfer, { to: wallet }, from),
     scanLogs(vault, transfer, { from: wallet }, from),
-    lp ? scanLogs(vault, lpDeposit, { receiver: wallet }, from) : scanLogs(vault, deposit, { user: wallet }, from),
-    lp ? scanLogs(vault, lpWithdraw, { account: wallet }, from) : scanLogs(vault, withdraw, { user: wallet }, from),
-    lp ? scanLogs(vault, lpSeed, { receiver: wallet }, from) : Promise.resolve([]),
+    bx ? scanLogs(vault, bxDeposit, { receiver: wallet }, from) : lp ? scanLogs(vault, lpDeposit, { receiver: wallet }, from) : scanLogs(vault, deposit, { user: wallet }, from),
+    bx ? scanLogs(vault, bxWithdraw, { account: wallet }, from) : lp ? scanLogs(vault, lpWithdraw, { account: wallet }, from) : scanLogs(vault, withdraw, { user: wallet }, from),
+    bx ? scanLogs(vault, bxSeed, { receiver: wallet }, from) : lp ? scanLogs(vault, lpSeed, { receiver: wallet }, from) : Promise.resolve([]),
   ]);
   let dep = 0n, depShares = 0n, wd = 0n, wdShares = 0n;
-  for (const l of ins) { const a = l.args as { gross?: bigint; ethUsed?: bigint; shares?: bigint }; dep += a.gross ?? a.ethUsed ?? 0n; depShares += a.shares ?? 0n; }
+  for (const l of ins) { const a = l.args as { gross?: bigint; ethUsed?: bigint; ethIn?: bigint; shares?: bigint }; dep += a.gross ?? a.ethUsed ?? a.ethIn ?? 0n; depShares += a.shares ?? 0n; }
   for (const l of outs) { const a = l.args as { ethOut?: bigint; shares?: bigint }; wd += a.ethOut ?? 0n; wdShares += a.shares ?? 0n; }
-  for (const l of seeds) { const s = (l.args as { shares?: bigint }).shares ?? 0n; dep += (s * LAUNCH_PRICE_WEI) / E18; depShares += s; }
+  // Auto LP seeds record only shares (valued at the launch price); Boosted ETH seeds record the ETH paid
+  for (const l of seeds) { const a = l.args as { shares?: bigint; ethIn?: bigint }; const s = a.shares ?? 0n; dep += a.ethIn ?? (s * LAUNCH_PRICE_WEI) / E18; depShares += s; }
   const zero = zeroAddress.toLowerCase();
   const transferredIn = tin.some((l) => (l.args.from ?? "").toLowerCase() !== zero);
   const transferredOut = tout.some((l) => (l.args.to ?? "").toLowerCase() !== zero);

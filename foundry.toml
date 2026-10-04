@@ -15,3 +15,26 @@ runs = 1024
 runs = 128
 depth = 64
 fail_on_revert = true
+
+[profile.boost]
+src = "contracts/boost"
+test = "test/boost"
+script = "script/boost"
+out = "out-boost"
+cache_path = "cache-boost"
+solc_version = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+evm_version = "cancun"
+bytecode_hash = "ipfs"
+fs_permissions = [{ access = "read", path = "./deployments" }]
+
+[profile.boost.fuzz]
+runs = 512
+
+[profile.boost.invariant]
+runs = 64
+depth = 32
+fail_on_revert = false
+

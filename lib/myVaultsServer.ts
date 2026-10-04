@@ -6,6 +6,7 @@ import { atomicFactoryAddress, atomicFactoryStartBlock } from "@/lib/atomicFacto
 import { productionV2Factory } from "@/lib/v2";
 import { rebalanceControllerV3Abi } from "@/lib/rebalanceController";
 import { AUTO_LP } from "@/lib/stockLp";
+import { BOOST, boostVaultAbi } from "@/lib/boost";
 import { accountFor, type Accounting } from "@/lib/positionAccounting";
 import { scanLogs } from "@/lib/logScan";
 
@@ -24,7 +25,7 @@ const vaultAbi = parseAbi([
 ]);
 const created = parseAbiItem("event Created(address indexed vault, string slug, address curator, address creator)");
 
-export type Kind = "v2" | "v3" | "autolp";
+export type Kind = "v2" | "v3" | "autolp" | "boost";
 export type VaultRef = { vault: Address; slug: string; kind: Kind; symbol: string; name: string };
 type Call = { target: Address; data: `0x${string}` };
 
@@ -52,13 +53,22 @@ export const vaultUniverse = unstable_cache(async (): Promise<VaultRef[]> => {
   ]);
   const refs = [...v2.map((l) => ({ vault: l.args.vault!, slug: l.args.slug!, kind: "v2" as Kind })), ...v3.map((l) => ({ vault: l.args.vault!, slug: l.args.slug!, kind: "v3" as Kind }))];
   if (AUTO_LP.vault) refs.push({ vault: AUTO_LP.vault, slug: AUTO_LP.slug, kind: "autolp" });
+  if (BOOST.vault) refs.push({ vault: BOOST.vault, slug: BOOST.slug, kind: "boost" });
   const meta = await batch(refs.flatMap((r) => [{ target: r.vault, data: enc("symbol") }, { target: r.vault, data: enc("name") }]));
   return refs.map((r, i) => ({ ...r, symbol: meta[i * 2].ok ? decodeResult("symbol", meta[i * 2].data) as string : r.slug.toUpperCase(), name: meta[i * 2 + 1].ok ? decodeResult("name", meta[i * 2 + 1].data) as string : r.slug }));
-}, ["my-vaults-universe-v1"], { revalidate: 600 });
+}, ["my-vaults-universe-v2"], { revalidate: 600 });
 
 /* ------------------------------------------------------------------ what one share is worth, per vault (60 seconds, shared) */
 export type Nav = { vault: Address; supply: string; assetsWei: string | null; estimated: boolean; at: number };
 const navOne = unstable_cache(async (vault: Address, kind: Kind): Promise<Nav> => {
+  if (kind === "boost") {
+    // Boosted ETH values itself at its Morpho market oracle: NAV in USDG, converted to ETH at the same price
+    const [st, supply] = await Promise.all([
+      client().readContract({ address: vault, abi: boostVaultAbi, functionName: "state" }),
+      client().readContract({ address: vault, abi: boostVaultAbi, functionName: "totalSupply" }),
+    ]);
+    return { vault, supply: String(supply), assetsWei: st.price > 0n ? String((st.nav * 10n ** 36n) / st.price) : null, estimated: false, at: Date.now() };
+  }
   if (kind === "v2") {
     const r = await batch([{ target: vault, data: enc("totalSupply") }, { target: vault, data: enc("totalAssets") }]);
     return { vault, supply: String(decodeResult("totalSupply", r[0].data)), assetsWei: r[1].ok ? String(decodeResult("totalAssets", r[1].data)) : null, estimated: false, at: Date.now() };
@@ -73,7 +83,7 @@ const navOne = unstable_cache(async (vault: Address, kind: Kind): Promise<Nav> =
   let sum = bal[tokens.length] + bal[tokens.length + 1], complete = true;
   q.forEach((x) => { try { const e = decodeErrorResult({ abi: rebalanceControllerV3Abi, data: x.data }); if (e.errorName === "RebalanceQuote") sum += (e.args as readonly bigint[])[0]; else complete = false; } catch { complete = false; } });
   return { vault, supply: String(supply), assetsWei: complete ? String(sum) : null, estimated: true, at: Date.now() };
-}, ["my-vaults-nav-v2"], { revalidate: 60 });
+}, ["my-vaults-nav-v3"], { revalidate: 60 });
 /** One vault's value from the same 60-second cache, for first paint on its page. Only vaults the protocol created. */
 export async function vaultNav(vault: Address): Promise<Nav | null> {
   const ref = (await vaultUniverse()).find((v) => v.vault.toLowerCase() === vault.toLowerCase());

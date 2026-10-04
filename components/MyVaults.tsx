@@ -10,7 +10,7 @@ import { vaultMeta } from "@/lib/vaults";
 
 /* ------------------------------------------------------------------ data: one cached endpoint, plus the Auto LP figures already cached for Explore */
 type Acct = { mode: "exact" | "average" | "none"; depositedWei: string; withdrawnWei: string; basisWei: string | null; seeded: boolean };
-type Raw = { vault: Address; slug: string; kind: "v2" | "v3" | "autolp"; symbol: string; name: string; shares: string; valueWei: string | null; estimated: boolean; account: Acct | null };
+type Raw = { vault: Address; slug: string; kind: "v2" | "v3" | "autolp" | "boost"; symbol: string; name: string; shares: string; valueWei: string | null; estimated: boolean; account: Acct | null };
 type Reply = { updatedAt: number; positions: Raw[] };
 export type Holding = { key: string; slug: string; kind: Raw["kind"]; symbol: string; name: string; href: string; accent: string; shares: number; valueEth: number | null; estimated: boolean; costEth: number | null; pnlEth: number | null; pct: number | null; pctLabel: string };
 const E = 1e18, LAUNCH_PRICE_ETH = 0.04;                                // the factories mint the first shares at 0.04 ETH
@@ -55,15 +55,15 @@ export function useMyVaults(address?: Address) {
 export function holdings(data: Reply | null, stats: AutoLpStatsView | null): Holding[] {
   if (!data) return [];
   return data.positions.map((p) => {
-    const shares = Number(BigInt(p.shares)) / E, meta = vaultMeta(p.slug), auto = p.kind === "autolp", retired = p.kind === "v2" && p.slug === "696x", a = p.account;
+    const shares = Number(BigInt(p.shares)) / E, meta = vaultMeta(p.slug), auto = p.kind === "autolp", boost = p.kind === "boost", retired = p.kind === "v2" && p.slug === "696x", a = p.account;
     const valueEth = auto ? (stats ? shares * stats.perShareEth : null) : num(p.valueWei);
     let cost: number | null = null, pnl: number | null = null, label = "Since launch";
     if (a && valueEth !== null && a.mode === "exact") { cost = num(a.depositedWei); pnl = valueEth + (num(a.withdrawnWei) ?? 0) - (cost ?? 0); label = "Your return"; }
     else if (a && valueEth !== null && a.mode === "average" && a.basisWei) { cost = num(a.basisWei); pnl = valueEth - (cost ?? 0); label = "Return on cost"; }
-    const launch = auto ? stats?.sinceLaunchEthPct ?? null : valueEth !== null && shares > 0 ? ((valueEth / shares) / LAUNCH_PRICE_ETH - 1) * 100 : null;
+    const launch = auto ? stats?.sinceLaunchEthPct ?? null : boost ? null : valueEth !== null && shares > 0 ? ((valueEth / shares) / LAUNCH_PRICE_ETH - 1) * 100 : null;
     const own = cost && pnl !== null ? (pnl / cost) * 100 : null;
-    return { key: p.vault, slug: p.slug, kind: p.kind, symbol: p.symbol, name: auto ? "Hands-free LP" : retired ? `${meta?.name ?? p.name} · previous vault` : meta?.name ?? p.name,
-      href: auto ? "/autolp" : `/i/${p.slug}`, accent: auto ? "#b98cff" : meta?.accent ?? "#4fd7cb", shares, valueEth, estimated: !auto && p.estimated,
+    return { key: p.vault, slug: p.slug, kind: p.kind, symbol: p.symbol, name: auto ? "Hands-free LP" : boost ? "ETH, boosted" : retired ? `${meta?.name ?? p.name} · previous vault` : meta?.name ?? p.name,
+      href: auto ? "/autolp" : boost ? "/boost" : `/i/${p.slug}`, accent: auto ? "#b98cff" : boost ? "#ff9a3c" : meta?.accent ?? "#4fd7cb", shares, valueEth, estimated: !auto && p.estimated,
       costEth: own !== null ? cost : null, pnlEth: own !== null ? pnl : null, pct: own ?? launch, pctLabel: own !== null ? label : "Since launch" };
   }).sort((a, b) => (b.valueEth ?? 0) - (a.valueEth ?? 0));
 }
@@ -76,6 +76,7 @@ const ago = (ms: number) => { const s = Math.max(0, Math.round(ms / 1000)); retu
 
 function Mark({ h, size }: { h: Holding; size: number }) {
   if (h.kind === "autolp") return <span className="mv-autolp-mark" style={{ width: size, height: size }}><BrandMark size={size * 0.62} /></span>;
+  if (h.kind === "boost") return <span className="boost-mark" style={{ width: size, height: size }}><svg viewBox="0 0 44 44" width={size} height={size}><circle cx="22" cy="22" r="21" fill="#1b1006" stroke="#ff9a3c" strokeOpacity=".5" /><path d="M24 7 13 25h8l-2 12 11-18h-8z" fill="#ff9a3c" /></svg></span>;
   return <TokenArt slug={h.slug} src={vaultMeta(h.slug)?.image} size="sm" />;
 }
 

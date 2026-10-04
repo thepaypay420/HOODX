@@ -37,3 +37,10 @@ research/fork_validation/cache/
 research/fork_validation/cases.json
 research/*.log
 public/logos/_review.jpg
+
+# Boosted ETH: Foundry profile output and research price caches
+out-boost/
+cache-boost/
+research/boost/cache/
+research/boost/backtest/*.csv
+research/boost/backtest/*.json

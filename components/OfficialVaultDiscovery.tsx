@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { AssetChips } from "@/components/AssetChips";
 import { AutoLpCard } from "@/components/AutoLpCard";
+import { BoostCard } from "@/components/BoostCard";
 import { MyVaults, holdings, useMyVaults } from "@/components/MyVaults";
 import { useAutoLpStats } from "@/lib/useAutoLp";
 import { useWallet } from "@/lib/wallet";
@@ -37,7 +38,7 @@ async function proportionalReturn(slug: string): Promise<number | undefined> {
 
 type Filter = "all" | "mine" | "automated" | VaultCategory;
 const FILTERS: { label: string; value: Filter }[] = [
-  { label: "All", value: "all" }, { label: "Automated LP", value: "automated" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
+  { label: "All", value: "all" }, { label: "Automated", value: "automated" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
 ];
 const styleFor = (vault: VaultMeta) => ({ "--vault-accent": vault.accent }) as CSSProperties;
 
@@ -97,6 +98,7 @@ export function OfficialVaultDiscovery() {
     {filter === "mine" && hasMine && <MyVaults list={myList} loading={mine.loading} updatedAt={mine.data?.updatedAt} onRefresh={mine.refresh} ethUsd={stats?.ethUsd} />}
     {filter !== "mine" && (showAuto || showLead) && <div className="discovery-leads">
       {showAuto && <AutoLpCard />}
+      {showAuto && <BoostCard />}
       {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
     </div>}
     {filter !== "mine" && <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>}

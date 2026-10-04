@@ -1,0 +1,89 @@
+name: Boosted ETH keeper
+# Keeper for the HOODX Boosted ETH vault. Every action is a permissionless, rule-bound crank: poke() updates the on-chain
+# signal from Chainlink once an hour, rebalance() runs only when the vault itself says it is ready (and sizes and bounds
+# every trade itself), crystalliseFees() at most every 30 days. The keeper key only pays gas and cannot move vault funds;
+# each transaction is simulated first. One job keeps its own 15-minute clock for five hours and then starts its
+# successor; the schedule is only a watchdog. The loop does nothing until deployments/boost-eth-v1-live.json exists.
+# Secrets: ROBINHOOD_RPC_URL (read/write RPC), AUTOLP_KEEPER_PRIVATE_KEY (gas-only keeper wallet).
+on:
+  schedule:
+    - cron: "17,47 * * * *" # watchdog: starts a loop only when none is running
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: "Internal: set by a finishing loop when it starts its successor"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: write # list this workflow's runs and start the successor
+jobs:
+  keeper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - name: Yield if a loop is already running
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHAIN: ${{ inputs.chain }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ "$CHAIN" = "true" ]; then echo "run=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          others=$(gh api "repos/$REPO/actions/workflows/boost-keeper.yml/runs?status=in_progress&per_page=20" --jq "[.workflow_runs[] | select(.id != $RUN_ID)] | length")
+          if [ "$others" -gt 0 ]; then
+            echo "A keeper loop is already running; nothing to do."
+            echo "run=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=1" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: steps.gate.outputs.run == '1'
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Stop if the vault is not live
+        id: live
+        if: steps.gate.outputs.run == '1'
+        run: |
+          if [ -f deployments/boost-eth-v1-live.json ]; then echo "live=1" >> "$GITHUB_OUTPUT"; else echo "Boosted ETH is not live yet."; echo "live=0" >> "$GITHUB_OUTPUT"; fi
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
+        if: steps.live.outputs.live == '1'
+        with:
+          version: v1.8.3
+          cache: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: steps.live.outputs.live == '1'
+        with:
+          python-version: "3.12"
+      - name: Run keeper every 15 minutes
+        id: loop
+        if: steps.live.outputs.live == '1'
+        env:
+          ROBINHOOD_RPC_URL: ${{ secrets.ROBINHOOD_RPC_URL }}
+          AUTOLP_KEEPER_PRIVATE_KEY: ${{ secrets.AUTOLP_KEEPER_PRIVATE_KEY }}
+          PYTHONUTF8: "1"
+        run: |
+          end=$(( $(date +%s) + 5 * 3600 ))
+          fails=0
+          while [ "$(date +%s)" -lt "$end" ]; do
+            python scripts/boost_keeper.py --private-key-env AUTOLP_KEEPER_PRIVATE_KEY || fails=$((fails + 1))
+            # wake shortly after the next quarter-hour (the signal accepts one poke per clock hour)
+            sleep $(( 900 - $(date +%s) % 900 + 30 ))
+          done
+          echo "fails=$fails" >> "$GITHUB_OUTPUT"
+      - name: Start the next loop
+        if: ${{ !cancelled() && steps.live.outputs.live == '1' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run boost-keeper.yml --repo "$REPO" --ref main -f chain=true
+      - name: Report failed keeper runs
+        if: steps.loop.outputs.fails != '' && steps.loop.outputs.fails != '0'
+        env:
+          FAILS: ${{ steps.loop.outputs.fails }}
+        run: |
+          echo "$FAILS keeper run(s) in this loop reported an error; see the log above."
+          exit 1
