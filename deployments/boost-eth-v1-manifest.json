@@ -1,6 +1,6 @@
 {
- "status": "DRAFT",
- "reviewedBuild": "",
+ "status": "APPROVED",
+ "reviewedBuild": "3e01f6f291cafb607e6773c7db5bbe4aa9e958df",
  "name": "HOODX Boosted ETH",
  "symbol": "BOOSTX",
  "chainId": 4663,
