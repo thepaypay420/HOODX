@@ -165,7 +165,7 @@ export function BoostExperience() {
         <div className="ap-hero-stats">
           {live ? <>
             <Stat label="Since launch" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
-            <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH` : undefined} />
+            <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH · ${stats.markedAt === "market" ? "live price" : "Chainlink price"}` : undefined} />
             <Stat label="Right now" value={reg.label} sub={stats ? `${stats.leverage.toFixed(2)}x ETH exposure` : undefined} />
           </> : <>
             <Stat label="Backtest 2022-26" value={`+${BOOST_BACKTEST.test.vault}%/yr`} tone="up" sub={`ETH held: ${BOOST_BACKTEST.test.eth}%/yr`} />
