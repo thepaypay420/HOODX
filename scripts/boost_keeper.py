@@ -54,6 +54,13 @@ class Chain:
             raise RuntimeError(r.stderr.strip()[:300])
         return [line.split(" [")[0].strip() for line in r.stdout.strip().splitlines()]
 
+    def call_raw(self, to: str, sig: str, *args) -> str:
+        """Unprocessed cast output (a returned struct is one line; call() would cut it at the first annotation)."""
+        r = self._run(["call", to, sig, *map(str, args)])
+        if r.returncode != 0:
+            raise RuntimeError(r.stderr.strip()[:300])
+        return r.stdout.strip()
+
     def would_succeed(self, to: str, sig: str, *args) -> bool:
         return self._run(["call", "--from", self.address(), to, sig, *map(str, args)]).returncode == 0
 
@@ -104,7 +111,7 @@ def run_once(chain: Chain, vault: str, signal: str, min_gas_eth: float) -> dict:
 
     # Poke cadence by size: every 2 hours while the vault is small (gas outweighs the ~2 pt/yr cost of a slower signal),
     # every hour above SMALL_VAULT_USD. The contract accepts both; the vault trades on a signal at most 2 clock hours old.
-    nav_usd = tuple_field(chain.call(vault, STATE_SIG)[0], 8) / 1e6
+    nav_usd = tuple_field(chain.call_raw(vault, STATE_SIG), 8) / 1e6
     every = 2 if nav_usd < SMALL_VAULT_USD else 1
     last_hour = int(chain.call(signal, "lastHour()(uint256)")[0])
     if now // 3600 - last_hour >= every:
