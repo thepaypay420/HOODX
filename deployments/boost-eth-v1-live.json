@@ -21,5 +21,5 @@
   "ethFlags": 239,
   "btcFlags": 255
  },
- "ownership": "pending: treasury must call acceptOwnership()"
+ "ownership": "accepted by the treasury 0x134D468B0bcaeA6DF127916f951F7938c06A37C6 (2026-10-04)"
 }

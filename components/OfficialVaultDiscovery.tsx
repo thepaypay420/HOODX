@@ -90,7 +90,7 @@ export function OfficialVaultDiscovery() {
   const showAuto = filter === "all" || filter === "automated";
   const showLead = filter === "all" || lead.category === filter;
   return <section className="discovery-shell" data-testid="official-vault-discovery">
-    <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a point of view.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
+    <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a strategy.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
     <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.flatMap((item) => {
       const chip = <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>;
       return item.value === "all" && hasMine ? [chip, <button key="mine" type="button" className="mv-chip" aria-pressed={filter === "mine"} onClick={() => setFilter("mine")}>My Vaults<span>{myList.length}</span></button>] : [chip];
