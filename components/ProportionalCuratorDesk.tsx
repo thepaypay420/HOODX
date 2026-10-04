@@ -56,7 +56,8 @@ export function ProportionalCuratorDesk({vault,controller,state,busy,onBusy,onRe
         }else if(desired>current&&desired-current>=minimumTrade)buyInputs.push({row:rows[i],amount:desired-current,value:desired-current});
       }
       const minCashAfter=total*BigInt(draft.cashBps)/10000n;
-      const sellCash=sells.reduce((sum,s)=>sum+s.value,0n);const available=fresh.cash+sellCash>minCashAfter?fresh.cash+sellCash-minCashAfter:0n;
+      // size buys from the sells' protected minimums: if a sell lands low the vault must still keep its cash floor
+      const sellCash=sells.reduce((sum,s)=>sum+s.minOut,0n);const available=fresh.cash+sellCash>minCashAfter?fresh.cash+sellCash-minCashAfter:0n;
       const requested=buyInputs.reduce((sum,b)=>sum+b.amount,0n);const buys:Step[]=[];
       for(const item of buyInputs){const amount=requested>available&&requested>0n?item.amount*available/requested:item.amount;if(amount<minimumTrade)continue;const output=await quoteProportionalRebalance(publicClient,fresh,controller,item.row.token,true,amount);buys.push({token:item.row.token,symbol:item.row.symbol,decimals:item.row.decimals,buy:true,amount,minOut:protectedRebalanceMinimum(output),value:amount});}
       const steps=[...sells,...buys];if(!steps.length)throw Error('No position is large enough to rebalance at the current targets.');

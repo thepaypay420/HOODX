@@ -70,6 +70,7 @@ Collections with no holders yet are deployed and accept their first deposit thro
 URL: https://www.xhoodindex.com/mcp  (Model Context Protocol, Streamable HTTP, no authentication)
 Add it as a custom connector in Claude, ChatGPT (developer mode) or Cursor, or run: claude mcp add --transport http hoodx https://www.xhoodindex.com/mcp
 Tools: hoodx_overview, hoodx_list_vaults, hoodx_get_vault, hoodx_boost_signal, hoodx_get_positions, hoodx_quote_deposit, hoodx_quote_withdraw, hoodx_how_to_fund.
+Curator tools: hoodx_asset_universe (approved assets), hoodx_backtest_basket (daily-close backtest of a basket plus cash), hoodx_prepare_launch (new index vault), hoodx_curator_status (live weights, drift, curator), hoodx_prepare_rebalance (protected atomic rebalance to targets), hoodx_prepare_curator_action (pause, resume, set targets, add or remove an asset, set image, propose a new curator). Each is simulated from the curator's address and returns an unsigned transaction.
 The quote tools simulate from the user's address and return an UNSIGNED transaction plus a reviewUrl (the vault page pre-filled with ?deposit=ETH or ?withdraw=PERCENT) where the user reviews and signs. The server never signs or holds keys.
 
 ## Public data endpoints (read-only JSON, cached)

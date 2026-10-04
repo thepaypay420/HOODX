@@ -21,6 +21,7 @@ const ASK = [
   "What's in HOODX right now, and how has each vault done since launch?",
   "Why is Boosted ETH at its current leverage, and what ETH price would cut it?",
   "Prepare a 0.05 ETH deposit into Hands-free LP from my wallet 0x…",
+  "Backtest NVDA, TSM and AVGO with 25% cash, then draft the launch of my own index.",
 ];
 
 function RobotFace() {
@@ -89,7 +90,7 @@ function ConnectionDialog({ open, onClose }: { open: boolean; onClose: () => voi
             <div>
               <p>HOODX FOR AI</p>
               <h2 id={titleId}>Bring HOODX into your AI.</h2>
-              <span>Ask Claude, ChatGPT or Cursor about every vault with live on-chain numbers, and have it prepare deposits and withdrawals you sign yourself.</span>
+              <span>Ask Claude, ChatGPT or Cursor about every vault with live on-chain numbers, and have it prepare deposits, withdrawals and curator moves you sign yourself.</span>
             </div>
             <div className="llm-terminal-status"><i /> MCP server · live</div>
           </div>
@@ -121,6 +122,7 @@ function ConnectionDialog({ open, onClose }: { open: boolean; onClose: () => voi
           <div className="llm-capability-grid">
             <div><strong>Live data</strong><span>Every vault&apos;s value, holdings and return, plus the exact prices behind Boosted ETH&apos;s leverage.</span></div>
             <div><strong>Prepared transactions</strong><span>Deposits and withdrawals simulated from your address, with protection built in.</span></div>
+            <div><strong>Curator desk</strong><span>Backtest a basket, launch your own index, and check drift, rebalance or retune the vaults you run.</span></div>
             <div><strong>You sign</strong><span>Your AI can&apos;t move funds. Sign in your wallet or open the review link on HOODX.</span></div>
           </div>
 

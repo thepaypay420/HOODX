@@ -2325,7 +2325,8 @@ body {
 .mcp-ask button:hover { border-color: #65d9c444; background: #50d1c30d; }
 .mcp-ask button i { flex: none; color: #6f918b; font-size: 11px; font-style: normal; }
 .mcp-ask button:hover i { color: #84ecda; }
-.llm-terminal .llm-capability-grid { margin-top: 22px; }
+.llm-terminal .llm-capability-grid { margin-top: 22px; grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 640px) { .llm-terminal .llm-capability-grid { grid-template-columns: 1fr; } }
 .mcp-dev-links { display: inline-flex; gap: 14px; margin-left: 10px; }
 .mcp-dev-links a, .mcp-dev-links button { color: #90aaa5; font-size: 10px; text-decoration: underline; text-decoration-color: #90aaa544; text-underline-offset: 3px; }
 .mcp-dev-links a:hover, .mcp-dev-links button:hover { color: #dcebe8; }

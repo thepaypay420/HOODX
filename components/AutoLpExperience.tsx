@@ -115,11 +115,13 @@ export function AutoLpExperience() {
     setBusy(true); setMsg("Finding the best entry…");
     try {
       // Probe near the real size: too small reverts BelowMinimum (grow), too large reverts on ETH (shrink).
-      let probe = initialProbeShares(value, stats.perShareEth), used = ZERO, last = "", lo = ZERO, hi = ZERO;
+      let probe = initialProbeShares(value, stats.perShareEth), used = ZERO, last = "", lo = ZERO, hi = ZERO, flaky = 0;
       if (probe === ZERO) probe = BigInt(Math.floor(stats.supply * 1e6)) * 10n ** 12n / 50n;
       for (let k = 0; k < 12 && used === ZERO && probe > ZERO; k++) {
         try { used = (await publicClient.simulateContract({ account: address, address: vault, abi: stockLpVaultAbi, functionName: "depositEth", args: [probe, address, deadline()], value })).result; }
         catch (e) {
+          // An RPC hiccup (no revert) says nothing about size: retry the same probe.
+          if (!(e instanceof BaseError && e.walk((x) => x instanceof ContractFunctionRevertedError)) && flaky++ < 3) { k--; continue; }
           // Bisect between the largest size known too small and the smallest known too large.
           last = errName(e);
           if (last === "BelowMinimum") lo = probe; else hi = probe;

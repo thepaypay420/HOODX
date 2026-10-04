@@ -1,7 +1,8 @@
 /* The HOODX tool layer behind the MCP server (app/mcp/route.ts). Everything here reads public chain state or builds an
  * UNSIGNED transaction from a simulation of the user's own address. Nothing here can sign, hold keys or move funds: the
  * user signs in their own wallet, or opens the review link and signs on xhoodindex.com. */
-import { BaseError, ContractFunctionRevertedError, createPublicClient, encodeFunctionData, formatEther, http, isAddress, parseAbi, parseEther, getAddress, type Address, type PublicClient } from "viem";
+import { BaseError, ContractFunctionRevertedError, createPublicClient, encodeFunctionData, formatEther, http, isAddress, parseAbi, parseEther, getAddress, zeroAddress, type Address, type PublicClient } from "viem";
+import { atomicFactoryAbi, atomicFactoryAddress } from "@/lib/atomicFactory";
 import { robinhood } from "@/lib/chain";
 import { RPC_URL, SITE_URL } from "@/lib/config";
 import { BOOST, boostSignalAbi, boostVaultAbi } from "@/lib/boost";
@@ -54,6 +55,19 @@ export function resolve(query: string): Entry {
   return hit;
 }
 
+/** The official registry first, then any index the atomic factory created, looked up on-chain by slug. */
+export async function resolveAny(query: string): Promise<Entry> {
+  try { return resolve(query); } catch (err) {
+    const slug = query.trim().toLowerCase().replace(/^\$/, "");
+    if (!/^[a-z0-9]{3,16}$/.test(slug)) throw err;
+    const vault = await client().readContract({ address: atomicFactoryAddress, abi: atomicFactoryAbi, functionName: "bySlug", args: [slug] }).catch(() => zeroAddress);
+    if (vault === zeroAddress) throw err;
+    const name = await client().readContract({ address: vault, abi: parseAbi(["function name() view returns (string)"]), functionName: "name" }).catch(() => slug);
+    const ticker = await client().readContract({ address: vault, abi: erc20, functionName: "symbol" }).catch(() => slug.toUpperCase());
+    return { slug, name, ticker, kind: "atomic", type: "index", address: vault, url: `${SITE_URL}/i/${slug}`, summary: "Community index created on the HOODX factory." };
+  }
+}
+
 /* ------------------------------------------------------------------ shared helpers */
 export const fmt = (wei: bigint, digits = 6) => Number(formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: digits });
 const round = (x: number, d = 2) => Math.round(x * 10 ** d) / 10 ** d;
@@ -62,6 +76,7 @@ export function checkAddress(a: string): Address {
   if (!isAddress(a)) throw new Error(`"${a}" is not a valid EVM address.`);
   return getAddress(a);
 }
+const isRevert = (e: unknown) => e instanceof BaseError && e.walk((x) => x instanceof ContractFunctionRevertedError) instanceof ContractFunctionRevertedError;
 function revertName(e: unknown): string {
   const r = e instanceof BaseError ? e.walk((x) => x instanceof ContractFunctionRevertedError) : undefined;
   return r instanceof ContractFunctionRevertedError ? r.data?.errorName ?? r.reason ?? "reverted" : e instanceof BaseError ? e.shortMessage : String(e);
@@ -123,7 +138,7 @@ export async function listVaults(origin: string, type?: string) {
 }
 
 export async function getVault(origin: string, query: string) {
-  const e = resolve(query), c = client();
+  const e = await resolveAny(query), c = client();
   if (e.kind === "boost") {
     const s = await boostStats(origin);
     return { ...base(e), strategy: e.summary, state: s && { valueUsd: round(s.navUsd), valueEth: round(s.navEth, 5), leverage: round(s.leverage, 3), signalTarget: round(s.target, 3), regime: regime(s.leverage), ethVolatility: round(s.sigma, 3), sinceLaunchUsdPct: round(s.sinceLaunchUsdPct), sinceLaunchEthPct: round(s.sinceLaunchEthPct), capacityUsed: `${round(s.capacityPct)}% of $${s.capUsd.toLocaleString("en-US")}`, depositsPaused: s.depositsPaused, signalFresh: s.fresh, lastRebalance: s.lastRebalance ? new Date(s.lastRebalance * 1000).toISOString() : null },
@@ -211,7 +226,7 @@ export async function positions(origin: string, wallet: string) {
 
 /* ------------------------------------------------------------------ transaction builders (simulate, never sign) */
 export async function quoteDeposit(origin: string, query: string, amountEth: string, wallet: string) {
-  const e = resolve(query), from = checkAddress(wallet), c = client();
+  const e = await resolveAny(query), from = checkAddress(wallet), c = client();
   let value: bigint;
   try { value = parseEther(amountEth); } catch { throw new Error(`"${amountEth}" is not an ETH amount.`); }
   if (value <= 0n) throw new Error("Amount must be above zero.");
@@ -234,11 +249,15 @@ export async function quoteDeposit(origin: string, query: string, amountEth: str
     const dl = deadline();
     const sim = (shares: bigint) => c.simulateContract({ account: from, address: e.address, abi: stockLpVaultAbi, functionName: "depositEth", args: [shares, from, dl], value }).then((r) => r.result);
     // size the exact share amount the ETH buys: probe, then bisect between too small and too large (as the site does)
-    let probe = initialProbeShares(value, s.perShareEth), used = 0n, last = "", lo = 0n, hi = 0n;
+    let probe = initialProbeShares(value, s.perShareEth), used = 0n, last = "", lo = 0n, hi = 0n, flaky = 0;
     if (probe === 0n) probe = (BigInt(Math.floor(s.supply * 1e6)) * 10n ** 12n) / 50n;
     for (let k = 0; k < 12 && used === 0n && probe > 0n; k++) {
       try { used = await sim(probe); }
-      catch (x) { last = revertName(x); if (last === "BelowMinimum") lo = probe; else hi = probe; probe = lo > 0n && hi > 0n ? (lo + hi) / 2n : last === "BelowMinimum" ? probe * 2n : probe / 2n; }
+      catch (x) {
+        // an RPC hiccup says nothing about size: retry the same probe instead of bisecting on it
+        if (!isRevert(x) && flaky++ < 3) { k--; continue; }
+        last = revertName(x); if (last === "BelowMinimum") lo = probe; else hi = probe; probe = lo > 0n && hi > 0n ? (lo + hi) / 2n : last === "BelowMinimum" ? probe * 2n : probe / 2n;
+      }
     }
     if (used === 0n) throw new Error(`Entry unavailable right now: ${explain(last)}`);
     const shares = sizeShares(probe, used, value);
@@ -271,7 +290,7 @@ export async function quoteDeposit(origin: string, query: string, amountEth: str
 }
 
 export async function quoteWithdraw(origin: string, query: string, wallet: string, percent: number) {
-  const e = resolve(query), from = checkAddress(wallet), c = client();
+  const e = await resolveAny(query), from = checkAddress(wallet), c = client();
   if (!Number.isInteger(percent) || percent < 1 || percent > 100) throw new Error("percent must be a whole number from 1 to 100.");
   const review = `${e.url}?withdraw=${percent}`;
   const held = await c.readContract({ address: e.address, abi: erc20, functionName: "balanceOf", args: [from] });

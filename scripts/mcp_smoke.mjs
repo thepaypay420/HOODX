@@ -56,6 +56,19 @@ await call("hoodx_quote_deposit", { vault: "aistack", amountEth: "0.02", address
 await verifyTx("boost withdraw 10%", await call("hoodx_quote_withdraw", { vault: "boost", address: wallet, percent: 10 }));
 await verifyTx("autolp withdraw 10%", await call("hoodx_quote_withdraw", { vault: "autolp", address: wallet, percent: 10 }));
 await verifyTx("696x withdraw 10%", await call("hoodx_quote_withdraw", { vault: "696x", address: wallet, percent: 10 }));
+// curator tools
+await call("hoodx_asset_universe", { kind: "stock" });
+await call("hoodx_backtest_basket", { assets: ["NVDA", "TSM", "AVGO"], cashPct: 25, days: 90 });
+await call("hoodx_backtest_basket", { assets: ["PONS", "NVDA"], cashPct: 25, days: 30 }, false);
+await call("hoodx_curator_status", { vault: "696x", address: wallet });
+await call("hoodx_curator_status", { vault: "aistack" });
+await verifyTx("696x rebalance to targets", await call("hoodx_prepare_rebalance", { vault: "696x", curator: wallet }));
+await call("hoodx_prepare_rebalance", { vault: "696x", curator: "0x000000000000000000000000000000000000dEaD" }, false);
+await verifyTx("aistack pause", await call("hoodx_prepare_curator_action", { vault: "aistack", curator: wallet, action: "pause" }));
+await verifyTx("aistack set targets", await call("hoodx_prepare_curator_action", { vault: "aistack", curator: wallet, action: "set_targets", targets: { NVDA: 25, META: 10, PLTR: 10, MSFT: 15, GOOGL: 15 }, cashPct: 25 }));
+await verifyTx("aistack add AMD", await call("hoodx_prepare_curator_action", { vault: "aistack", curator: wallet, action: "add_asset", asset: "AMD" }));
+await verifyTx("launch test index", await call("hoodx_prepare_launch", { curator: wallet, slug: `mcp${Date.now().toString(36).slice(-8)}`, name: "MCP test chips", ticker: "MCPT", assets: ["NVDA", "TSM", "AVGO"], cashPct: 25, creatorFeePct: 0.4 }));
+await call("hoodx_prepare_launch", { curator: wallet, slug: "aistack", name: "Dup", ticker: "DUP", assets: ["NVDA", "TSM"], cashPct: 25, creatorFeePct: 0.4 }, false);
 // expected failures: bad input is rejected cleanly
 await call("hoodx_get_vault", { vault: "nonexistent-vault" }, false);
 await call("hoodx_quote_deposit", { vault: "boost", amountEth: "0.005", address: "0x123" }, false);
