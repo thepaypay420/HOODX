@@ -2286,17 +2286,6 @@ body {
   .ex-create-go { width: 100%; margin-left: 3.6rem; }
 }
 
-/* Home orbit: total value at the center of the rings */
-@keyframes orbit-value-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
-@keyframes orbit-value-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-.orbit-value { position: absolute; left: 55%; top: 57%; z-index: 3; display: grid; justify-items: center; gap: .32rem; translate: -50% -50%; text-align: center; pointer-events: none; }
-.orbit-value-label { color: #83b6aa; font-size: 9px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
-.orbit-value strong { color: var(--paper); font-size: clamp(1.7rem, 3.2vw, 2.25rem); font-weight: 600; line-height: 1; letter-spacing: -.045em; font-variant-numeric: tabular-nums; text-shadow: 0 0 28px rgba(79, 215, 203, .35); }
-.orbit-value-skeleton { width: 6.5rem; height: 1.9rem; border-radius: .5rem; background: linear-gradient(90deg, rgba(238, 248, 246, .05), rgba(238, 248, 246, .14), rgba(238, 248, 246, .05)) 0 0 / 200% 100%; animation: orbit-value-shimmer 1.6s linear infinite; }
-.orbit-value-sub { display: inline-flex; align-items: center; gap: .35rem; color: var(--dim); font-size: 9px; letter-spacing: .06em; }
-.orbit-value-sub i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: orbit-value-pulse 2.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .orbit-value-sub i, .orbit-value-skeleton { animation: none; } }
-
 /* Connect your AI: the MCP server URL, per-app setup, and prompts to try */
 .mcp-url { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-top: 28px; padding: 10px 10px 10px 18px; border: 1px solid #65d9c43d; border-radius: 14px; background: #050b0d; box-shadow: inset 0 1px #ffffff07, 0 0 40px #45d1c00d; }
 .mcp-url-label { color: #63dac7; font: 650 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .16em; text-transform: uppercase; }
@@ -2341,3 +2330,34 @@ body {
 
 /* a withdrawal size prepared by an AI assistant stands out among the preset chips */
 .ap-chips button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 0 0 1px rgba(79, 215, 203, .35); }
+
+/* Home orbit: the coin turns over every few seconds; its reverse carries the total value in HOODX vaults.
+   One 14s cycle shared by both faces: the coin's usual sway, a 1.4s turn, the reverse, and back. */
+@keyframes coin-flip-front {
+  0%, 100% { transform: perspective(900px) rotateY(-12deg) rotateX(6deg) rotateZ(-8deg); }
+  20% { transform: perspective(900px) rotateY(8deg) rotateX(-4deg) rotateZ(-4deg); }
+  40% { transform: perspective(900px) rotateY(-6deg) rotateX(3deg) rotateZ(-7deg); }
+  50%, 90% { transform: perspective(900px) rotateY(180deg) rotateX(0deg) rotateZ(-6deg); }
+  99.99% { transform: perspective(900px) rotateY(348deg) rotateX(6deg) rotateZ(-8deg); }
+}
+@keyframes coin-flip-back {
+  0%, 40% { transform: perspective(900px) rotateY(-180deg) rotateZ(-3deg); }
+  50% { transform: perspective(900px) rotateY(0deg) rotateX(2deg) rotateZ(-3deg); }
+  70% { transform: perspective(900px) rotateY(7deg) rotateX(-3deg) rotateZ(-2deg); }
+  90% { transform: perspective(900px) rotateY(0deg) rotateX(2deg) rotateZ(-3deg); }
+  100% { transform: perspective(900px) rotateY(168deg) rotateZ(-3deg); }
+}
+@keyframes coin-reverse-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes coin-reverse-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.studio-home .landing-stage:has(.coin-reverse) .landing-coin { animation: coin-flip-front 14s cubic-bezier(.55, 0, .3, 1) infinite; backface-visibility: hidden; }
+.coin-reverse { position: absolute; left: 28%; top: 27%; z-index: 2; width: 210px; height: 210px; margin: -105px 0 0 -105px; display: grid; place-content: center; justify-items: center; gap: .3rem; border-radius: 50%; pointer-events: none;
+  transform: perspective(900px) rotateY(-180deg); backface-visibility: hidden; animation: coin-flip-back 14s cubic-bezier(.55, 0, .3, 1) infinite;
+  background: radial-gradient(ellipse at 31% 18%, #ffffff2e 0%, #b7c7ca12 24%, transparent 43%), radial-gradient(circle at 50% 55%, #28dec526 0%, transparent 60%), linear-gradient(145deg, #29343a 0%, #111a1f 46%, #05080b 100%);
+  box-shadow: inset 2px 2px 4px #ffffff38, inset -10px -13px 30px #000b, inset 0 0 42px #32d9c015, 0 36px 65px #000a, 0 0 74px #45dcc51c, 0 0 0 1px #dce7e838, 0 0 0 9px #46d8c20a; }
+.coin-reverse::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; border: 1px solid #dbe8e824; box-shadow: inset 0 0 24px #46ddc512; }
+.coin-reverse-label { color: #83b6aa; font-size: 9px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; }
+.coin-reverse strong { color: var(--paper); font-size: 2.6rem; font-weight: 600; line-height: 1; letter-spacing: -.05em; font-variant-numeric: tabular-nums; text-shadow: 0 0 26px rgba(79, 215, 203, .45); }
+.coin-reverse-skeleton { width: 6.5rem; height: 2.4rem; border-radius: .5rem; background: linear-gradient(90deg, rgba(238, 248, 246, .05), rgba(238, 248, 246, .14), rgba(238, 248, 246, .05)) 0 0 / 200% 100%; animation: coin-reverse-shimmer 1.6s linear infinite; }
+.coin-reverse-sub { display: inline-flex; align-items: center; gap: .35rem; color: var(--dim); font-size: 9.5px; letter-spacing: .06em; }
+.coin-reverse-sub i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: coin-reverse-pulse 2.4s ease-in-out infinite; }
+@media (max-width: 639px) { .coin-reverse { width: 170px; height: 170px; margin: -85px 0 0 -85px; } .coin-reverse strong { font-size: 2.2rem; } }

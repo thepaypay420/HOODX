@@ -7,8 +7,9 @@ const fmt = (usd: number) => usd < 100_000
   ? "$" + Math.round(usd).toLocaleString("en-US")
   : "$" + Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(usd);
 
-/** Total value in HOODX vaults, at the center of the home orbit. One cached request (the CDN serves it for two minutes),
- *  a gentle count-up the first time, and a quiet refresh every two minutes while the tab is visible. */
+/** Total value in HOODX vaults, on the reverse of the home orbit's coin: the coin turns over every few seconds to show
+ *  what it holds. One cached request (the CDN serves it for two minutes), a gentle count-up the first time, and a quiet
+ *  refresh every two minutes while the tab is visible. */
 export function OrbitValue() {
   const [usd, setUsd] = useState<number | null>(null);
   const [shown, setShown] = useState(0);
@@ -39,10 +40,10 @@ export function OrbitValue() {
   }, [usd]);
 
   return (
-    <div className="orbit-value" aria-live="polite">
-      <span className="orbit-value-label">Total value</span>
-      {usd === null ? <span className="orbit-value-skeleton" aria-label="Loading" /> : <strong>{fmt(shown)}</strong>}
-      <span className="orbit-value-sub"><i aria-hidden />Live on-chain</span>
+    <div className="coin-reverse" aria-live="polite">
+      <span className="coin-reverse-label">Total value</span>
+      {usd === null ? <span className="coin-reverse-skeleton" aria-label="Loading" /> : <strong>{fmt(shown)}</strong>}
+      <span className="coin-reverse-sub"><i aria-hidden />Live on-chain</span>
     </div>
   );
 }
