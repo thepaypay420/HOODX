@@ -2201,3 +2201,30 @@ body {
 [data-rk] ::-webkit-scrollbar { width: 6px; }
 [data-rk] ::-webkit-scrollbar-track { background: transparent; }
 [data-rk] ::-webkit-scrollbar-thumb { background: rgba(238, 248, 246, 0.14); border-radius: 6px; }
+
+/* "Add ETH on Robinhood Chain": one glass line under the header while a connected wallet is empty */
+@keyframes fund-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.fund-notice { padding-top: 10px; padding-bottom: 10px; animation: fund-in 420ms cubic-bezier(.2,.8,.2,1) both; }
+.fund-notice-inner { display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 16px; border: 1px solid rgba(31, 212, 198, 0.18); border-radius: 18px;
+  background: linear-gradient(120deg, rgba(31, 212, 198, 0.08), rgba(16, 24, 26, 0.7) 55%); backdrop-filter: blur(14px); }
+.fund-notice-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+.fund-notice p { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; margin: 0; font-size: 13.5px; }
+.fund-notice p strong { font-weight: 600; color: var(--paper); }
+.fund-notice p span { color: var(--dim); }
+.fund-notice nav { display: flex; gap: 6px; margin-left: auto; flex: none; }
+.fund-notice nav a { display: inline-flex; align-items: baseline; gap: 6px; min-height: 36px; align-items: center; padding: 0 13px; border-radius: 999px;
+  background: rgba(31, 212, 198, 0.12); color: var(--paper); font-size: 13px; font-weight: 600; transition: background 160ms ease; }
+.fund-notice nav a:hover { background: rgba(31, 212, 198, 0.22); }
+.fund-notice nav a small { color: var(--dim); font-size: 11px; font-weight: 500; }
+.fund-notice nav a.is-quiet { background: transparent; border: 1px solid var(--line); }
+.fund-notice button { width: 32px; height: 32px; flex: none; border-radius: 50%; color: var(--dim); font-size: 18px; line-height: 1; }
+.fund-notice button:hover { color: var(--paper); background: rgba(238, 248, 246, 0.05); }
+@media (max-width: 760px) {
+  .fund-notice-inner { flex-wrap: wrap; gap: 10px; padding: 12px 8px 12px 14px; }
+  .fund-notice p { flex: 1; flex-direction: column; gap: 2px; }
+  .fund-notice nav { order: 3; width: 100%; margin-left: 0; }
+  .fund-notice nav a { flex: 1; justify-content: center; }
+  .fund-notice nav a small { display: none; }
+}
+.fund-notice .fund-short { display: none; }
+@media (max-width: 760px) { .fund-notice .fund-long { display: none; } .fund-notice .fund-short { display: inline; } }

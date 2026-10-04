@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BrandMark } from "@/components/BrandMark";
+import { FundNotice } from "@/components/FundNotice";
 import { Socials } from "@/components/Socials";
 import { GEN0_SLUG } from "@/lib/curators";
 import { shortAddr } from "@/lib/format";
@@ -134,6 +135,8 @@ export function Hud({ landing = false }: { landing?: boolean }) {
           <Socials />
         </div>
       )}
+
+      <FundNotice wide={landing} />
 
       {hint && (
         <p className={`mx-auto px-4 pb-3 text-[12px] text-[var(--gold)] sm:px-6 ${landing ? "max-w-6xl" : "max-w-5xl"}`}>
