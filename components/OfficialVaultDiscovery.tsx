@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { AssetChips } from "@/components/AssetChips";
 import { AutoLpCard } from "@/components/AutoLpCard";
 import { BoostCard } from "@/components/BoostCard";
@@ -36,72 +36,126 @@ async function proportionalReturn(slug: string): Promise<number | undefined> {
   return bps === undefined ? undefined : Number(bps) / 100;
 }
 
-type Filter = "all" | "mine" | "automated" | VaultCategory;
-const FILTERS: { label: string; value: Filter }[] = [
-  { label: "All", value: "all" }, { label: "Automated", value: "automated" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
+type Category = "all" | VaultCategory;
+const CATEGORIES: { label: string; value: Category }[] = [
+  { label: "All", value: "all" }, { label: "Technology", value: "technology" }, { label: "Markets", value: "markets" }, { label: "Culture", value: "culture" }, { label: "Defensive", value: "defensive" },
 ];
 const styleFor = (vault: VaultMeta) => ({ "--vault-accent": vault.accent }) as CSSProperties;
+const hrefFor = (vault: VaultMeta) => vault.status === "pilot" ? `/${vault.slug}` : `/i/${vault.slug}`;
+const pct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 
-function ThemeMark({ vault }: { vault: VaultMeta }) { return <span className="discovery-mark" style={styleFor(vault)} aria-hidden>{vault.mark}</span>; }
-function Model({ vault, liveReturn }: { vault: VaultMeta; liveReturn?: number }) {
-  if(vault.status === "pilot") return <span className="discovery-status is-pilot"><i /> Pilot</span>;
-  const sinceLaunch=vault.slug === "696x";
-  const value=sinceLaunch?liveReturn:vault.model7dUsd;
-  if(value===undefined)return <span className="discovery-status is-live"><i /> Live</span>;
-  return <div className="discovery-model"><strong className={value >= 0 ? "is-up" : "is-down"}>{value >= 0 ? "+" : ""}{value.toFixed(2)}%</strong><span>{sinceLaunch?'Since launch':'7D · USD'}</span></div>;
+/** A vault's since-launch return from the shared 60-second valuation, once it has holders. */
+async function navReturn(vault: Address): Promise<number | undefined> {
+  const nav = await fetch(`/api/vault-nav?vault=${vault}`).then(r => r.ok ? r.json() as Promise<{ supply: string; assetsWei: string }> : undefined).catch(() => undefined);
+  if (!nav) return undefined;
+  const bps = launchReturnBps(BigInt(nav.assetsWei), BigInt(nav.supply));
+  return bps === undefined ? undefined : Number(bps) / 100;
 }
-function Card({ vault, featured = false, liveReturn }: { vault: VaultMeta; featured?: boolean; liveReturn?: number }) {
-  const href = vault.status === "pilot" ? `/${vault.slug}` : vault.status === "live" ? `/i/${vault.slug}` : `/explore#${vault.slug}`;
-  return <Link id={vault.slug} href={href} className={`discovery-card ${featured ? "is-featured" : ""}`} style={styleFor(vault)}>
-    <div className="discovery-card-top">{vault.image ? <TokenArt slug={vault.slug} src={vault.image} size={featured ? "md" : "sm"} /> : <ThemeMark vault={vault} />}<Model vault={vault} liveReturn={liveReturn} /></div>
-    <div className="discovery-card-copy"><p>{vault.flair}</p><h3>{vault.name}</h3><span>{vault.thesis}</span></div>
-    <div className="discovery-card-foot"><AssetChips assets={vault.assets} /><span>{vault.status === "validated" ? `${vault.assets.length} assets · smart cap` : vault.status === "pilot" ? `${vault.assets.length} LP sleeves` : `${vault.assets.length} assets`} <i aria-hidden>→</i></span></div>
+
+/** One line per vault: what it is, what it holds, and a return only where real money has a real track record. */
+type Sim = { pct: number; since: number };
+const day = (t: number) => new Date(t * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+
+function VaultRow({ vault, liveReturn, sim }: { vault: VaultMeta; liveReturn?: number; sim?: Sim }) {
+  return <Link id={vault.slug} href={hrefFor(vault)} className="ex-row" style={styleFor(vault)}>
+    <TokenArt slug={vault.slug} src={vault.image} size="sm" />
+    <span className="ex-row-name"><b>{vault.name}</b><small><em>${vault.symbol}</em> · {vault.flair}</small></span>
+    <span className="ex-row-thesis">{vault.thesis}</span>
+    <span className="ex-row-assets"><AssetChips assets={vault.assets} max={5} /></span>
+    <span className="ex-row-metric">
+      {vault.status === "pilot" ? <i className="ex-tag is-pilot">Pilot</i>
+        : liveReturn !== undefined ? <><strong className={liveReturn >= 0 ? "is-up" : "is-down"}>{pct(liveReturn)}</strong><small>Since launch</small></>
+        : sim ? <span title={`What this basket would have returned since launch (${day(sim.since)}), from its on-chain weights and cash sleeve, in USD, before fees and swap costs.`}>
+            <strong className={sim.pct >= 0 ? "is-up" : "is-down"}>{pct(sim.pct)}</strong><small>If funded<span className="ex-since"> · since {day(sim.since)}</span></small></span>
+        : <i className="ex-tag">New</i>}
+    </span>
+    <span className="ex-row-go" aria-hidden>→</span>
   </Link>;
 }
-function CreateCard() {
-  return <Link href="/create" className="discovery-card is-create" style={{"--vault-accent":"#4fd7cb"} as CSSProperties}>
-    <div className="discovery-card-top"><span className="discovery-create-mark"><BrandMark size={48}/></span><span className="discovery-create-note">Your idea</span></div>
-    <div className="discovery-card-copy"><p>Create · Curate</p><h3>Make your own index</h3><span>Choose 2–24 assets, set your weights and launch one token for your thesis.</span></div>
-    <div className="discovery-card-foot"><span className="discovery-create-caption">Built on Robinhood Chain</span><span>Start building <i aria-hidden>→</i></span></div>
-  </Link>;
+
+function Group({ label, count, note, side, children }: { label: string; count: number; note: string; side?: ReactNode; children: ReactNode }) {
+  return <section className="ex-group">
+    <header className="ex-group-head">
+      <div><h3>{label}<span>{count}</span></h3><p>{note}</p></div>
+      {side}
+    </header>
+    {children}
+  </section>;
 }
 
 export function OfficialVaultDiscovery() {
-  const [filter, setFilter] = useState<Filter>("all");
-  // "My Vaults" appears beside "All" once a connected wallet is found to hold any HOODX vault token
+  const [view, setView] = useState<"all" | "mine">("all");
+  const [category, setCategory] = useState<Category>("all");
+  // "My Vaults" appears once a connected wallet is found to hold any HOODX vault token
   const { address } = useWallet();
   const mine = useMyVaults(address);
   const { stats } = useAutoLpStats(120_000);
   const myList = useMemo(() => holdings(mine.data, stats), [mine.data, stats]);
   const hasMine = !!address && myList.length > 0;
-  useEffect(() => { if (filter === "mine" && !hasMine) setFilter("all"); }, [filter, hasMine]);
-  const [liveReturns,setLiveReturns]=useState<Record<string,number>>({});
-  useEffect(()=>{let active=true;
-    void proportionalReturn('696x').then(value=>{if(active&&value!==undefined)setLiveReturns(old=>({...old,'696x':value}));}).catch(()=>{});
-    void Promise.all(Object.entries(verifiedV2Vaults).filter(([slug])=>slug!=='696x'/* 696X moved to a proportional vault, valued above */).map(async([slug,vault])=>{
-    const supply=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalSupply'});
-    let assets=await publicClient.readContract({address:vault,abi:v2VaultAbi,functionName:'totalAssets'}).catch(()=>undefined);
-    if(assets===undefined){const response=await fetch(`/api/vault-quote?vault=${vault}`);if(response.ok)assets=BigInt((await response.json()).assets);}
-    const bps=assets===undefined?undefined:launchReturnBps(assets,supply);
-    return [slug,bps===undefined?undefined:Number(bps)/100] as const;
-  })).then(rows=>{if(active)setLiveReturns(old=>({...old,...Object.fromEntries(rows.filter((row):row is readonly[string,number]=>row[1]!==undefined))}));}).catch(()=>{});return()=>{active=false;};},[]);
-  const lead = FEATURED_VAULTS.find((vault) => vault.slug === "chainfin")!;
-  const visible = useMemo(() => FEATURED_VAULTS.filter((vault) => vault.slug !== lead.slug && (filter === "all" || vault.category === filter)), [filter, lead.slug]);
-  const showAuto = filter === "all" || filter === "automated";
-  const showLead = filter === "all" || lead.category === filter;
-  return <section className="discovery-shell" data-testid="official-vault-discovery">
-    <div className="discovery-heading"><div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a strategy.</h2></div><p>Curated themes. On-chain holdings. One token.</p></div>
-    <div className="discovery-filters" role="group" aria-label="Filter collections">{FILTERS.flatMap((item) => {
-      const chip = <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}>{item.label}</button>;
-      return item.value === "all" && hasMine ? [chip, <button key="mine" type="button" className="mv-chip" aria-pressed={filter === "mine"} onClick={() => setFilter("mine")}>My Vaults<span>{myList.length}</span></button>] : [chip];
-    })}</div>
-    {filter === "mine" && hasMine && <MyVaults list={myList} loading={mine.loading} updatedAt={mine.data?.updatedAt} onRefresh={mine.refresh} ethUsd={stats?.ethUsd} />}
-    {filter !== "mine" && (showAuto || showLead) && <div className="discovery-leads">
-      {showAuto && <AutoLpCard />}
-      {showAuto && <BoostCard />}
-      {showLead && <Card vault={lead} featured liveReturn={liveReturns[lead.slug]} />}
-    </div>}
-    {filter !== "mine" && <div className="discovery-grid">{visible.map((vault) => <Card key={vault.slug} vault={vault} liveReturn={liveReturns[vault.slug]} />)}{filter === "all"&&<CreateCard/>}</div>}
-    {filter !== "mine" && <p className="discovery-footnote">FAANGX and the new collections show their prior 7D smart-weight performance in USD terms.</p>}
+  useEffect(() => { if (view === "mine" && !hasMine) setView("all"); }, [view, hasMine]);
+
+  // Live since-launch returns: 696X is valued from live quotes; every other vault from the shared valuation, once it has holders.
+  const [returns, setReturns] = useState<Record<string, number>>({});
+  // collections without holders yet: what their basket would have returned since launch
+  const [sims, setSims] = useState<Record<string, Sim>>({});
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/collection-returns").then(r => r.ok ? r.json() as Promise<Record<string, Sim>> : undefined).then(d => { if (active && d && !("error" in d)) setSims(d); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    let active = true;
+    const put = (slug: string, value?: number) => { if (active && value !== undefined) setReturns(old => ({ ...old, [slug]: value })); };
+    void proportionalReturn("696x").then(v => put("696x", v)).catch(() => {});
+    const addresses: [string, Address][] = [
+      ...FEATURED_VAULTS.flatMap((v): [string, Address][] => v.slug !== "696x" && v.status !== "pilot" && v.address ? [[v.slug, v.address]] : []),
+      ...Object.entries(verifiedV2Vaults).filter(([slug]) => slug !== "696x" && !FEATURED_VAULTS.find(v => v.slug === slug)?.address),
+    ];
+    for (const [slug, vault] of addresses) void navReturn(vault).then(v => put(slug, v)).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const collections = useMemo(() => {
+    const list = FEATURED_VAULTS.filter(v => v.status !== "pilot");
+    // vaults with a live record first, then the editorial order
+    return [...list].sort((a, b) => Number(returns[b.slug] !== undefined) - Number(returns[a.slug] !== undefined));
+  }, [returns]);
+  const pilots = FEATURED_VAULTS.filter(v => v.status === "pilot");
+  const shown = collections.filter(v => category === "all" || v.category === category);
+  const countOf = (c: Category) => c === "all" ? collections.length : collections.filter(v => v.category === c).length;
+
+  return <section className="discovery-shell ex" data-testid="official-vault-discovery">
+    <div className="discovery-heading">
+      <div><p className="landing-eyebrow">HOODX collections</p><h2>Choose a strategy.</h2></div>
+      {hasMine
+        ? <div className="ex-view" role="tablist" aria-label="View">
+            <button type="button" role="tab" aria-selected={view === "all"} onClick={() => setView("all")}>All vaults</button>
+            <button type="button" role="tab" aria-selected={view === "mine"} onClick={() => setView("mine")}>My Vaults<span>{myList.length}</span></button>
+          </div>
+        : <p>Curated themes. On-chain holdings. One token.</p>}
+    </div>
+
+    {view === "mine" && hasMine ? <MyVaults list={myList} loading={mine.loading} updatedAt={mine.data?.updatedAt} onRefresh={mine.refresh} ethUsd={stats?.ethUsd} /> : <>
+      <Group label="Automated" count={2} note="Deposit ETH once. The rules run on-chain, around the clock.">
+        <div className="discovery-leads"><AutoLpCard /><BoostCard /></div>
+      </Group>
+
+      <Group label="Index collections" count={collections.length} note="One token for a whole theme, with a WETH cash sleeve."
+        side={<div className="discovery-filters ex-filters" role="group" aria-label="Filter collections">{CATEGORIES.map(c =>
+          <button key={c.value} type="button" aria-pressed={category === c.value} onClick={() => setCategory(c.value)}>{c.label}<span>{countOf(c.value)}</span></button>)}</div>}>
+        <div className="ex-list">{shown.map(v => <VaultRow key={v.slug} vault={v} liveReturn={returns[v.slug]} sim={sims[v.slug]} />)}</div>
+      </Group>
+
+      <Group label="Liquidity pilots" count={pilots.length} note="Managed liquidity strategies, running small while they prove out.">
+        <div className="ex-list">{pilots.map(v => <VaultRow key={v.slug} vault={v} />)}</div>
+      </Group>
+
+      <Link href="/create" className="ex-create">
+        <span className="ex-create-mark"><BrandMark size={30} /></span>
+        <span className="ex-create-copy"><b>Have a thesis?</b><small>Choose 2–24 assets, set the weights and launch one token for it.</small></span>
+        <span className="ex-create-go">Make your own <i aria-hidden>→</i></span>
+      </Link>
+      <p className="discovery-footnote">Since launch: per-share value on-chain for vaults with holders. If funded: what a collection without holders yet would have returned since launch, from its on-chain weights and WETH cash sleeve, in USD, before fees and swap costs. Past returns do not predict future ones.</p>
+    </>}
   </section>;
 }
