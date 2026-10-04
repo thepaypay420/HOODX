@@ -1,0 +1,25 @@
+{
+ "vault": "0x5e0135C3592095592C4B43d84c817c26A0F43515",
+ "signal": "0x53569D741Abd674dA942D0Af660684953193b232",
+ "deployBlock": 79671870,
+ "signalBlock": 79671848,
+ "deployedAt": "2026-10-04T05:00Z",
+ "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+ "curatorAndFeeRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+ "reviewedBuild": "3e01f6f291cafb607e6773c7db5bbe4aa9e958df",
+ "seedEth": "0.075",
+ "initialShares": "201861557000000000000",
+ "transactions": {
+  "deploySignal": "0x999ac8ed4c59badcdab10849ea807c701f24b4f2dc2736cec14868976c54ffa0",
+  "deployVault": "0x34cb00c9381adb90f03137ca2c784b85e838b0746a1d52d9203c98ba29b50be9",
+  "bootstrap": "0x77b9894eb4327d96987cdc9b349d3be761446a4918d7293696263de907743546",
+  "transferOwnership": "0x639b07b4ec6f309b51af88415ab10038f151143930e876b787f7da514eb6a31e"
+ },
+ "signalSeed": {
+  "lastHourUtc": "2026-10-04T04:00:00+00:00",
+  "target": 1.875,
+  "ethFlags": 239,
+  "btcFlags": 255
+ },
+ "ownership": "pending: treasury must call acceptOwnership()"
+}

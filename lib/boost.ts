@@ -2,16 +2,16 @@ import { parseAbi, type Address } from "viem";
 
 const envAddr = (v: string | undefined) => (v && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as Address) : null);
 
-/** HOODX Boosted ETH (HoodxBoostVaultV1 + HoodxBoostSignalV1). Set the addresses once deployed and verified
- *  (deployments/boost-eth-v1-live.json); until then the page shows the strategy and "launching soon". */
+/** HOODX Boosted ETH (HoodxBoostVaultV1 + HoodxBoostSignalV1), live since 2026-10-04 (deployments/boost-eth-v1-live.json).
+ *  The env variables only override the deployed addresses (e.g. for a local fork rehearsal). */
 export const BOOST = {
   slug: "boost",
   name: "Boosted ETH",
   symbol: "BOOSTX",
-  vault: envAddr(process.env.NEXT_PUBLIC_BOOST_VAULT),
-  signal: envAddr(process.env.NEXT_PUBLIC_BOOST_SIGNAL),
+  vault: envAddr(process.env.NEXT_PUBLIC_BOOST_VAULT) ?? ("0x5e0135C3592095592C4B43d84c817c26A0F43515" as Address),
+  signal: envAddr(process.env.NEXT_PUBLIC_BOOST_SIGNAL) ?? ("0x53569D741Abd674dA942D0Af660684953193b232" as Address),
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
-  deployBlock: BigInt(process.env.NEXT_PUBLIC_BOOST_DEPLOY_BLOCK ?? "0"),
+  deployBlock: BigInt(process.env.NEXT_PUBLIC_BOOST_DEPLOY_BLOCK ?? "79671870"),
   capUsd: 1_000_000,
   minDepositEth: 0.005,
   maxLeverage: 2,
@@ -31,6 +31,9 @@ export const boostVaultAbi = parseAbi([
   "function rebalance() returns (uint256 leverageAfter)",
   "function crystalliseFees() returns (uint256 feeShares)",
   "function setDepositsPaused(bool paused)",
+  "function acceptOwnership()",
+  "function owner() view returns (address)",
+  "function pendingOwner() view returns (address)",
   "function balanceOf(address) view returns (uint256)",
   "function totalSupply() view returns (uint256)",
   "function navPerShare() view returns (uint256)",

@@ -61,6 +61,7 @@ export function BoostExperience() {
   const [mine, setMine] = useState<{ shares: bigint; valueWei: bigint | null; ethBal: bigint; deposited: bigint; withdrawn: bigint }>(
     { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO });
   const isCurator = !!address && address.toLowerCase() === BOOST.curator.toLowerCase();
+  const [pendingOwner, setPendingOwner] = useState<string>("");
   const heroRef = useReveal<HTMLDivElement>(), sigRef = useReveal<HTMLDivElement>(), howRef = useReveal<HTMLDivElement>(),
     recRef = useReveal<HTMLDivElement>(), chainRef = useReveal<HTMLDivElement>();
 
@@ -81,6 +82,11 @@ export function BoostExperience() {
     setMine({ shares, valueWei, ethBal, deposited: dep, withdrawn: wd });
   }, [address, live, vault]);
   useEffect(() => { void loadMine().catch(() => {}); }, [loadMine]);
+  useEffect(() => {
+    if (!isCurator || !live) return;
+    void publicClient.readContract({ address: vault, abi: boostVaultAbi, functionName: "pendingOwner" }).then(setPendingOwner).catch(() => {});
+  }, [isCurator, live, vault, msg]);
+  const mustAccept = !!address && pendingOwner.toLowerCase() === address.toLowerCase();
 
   const ready = async () => {
     if (!address || !walletClient) { await connect(); return false; }
@@ -138,6 +144,10 @@ export function BoostExperience() {
     try { await publicClient.simulateContract({ account: address, address: signal, abi: boostSignalAbi, functionName: "poke" }); await send("Update signal", () => walletClient.writeContract({ account: address, address: signal, abi: boostSignalAbi, functionName: "poke", chain: robinhood })); } catch { /* already this hour */ }
     try { await publicClient.simulateContract({ account: address, address: vault, abi: boostVaultAbi, functionName: "rebalance" }); await send("Rebalance", () => walletClient.writeContract({ account: address, address: vault, abi: boostVaultAbi, functionName: "rebalance", chain: robinhood })); }
     catch (e) { setMsg(`Rebalance not needed now (${errName(e) || "inside the band"}).`); }
+  };
+  const accept = async () => {
+    if (!(await ready()) || !address || !walletClient) return;
+    await send("Accept ownership", () => walletClient.writeContract({ account: address, address: vault, abi: boostVaultAbi, functionName: "acceptOwnership", chain: robinhood }));
   };
   const togglePause = async () => {
     if (!(await ready()) || !address || !walletClient || !stats) return;
@@ -296,7 +306,9 @@ export function BoostExperience() {
     {isCurator && live && <section className="ap-curator">
       <h3>Curator panel</h3>
       <p className="ap-fine">The keeper pokes the signal and rebalances automatically. These controls are for oversight. The curator cannot move funds or change rules.</p>
+      {mustAccept && <p className="ap-msg">The deployer has handed this vault to the treasury. Accept ownership to complete the launch.</p>}
       <div className="ap-chips">
+        {mustAccept && <button disabled={busy} onClick={accept}>Accept vault ownership</button>}
         <button disabled={busy} onClick={crank}>Update signal and rebalance now</button>
         <button disabled={busy} onClick={togglePause}>{stats?.depositsPaused ? "Resume deposits" : "Pause deposits"}</button>
       </div>

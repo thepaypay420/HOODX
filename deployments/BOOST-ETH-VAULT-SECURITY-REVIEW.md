@@ -110,3 +110,12 @@ an emergency cut anyone can trigger, and a dead-man switch for a silent signal.
   illiquid dollar vault, price shocks with a stale signal, dead-man switch, the real seeded signal driving a vault).
 - Runtime sizes: vault 22.3 KB, signal 4.7 KB (EIP-170 limit 24 KB).
 - Nothing was signed or broadcast during this review.
+
+## Deployment (2026-10-04)
+
+Deployed from the reviewed build `3e01f6f` by the HOODX deployer (`deployments/boost-eth-v1-live.json`):
+- Signal `0x53569D741Abd674dA942D0Af660684953193b232` (block 79,671,848), seeded with `deployments/boost-eth-seed.json`
+  (all 16 EMAs, flags and last price confirmed equal on-chain).
+- Vault `0x5e0135C3592095592C4B43d84c817c26A0F43515` (block 79,671,870), bootstrapped with 0.075 ETH (201.86 shares to the
+  treasury, dead shares locked), ownership transferred to the treasury pending `acceptOwnership()`.
+- A dry run of the same script against live state preceded the broadcast. Total deployment gas ≈ 6.9M (≈ 0.00014 ETH).
