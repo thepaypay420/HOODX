@@ -55,7 +55,9 @@ contract SelfHealingLiveForkV2Test is Test {
         _rehearse(VAULT_FAANGX, CONTROLLER_FAANGX, historical, keccak256("SELF_HEALING_FAANGX_FORK_REHEARSAL"));
     }
 
-    function _rehearse(address vaultAddress, address controller, bytes32[] memory historical, bytes32 evidence) private {
+    function _rehearse(address vaultAddress, address controller, bytes32[] memory historical, bytes32 evidence)
+        private
+    {
         HoodxIndexV2 vault = HoodxIndexV2(payable(vaultAddress));
         HoodxPolicyV2 policy = HoodxPolicyV2(address(vault.policy()));
         HoodxSelfHealingControllerV2 healer = HoodxSelfHealingControllerV2(controller);
@@ -66,8 +68,12 @@ contract SelfHealingLiveForkV2Test is Test {
         assertEq(policy.owner(), CURATOR);
 
         address[] memory tokens = vault.constituents();
-        for (uint256 i; i < tokens.length; ++i) assertTrue(healer.recoveryApproved(vault.configId(tokens[i])));
-        for (uint256 i; i < historical.length; ++i) assertTrue(healer.recoveryApproved(historical[i]));
+        for (uint256 i; i < tokens.length; ++i) {
+            assertTrue(healer.recoveryApproved(vault.configId(tokens[i])));
+        }
+        for (uint256 i; i < historical.length; ++i) {
+            assertTrue(healer.recoveryApproved(historical[i]));
+        }
 
         address token = tokens[0];
         bytes32 oldId = vault.configId(token);

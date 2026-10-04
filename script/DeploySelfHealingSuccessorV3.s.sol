@@ -28,14 +28,16 @@ contract DeploySelfHealingSuccessorV3 is Script {
 
     function run() external returns (address policyAddress, address implementationAddress, address factoryAddress) {
         require(block.chainid == 4663, "wrong chain");
-        require(REGISTRY.code.length != 0 && ROUTING.code.length != 0 && FEE_MODEL.code.length != 0, "missing reviewed dependencies");
+        require(
+            REGISTRY.code.length != 0 && ROUTING.code.length != 0 && FEE_MODEL.code.length != 0,
+            "missing reviewed dependencies"
+        );
 
         bool live = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
         if (live) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
             require(
-                keccak256(bytes(vm.envOr("HOODX_DEPLOY_STAGE", string(""))))
-                    == keccak256("self-healing-successor-v3"),
+                keccak256(bytes(vm.envOr("HOODX_DEPLOY_STAGE", string("")))) == keccak256("self-healing-successor-v3"),
                 "wrong deployment stage"
             );
             require(vm.envBytes32("HOODX_REVIEWED_BUILD") == buildFingerprint(), "reviewed build mismatch");
@@ -82,8 +84,8 @@ contract DeploySelfHealingSuccessorV3 is Script {
         }
         (bytes32 proposedHash, bytes32 evidence, uint256 readyAt) = registry.proposals(hook);
         require(
-            proposedHash == expectedHash && hook.codehash == expectedHash && evidence == HOOK_EVIDENCE
-                && readyAt != 0 && block.timestamp >= readyAt,
+            proposedHash == expectedHash && hook.codehash == expectedHash && evidence == HOOK_EVIDENCE && readyAt != 0
+                && block.timestamp >= readyAt,
             "hook review incomplete"
         );
         registry.activate(hook);

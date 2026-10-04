@@ -53,9 +53,8 @@ contract AiExitRepairForkV2Test is Test {
 
         vm.startPrank(VAULT);
         IERC20(AI).forceApprove(EXECUTOR, amount);
-        uint256 received = IV2Executor(EXECUTOR).execute(
-            AI, WETH, amount, floor, abi.encode(route), block.timestamp + 300
-        );
+        uint256 received =
+            IV2Executor(EXECUTOR).execute(AI, WETH, amount, floor, abi.encode(route), block.timestamp + 300);
         vm.stopPrank();
 
         console2.log("AI amount", amount);
@@ -78,9 +77,10 @@ contract AiExitRepairForkV2Test is Test {
         sell[0].fee = 3000;
 
         vm.startPrank(CURATOR);
-        bytes32 id = IAiRepairPolicy(POLICY).approveConfig(
-            AI, ORACLE, abi.encode(buy), abi.encode(sell), keccak256("696X AI 0.3% direct route repair 2026-09-25")
-        );
+        bytes32 id = IAiRepairPolicy(POLICY)
+            .approveConfig(
+                AI, ORACLE, abi.encode(buy), abi.encode(sell), keccak256("696X AI 0.3% direct route repair 2026-09-25")
+            );
         IAiRepairController(CONTROLLER).replaceConfig(id);
 
         uint256 shares = IAiRepairVault(VAULT).balanceOf(CURATOR);
