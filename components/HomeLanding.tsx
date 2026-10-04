@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { HomeFeatured } from "@/components/HomeFeatured";
+import { OrbitValue } from "@/components/OrbitValue";
 import { LandingMotion } from "@/components/LandingMotion";
 import { LlmConnectButton, LlmConnectMobileCard } from "@/components/LlmConnect";
 import { OrbitPlanets } from "@/components/SolarSystemOrbit";
@@ -9,10 +10,10 @@ import { OrbitPlanets } from "@/components/SolarSystemOrbit";
 const FLOAT_TOKENS = [
   { label: "BOOSTX", x: "56%", y: "8%", delay: "0.8s" },
   { label: "FAANGX", right: "4%", y: "20%", delay: "1.1s" },
-  { label: "AIX", x: "58%", y: "36%", delay: "1.4s" },
+  { label: "AIX", x: "60%", y: "31%", delay: "1.4s" },
   { label: "ETH", x: "4%", y: "52%", delay: "0.4s" },
   { label: "CHIPX", right: "2%", y: "50%", delay: "1.6s" },
-  { label: "696X", x: "62%", y: "62%", delay: "1s" },
+  { label: "696X", x: "16%", y: "76%", delay: "1s" },
 ];
 
 const VALUE_PROPS = [
@@ -92,6 +93,7 @@ export function HomeLanding() {
                 {t.label}
               </div>
             ))}
+            <OrbitValue />
             <div className="landing-coin">
               <div className="landing-coin-rim" aria-hidden /><div className="studio-coin-light" aria-hidden />
               <BrandMark size={112} priority className="landing-coin-mark" />
