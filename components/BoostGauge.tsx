@@ -16,16 +16,18 @@ export function BoostGauge({ leverage, target, live }: { leverage?: number; targ
   const [tx1, ty1] = pt(angle(target ?? 0), R + 10), [tx2, ty2] = pt(angle(target ?? 0), R - 10);
   const r = regime(shown ?? 0);
   return <figure className={`bx-gauge is-${r.key}`} aria-label={`Leverage ${shown?.toFixed(2) ?? "unknown"}x, ${r.label}`}>
-    <svg viewBox="0 0 280 200" role="img">
+    <svg viewBox="0 -8 280 208" role="img">
       <defs>
         <linearGradient id="bx-arc" x1="0" x2="1">
           <stop offset="0" stopColor="#4fd7cb" /><stop offset=".5" stopColor="#b98cff" /><stop offset="1" stopColor="#ff9a3c" />
         </linearGradient>
-        <filter id="bx-glow"><feGaussianBlur stdDeviation="4" /></filter>
+        {/* a region wide enough for the blur: the default (bounding box + 10%) clipped the top of the arc */}
+        <filter id="bx-glow" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="5" /></filter>
       </defs>
       <path d={arc(0, 2)} className="bx-gauge-track" />
       <path d={arc(0, 2)} className="bx-gauge-arc" stroke="url(#bx-arc)" />
-      <path d={arc(0, Math.max(0.001, shown ?? 0))} className="bx-gauge-fill" stroke="url(#bx-arc)" filter="url(#bx-glow)" />
+      <path d={arc(0, Math.max(0.001, shown ?? 0))} className="bx-gauge-glow" stroke="url(#bx-arc)" filter="url(#bx-glow)" />
+      <path d={arc(0, Math.max(0.001, shown ?? 0))} className="bx-gauge-fill" stroke="url(#bx-arc)" />
       {[0, 0.5, 1, 1.5, 2].map((x) => { const [a, b] = pt(angle(x), R + 16); return <text key={x} x={a} y={b} className="bx-gauge-label">{x}x</text>; })}
       {target !== undefined && <line x1={tx1} y1={ty1} x2={tx2} y2={ty2} className="bx-gauge-target" />}
       <line x1={C} y1={C} x2={nx} y2={ny} className="bx-gauge-needle" />

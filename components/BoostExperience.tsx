@@ -7,7 +7,7 @@ import { robinhood } from "@/lib/chain";
 import { EXPLORER } from "@/lib/config";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { walletPnl } from "@/lib/autolpNav";
-import { BOOST, BOOST_BACKTEST, TREND_SPANS, boostSignalAbi, boostVaultAbi, deadline, minOut, regime } from "@/lib/boost";
+import { BOOST, BOOST_BACKTEST, boostSignalAbi, boostVaultAbi, deadline, minOut, regime } from "@/lib/boost";
 import { useBoostStats } from "@/lib/useBoost";
 import { fmtPct, fmtUsd, useCountUp, useReveal } from "@/lib/useAutoLp";
 import { BoostGauge } from "@/components/BoostGauge";
@@ -35,19 +35,6 @@ function Stat({ label, value, sub, tone }: { label: string; value: string; sub?:
   return <div className="ap-stat"><span>{label}</span><strong className={tone ? `is-${tone}` : ""}>{value}</strong>{sub && <small>{sub}</small>}</div>;
 }
 
-/** One asset's eight trend lights: four slow (the core) and four fast (the booster). */
-function Lights({ asset, flags }: { asset: string; flags?: number }) {
-  return <div className="bx-lights-row">
-    <b>{asset}</b>
-    <div className="bx-lights-group" aria-label={`${asset} core trend`}>
-      {[0, 1, 2, 3].map((i) => <span key={i} className={flags !== undefined && (flags >> i) & 1 ? "is-on" : ""} style={{ "--d": `${i * 70}ms` } as CSSProperties}><i />{TREND_SPANS[i]}</span>)}
-    </div>
-    <div className="bx-lights-group is-fast" aria-label={`${asset} booster trend`}>
-      {[4, 5, 6, 7].map((i) => <span key={i} className={flags !== undefined && (flags >> i) & 1 ? "is-on" : ""} style={{ "--d": `${i * 70}ms` } as CSSProperties}><i />{TREND_SPANS[i]}</span>)}
-    </div>
-  </div>;
-}
-
 export function BoostExperience() {
   const { address, chainId, walletClient, connect, switchToRobinhood } = useWallet();
   const { stats, failed } = useBoostStats();
@@ -62,7 +49,7 @@ export function BoostExperience() {
     { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO });
   const isCurator = !!address && address.toLowerCase() === BOOST.curator.toLowerCase();
   const [pendingOwner, setPendingOwner] = useState<string>("");
-  const heroRef = useReveal<HTMLDivElement>(), sigRef = useReveal<HTMLDivElement>(), howRef = useReveal<HTMLDivElement>(),
+  const heroRef = useReveal<HTMLDivElement>(), howRef = useReveal<HTMLDivElement>(),
     recRef = useReveal<HTMLDivElement>(), chainRef = useReveal<HTMLDivElement>();
 
   const loadMine = useCallback(async () => {
@@ -159,7 +146,11 @@ export function BoostExperience() {
   const maxEth = mine.ethBal > 400_000_000_000_000n ? mine.ethBal - 400_000_000_000_000n : ZERO;
   const estUsd = (() => { try { return stats && amount ? Number(formatEther(parseEther(amount))) * stats.ethUsd : undefined; } catch { return undefined; } })();
   const reg = regime(live ? stats?.leverage ?? 0 : stats?.target ?? 0);
-  const sigmaPct = stats ? stats.sigma * 100 : undefined;
+  const bits = (x: number) => x.toString(2).split("").filter((b) => b === "1").length;
+  const trendUp = stats ? bits(stats.ethFlags & 15) + bits(stats.btcFlags & 15) : undefined;   // slow averages: the core
+  const momentumUp = stats ? bits(stats.ethFlags >> 4) + bits(stats.btcFlags >> 4) : undefined; // fast averages: the booster
+  const volPct = stats ? stats.sigma * 100 : undefined;
+  const volWord = volPct === undefined ? "" : volPct < 60 ? "calm" : volPct < 90 ? "normal" : "high";
   const maxBar = Math.max(...BOOST_BACKTEST.years.map((r) => Math.max(Math.abs(r.vault), Math.abs(r.eth))));
   const bar = (x: number) => `${Math.max(2, (Math.sqrt(Math.abs(x)) / Math.sqrt(maxBar)) * 82)}%`; // leave room for the labels
 
@@ -194,22 +185,6 @@ export function BoostExperience() {
       <p className="ap-fresh">{failed ? "Live stats temporarily unavailable." : stats ? `Live on-chain data · signal ${stats.fresh ? "fresh" : "awaiting its hourly update"}` : "Loading live data…"}</p>
     </section>}
 
-    <section className="ap-board bx-signal" ref={sigRef}>
-      <div className="ap-sec-head"><div><p className="landing-eyebrow">The signal, live</p><h2>Sixteen lights decide.</h2></div>
-        <p>Each light is ETH or BTC above one of its moving averages. The four slow lights set how much ETH the vault holds; when most of them are on, the four fast lights add leverage, sized down when ETH is volatile.</p></div>
-      <div className="bx-lights">
-        <div className="bx-lights-head"><span /><span>Core · how much ETH</span><span>Booster · how much extra</span></div>
-        <Lights asset="ETH" flags={stats?.ethFlags} />
-        <Lights asset="BTC" flags={stats?.btcFlags} />
-      </div>
-      <div className="bx-meters">
-        <div className="bx-meter"><span>ETH volatility</span><b>{sigmaPct !== undefined ? `${sigmaPct.toFixed(0)}%` : "—"}</b>
-          <div className="bx-meter-track"><i style={{ width: `${Math.min(100, (sigmaPct ?? 0) / 1.5)}%` }} /></div><small>Higher volatility, smaller boost (full 2x needs volatility under 120%).</small></div>
-        <div className="bx-meter"><span>Target</span><b>{stats ? `${stats.target.toFixed(2)}x` : "—"}</b>
-          <div className="bx-meter-track is-target"><i style={{ width: `${((stats?.target ?? 0) / 2) * 100}%` }} /></div><small>{live ? "The vault moves toward this in hourly slices of up to $100k." : "Where the vault would sit if it launched today."}</small></div>
-      </div>
-    </section>
-
     {live && <section id="trade" className="ap-trade">
       <div className="ap-card ap-trade-card">
         <div className="ap-tabs" role="tablist">
@@ -243,14 +218,20 @@ export function BoostExperience() {
     </section>}
 
     <section id="how" className="ap-how bx-how" ref={howRef}>
-      <div className="ap-sec-head"><div><p className="landing-eyebrow">How it works</p><h2>Money legos, one token.</h2></div>
-        <p>Every piece already lives on Robinhood Chain. The vault only adds the rules.</p></div>
-      <ol className="ap-steps">
+      <div className="ap-sec-head"><div><p className="landing-eyebrow">How it works</p><h2>Rides the trend.<br />Steps aside.</h2></div>
+        <p>One rule, run on-chain every hour from Chainlink prices. Nobody decides; the contracts do.</p></div>
+      <div className="bx-now" aria-label="Why the vault is positioned this way right now">
+        <span className="bx-now-label">Right now</span>
+        <div><b>{trendUp ?? "—"}<small>/8</small></b><span>long-term trends up</span></div>
+        <div><b>{momentumUp ?? "—"}<small>/8</small></b><span>short-term trends up</span></div>
+        <div><b>{volPct !== undefined ? `${volPct.toFixed(0)}%` : "—"}</b><span>ETH volatility{volWord ? ` · ${volWord}` : ""}</span></div>
+        <div className={`is-result is-${reg.key}`}><b>{stats ? `${stats.target.toFixed(2)}x` : "—"}</b><span>{reg.label}</span></div>
+      </div>
+      <ol className="ap-steps bx-steps">
         {[
-          ["Read", "Each hour, anyone may poke the on-chain signal: it reads Chainlink ETH/USD and BTC/USD and updates 16 trend averages and ETH's volatility."],
-          ["Boost", "In strong, calm uptrends the vault borrows USDG on Morpho (Chainlink-priced, ~0% today vs ~14%/yr perp funding) and buys more ETH, up to 2x."],
-          ["Step aside", "When the trend breaks it sells ETH in the deep 0.01% Uniswap pool, repays the loan, and parks dollars in Robinhood Earn steakUSDG."],
-          ["Stay safe", "Trades are sliced to $100k an hour and bounded by the oracle. A hard 2x ceiling, an emergency cut anyone can trigger, and exits that never pause."],
+          ["Read", "Every hour the vault reads ETH and BTC prices and checks whether both are trending up, and how volatile ETH is."],
+          ["Position", "Strong, calm uptrend: up to 2x ETH, borrowed cheaply on Morpho. Trend breaks: it sells to dollars earning Robinhood Earn yield."],
+          ["Protect", "It moves in hourly steps of up to $100k at oracle-checked prices, never above 2x. You can withdraw at any time."],
         ].map(([h, p], i) => <li key={h} style={{ "--d": `${i * 120}ms` } as CSSProperties}><span>0{i + 1}</span><h3>{h}</h3><p>{p}</p></li>)}
       </ol>
     </section>

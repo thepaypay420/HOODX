@@ -60,9 +60,6 @@ export const boostSignalAbi = parseAbi([
   "function snapshot() view returns (uint256 target, uint256 sigma, uint8 ethFlags, uint8 btcFlags, uint128[8] ethEma, uint128[8] btcEma, uint256 ethLast, uint256 lastHour)",
 ]);
 
-/** The 16 trend lights: bit i of each asset's flags. 0-3 = slow (core), 4-7 = fast (booster). */
-export const TREND_SPANS = ["20d", "50d", "100d", "200d", "5d", "10d", "20d", "50d"] as const;
-
 /** Leverage regime names used across the UI. */
 export function regime(lev: number): { key: "dollars" | "partial" | "eth" | "boost"; label: string } {
   if (lev < 0.15) return { key: "dollars", label: "In dollars" };
