@@ -1,5 +1,5 @@
 import { parseAbi, type Address } from "viem";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 const configAbi = parseAbi([
   "function policy() view returns (address)",
   "function executor() view returns (address)",

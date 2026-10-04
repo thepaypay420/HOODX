@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { decodeEventLog, formatEther, parseAbi, zeroAddress, type Address, type Log } from "viem";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 import { walletReturn } from "@/lib/v2Performance";
 
 const events = parseAbi([

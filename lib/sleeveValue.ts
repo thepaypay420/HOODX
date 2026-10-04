@@ -1,7 +1,7 @@
 import { type Address } from "viem";
 import { vaultAbi } from "@/lib/abi";
 import { WETH } from "@/lib/config";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 /** WETH wei value of a token bag — TWAP first, then last trade px if oracle is cold. */
 export async function sleeveWethWei(vault: Address, token: Address, wei: bigint): Promise<bigint> {

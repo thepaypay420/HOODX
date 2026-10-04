@@ -3,7 +3,7 @@
 import { type Address } from "viem";
 import { vaultAbi } from "@/lib/abi";
 import { WETH } from "@/lib/config";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 const MIN_WEI = 10n ** 14n; // 0.0001 ETH
 

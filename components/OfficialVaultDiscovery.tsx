@@ -11,7 +11,7 @@ import { useWallet } from "@/lib/wallet";
 import { BrandMark } from "@/components/BrandMark";
 import { TokenArt } from "@/components/TokenArt";
 import { FEATURED_VAULTS, type VaultCategory, type VaultMeta } from "@/lib/vaults";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 import { verifiedV2Vaults, v2VaultAbi } from "@/lib/v2";
 import { launchReturnBps } from "@/lib/v2Performance";
 import { zeroAddress, type Address } from "viem";

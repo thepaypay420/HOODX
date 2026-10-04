@@ -7,7 +7,7 @@ import { poolRef, type Coin } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { USDG } from "@/lib/config";
 import { lookupIndexCoin } from "@/lib/lookup";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 export async function bestBindForToken(token: string): Promise<{ coin: Coin; ref: `0x${string}` }> {
   const coin = await lookupIndexCoin(token);

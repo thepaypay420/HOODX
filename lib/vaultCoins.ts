@@ -1,7 +1,7 @@
 import { type Coin, byAddress, rememberCoin } from "@/lib/catalog";
 import { isAddress, shortAddr } from "@/lib/format";
 import { lookupIndexCoin } from "@/lib/lookup";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 const STASH_PREFIX = "hoodx-vault-coins:";
 

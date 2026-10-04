@@ -4,7 +4,7 @@ import { type Coin, isIndexPool, rememberCoin } from "@/lib/catalog";
 import { USDG, V4_POSM, V4_STATE_VIEW, WETH } from "@/lib/config";
 import { isAddress } from "@/lib/format";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 const DEX_TOKENS = "https://api.dexscreener.com/tokens/v1/robinhood/";
 const DEX_PAIRS = "https://api.dexscreener.com/token-pairs/v1/robinhood/";

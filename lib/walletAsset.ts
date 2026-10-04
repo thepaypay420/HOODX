@@ -1,4 +1,5 @@
 import type { Address } from "viem";
+import { connectedProvider } from "@/lib/wallet";
 
 type WatchAssetProvider = {
   request: (args: { method: string; params?: unknown }) => Promise<unknown>;
@@ -10,9 +11,10 @@ type WalletAsset = {
   image?: string;
 };
 
+/** The connected wallet (extension or WalletConnect), falling back to an injected one. */
 function provider(): WatchAssetProvider | undefined {
   if (typeof window === "undefined") return undefined;
-  return window.ethereum as WatchAssetProvider | undefined;
+  return connectedProvider() ?? (window.ethereum as WatchAssetProvider | undefined);
 }
 
 /** Best-effort EIP-747 import. The image is wallet metadata, never transaction data. */

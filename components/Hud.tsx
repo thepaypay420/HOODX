@@ -17,16 +17,9 @@ export function Hud({ landing = false }: { landing?: boolean }) {
   const wrong = on && chainId !== robinhood.id;
 
   async function onConnect() {
-    try {
-      await connect();
-      setOpen(false);
-    } catch (e) {
-      setHint(
-        e instanceof Error && e.message === "OPEN_IN_WALLET"
-          ? "Open this in a wallet to mint."
-          : "Wallet closed.",
-      );
-    }
+    setHint("");
+    await connect();
+    setOpen(false);
   }
 
   const connectBtn = !on ? (

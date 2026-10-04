@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { isAddress, parseAbi, zeroAddress, type Address } from "viem";
 import { V2VaultDesk } from "@/components/V2VaultDesk";
 import { productionV2Factory, productionV2Vault, v2FactoryAbi } from "@/lib/v2";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 import { ProportionalVaultDesk } from "@/components/ProportionalVaultDesk";
 import { atomicFactoryAbi, atomicFactoryAddress, atomicFactoryStartBlock } from "@/lib/atomicFactory";
 import type { ProportionalRelease } from "@/lib/proportionalRelease";

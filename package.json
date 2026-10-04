@@ -10,10 +10,13 @@
     "check:official-seeds": "node --use-system-ca scripts/diagnose_official_bootstrap.mjs"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.11",
+    "@tanstack/react-query": "^5.104.1",
     "next": "16.3.5",
     "react": "^19.1.2",
     "react-dom": "^19.1.2",
-    "viem": "^2.56.3"
+    "viem": "^2.56.3",
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

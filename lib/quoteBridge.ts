@@ -6,7 +6,7 @@ import { type Coin, isV4RhQuotePool, isV4UsdgQuotePool } from "@/lib/catalog";
 import { robinhood } from "@/lib/chain";
 import { catalogBridge, isRhStockToken } from "@/lib/rhStocks";
 import { findWethBridge } from "@/lib/lookup";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 
 /** Ensure the vault has a WETH V3 bridge for an RH stock quote before V4 bind/swap. USDG is seeded at init. */
 export async function ensureQuoteBridge(

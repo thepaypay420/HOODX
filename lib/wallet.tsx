@@ -1,38 +1,32 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  http,
-  type Address,
-  type WalletClient,
-} from "viem";
-import { robinhood } from "@/lib/chain";
-import { RPC_URL } from "@/lib/config";
+import { Component, Suspense, createContext, lazy, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { Address, WalletClient } from "viem";
 
-/* Vault pages issue hundreds of small reads in a few dependent waves. Plain reads issued in the same tick are folded into
- * one Multicall3 eth_call per block; everything else (blocks, logs, balances, reverting quote simulations) still shares a
- * JSON-RPC batch. Batches stay at 50 because the public RPC rate-limits per call and answers 429 to much larger ones. */
-export const publicClient = createPublicClient({
-  chain: robinhood,
-  batch: { multicall: { wait: 16 } },
-  transport: http(RPC_URL, { batch: { batchSize: 50, wait: 16 } }),
-});
+export { publicClient } from "@/lib/publicClient";
+
+/* The app's wallet API. Every page talks to this small context; the wallet stack behind it (wagmi, WalletConnect and the
+ * RainbowKit sheet in lib/walletStack.tsx) is the heaviest code on the site, so it loads just after the page is up — in time
+ * to reconnect a returning wallet — or at once when someone taps Connect. First paint never waits for it. */
+const WalletStack = lazy(() => import("@/lib/walletStack"));
+
+export type Eip1193 = { request: (a: { method: string; params?: unknown }) => Promise<unknown> };
+export type StackState = {
+  address?: Address;
+  chainId?: number;
+  connecting: boolean;
+  walletClient?: WalletClient;
+  provider?: Eip1193;
+  open: () => void;
+  disconnect: () => void;
+  switchToRobinhood: () => Promise<void>;
+};
 
 type WalletState = {
   address?: Address;
   chainId?: number;
   connecting: boolean;
+  /** Opens the wallet sheet. Resolves at once; the connection lands through `address`. */
   connect: () => Promise<void>;
   disconnect: () => void;
   switchToRobinhood: () => Promise<void>;
@@ -40,23 +34,6 @@ type WalletState = {
 };
 
 const Ctx = createContext<WalletState | null>(null);
-
-type Ethereum = {
-  request: (args: { method: string; params?: unknown }) => Promise<unknown>;
-  on?: (ev: string, fn: (...a: never[]) => void) => void;
-  removeListener?: (ev: string, fn: (...a: never[]) => void) => void;
-};
-
-declare global {
-  interface Window {
-    ethereum?: Ethereum;
-  }
-}
-
-function injectedProvider(): Ethereum | undefined {
-  if (typeof window === "undefined") return undefined;
-  return window.ethereum;
-}
 
 /** Wallets disagree: hex "0x1237", decimal "4663", or a number. */
 export function parseChainId(chain: unknown): number | undefined {
@@ -69,109 +46,54 @@ export function parseChainId(chain: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<Address | undefined>();
-  const [chainId, setChainId] = useState<number | undefined>();
-  const [connecting, setConnecting] = useState(false);
+/** The connected wallet's provider, for the few calls that go straight to the wallet (wallet_watchAsset). */
+let activeProvider: Eip1193 | undefined;
+export const connectedProvider = () => activeProvider;
 
-  const refresh = useCallback(async () => {
-    const eth = injectedProvider();
-    if (!eth) return;
-    const [accounts, chain] = await Promise.all([
-      eth.request({ method: "eth_accounts" }) as Promise<string[]>,
-      eth.request({ method: "eth_chainId" }) as Promise<string>,
-    ]);
-    setAddress(accounts[0] ? (accounts[0] as Address) : undefined);
-    setChainId(parseChainId(chain));
-  }, []);
+/** A failure inside the wallet stack (a wallet extension misbehaving, a network error) must never take the page down. */
+class WalletBoundary extends Component<{ children: ReactNode; onFail: () => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error: unknown) { console.error("[wallet]", error); this.props.onFail(); }
+  render() { return this.state.failed ? null : this.props.children; }
+}
+
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const [load, setLoad] = useState(false);
+  const [stack, setStack] = useState<StackState | null>(null);
+  const [openSignal, setOpenSignal] = useState(0);
 
   useEffect(() => {
-    const eth = injectedProvider();
-    if (!eth) return;
-    void refresh();
-    const onAccounts = (...args: never[]) => {
-      const accounts = args[0] as string[];
-      setAddress(accounts?.[0] ? (accounts[0] as Address) : undefined);
-    };
-    const onChain = (...args: never[]) => {
-      const id = args[0] as string;
-      setChainId(parseChainId(id));
-    };
-    eth.on?.("accountsChanged", onAccounts);
-    eth.on?.("chainChanged", onChain);
-    return () => {
-      eth.removeListener?.("accountsChanged", onAccounts);
-      eth.removeListener?.("chainChanged", onChain);
-    };
-  }, [refresh]);
-
-  const connect = useCallback(async () => {
-    const eth = injectedProvider();
-    if (!eth) {
-      throw new Error("OPEN_IN_WALLET");
-    }
-    setConnecting(true);
-    try {
-      await eth.request({ method: "eth_requestAccounts" });
-      await refresh();
-    } finally {
-      setConnecting(false);
-    }
-  }, [refresh]);
-
-  const disconnect = useCallback(() => {
-    setAddress(undefined);
+    if ("requestIdleCallback" in window) { const id = window.requestIdleCallback(() => setLoad(true), { timeout: 2500 }); return () => window.cancelIdleCallback(id); }
+    const id = setTimeout(() => setLoad(true), 1200);
+    return () => clearTimeout(id);
   }, []);
+  useEffect(() => { activeProvider = stack?.address ? stack.provider : undefined; }, [stack]);
 
-  const switchToRobinhood = useCallback(async () => {
-    const eth = injectedProvider();
-    if (!eth) return;
-    const hex = `0x${robinhood.id.toString(16)}`;
-    try {
-      await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] });
-    } catch (err) {
-      const code = (err as { code?: number }).code;
-      if (code !== 4902) throw err;
-      await eth.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: hex,
-            chainName: robinhood.name,
-            nativeCurrency: robinhood.nativeCurrency,
-            rpcUrls: [RPC_URL],
-            blockExplorerUrls: [robinhood.blockExplorers.default.url],
-          },
-        ],
-      });
-    }
-    await refresh();
-  }, [refresh]);
+  const connect = useCallback(async () => { setLoad(true); setOpenSignal((n) => n + 1); }, []);
+  const disconnect = useCallback(() => stack?.disconnect(), [stack]);
+  const switchToRobinhood = useCallback(async () => { await stack?.switchToRobinhood(); }, [stack]);
 
-  const walletClient = useMemo(() => {
-    const eth = injectedProvider();
-    if (!eth || !address) return undefined;
-    return createWalletClient({
-      account: address,
-      chain: robinhood,
-      transport: custom(eth),
-    });
-  }, [address]);
-
-  const value = useMemo(
+  const value = useMemo<WalletState>(
     () => ({
-      address,
-      chainId,
-      connecting,
+      address: stack?.address,
+      chainId: stack?.chainId,
+      // a Connect tap while the stack is still loading shows as connecting
+      connecting: stack ? stack.connecting : openSignal > 0,
       connect,
       disconnect,
       switchToRobinhood,
-      walletClient,
+      walletClient: stack?.walletClient,
     }),
-    [address, chainId, connecting, connect, disconnect, switchToRobinhood, walletClient],
+    [stack, openSignal, connect, disconnect, switchToRobinhood],
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      {children}
+      {load && <WalletBoundary onFail={() => { setStack(null); setOpenSignal(0); }}><Suspense fallback={null}><WalletStack onState={setStack} openSignal={openSignal} /></Suspense></WalletBoundary>}
+    </Ctx.Provider>
+  );
 }
 
 export function useWallet() {

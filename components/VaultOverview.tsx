@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { formatEther, formatUnits, parseAbi, type Address } from "viem";
 import { HoldingsBoard } from "@/components/HoldingsBoard";
 import { TokenArt } from "@/components/TokenArt";
-import { publicClient } from "@/lib/wallet";
+import { publicClient } from "@/lib/publicClient";
 import { addVaultAssetToWallet } from "@/lib/walletAsset";
 import { activityTransactionUrl, recentVaultActivity } from "@/lib/vaultActivity";
 import { launchReturnBps } from "@/lib/v2Performance";

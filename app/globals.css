@@ -2195,3 +2195,9 @@ body {
   .discovery-card .boost-mark { width:2.75rem; height:2.75rem; }
 }
 @media (prefers-reduced-motion:reduce) { .discovery-card.is-boost::after, .boost-live i { animation:none; } }
+
+/* Wallet sheet (RainbowKit): a quiet scrollbar that matches the glass */
+[data-rk] * { scrollbar-width: thin; scrollbar-color: rgba(238, 248, 246, 0.14) transparent; }
+[data-rk] ::-webkit-scrollbar { width: 6px; }
+[data-rk] ::-webkit-scrollbar-track { background: transparent; }
+[data-rk] ::-webkit-scrollbar-thumb { background: rgba(238, 248, 246, 0.14); border-radius: 6px; }
