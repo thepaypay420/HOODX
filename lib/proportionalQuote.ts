@@ -18,15 +18,15 @@ export const proportionalAbi = parseAbi([
   'function withdraw(uint256 shares,uint256 minEthOut,uint256[] floors,uint256 nonce,uint256 deadline) returns(uint256 net)',
 ]);
 const MODE = keccak256(toHex('HOODX_PROPORTIONAL_V1'));
-export type ProportionalState = ProportionalSnapshot & {vault: Address; account: Address; tokens: readonly Address[]; walletShares: bigint; paused: boolean; owner: Address; creator: Address; minFirstDeposit: bigint; targetBps: readonly number[]};
+export type ProportionalState = ProportionalSnapshot & {vault: Address; account: Address; tokens: readonly Address[]; weth: Address; walletShares: bigint; paused: boolean; owner: Address; creator: Address; minFirstDeposit: bigint; targetBps: readonly number[]};
 
 export async function readProportionalState(client: PublicClient, vault: Address, account: Address): Promise<ProportionalState> {
-  if (await client.getChainId() !== 4663) throw new Error('Switch to Robinhood Chain');
-  const block = await client.getBlock();
+  const [chainId, block] = await Promise.all([client.getChainId(), client.getBlock()]);
+  if (chainId !== 4663) throw new Error('Switch to Robinhood Chain');
   const common = {address: vault, abi: proportionalAbi, blockNumber: block.number} as const;
-  const mode = await client.readContract({...common, functionName: 'accountingMode'});
-  if (mode !== MODE) throw new Error('This vault does not support proportional deposits');
-  const [tokens, weth, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused, owner, creator, minFirstDeposit] = await Promise.all([
+  // The mode check and the vault reads go out in one wave; the mode is still checked before any other value is used.
+  const modeRead = client.readContract({...common, functionName: 'accountingMode'});
+  const valuesRead = Promise.all([
     client.readContract({...common, functionName:'constituents'}), client.readContract({...common, functionName:'weth'}),
     client.readContract({...common, functionName:'totalSupply'}), client.readContract({...common, functionName:'planNonce'}),
     client.readContract({...common, functionName:'creatorFeeBps'}), client.readContract({...common, functionName:'protocolFeeBps'}),
@@ -34,12 +34,15 @@ export async function readProportionalState(client: PublicClient, vault: Address
     client.readContract({...common, functionName:'owner'}), client.readContract({...common, functionName:'creator'}),
     client.readContract({...common, functionName:'minFirstDeposit'}),
   ]);
+  valuesRead.catch(() => {});
+  if (await modeRead !== MODE) throw new Error('This vault does not support proportional deposits');
+  const [tokens, weth, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused, owner, creator, minFirstDeposit] = await valuesRead;
   if (tokens.length < 2 || tokens.length > 24 || new Set(tokens.map(t => t.toLowerCase())).size !== tokens.length) throw new Error('Invalid basket');
   const [balances,targetBps] = await Promise.all([
     Promise.all([...tokens, weth, zeroAddress].map(token => client.readContract({...common, functionName:'freeBalance', args:[token]}))),
     Promise.all(tokens.map(token => client.readContract({...common, functionName:'targetBps', args:[token]}))),
   ]);
-  return {vault, account, tokens, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused,
+  return {vault, account, tokens, weth, supply, nonce, creatorFeeBps, protocolFeeBps, walletShares, paused,
     owner,creator,minFirstDeposit,targetBps,balances:balances.slice(0,tokens.length), cash:balances[tokens.length]+balances[tokens.length+1], blockNumber:block.number, timestamp:Number(block.timestamp)};
 }
 

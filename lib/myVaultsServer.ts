@@ -57,11 +57,11 @@ export const vaultUniverse = unstable_cache(async (): Promise<VaultRef[]> => {
 }, ["my-vaults-universe-v1"], { revalidate: 600 });
 
 /* ------------------------------------------------------------------ what one share is worth, per vault (60 seconds, shared) */
-export type Nav = { vault: Address; supply: string; assetsWei: string | null; estimated: boolean };
+export type Nav = { vault: Address; supply: string; assetsWei: string | null; estimated: boolean; at: number };
 const navOne = unstable_cache(async (vault: Address, kind: Kind): Promise<Nav> => {
   if (kind === "v2") {
     const r = await batch([{ target: vault, data: enc("totalSupply") }, { target: vault, data: enc("totalAssets") }]);
-    return { vault, supply: String(decodeResult("totalSupply", r[0].data)), assetsWei: r[1].ok ? String(decodeResult("totalAssets", r[1].data)) : null, estimated: false };
+    return { vault, supply: String(decodeResult("totalSupply", r[0].data)), assetsWei: r[1].ok ? String(decodeResult("totalAssets", r[1].data)) : null, estimated: false, at: Date.now() };
   }
   // oracle-free vault: cash plus what every holding would sell for right now, quoted by its controller in one batch
   const a = await batch([{ target: vault, data: enc("totalSupply") }, { target: vault, data: enc("constituents") }, { target: vault, data: enc("weth") }, { target: vault, data: enc("owner") }]);
@@ -72,8 +72,13 @@ const navOne = unstable_cache(async (vault: Address, kind: Kind): Promise<Nav> =
   const q = await batch(held.map((h) => ({ target: controller, data: encodeFunctionData({ abi: rebalanceControllerV3Abi, functionName: "quoteRebalance", args: [h.tk, false, h.amt] }) })));
   let sum = bal[tokens.length] + bal[tokens.length + 1], complete = true;
   q.forEach((x) => { try { const e = decodeErrorResult({ abi: rebalanceControllerV3Abi, data: x.data }); if (e.errorName === "RebalanceQuote") sum += (e.args as readonly bigint[])[0]; else complete = false; } catch { complete = false; } });
-  return { vault, supply: String(supply), assetsWei: complete ? String(sum) : null, estimated: true };
-}, ["my-vaults-nav-v1"], { revalidate: 60 });
+  return { vault, supply: String(supply), assetsWei: complete ? String(sum) : null, estimated: true, at: Date.now() };
+}, ["my-vaults-nav-v2"], { revalidate: 60 });
+/** One vault's value from the same 60-second cache, for first paint on its page. Only vaults the protocol created. */
+export async function vaultNav(vault: Address): Promise<Nav | null> {
+  const ref = (await vaultUniverse()).find((v) => v.vault.toLowerCase() === vault.toLowerCase());
+  return ref && ref.kind !== "autolp" ? navOne(ref.vault, ref.kind) : null;
+}
 
 /* ------------------------------------------------------------------ a wallet's balances (20 seconds) and cost basis (30 seconds) */
 const balances = unstable_cache(async (wallet: Address) => {

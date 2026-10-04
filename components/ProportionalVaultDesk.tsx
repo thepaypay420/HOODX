@@ -33,6 +33,12 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   const [clock,setClock]=useState(0);
   // No oracle NAV on a proportional vault: value it from live sell-quotes of every holding plus cash.
   const [estimate,setEstimate]=useState<{vault:Address;assets:bigint;time:number}>();
+  const [seed,setSeed]=useState<{vault:Address;assets:bigint;supply:bigint;time:number}>();
+  useEffect(()=>{
+    let active=true;
+    fetch(`/api/vault-nav?vault=${release.vault}`).then(r=>r.ok?r.json():undefined).then((nav:{supply:string;assetsWei:string;at:number}|undefined)=>{if(active&&nav)setSeed({vault:release.vault,assets:BigInt(nav.assetsWei),supply:BigInt(nav.supply),time:nav.at});}).catch(()=>{});
+    return()=>{active=false;};
+  },[release.vault]);
   const [curatorOpen,setCuratorOpen]=useState(false);
   const [tab,setTab]=useState<'deposit'|'withdraw'>('deposit');
   const lock=useRef(false),generation=useRef(0);
@@ -59,19 +65,18 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
 
   const refresh=useCallback(async()=>{
     const ticket=++generation.current;setReview(undefined);
-    await verifyProportionalRelease(publicClient,release);
-    const next=await readProportionalState(publicClient,release.vault,address??zeroAddress);
+    // The identity check runs alongside the state read; nothing is shown unless both succeed.
+    const [,next]=await Promise.all([verifyProportionalRelease(publicClient,release),readProportionalState(publicClient,release.vault,address??zeroAddress)]);
     const common={address:release.vault,abi:managementAbi,blockNumber:next.blockNumber} as const;
-    const [vaultOwner,weth,balance]=await Promise.all([publicClient.readContract({...common,functionName:'owner'}),publicClient.readContract({...common,functionName:'weth'}),address?publicClient.getBalance({address,blockNumber:next.blockNumber}):Promise.resolve(0n)]);
-    const authority=await resolveVaultAuthority(publicClient,release.vault,vaultOwner,next.blockNumber);
-    const rows=await Promise.all([...next.tokens,weth,zeroAddress].map(async(token,index)=>{
+    const weth=next.weth;
+    const [balance,authority,rows]=await Promise.all([address?publicClient.getBalance({address,blockNumber:next.blockNumber}):Promise.resolve(0n),resolveVaultAuthority(publicClient,release.vault,next.owner,next.blockNumber),Promise.all([...next.tokens,weth,zeroAddress].map(async(token,index)=>{
       const [symbol,decimals,claim]=await Promise.all([
         token===zeroAddress?Promise.resolve('ETH'):publicClient.readContract({address:token,abi:erc20Abi,functionName:'symbol',blockNumber:next.blockNumber}).catch(()=>token.slice(0,6)+'…'+token.slice(-4)),
         token===zeroAddress?Promise.resolve(18):publicClient.readContract({address:token,abi:erc20Abi,functionName:'decimals',blockNumber:next.blockNumber}).catch(()=>undefined),
         publicClient.readContract({...common,functionName:'claimable',args:[address??zeroAddress,token]}),
       ]);
       return {token,symbol,decimals,balance:index<next.tokens.length?next.balances[index]:0n,claim};
-    }));
+    }))]);
     if(ticket!==generation.current)return;
     setState(next);setAssets(rows);setOwner(authority.curator);setController(authority.controller);setEthBalance(balance);
     const quoter=authority.controller;
@@ -153,6 +158,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   }
   const isCurator=!!address&&owner?.toLowerCase()===address.toLowerCase();
   const valued=estimate?.vault===release.vault?estimate:undefined;
+  // Live block-pinned value when ready; until then the shared server snapshot. Each keeps its own matching share supply.
+  const shown=valued&&current?{assets:valued.assets,supply:current.supply,time:valued.time}:seed?.vault===release.vault?seed:undefined;
   const symbol=release.slug.toUpperCase();
   const onChain=!!address&&chainId===4663;
   const joinReady=ready&&review?.kind==='join'?review:undefined,exitReady=ready&&review?.kind==='exit'?review:undefined;
@@ -188,8 +195,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
     </details>
   </section>;
   return <section className="vault-dashboard">
-    <VaultOverview proportional vault={release.vault} slug={release.slug} assets={valued?.assets} quoteTime={valued?.time} supply={current?.supply} paused={current?.paused} curator={isCurator} aside={trade}>
-      <VaultPerformance estimated vault={release.vault} symbol={symbol} account={address} assets={valued?.assets} shares={current?.walletShares} supply={current?.supply} block={current?.blockNumber}/>
+    <VaultOverview proportional vault={release.vault} slug={release.slug} assets={shown?.assets} quoteTime={shown?.time} supply={shown?.supply??current?.supply} paused={current?.paused} curator={isCurator} aside={trade}>
+      <VaultPerformance estimated vault={release.vault} symbol={symbol} account={address} assets={shown?.assets} shares={current?.walletShares} supply={shown?.supply??current?.supply} block={current?.blockNumber}/>
     </VaultOverview>
     {isCurator&&current&&<details id="curator-workspace" className="vault-curator-panel" open={curatorOpen} onToggle={event=>setCuratorOpen(event.currentTarget.open)}><summary>Curator workspace <span>Allocation, rebalancing & basket management</span></summary>{curatorOpen&&<V2CuratorDesk proportional key={`${release.vault}:${address}:${controller??'direct'}`} vault={release.vault} controller={controller} paused={current.paused} busy={busy} onBusy={setBusy} onRefresh={refresh}/>}</details>}
   </section>;

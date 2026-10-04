@@ -49,7 +49,8 @@ export function VaultOverview({ vault, slug, assets, quoteTime, valuationFailed,
     }
     void load().catch(() => { if (active) setFailed(true); });
     return () => { active = false; };
-  }, [vault, assets, supply]);
+  // Holdings reload when the share supply changes (a deposit or withdrawal), not on every new valuation quote.
+  }, [vault, supply]);
   const current = data?.vault === vault ? data : undefined;
   const launch = assets !== undefined && supply !== undefined ? launchReturnBps(assets, supply) : undefined;
   const [activity] = recentVaultActivity(slug);

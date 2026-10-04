@@ -24,6 +24,9 @@ async function proportionalReturn(slug: string): Promise<number | undefined> {
   if (!atomicFactoryAddress) return undefined;
   const vault: Address = await publicClient.readContract({ address: atomicFactoryAddress, abi: atomicFactoryAbi, functionName: "bySlug", args: [slug] });
   if (vault === zeroAddress) return undefined;
+  // The shared 60-second server valuation first; the full live quote only if it is unavailable.
+  const nav = await fetch(`/api/vault-nav?vault=${vault}`).then(r => r.ok ? r.json() as Promise<{ supply: string; assetsWei: string }> : undefined).catch(() => undefined);
+  if (nav) { const bps = launchReturnBps(BigInt(nav.assetsWei), BigInt(nav.supply)); if (bps !== undefined) return Number(bps) / 100; }
   const state = await readProportionalState(publicClient, vault, zeroAddress);
   const { controller } = await resolveVaultAuthority(publicClient, vault, state.owner, state.blockNumber);
   if (!controller) return undefined;

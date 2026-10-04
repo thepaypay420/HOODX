@@ -34,15 +34,18 @@ export function VaultPerformance({ vault, symbol, account, assets, shares, suppl
         logs = cached && cached.block <= block! ? cached.logs.filter((log) => log.blockNumber !== null && log.blockNumber < from) : [];
         try {
           // The RPC answers an address-filtered range of up to 10M blocks in one call.
-          const wide: Log[] = [];
-          for (let cursor = from; cursor <= block!; cursor += 9_000_000n) wide.push(...await publicClient.getLogs({ address: vault, fromBlock: cursor, toBlock: cursor + 8_999_999n > block! ? block! : cursor + 8_999_999n }));
-          logs.push(...wide);
+          const windows: Promise<Log[]>[] = [];
+          for (let cursor = from; cursor <= block!; cursor += 9_000_000n) windows.push(publicClient.getLogs({ address: vault, fromBlock: cursor, toBlock: cursor + 8_999_999n > block! ? block! : cursor + 8_999_999n }));
+          logs.push(...(await Promise.all(windows)).flat());
         } catch {
-          for (let cursor = from; cursor <= block!; cursor += 10000n) {
+          // Fallback: 100k-block slices, ten at a time (the RPC accepts 100k-block ranges; 10k slices took ~1,200 calls).
+          const slices: [bigint, bigint][] = [];
+          for (let cursor = from; cursor <= block!; cursor += 100_000n) slices.push([cursor, cursor + 99_999n > block! ? block! : cursor + 99_999n]);
+          for (let i = 0; i < slices.length; i += 10) {
             if (!active) return;
-            const end = cursor + 9999n > block! ? block! : cursor + 9999n;
-            logs.push(...await publicClient.getLogs({ address: vault, fromBlock: cursor, toBlock: end }));
-            if (active) history.set(key, { block: end, logs: [...logs] });
+            const part = slices.slice(i, i + 10);
+            logs.push(...(await Promise.all(part.map(([a, b]) => publicClient.getLogs({ address: vault, fromBlock: a, toBlock: b })))).flat());
+            if (active) history.set(key, { block: part[part.length - 1][1], logs: [...logs] });
           }
         }
       }
