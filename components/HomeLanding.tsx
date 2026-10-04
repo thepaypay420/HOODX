@@ -93,10 +93,13 @@ export function HomeLanding() {
                 {t.label}
               </div>
             ))}
-            <OrbitValue />
-            <div className="landing-coin">
-              <div className="landing-coin-rim" aria-hidden /><div className="studio-coin-light" aria-hidden />
-              <BrandMark size={112} priority className="landing-coin-mark" />
+            {/* one two-sided coin: the HOODX mark, and on its reverse the total value */}
+            <div className="coin-flipper">
+              <div className="landing-coin">
+                <div className="landing-coin-rim" aria-hidden /><div className="studio-coin-light" aria-hidden />
+                <BrandMark size={112} priority className="landing-coin-mark" />
+              </div>
+              <OrbitValue />
             </div>
             <p className="landing-script">More together.</p>
           </div>

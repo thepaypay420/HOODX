@@ -2332,26 +2332,26 @@ body {
 .ap-chips button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 0 0 1px rgba(79, 215, 203, .35); }
 
 /* Home orbit: the coin turns over every few seconds; its reverse carries the total value in HOODX vaults.
-   One 14s cycle shared by both faces: the coin's usual sway, a 1.4s turn, the reverse, and back. */
-@keyframes coin-flip-front {
+   Both faces live on one rotating element (a real two-sided coin), so they can never fall out of step. One 14s cycle:
+   the coin's usual sway, a 1.4s turn, the reverse, and back. */
+@keyframes coin-flip {
   0%, 100% { transform: perspective(900px) rotateY(-12deg) rotateX(6deg) rotateZ(-8deg); }
   20% { transform: perspective(900px) rotateY(8deg) rotateX(-4deg) rotateZ(-4deg); }
-  40% { transform: perspective(900px) rotateY(-6deg) rotateX(3deg) rotateZ(-7deg); }
-  50%, 90% { transform: perspective(900px) rotateY(180deg) rotateX(0deg) rotateZ(-6deg); }
+  40% { transform: perspective(900px) rotateY(-6deg) rotateX(3deg) rotateZ(-6deg); }
+  50% { transform: perspective(900px) rotateY(180deg) rotateX(-2deg) rotateZ(-2deg); }
+  70% { transform: perspective(900px) rotateY(173deg) rotateX(3deg) rotateZ(-1deg); }
+  90% { transform: perspective(900px) rotateY(180deg) rotateX(-2deg) rotateZ(-2deg); }
   99.99% { transform: perspective(900px) rotateY(348deg) rotateX(6deg) rotateZ(-8deg); }
-}
-@keyframes coin-flip-back {
-  0%, 40% { transform: perspective(900px) rotateY(-180deg) rotateZ(-3deg); }
-  50% { transform: perspective(900px) rotateY(0deg) rotateX(2deg) rotateZ(-3deg); }
-  70% { transform: perspective(900px) rotateY(7deg) rotateX(-3deg) rotateZ(-2deg); }
-  90% { transform: perspective(900px) rotateY(0deg) rotateX(2deg) rotateZ(-3deg); }
-  100% { transform: perspective(900px) rotateY(168deg) rotateZ(-3deg); }
 }
 @keyframes coin-reverse-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 @keyframes coin-reverse-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-.studio-home .landing-stage:has(.coin-reverse) .landing-coin { animation: coin-flip-front 14s cubic-bezier(.55, 0, .3, 1) infinite; backface-visibility: hidden; }
-.coin-reverse { position: absolute; left: 28%; top: 27%; z-index: 2; width: 210px; height: 210px; margin: -105px 0 0 -105px; display: grid; place-content: center; justify-items: center; gap: .3rem; border-radius: 50%; pointer-events: none;
-  transform: perspective(900px) rotateY(-180deg); backface-visibility: hidden; animation: coin-flip-back 14s cubic-bezier(.55, 0, .3, 1) infinite;
+.coin-flipper { position: absolute; left: 28%; top: 27%; z-index: 2; width: 210px; height: 210px; margin: -105px 0 0 -105px; transform-style: preserve-3d; will-change: transform;
+  transform: perspective(900px) rotateY(-12deg) rotateX(6deg) rotateZ(-8deg); animation: coin-flip 14s cubic-bezier(.55, 0, .3, 1) infinite; }
+.studio-home .coin-flipper .landing-coin { left: 0; top: 0; width: 100%; height: 100%; transform: none; animation: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+/* its own rule: the CSS optimiser drops `translate` from a rule that also sets `transform` */
+.studio-home .coin-flipper > .landing-coin { translate: 0 0; }
+.coin-reverse { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .3rem; border-radius: 50%; pointer-events: none;
+  transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;
   background: radial-gradient(ellipse at 31% 18%, #ffffff2e 0%, #b7c7ca12 24%, transparent 43%), radial-gradient(circle at 50% 55%, #28dec526 0%, transparent 60%), linear-gradient(145deg, #29343a 0%, #111a1f 46%, #05080b 100%);
   box-shadow: inset 2px 2px 4px #ffffff38, inset -10px -13px 30px #000b, inset 0 0 42px #32d9c015, 0 36px 65px #000a, 0 0 74px #45dcc51c, 0 0 0 1px #dce7e838, 0 0 0 9px #46d8c20a; }
 .coin-reverse::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; border: 1px solid #dbe8e824; box-shadow: inset 0 0 24px #46ddc512; }
@@ -2360,4 +2360,6 @@ body {
 .coin-reverse-skeleton { width: 6.5rem; height: 2.4rem; border-radius: .5rem; background: linear-gradient(90deg, rgba(238, 248, 246, .05), rgba(238, 248, 246, .14), rgba(238, 248, 246, .05)) 0 0 / 200% 100%; animation: coin-reverse-shimmer 1.6s linear infinite; }
 .coin-reverse-sub { display: inline-flex; align-items: center; gap: .35rem; color: var(--dim); font-size: 9.5px; letter-spacing: .06em; }
 .coin-reverse-sub i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: coin-reverse-pulse 2.4s ease-in-out infinite; }
-@media (max-width: 639px) { .coin-reverse { width: 170px; height: 170px; margin: -85px 0 0 -85px; } .coin-reverse strong { font-size: 2.2rem; } }
+@media (max-width: 639px) { .coin-flipper { width: 170px; height: 170px; margin: -85px 0 0 -85px; } .coin-reverse strong { font-size: 2.2rem; } }
+/* reduced motion: the coin rests on its HOODX face */
+@media (prefers-reduced-motion: reduce) { .coin-flipper { animation: none !important; transform: rotate(-6deg); } }
