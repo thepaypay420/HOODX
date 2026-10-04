@@ -2281,7 +2281,7 @@ body {
   .ex-group-head { flex-direction: column; align-items: stretch; gap: .7rem; }
   .ex-filters { margin: 0 -1rem; padding: 0 1rem; }
   .ex-row { grid-template-columns: 2.5rem minmax(0, 1fr) auto; gap: .85rem; padding: .85rem 1rem; }
-  .ex-row-assets, .ex-row-go, .ex-since { display: none; }
+  .ex-row-assets, .ex-row-go { display: none; }
   .ex-create { flex-wrap: wrap; }
   .ex-create-go { width: 100%; margin-left: 3.6rem; }
 }

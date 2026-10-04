@@ -66,7 +66,7 @@ function VaultRow({ vault, liveReturn, sim }: { vault: VaultMeta; liveReturn?: n
       {vault.status === "pilot" ? <i className="ex-tag is-pilot">Pilot</i>
         : liveReturn !== undefined ? <><strong className={liveReturn >= 0 ? "is-up" : "is-down"}>{pct(liveReturn)}</strong><small>Since launch</small></>
         : sim ? <span title={`What this basket would have returned since launch (${day(sim.since)}), from its on-chain weights and cash sleeve, in USD, before fees and swap costs.`}>
-            <strong className={sim.pct >= 0 ? "is-up" : "is-down"}>{pct(sim.pct)}</strong><small>If funded<span className="ex-since"> · since {day(sim.since)}</span></small></span>
+            <strong className={sim.pct >= 0 ? "is-up" : "is-down"}>{pct(sim.pct)}</strong><small>Since launch</small></span>
         : <i className="ex-tag">New</i>}
     </span>
     <span className="ex-row-go" aria-hidden>→</span>
@@ -155,7 +155,7 @@ export function OfficialVaultDiscovery() {
         <span className="ex-create-copy"><b>Have a thesis?</b><small>Choose 2–24 assets, set the weights and launch one token for it.</small></span>
         <span className="ex-create-go">Make your own <i aria-hidden>→</i></span>
       </Link>
-      <p className="discovery-footnote">Since launch: per-share value on-chain for vaults with holders. If funded: what a collection without holders yet would have returned since launch, from its on-chain weights and WETH cash sleeve, in USD, before fees and swap costs. Past returns do not predict future ones.</p>
+      <p className="discovery-footnote">Since launch: per-share value on-chain for vaults with holders. For a collection without holders yet, since launch is what its basket would have returned, from its on-chain weights and WETH cash sleeve, in USD, before fees and swap costs. Past returns do not predict future ones.</p>
     </>}
   </section>;
 }
