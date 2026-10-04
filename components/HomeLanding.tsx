@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
+import { HomeFeatured } from "@/components/HomeFeatured";
 import { LandingMotion } from "@/components/LandingMotion";
 import { LlmConnectButton, LlmConnectMobileCard } from "@/components/LlmConnect";
 import { OrbitPlanets } from "@/components/SolarSystemOrbit";
 
 /** Right-side chips zigzag on x (in/out) so labels don’t stack on one column. */
 const FLOAT_TOKENS = [
-  { label: "MEME", x: "56%", y: "8%", delay: "0.8s" },
-  { label: "CASHCAT", right: "4%", y: "20%", delay: "1.1s" },
-  { label: "AI", x: "58%", y: "36%", delay: "1.4s" },
+  { label: "BOOSTX", x: "56%", y: "8%", delay: "0.8s" },
+  { label: "FAANGX", right: "4%", y: "20%", delay: "1.1s" },
+  { label: "AIX", x: "58%", y: "36%", delay: "1.4s" },
   { label: "ETH", x: "4%", y: "52%", delay: "0.4s" },
-  { label: "HOOKR", right: "2%", y: "50%", delay: "1.6s" },
+  { label: "CHIPX", right: "2%", y: "50%", delay: "1.6s" },
   { label: "696X", x: "62%", y: "62%", delay: "1s" },
 ];
 
@@ -52,21 +53,21 @@ export function HomeLanding() {
       <section className="landing-hero mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 sm:pb-12 sm:pt-10 lg:pb-16 lg:pt-14">
         <div className="landing-hero-grid">
           <div className="landing-hero-copy" data-motion>
-            <p className="landing-eyebrow">Robinhood Chain · On-chain index tokens</p>
+            <p className="landing-eyebrow">Robinhood Chain · On-chain vaults</p>
             <h1 className="landing-headline">
               <span className="studio-title-line">One token.</span>
               <span className="studio-title-line">A whole basket.</span>
             </h1>
             <p className="landing-lede">
-              Permissionless index funds on Robinhood Chain. Buy one token for a curated basket of RH-chain tokens —
-              with a WETH cash sleeve, all on-chain.
+              Index tokens, hands-free liquidity and smart ETH leverage on Robinhood Chain. Deposit ETH, withdraw
+              ETH, and every rule runs on-chain.
             </p>
             <div className="landing-cta-row">
               <Link href="/explore?from=home" className="landing-btn-primary">
-                Explore indexes
+                Explore vaults
                 <span aria-hidden>→</span>
               </Link>
-              <Link href="#create" className="landing-btn-secondary">
+              <Link href="/create" className="landing-btn-secondary">
                 Create an index
               </Link>
               <LlmConnectButton className="landing-btn-secondary landing-llm-hero" />
@@ -114,6 +115,10 @@ export function HomeLanding() {
         </div>
       </section>
 
+      <div className="mx-auto mt-12 max-w-6xl px-4 sm:mt-16 sm:px-6">
+        <HomeFeatured />
+      </div>
+
       <section className="landing-paths mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="landing-paths-grid">
           <Link href="/explore?from=home" className="landing-path-card landing-path-holders" data-motion>
@@ -130,15 +135,15 @@ export function HomeLanding() {
             <p className="landing-path-label">For holders</p>
             <h2 className="landing-path-title">Diversify in one token.</h2>
             <p className="landing-path-copy">
-              Get exposure to 2–24 Uni V3/V4 memecoin names plus a WETH cash sleeve. NAV and every holding are visible
-              on-chain.
+              Hold a whole theme — big tech, chips, AI, real assets — in one token with a WETH cash sleeve. NAV and
+              every holding are visible on-chain.
             </p>
             <span className="landing-path-link">
               Explore indexes <span aria-hidden>→</span>
             </span>
           </Link>
 
-          <Link href="#create" className="landing-path-card landing-path-curators" data-motion>
+          <Link href="/create" className="landing-path-card landing-path-curators" data-motion>
             <div className="landing-path-bg landing-path-stack" aria-hidden>
               <span/><span/><span/><span/>
             </div>
@@ -165,8 +170,8 @@ export function HomeLanding() {
         </div>
         <div className="landing-opportunity-inner mx-auto max-w-6xl px-4 pb-16 pt-28 text-center sm:px-6 sm:pb-24 sm:pt-36">
           <p className="landing-opportunity-eyebrow">The opportunity</p>
-          <h2 className="landing-opportunity-title">On-chain baskets for Robinhood Chain.</h2>
-          <p className="landing-opportunity-sub">Curated tokens. Transparent vaults. Redeem anytime.</p>
+          <h2 className="landing-opportunity-title">On-chain vaults for Robinhood Chain.</h2>
+          <p className="landing-opportunity-sub">Curated strategies. Rules on-chain. Exit anytime.</p>
           <p className="landing-opportunity-tag">Same people. Bigger possibilities.</p>
         </div>
       </section>

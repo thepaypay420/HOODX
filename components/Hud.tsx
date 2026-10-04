@@ -68,7 +68,7 @@ export function Hud({ landing = false }: { landing?: boolean }) {
       >
         Explore
       </Link>
-      <Link href={landing ? "#create" : "/#create"} data-testid="nav-create" className="landing-nav-link" onClick={() => setOpen(false)}>
+      <Link href="/create" data-testid="nav-create" className="landing-nav-link" onClick={() => setOpen(false)}>
         Create
       </Link>
     </>
@@ -115,7 +115,7 @@ export function Hud({ landing = false }: { landing?: boolean }) {
             >
               Explore
             </Link>
-            <Link href="/#create" data-testid="nav-create" className="inline-flex h-11 items-center rounded-full px-2.5 hover:text-[var(--paper)]">
+            <Link href="/create" data-testid="nav-create" className="inline-flex h-11 items-center rounded-full px-2.5 hover:text-[var(--paper)]">
               Create
             </Link>
             <span className="hidden sm:flex">
