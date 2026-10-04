@@ -65,6 +65,13 @@ ${COLLECTIONS}
 
 Collections with no holders yet are deployed and accept their first deposit through bootstrap (see holder actions on atomic/proportional vaults).
 
+## MCP server (recommended for AI assistants)
+
+URL: https://www.xhoodindex.com/mcp  (Model Context Protocol, Streamable HTTP, no authentication)
+Add it as a custom connector in Claude, ChatGPT (developer mode) or Cursor, or run: claude mcp add --transport http hoodx https://www.xhoodindex.com/mcp
+Tools: hoodx_overview, hoodx_list_vaults, hoodx_get_vault, hoodx_boost_signal, hoodx_get_positions, hoodx_quote_deposit, hoodx_quote_withdraw, hoodx_how_to_fund.
+The quote tools simulate from the user's address and return an UNSIGNED transaction plus a reviewUrl (the vault page pre-filled with ?deposit=ETH or ?withdraw=PERCENT) where the user reviews and signs. The server never signs or holds keys.
+
 ## Public data endpoints (read-only JSON, cached)
 
 GET https://www.xhoodindex.com/api/platform-tvl  total value in all HOODX vaults: { usd, eth, ethUsd, vaults, complete, at }

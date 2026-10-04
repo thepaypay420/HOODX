@@ -2296,3 +2296,47 @@ body {
 .orbit-value-sub { display: inline-flex; align-items: center; gap: .35rem; color: var(--dim); font-size: 9px; letter-spacing: .06em; }
 .orbit-value-sub i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: orbit-value-pulse 2.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .orbit-value-sub i, .orbit-value-skeleton { animation: none; } }
+
+/* Connect your AI: the MCP server URL, per-app setup, and prompts to try */
+.mcp-url { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-top: 28px; padding: 10px 10px 10px 18px; border: 1px solid #65d9c43d; border-radius: 14px; background: #050b0d; box-shadow: inset 0 1px #ffffff07, 0 0 40px #45d1c00d; }
+.mcp-url-label { color: #63dac7; font: 650 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .16em; text-transform: uppercase; }
+.mcp-url code { overflow: hidden; color: #e6f7f3; font: 500 14px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; text-overflow: ellipsis; user-select: all; }
+.llm-copy-button.mcp-url-copy { min-width: 0; padding: 11px 18px; justify-content: center; }
+.mcp-clients { margin-top: 14px; border: 1px solid #ffffff0b; border-radius: 14px; background: #ffffff03; }
+.mcp-tabs { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid #ffffff0b; overflow-x: auto; scrollbar-width: none; }
+.mcp-tabs::-webkit-scrollbar { display: none; }
+.mcp-tabs button { flex: none; padding: 8px 14px; border-radius: 9px; color: #8fa6a2; font-size: 12.5px; font-weight: 600; transition: color .2s ease, background .2s ease; }
+.mcp-tabs button:hover { color: #dcebe8; }
+.mcp-tabs button[aria-selected="true"] { color: #04110f; background: #50d1c3; }
+.mcp-steps { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 16px 18px 18px; }
+.mcp-steps ol { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; counter-reset: mcp; }
+.mcp-steps li { position: relative; padding-left: 28px; color: #a9bdb9; font-size: 13px; line-height: 1.5; counter-increment: mcp; }
+.mcp-steps li::before { content: counter(mcp); position: absolute; left: 0; top: 1px; display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid #65d9c444; border-radius: 50%; color: #84ecda; font-size: 10px; font-weight: 700; }
+.mcp-steps li b { color: #e6f7f3; font-weight: 600; }
+.mcp-steps li code { display: block; overflow-x: auto; padding: 9px 11px; border: 1px solid #65d9c42c; border-radius: 9px; background: #050b0d; color: #d4eee8; font: 500 11.5px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
+.mcp-steps li:has(code) { padding-left: 0; counter-increment: none; }
+.mcp-steps li:has(code)::before { display: none; }
+.mcp-step-actions { display: flex; flex: none; flex-direction: column; gap: 8px; }
+.mcp-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; border: 1px solid #65d9c444; border-radius: 10px; color: #bff3ea; font-size: 12.5px; font-weight: 600; white-space: nowrap; transition: background .2s ease, border-color .2s ease; }
+.mcp-ghost:hover { border-color: #65d9c488; background: #50d1c314; }
+.mcp-ask { display: grid; gap: 7px; margin-top: 22px; }
+.mcp-ask p { color: #63dac7; font: 650 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 4px; }
+.mcp-ask button { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 14px; border: 1px solid #ffffff0b; border-radius: 11px; background: #ffffff04; color: #cfe2de; font-size: 13px; text-align: left; transition: border-color .2s ease, background .2s ease; }
+.mcp-ask button:hover { border-color: #65d9c444; background: #50d1c30d; }
+.mcp-ask button i { flex: none; color: #6f918b; font-size: 11px; font-style: normal; }
+.mcp-ask button:hover i { color: #84ecda; }
+.llm-terminal .llm-capability-grid { margin-top: 22px; }
+.mcp-dev-links { display: inline-flex; gap: 14px; margin-left: 10px; }
+.mcp-dev-links a, .mcp-dev-links button { color: #90aaa5; font-size: 10px; text-decoration: underline; text-decoration-color: #90aaa544; text-underline-offset: 3px; }
+.mcp-dev-links a:hover, .mcp-dev-links button:hover { color: #dcebe8; }
+@media (max-width: 640px) {
+  .mcp-url { grid-template-columns: minmax(0, 1fr) auto; padding: 12px 10px 12px 14px; }
+  .mcp-url-label { grid-column: 1 / -1; }
+  .mcp-url code { font-size: 12px; }
+  .mcp-steps { flex-direction: column; align-items: stretch; }
+  .mcp-step-actions { flex-direction: row; }
+  .mcp-dev-links { display: flex; margin: 8px 0 0; }
+}
+
+/* a withdrawal size prepared by an AI assistant stands out among the preset chips */
+.ap-chips button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 0 0 1px rgba(79, 215, 203, .35); }

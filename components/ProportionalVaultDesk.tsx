@@ -1,4 +1,5 @@
 'use client';
+import { readIntent, INTENT_NOTE } from '@/lib/intent';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {encodeFunctionData,erc20Abi,formatEther,formatUnits,getAddress,isAddress,parseAbi,parseEther,zeroAddress,type Address,type Hash} from 'viem';
 import {publicClient,useWallet} from '@/lib/wallet';
@@ -41,6 +42,8 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
   },[release.vault]);
   const [curatorOpen,setCuratorOpen]=useState(false);
   const [tab,setTab]=useState<'deposit'|'withdraw'>('deposit');
+  // a deposit or withdrawal an AI assistant prepared (MCP review link): pre-fill only, the user still confirms
+  useEffect(()=>{const i=readIntent();if(!i.deposit&&!i.withdraw)return;if(i.deposit){setTab('deposit');setEth(i.deposit);}else{setTab('withdraw');setPercent(i.withdraw!);}setMessage(INTENT_NOTE);document.getElementById('wallet-actions')?.scrollIntoView({block:'center'});},[]);
   const lock=useRef(false),generation=useRef(0);
   const current=state?.account===(address??zeroAddress)&&state.vault===release.vault?state:undefined;
   const selected=current?current.walletShares*BigInt(percent)/100n:0n;
@@ -178,7 +181,7 @@ export function ProportionalVaultDesk({release}:{release:ProportionalRelease}) {
       <p className="vp-hint">{joinReady?'Leftover tokens from the buys are returned to you. Every buy keeps a protected minimum.':`One deposit buys the whole basket. Minimum ${minimum} ETH, plus gas.`}</p>
     </>:<>
       <div className="vp-field"><span className="vp-field-top"><span>You withdraw</span><span>{address?`Balance ${current?display(current.walletShares):'—'} ${symbol}`:''}</span></span><span className="vp-amount"><output>{display(selected)}</output><b>{symbol}</b></span></div>
-      <div className="vp-chips">{[25,50,75,100].map(n=><button key={n} type="button" disabled={busy} aria-pressed={percent===n} onClick={()=>{invalidate();setPercent(n);if(onChain&&current&&current.walletShares>0n)void preview('exit',n);}}>{n===100?'Max':`${n}%`}</button>)}</div>
+      <div className="vp-chips">{[...new Set([25,50,75,100,percent])].sort((a,b)=>a-b).map(n=><button key={n} type="button" disabled={busy} aria-pressed={percent===n} onClick={()=>{invalidate();setPercent(n);if(onChain&&current&&current.walletShares>0n)void preview('exit',n);}}>{n===100?'Max':`${n}%`}</button>)}</div>
       {exitReady&&<dl className="vp-lines"><div><dt>You receive</dt><dd>≈ {display(exitReady.plan.quotedEth)} ETH</dd></div><div><dt>Protected minimum</dt><dd>{display(exitReady.plan.minEthOut)} ETH</dd></div></dl>}
       {!address?<button className="vp-primary" onClick={()=>void connect()}>Connect wallet</button>
         :chainId!==4663?<button className="vp-primary" onClick={()=>void switchToRobinhood()}>Switch to Robinhood Chain</button>

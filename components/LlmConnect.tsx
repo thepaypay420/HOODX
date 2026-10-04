@@ -2,7 +2,26 @@
 
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
-import { HOODX_AGENT_PROMPT, HOODX_AGENT_REFERENCE } from "@/lib/llmConnect";
+import { HOODX_AGENT_PROMPT } from "@/lib/llmConnect";
+
+const MCP_URL = "https://www.xhoodindex.com/mcp";
+const CURSOR_INSTALL = `cursor://anysphere.cursor-deeplink/mcp/install?name=hoodx&config=${typeof btoa === "function" ? btoa(JSON.stringify({ url: MCP_URL })) : ""}`;
+const CLAUDE_CODE = `claude mcp add --transport http hoodx ${MCP_URL}`;
+
+type Client = "claude" | "chatgpt" | "cursor" | "code";
+const CLIENTS: { id: Client; label: string; steps: React.ReactNode[]; action?: { label: string; href: string } }[] = [
+  { id: "claude", label: "Claude", steps: [<>Open <b>Settings → Connectors</b> and choose <b>Add custom connector</b>.</>, <>Name it <b>HOODX</b> and paste the server URL.</>, <>In any chat, switch HOODX on from the tools menu.</>],
+    action: { label: "Open Claude connectors", href: "https://claude.ai/settings/connectors" } },
+  { id: "chatgpt", label: "ChatGPT", steps: [<>Open <b>Settings → Apps &amp; Connectors → Advanced</b> and turn on <b>Developer mode</b>.</>, <>Choose <b>Create</b>, name it <b>HOODX</b>, paste the server URL and pick <b>No authentication</b>.</>, <>Select HOODX in a chat to use its tools.</>] },
+  { id: "cursor", label: "Cursor", steps: [<>Click <b>Add to Cursor</b> and confirm.</>, <>Or add the server URL under <b>Settings → MCP</b>.</>],
+    action: { label: "Add to Cursor", href: CURSOR_INSTALL } },
+  { id: "code", label: "Claude Code", steps: [<>Run this once in your terminal:</>, <code key="c">{CLAUDE_CODE}</code>, <>Any MCP client works the same way: point it at the server URL.</>] },
+];
+const ASK = [
+  "What's in HOODX right now, and how has each vault done since launch?",
+  "Why is Boosted ETH at its current leverage, and what ETH price would cut it?",
+  "Prepare a 0.05 ETH deposit into Hands-free LP from my wallet 0x…",
+];
 
 function RobotFace() {
   return (
@@ -30,9 +49,18 @@ function AgentGlyph() {
   );
 }
 
+function useCopy() {
+  const [copied, setCopied] = useState("");
+  const copy = async (key: string, text: string) => {
+    try { await navigator.clipboard.writeText(text); setCopied(key); window.setTimeout(() => setCopied((k) => (k === key ? "" : k)), 1800); } catch { /* clipboard blocked: the text stays selectable */ }
+  };
+  return { copied, copy };
+}
+
 function ConnectionDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const titleId = useId();
-  const [copied, setCopied] = useState(false);
+  const [client, setClient] = useState<Client>("claude");
+  const { copied, copy } = useCopy();
 
   useEffect(() => {
     if (!open) return;
@@ -46,51 +74,63 @@ function ConnectionDialog({ open, onClose }: { open: boolean; onClose: () => voi
     };
   }, [open, onClose]);
 
-  async function copyPrompt() {
-    await navigator.clipboard.writeText(HOODX_AGENT_PROMPT);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  }
-
   if (!open) return null;
+  const active = CLIENTS.find((c) => c.id === client)!;
   return createPortal(
     <div className="llm-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="llm-terminal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="llm-terminal-bar">
           <span className="llm-terminal-lights" aria-hidden><i /><i /><i /></span>
-          <span>hoodx://agent-link</span>
+          <span>hoodx://mcp</span>
           <button type="button" onClick={onClose} aria-label="Close connection panel">×</button>
         </header>
         <div className="llm-terminal-body">
           <div className="llm-terminal-heading">
             <div>
-              <p>AGENT CONNECTION KIT</p>
-              <h2 id={titleId}>Give your AI the full interface.</h2>
-              <span>Connect your Claude, Codex, Cursor, or any EVM-capable agent.</span>
+              <p>HOODX FOR AI</p>
+              <h2 id={titleId}>Bring HOODX into your AI.</h2>
+              <span>Ask Claude, ChatGPT or Cursor about every vault with live on-chain numbers, and have it prepare deposits and withdrawals you sign yourself.</span>
             </div>
-            <div className="llm-terminal-status"><i /> Robinhood Chain · 4663</div>
+            <div className="llm-terminal-status"><i /> MCP server · live</div>
           </div>
 
-          <div className="llm-command-preview" aria-label="Connection sequence">
-            <p><b>$</b> fetch <span>{HOODX_AGENT_REFERENCE}</span></p>
-            <p><b>✓</b> discover vault + accounting mode</p>
-            <p><b>✓</b> quote → protect → simulate</p>
-            <p><b>›</b> your wallet signs the final transaction</p>
+          <div className="mcp-url">
+            <span className="mcp-url-label">Server URL</span>
+            <code>{MCP_URL}</code>
+            <button type="button" className="llm-copy-button mcp-url-copy" onClick={() => void copy("url", MCP_URL)}>{copied === "url" ? "Copied ✓" : "Copy"}</button>
+          </div>
+
+          <div className="mcp-clients">
+            <div className="mcp-tabs" role="tablist" aria-label="Your AI app">
+              {CLIENTS.map((c) => <button key={c.id} type="button" role="tab" aria-selected={client === c.id} onClick={() => setClient(c.id)}>{c.label}</button>)}
+            </div>
+            <div className="mcp-steps" role="tabpanel">
+              <ol>{active.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+              <div className="mcp-step-actions">
+                {active.id === "code" && <button type="button" className="mcp-ghost" onClick={() => void copy("code", CLAUDE_CODE)}>{copied === "code" ? "Command copied ✓" : "Copy command"}</button>}
+                {active.action && <a className="mcp-ghost" href={active.action.href} target={active.action.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{active.action.label} <span aria-hidden>↗</span></a>}
+              </div>
+            </div>
+          </div>
+
+          <div className="mcp-ask">
+            <p>Then try asking</p>
+            {ASK.map((q, i) => <button key={q} type="button" onClick={() => void copy(`ask${i}`, q)}><span>“{q}”</span><i>{copied === `ask${i}` ? "Copied ✓" : "Copy"}</i></button>)}
           </div>
 
           <div className="llm-capability-grid">
-            <div><strong>Hold</strong><span>Read, join, withdraw, redeem and claim.</span></div>
-            <div><strong>Curate</strong><span>Weights, routes, pause, unwind and atomic rebalances.</span></div>
-            <div><strong>Launch</strong><span>Create a 2–24 asset index with one factory call.</span></div>
+            <div><strong>Live data</strong><span>Every vault&apos;s value, holdings and return, plus the exact prices behind Boosted ETH&apos;s leverage.</span></div>
+            <div><strong>Prepared transactions</strong><span>Deposits and withdrawals simulated from your address, with protection built in.</span></div>
+            <div><strong>You sign</strong><span>Your AI can&apos;t move funds. Sign in your wallet or open the review link on HOODX.</span></div>
           </div>
 
-          <div className="llm-terminal-actions">
-            <button type="button" className="llm-copy-button" onClick={() => void copyPrompt()}>
-              {copied ? "Prompt copied ✓" : "Copy connection prompt"}<span aria-hidden>↗</span>
-            </button>
-            <a href="/llms.txt" target="_blank" rel="noreferrer">View every command <span aria-hidden>→</span></a>
-          </div>
-          <p className="llm-safety-note">Read and simulation are automatic. You review every write and sign with your own wallet. HOODX never asks for private keys.</p>
+          <p className="llm-safety-note">
+            Free to use: your own AI subscription does the thinking. HOODX never asks for keys or seed phrases.
+            <span className="mcp-dev-links">
+              <a href="/llms.txt" target="_blank" rel="noreferrer">Agent reference</a>
+              <button type="button" onClick={() => void copy("prompt", HOODX_AGENT_PROMPT)}>{copied === "prompt" ? "Prompt copied ✓" : "Copy agent prompt"}</button>
+            </span>
+          </p>
         </div>
       </section>
     </div>,
@@ -98,21 +138,33 @@ function ConnectionDialog({ open, onClose }: { open: boolean; onClose: () => voi
   );
 }
 
+/** Opens itself once when the page is reached with ?connect=ai (the MCP server's link). */
+function useAutoOpen(setOpen: (v: boolean) => void) {
+  useEffect(() => {
+    const w = window as unknown as { __hoodxConnectOpened?: boolean };
+    if (w.__hoodxConnectOpened || new URLSearchParams(window.location.search).get("connect") !== "ai") return;
+    w.__hoodxConnectOpened = true;
+    setOpen(true);
+  }, [setOpen]);
+}
+
 export function LlmConnectButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
+  useAutoOpen(setOpen);
   return <><button type="button" className={className} onClick={() => setOpen(true)}>Connect your AI <span aria-hidden>↗</span></button><ConnectionDialog open={open} onClose={() => setOpen(false)} /></>;
 }
 
 export function LlmConnectMobileCard() {
   const [open, setOpen] = useState(false);
+  useAutoOpen(setOpen);
   return (
     <>
       <button type="button" className="landing-path-card landing-path-agents" data-motion onClick={() => setOpen(true)}>
         <AgentGlyph />
-        <p className="landing-path-label">For agents</p>
+        <p className="landing-path-label">For AI</p>
         <h2 className="landing-path-title">Connect your AI.</h2>
-        <p className="landing-path-copy">Claude, Codex, Cursor and more. Every vault command, ready to use.</p>
-        <span className="landing-path-link">Connect agent <span aria-hidden>→</span></span>
+        <p className="landing-path-copy">Use HOODX inside Claude, ChatGPT or Cursor: live vault data and deposits you sign yourself.</p>
+        <span className="landing-path-link">Connect <span aria-hidden>→</span></span>
       </button>
       <ConnectionDialog open={open} onClose={() => setOpen(false)} />
     </>

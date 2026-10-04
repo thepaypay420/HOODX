@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { readIntent, INTENT_NOTE } from "@/lib/intent";
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { BaseError, ContractFunctionRevertedError, erc20Abi, formatEther, parseEther, parseAbiItem, type Address } from "viem";
 import { robinhood } from "@/lib/chain";
@@ -45,6 +46,13 @@ export function BoostExperience() {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  // a deposit or withdrawal an AI assistant prepared (MCP review link): pre-fill only, the user still confirms
+  const [intentPct, setIntentPct] = useState<bigint | null>(null);
+  useEffect(() => {
+    const i = readIntent();
+    if (i.deposit) { setTab("deposit"); setAmount(i.deposit); setMsg(INTENT_NOTE); }
+    else if (i.withdraw) { setTab("withdraw"); setIntentPct(BigInt(i.withdraw)); setMsg(INTENT_NOTE); }
+  }, []);
   const [mine, setMine] = useState<{ shares: bigint; valueWei: bigint | null; ethBal: bigint; deposited: bigint; withdrawn: bigint }>(
     { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO });
   const isCurator = !!address && address.toLowerCase() === BOOST.curator.toLowerCase();
@@ -199,7 +207,7 @@ export function BoostExperience() {
           <p className="ap-fine">Min {BOOST.minDepositEth} ETH · capacity {fmtUsd(BOOST.capUsd, 0)} · you pay only your own entry swap; other holders are never diluted.</p>
         </div> : <div className="ap-pane">
           <p className="ap-est">{mine.shares > ZERO ? "Receive ETH back in one transaction, any time." : "You have no position to withdraw yet."}</p>
-          <div className="ap-chips ap-chips-wide">{[25n, 50n, 100n].map((p) => <button key={String(p)} disabled={busy || mine.shares <= ZERO} onClick={() => withdraw(p)}>Withdraw {String(p)}%</button>)}</div>
+          <div className="ap-chips ap-chips-wide">{[...new Set([...(intentPct ? [intentPct] : []), 25n, 50n, 100n])].sort((a, b) => Number(a - b)).map((p) => <button key={String(p)} aria-pressed={p === intentPct} disabled={busy || mine.shares <= ZERO} onClick={() => withdraw(p)}>Withdraw {String(p)}%</button>)}</div>
           <button className="ap-text-btn" disabled={busy || mine.shares <= ZERO} onClick={exitInKind}>In-kind exit · receive WETH and steakUSDG directly, no swap</button>
         </div>}
         {msg && <p className="ap-msg" role="status">{msg}</p>}
