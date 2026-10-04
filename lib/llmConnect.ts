@@ -1,6 +1,16 @@
+import { AUTO_LP, AUTO_LP_V1 } from "@/lib/stockLp";
+import { BOOST } from "@/lib/boost";
+import { verifiedV2Vaults } from "@/lib/v2";
+import { FEATURED_VAULTS } from "@/lib/vaults";
+
+/** Official collections, from the same list the Explore page renders, so this reference never drifts from the site. */
+const COLLECTIONS = FEATURED_VAULTS.filter((v) => v.status !== "pilot")
+  .map((v) => `${v.slug.padEnd(10)} $${v.symbol.padEnd(7)} ${v.address ?? verifiedV2Vaults[v.slug] ?? "atomicFactory.bySlug(slug)"}  ${v.name}`)
+  .join("\n");
+
 export const HOODX_AGENT_REFERENCE = "https://www.xhoodindex.com/llms.txt";
 
-export const HOODX_AGENT_PROMPT = `Connect to HOODX on Robinhood Chain and help me operate on-chain index vaults.
+export const HOODX_AGENT_PROMPT = `Connect to HOODX on Robinhood Chain and help me use its on-chain vaults: Boosted ETH, Hands-free LP and the index collections.
 
 1. Load the current protocol reference from ${HOODX_AGENT_REFERENCE} before planning anything.
 2. Ask what I want to do, then read the latest on-chain state and identify the exact vault, factory, controller, and accounting mode.
@@ -12,7 +22,7 @@ Use viem, cast, or an equivalent EVM client. Chain ID is 4663. Prefer the newest
 
 export const HOODX_LLM_REFERENCE = `# HOODX agent interface
 
-Updated: 2026-09-24
+Updated: 2026-10-04
 Canonical UI: https://www.xhoodindex.com
 Network: Robinhood Chain mainnet
 Chain ID: 4663
@@ -31,12 +41,79 @@ Legacy V2 factory: 0x5e846680bf8d702072b65e1e403d07e5a5f98b90
 696X vault (proportional, created by the atomic factory): 0xb645A727ed525321509Ec16aa011D38E52f99a93
 Previous 696X V2 vault (redeem in kind only; its ETH paths depend on price references): 0x531832cd20d33ee974afee7ba5720b8f3f2c9292
 FAANGX V2 vault: 0xcb40b8d79ff6f4c5db15bd8a9692b934b52cb0b0
+Boosted ETH vault (BOOSTX): ${BOOST.vault}
+Boosted ETH signal: ${BOOST.signal}
+Hands-free LP vault (STKX, automated stock LP): ${AUTO_LP.vault}
+Hands-free LP controller: ${AUTO_LP.controller}
+Retired Hands-free LP V1 vault (withdraw only): ${AUTO_LP_V1.vault}
 Protocol treasury: 0x134d468b0bcaea6df127916f951f7938c06a37c6
 
 Discover any named vault with atomicFactory.bySlug(slug). Discover its controller from the factory's VaultCreated event or read vault.owner(); for atomic vaults the owner is the controller and controller.curator() is the human curator. Discover approved route configuration with atomicFactory.configIdByToken(token). A zero bytes32 value means the token cannot be launched yet.
 
 Official vaults: https://www.xhoodindex.com/explore
 Indexed asset universe and route metadata: https://www.xhoodindex.com/universe.json
+
+## What HOODX offers
+
+Every HOODX vault is an ERC-20 share token: deposit ETH, receive shares, withdraw ETH. Rules run on-chain; curators and keepers cannot move holder assets out of the vault.
+- Boosted ETH (/boost): smart ETH leverage, 0x to 2x. An on-chain trend signal holds up to 2x ETH while crypto trends up and steps aside into dollars earning yield (steakUSDG) when the trend breaks.
+- Hands-free LP (/autolp): deposit ETH once; the vault provides Uniswap V4 liquidity on 8 tokenized stocks (each paired with USDG), rebalanced and compounded by on-chain rules.
+- Index collections (/i/{slug}): one token for a curated basket of tokenized stocks or Robinhood Chain tokens, with a WETH cash sleeve.
+
+Official collections (slug, ticker, vault):
+${COLLECTIONS}
+
+Collections with no holders yet are deployed and accept their first deposit through bootstrap (see holder actions on atomic/proportional vaults).
+
+## Public data endpoints (read-only JSON, cached)
+
+GET https://www.xhoodindex.com/api/platform-tvl  total value in all HOODX vaults: { usd, eth, ethUsd, vaults, complete, at }
+GET https://www.xhoodindex.com/api/boost-stats  Boosted ETH: navUsd, navEth, leverage, target, regime inputs, capacity, sinceLaunchUsdPct, depositsPaused
+GET https://www.xhoodindex.com/api/autolp-stats  Hands-free LP: navUsd, navEth, perShareEth, sleeves (range and earning status), sinceLaunchUsdPct
+GET https://www.xhoodindex.com/api/vault-nav?vault={address}  any HOODX index vault or Boosted ETH: { supply, assetsWei, estimated, at }
+GET https://www.xhoodindex.com/api/collection-returns  per collection without holders yet: simulated since-launch USD return of its on-chain weights and cash sleeve, before fees ({ slug: { pct, since, coverageBps } })
+
+These are conveniences for display. Before any transaction, read and simulate on-chain; never size a transaction from these endpoints alone.
+
+## Boosted ETH (BOOSTX)
+
+Vault reads:
+state() returns (uint256 price,uint256 collateral,uint256 borrowShares,uint256 debt,uint256 cashShares,uint256 cashUsdg,uint256 idleUsdg,uint256 idleWeth,uint256 nav,uint256 leverage)
+navPerShare() returns (uint256)
+rebalanceStatus() returns (bool ready,bool emergency,uint256 leverage,uint256 target,bool fresh)
+depositsPaused() returns (bool)
+tvlCapUsdg() returns (uint256)
+previewExitInKind(uint256 shares) returns (uint256 wethOut,uint256 usdgToApprove,uint256 cashSharesOut,uint256 usdgOut)
+
+Signal reads (${BOOST.signal}):
+target() returns (uint256)        leverage target, 1e18 = 1x, capped at 2e18
+snapshot() returns (uint256 target,uint256 sigma,uint8 ethFlags,uint8 btcFlags,uint128[8] ethEma,uint128[8] btcEma,uint256 ethLast,uint256 lastHour)
+isFresh() returns (bool)
+
+How the signal works: 8 hourly EMAs each for ETH and BTC from Chainlink (slow 20/50/100/200-day, fast 5/10/20/50-day). Each flag turns off only below EMA x 0.99 and on only above EMA x 1.01. slow = share of the 8 slow flags on (ETH and BTC 50/50); fast likewise. target = min(2, slow + (slow >= 0.75 ? fast x (min(2, 2.4 / sigma) - 1) : 0)), sigma = annualised ETH volatility. The vault holds 0x (all dollars) only when every slow flag is off.
+
+Holder writes:
+deposit(address receiver,uint256 minShares,uint256 deadline) payable returns (uint256 shares)
+withdraw(uint256 shares,address receiver,uint256 minEthOut,uint256 deadline) returns (uint256 ethOut)
+exitInKind(uint256 shares,address receiver) returns (uint256 wethOut,uint256 cashOut,uint256 repaid)
+
+Deposit flow: simulate deposit(receiver, 1, deadline) with the exact msg.value to read the share result, set minShares about 1% below it, re-simulate, then ask for the signature. Minimum deposit 0.005 ETH. A deposit takes the vault's current shape (collateral, debt, dollars) and never dilutes holders. Withdraw flow: simulate withdraw(shares, receiver, 1, deadline) for the ETH result, set minEthOut about 1% below it, re-simulate, then sign. Withdrawals are never paused. If the ETH exit cannot be simulated, offer exitInKind: read previewExitInKind(shares), have the user approve exactly usdgToApprove USDG to the vault (their share of the debt), then exitInKind returns WETH and steakUSDG shares with no swap.
+Typical reverts: Divergence (pool and oracle more than 1% apart; retry shortly), CapExceeded, BelowMinimum, Paused (deposits only), Slippage, Stale.
+Anyone may call rebalance() when rebalanceStatus().ready is true; the keeper normally does it every one to two hours. Do not offer rebalance, setDepositsPaused or ownership functions to ordinary holders unless they ask.
+
+## Hands-free LP (STKX)
+
+Vault reads: totalSupply(), balanceOf(address), holdings(), minDepositUsdg(), tvlCapUsdg(), strategy()
+Controller reads (${AUTO_LP.controller}): sleeves(), status(uint256 i) returns (bool inRange,bool referenceAgrees,uint64 breachStart,uint64 lastSeen,bool rebandReady,int24 tick)
+
+Holder writes:
+depositEth(uint256 shares,address receiver,uint256 deadline) payable returns (uint256 ethUsed)
+withdrawEth(uint256 shares,address receiver,uint256 minEthOut,uint256 deadline) returns (uint256 ethOut)
+exitToSleeveShares(uint256 shares,address receiver)
+
+depositEth mints an exact share amount and refunds unused ETH. Size it by simulation: probe a share amount near msg.value / perShareEth (from /api/autolp-stats or a probe), read ethUsed, scale shares to the ETH sent less a 3% margin, simulate again, then sign. BelowMinimum means too few shares (grow the probe); an ETH shortfall means too many (shrink). Minimum about $10; capacity is capped (tvlCapUsdg). Withdraw: simulate withdrawEth(shares, receiver, 1, deadline), set minEthOut 1.5% below the result, re-simulate, sign. exitToSleeveShares is the emergency exit: it returns the holder's share of each stock LP sleeve with no swap.
+Rebalancing (signalAll, executeReband, harvest, compound) runs automatically every hour by public keeper; holders never need to call it.
+The retired V1 vault (${AUTO_LP_V1.vault}) is exit only: offer withdrawEth to existing holders and never a deposit.
 
 ## Minimal viem connection
 
