@@ -1,0 +1,182 @@
+{
+ "prev_hash": "d9c98798aa2526d3bbfded2e0f3d2a22badde66dd2fcb306c6a53102ce1658f3",
+ "hash": "47da0d42232000249f7c83b6bf10792bfcd55fe5d1eab6c0e5c1779d8b1ce88a",
+ "payload": {
+  "day": "2026-10-05",
+  "decision_block": 80345978,
+  "universe": 1116,
+  "frozen_utc": "2026-10-05T06:11:43.656596+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0x451b15f8f72edfb807170593cdc0bffea8992226ef6f516031b175a98cd4b9c2",
+    "token": "0xedbf91223639800bcd5756815caf908df3b890be",
+    "score": 0.19787955800810172,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xe9e93bd1fa0f05fcce035e0f4b456f7f8079e8da9a3dceefb0cc89607dfdaa6a",
+    "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+    "score": 0.16374561716908262,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x9d30491d9a8baeb587b847ea20aa4013e8664d21e30c5bbd624b6c10d44daf32",
+    "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+    "score": 0.14479028443460581,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x99f1143ef8323cc044f6dd8b521d5fe871abd4e2fb141510d35e955111c05d91",
+    "token": "0xb41c7ac9d46a980f8bdf1894b392a2a07ec9992a",
+    "score": 0.1297928077475475,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xf2fd48691c5b75935f9828417d12e4ce36cc2b2568ee6c1d0d6a56c4b22f2763",
+    "token": "0xef67e3064bef1a27e81925ec7132f23e533bd5f6",
+    "score": 0.12367180103885783,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7eba77f0403bd49df11633280d276e008f561b797a9acede173ae6e90f0086aa",
+    "token": "0x60edd303679c3923b628c8f02ce0be69e96deb1d",
+    "score": 0.0592731660526332,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x5a136cabe8ecf2c26ed77034831f02680dcc220ed30fc9d6c5dc044d67c0c8c7",
+    "token": "0x5317c0d077d2eeb639448939b930d49c4984b63b",
+    "score": 0.011315774661340264,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x84bd4e2d8be11aeb0afc1195b38f587b61e90068548f1063fdbe448fb8cad0b6",
+    "token": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+    "score": 0.0006191431475818104,
+    "initializer": null
+   }
+  ],
+  "H8": [
+   {
+    "pool_id": "0xe9e93bd1fa0f05fcce035e0f4b456f7f8079e8da9a3dceefb0cc89607dfdaa6a",
+    "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+    "score": 0.03560188312768888,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x451b15f8f72edfb807170593cdc0bffea8992226ef6f516031b175a98cd4b9c2",
+    "token": "0xedbf91223639800bcd5756815caf908df3b890be",
+    "score": 0.03460457336366458,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xf2fd48691c5b75935f9828417d12e4ce36cc2b2568ee6c1d0d6a56c4b22f2763",
+    "token": "0xef67e3064bef1a27e81925ec7132f23e533bd5f6",
+    "score": 0.027750007028679666,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x9d30491d9a8baeb587b847ea20aa4013e8664d21e30c5bbd624b6c10d44daf32",
+    "token": "0x18e674231a58c239dc7daedcffe15ec3a24cff5c",
+    "score": 0.026372748262170943,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7eba77f0403bd49df11633280d276e008f561b797a9acede173ae6e90f0086aa",
+    "token": "0x60edd303679c3923b628c8f02ce0be69e96deb1d",
+    "score": 0.021164360549717112,
+    "initializer": null
+   }
+  ],
+  "SLP25": [
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.004195037105722653
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.003732674747469867
+   },
+   {
+    "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0031209899212280632
+   },
+   {
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "token": "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344",
+    "symbol": "USO",
+    "score": 0.002010989887009773
+   },
+   {
+    "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+    "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+    "symbol": "SPCX",
+    "score": 0.0011021694194113573
+   },
+   {
+    "pool_id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0009983193226950566
+   },
+   {
+    "pool_id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0009823952573378531
+   },
+   {
+    "pool_id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+    "token": "0x322f0929c4625ed5bad873c95208d54e1c003b2d",
+    "symbol": "TSLA",
+    "score": 0.0009528553078366677
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0008235628470893339
+   },
+   {
+    "pool_id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+    "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+    "symbol": "AAPL",
+    "score": 0.0007321362352128355
+   },
+   {
+    "pool_id": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+    "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+    "symbol": "GOOGL",
+    "score": 0.0003364708049144234
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.00019437896679319293
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0001360830184667223
+   }
+  ],
+  "gate_census": {
+   "PASS": 204,
+   "G6": 793,
+   "G7": 535,
+   "G5": 75,
+   "G3": 99,
+   "G4": 8
+  }
+ }
+}

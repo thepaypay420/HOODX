@@ -1,9 +1,9 @@
 {
- "updated_utc": "2026-10-04T06:19:00.525187+00:00",
+ "updated_utc": "2026-10-05T06:11:48.841194+00:00",
  "H3": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 29,
+  "exploratory_positions_excluded": 55,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -51,61 +51,61 @@
  },
  "SLP10K8_book": {
   "evidence_status": "late_exploratory",
-  "book_exit_value": 198.2292,
-  "skew_book_exit_value": 198.6564,
+  "book_exit_value": 198.7835,
+  "skew_book_exit_value": 199.135,
   "skew_per_sleeve": [
-   -0.057,
-   -0.181,
-   0.185,
-   -0.292,
-   -0.53,
-   -0.066,
-   -0.068,
-   -0.335
+   -0.094,
+   -0.204,
+   0.19,
+   -0.507,
+   -0.017,
+   0.172,
+   -0.106,
+   -0.298
   ],
-  "hold_stocks_value": 197.3034,
+  "hold_stocks_value": 198.2087,
   "hold_usdg": 200.0,
   "per_sleeve": [
-   -0.057,
-   -0.181,
-   0.25,
-   -0.292,
-   -0.816,
-   -0.198,
-   -0.016,
-   -0.46
+   -0.094,
+   -0.204,
+   0.247,
+   -0.507,
+   -0.309,
+   0.143,
+   -0.054,
+   -0.439
   ],
   "rebands": [
-   1,
+   2,
    0,
    0,
    0,
    1,
    1,
-   1,
-   1
+   2,
+   2
   ]
  },
  "cohorts_A25_A26": {
   "2026-10-01": {
    "evidence_status": "late_exploratory",
    "B0": {
-    "net_usd": 1.4316,
+    "net_usd": 2.0351,
     "entry_exit_cost_usd": 1.5296,
-    "net_after_entry_usd": -0.098,
-    "worst_sleeve_usd": -0.271
+    "net_after_entry_usd": 0.5054,
+    "worst_sleeve_usd": -0.216
    },
    "E1": {
-    "net_usd": 1.4316,
+    "net_usd": 2.0351,
     "entry_exit_cost_usd": 1.5296,
-    "net_after_entry_usd": -0.098,
-    "worst_sleeve_usd": -0.271
+    "net_after_entry_usd": 0.5054,
+    "worst_sleeve_usd": -0.216
    },
    "G1": {
-    "net_usd": 0.86,
+    "net_usd": 1.6141,
     "entry_exit_cost_usd": 0.3637,
-    "net_after_entry_usd": 0.4962,
-    "worst_sleeve_usd": -0.271
+    "net_after_entry_usd": 1.2503,
+    "worst_sleeve_usd": 0.071
    }
   }
  }
