@@ -65,6 +65,34 @@ export function Companion() {
   useEffect(() => { if (!ready) return; try { sessionStorage.setItem(STORE, JSON.stringify(turns.slice(-20))); } catch { /* storage unavailable */ } }, [turns, ready]);
   useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }); }, [turns, busy]);
 
+  // Phones: the keyboard shrinks only the *visible* area, so a sheet pinned to the page bottom gets pushed out of view.
+  // While the panel is open, lock the page and track the visible area: with the keyboard up the sheet fills exactly the
+  // space above it (header on top, input on the keyboard), like a messaging app.
+  const panelRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open || !window.matchMedia("(max-width: 767px)").matches) return;
+    const vv = window.visualViewport, html = document.documentElement, body = document.body;
+    const prev = { html: html.style.overflow, body: body.style.overflow, touch: body.style.overscrollBehavior };
+    html.style.overflow = "hidden"; body.style.overflow = "hidden"; body.style.overscrollBehavior = "none";
+    const apply = () => {
+      const el = panelRef.current; if (!el || !vv) return;
+      const typing = window.innerHeight - vv.height > 120;
+      el.style.setProperty("--vv-top", `${vv.offsetTop}px`);
+      el.style.setProperty("--vv-h", `${vv.height}px`);
+      if (typing !== el.classList.contains("typing")) {
+        el.classList.toggle("typing", typing);
+        if (typing) requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight }));
+      }
+    };
+    apply();
+    vv?.addEventListener("resize", apply); vv?.addEventListener("scroll", apply);
+    return () => {
+      vv?.removeEventListener("resize", apply); vv?.removeEventListener("scroll", apply);
+      html.style.overflow = prev.html; body.style.overflow = prev.body; body.style.overscrollBehavior = prev.touch;
+      panelRef.current?.classList.remove("typing");
+    };
+  }, [open]);
+
   const send = useCallback(async (text: string) => {
     const q = text.trim(); if (!q || busy) return;
     setOpen(true); setInput(""); setBusy(true);
@@ -104,7 +132,7 @@ export function Companion() {
         </button>
       )}
       {open && <div className="agent-scrim" onClick={() => setOpen(false)} aria-hidden />}
-      <section className={`agent-panel${open ? " open" : ""}`} role="dialog" aria-modal="false" aria-labelledby={titleId} aria-hidden={!open}>
+      <section ref={panelRef} className={`agent-panel${open ? " open" : ""}`} role="dialog" aria-modal="false" aria-labelledby={titleId} aria-hidden={!open}>
         <i className="agent-grabber" aria-hidden />
         <header className="agent-head">
           <Core size={40} />

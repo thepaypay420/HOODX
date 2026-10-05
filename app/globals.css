@@ -2492,3 +2492,12 @@ body {
 .agent-watch-chip button:hover { opacity: 1; background: rgba(238, 248, 246, .08); }
 .agent-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c9d6d4; }
 .agent-check input { width: 18px; height: 18px; accent-color: var(--cyan); }
+/* phones with the keyboard up: the sheet fills exactly the visible area above it (set from the visual viewport) */
+@media (max-width: 767px) {
+  .agent-panel.typing { top: var(--vv-top, 0px); bottom: auto; height: var(--vv-h, 100dvh); border-radius: 0; border-top: none; transform: none; transition: none; }
+  .agent-panel.typing .agent-grabber, .agent-panel.typing .agent-foot { display: none; }
+  .agent-panel.typing .agent-head { padding-top: 10px; padding-bottom: 10px; }
+  .agent-panel.typing .agent-input { margin-bottom: 8px; }
+  .agent-panel.typing { padding-bottom: 0; }
+  .agent-panel { padding-bottom: env(safe-area-inset-bottom); }
+}
