@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WhyChip } from "@/components/agent/Companion";
 import { readIntent, INTENT_NOTE } from "@/lib/intent";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { BaseError, ContractFunctionRevertedError, formatEther, parseEther, type Address } from "viem";
@@ -36,8 +37,8 @@ function describe(s: AutoLpSleeveStat, now: number) {
   return { tone: "wait", label: "Waiting for price", hint: "Positioned next to the price, ready for it to come back." };
 }
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "up" | "down" }) {
-  return <div className="ap-stat"><span>{label}</span><strong className={tone ? `is-${tone}` : ""}>{value}</strong>{sub && <small>{sub}</small>}</div>;
+function Stat({ label, value, sub, tone, why }: { label: string; value: string; sub?: string; tone?: "up" | "down"; why?: string }) {
+  return <div className="ap-stat"><span>{label}{why && <WhyChip question={why} />}</span><strong className={tone ? `is-${tone}` : ""}>{value}</strong>{sub && <small>{sub}</small>}</div>;
 }
 
 export function AutoLpExperience() {
@@ -204,7 +205,7 @@ export function AutoLpExperience() {
         <h1 className="ap-title"><span>Stock LP,</span><span>on autopilot.</span></h1>
         <p className="ap-thesis">Deposit ETH once. Your capital provides liquidity on eight tokenized stocks, earns their trading fees, and is rebalanced and compounded by on-chain rules, not by anyone&apos;s discretion.</p>
         <div className="ap-hero-stats">
-          <Stat label="Since launch" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
+          <Stat label="Since launch" why="How does Hands-free LP earn, and how has it done since launch?" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
           <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH` : undefined} />
           <Stat label="Share price" value={stats ? `$${price.toFixed(4)}` : "—"} sub={earning !== undefined ? `${earning} of 8 stocks earning now` : undefined} />
         </div>

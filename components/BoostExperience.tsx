@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WhyChip } from "@/components/agent/Companion";
 import { readIntent, INTENT_NOTE } from "@/lib/intent";
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { BaseError, ContractFunctionRevertedError, erc20Abi, formatEther, parseEther, parseAbiItem, type Address } from "viem";
@@ -32,8 +33,8 @@ const FRIENDLY: Record<string, string> = {
 const deposited = parseAbiItem("event Deposited(address indexed account, address indexed receiver, uint256 ethIn, uint256 shares, uint256 navAddedUsdg)");
 const withdrawn = parseAbiItem("event Withdrawn(address indexed account, address indexed receiver, uint256 shares, uint256 ethOut)");
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "up" | "down" }) {
-  return <div className="ap-stat"><span>{label}</span><strong className={tone ? `is-${tone}` : ""}>{value}</strong>{sub && <small>{sub}</small>}</div>;
+function Stat({ label, value, sub, tone, why }: { label: string; value: string; sub?: string; tone?: "up" | "down"; why?: string }) {
+  return <div className="ap-stat"><span>{label}{why && <WhyChip question={why} />}</span><strong className={tone ? `is-${tone}` : ""}>{value}</strong>{sub && <small>{sub}</small>}</div>;
 }
 
 export function BoostExperience() {
@@ -174,7 +175,7 @@ export function BoostExperience() {
           {live ? <>
             <Stat label="Since launch" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
             <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH · ${stats.markedAt === "market" ? "live price" : "Chainlink price"}` : undefined} />
-            <Stat label="Right now" value={reg.label} sub={stats ? `${stats.leverage.toFixed(2)}x ETH exposure` : undefined} />
+            <Stat label="Right now" value={reg.label} sub={stats ? `${stats.leverage.toFixed(2)}x ETH exposure` : undefined} why="Why is Boosted ETH at its current leverage?" />
           </> : <>
             <Stat label="Backtest 2022-26" value={`+${BOOST_BACKTEST.test.vault}%/yr`} tone="up" sub={`ETH held: ${BOOST_BACKTEST.test.eth}%/yr`} />
             <Stat label="Beat ETH" value={`${BOOST_BACKTEST.monteCarlo.beatEth}%`} sub="of 300 simulated 4-year paths" />
