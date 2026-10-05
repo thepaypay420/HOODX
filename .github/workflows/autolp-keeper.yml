@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         if: steps.gate.outputs.run == '1'
         with:
-          ref: research/stock-lp-vault
+          ref: main # the keeper and deployments/stock-lp-vault-v*-live.json live on main (v3 since 2026-10-05)
           fetch-depth: 1
           persist-credentials: false
       - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
