@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { WhyChip } from "@/components/agent/Companion";
 import { readIntent, INTENT_NOTE } from "@/lib/intent";
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { BaseError, ContractFunctionRevertedError, formatEther, parseEther, type Address } from "viem";
 import { robinhood } from "@/lib/chain";
 import { EXPLORER } from "@/lib/config";
@@ -44,7 +44,7 @@ function Stat({ label, value, sub, tone, why }: { label: string; value: string; 
 
 export function AutoLpExperience() {
   const { address, chainId, walletClient, connect, switchToRobinhood } = useWallet();
-  const { stats, failed } = useAutoLpStats();
+  const { stats, failed, refresh: refreshStats } = useAutoLpStats();
   const vault = AUTO_LP.vault!, controller = AUTO_LP.controller!;
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
   const [amount, setAmount] = useState("");
@@ -57,8 +57,10 @@ export function AutoLpExperience() {
     if (i.deposit) { setTab("deposit"); setAmount(i.deposit); setMsg(INTENT_NOTE); }
     else if (i.withdraw) { setTab("withdraw"); setIntentPct(BigInt(i.withdraw)); setMsg(INTENT_NOTE); }
   }, []);
-  const [mine, setMine] = useState<{ shares: bigint; valueWei: bigint | null; ethBal: bigint; deposited: bigint; withdrawn: bigint }>(
-    { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO });
+  // basisFor: the share balance the cost basis was built for. P/L is shown only when it matches the live balance, so a
+  // fresh value is never compared with a basis from before the latest deposit or withdrawal.
+  const [mine, setMine] = useState<{ shares: bigint; valueWei: bigint | null; ethBal: bigint; deposited: bigint; withdrawn: bigint; basisFor: bigint | null }>(
+    { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO, basisFor: null });
   /** Shares this wallet still holds in retired vaults (exit-only): shown with a one-click ETH withdrawal. */
   const [retired, setRetired] = useState<{ label: string; vault: Address; shares: bigint }[]>([]);
   const [paused, setPaused] = useState(false);
@@ -70,11 +72,12 @@ export function AutoLpExperience() {
 
   const loadMine = useCallback(async () => {
     if (!address) return;
-    const [shares, ethBal, basis] = await Promise.all([
+    const [shares, ethBal] = await Promise.all([
       publicClient.readContract({ address: vault, abi: stockLpVaultAbi, functionName: "balanceOf", args: [address] }),
       publicClient.getBalance({ address }),
-      fetch(`/api/autolp-wallet?address=${address}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
+    // the live balance is part of the URL, so neither the edge nor the server can answer with an older history
+    const basis = await fetch(`/api/autolp-wallet?address=${address}&shares=${shares}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     let valueWei: bigint | null = null;
     if (shares > ZERO) {
       try {
@@ -83,7 +86,10 @@ export function AutoLpExperience() {
     }
     // "average" means shares also moved by transfer or in-kind exit: measure against the cost of the shares held now
     const avg = basis?.mode === "average" && basis.basisWei;
-    setMine({ shares, valueWei, ethBal, deposited: BigInt(avg ? basis.basisWei : basis?.depositedWei ?? 0), withdrawn: avg ? 0n : BigInt(basis?.withdrawnWei ?? 0) });
+    setMine({ shares, valueWei, ethBal, deposited: BigInt(avg ? basis.basisWei : basis?.depositedWei ?? 0), withdrawn: avg ? 0n : BigInt(basis?.withdrawnWei ?? 0),
+      basisFor: basis?.shares !== undefined ? BigInt(basis.shares) : null });
+    // the event index can trail the balance by a few seconds right after a transaction: try again shortly
+    if (basis?.shares !== undefined && BigInt(basis.shares) !== shares) setTimeout(() => { void loadMineRef.current().catch(() => {}); }, 8_000);
     const old = [{ label: "V2", vault: AUTO_LP_V2.vault }, { label: "V1", vault: AUTO_LP_V1.vault }];
     const held = await Promise.all(old.map((o) => publicClient.readContract({ address: o.vault, abi: stockLpVaultAbi, functionName: "balanceOf", args: [address] }).catch(() => ZERO)));
     setRetired(old.map((o, i) => ({ ...o, shares: held[i] })).filter((o) => o.shares > ZERO));
@@ -91,6 +97,7 @@ export function AutoLpExperience() {
       setPaused(await publicClient.readContract({ address: AUTO_LP.sleeves[0].sleeve, abi: stockLpSleeveAbi, functionName: "managementPaused" }));
     }
   }, [address, vault, isCurator]);
+  const loadMineRef = useRef(loadMine); loadMineRef.current = loadMine;
   useEffect(() => { void loadMine().catch(() => {}); }, [loadMine]);
 
   const ready = async () => {
@@ -105,7 +112,7 @@ export function AutoLpExperience() {
       setMsg(`${label}: confirming…`);
       const r = await publicClient.waitForTransactionReceipt({ hash });
       setMsg(r.status === "success" ? `${label} complete.` : `${label} reverted.`);
-      await loadMine();
+      await Promise.all([loadMine(), refreshStats()]);
     } catch (e) { setMsg(`${label}: ${short(e)}`); } finally { setBusy(false); }
   };
 
@@ -192,7 +199,8 @@ export function AutoLpExperience() {
   const since = useCountUp(stats?.sinceLaunchUsdPct), tvl = useCountUp(stats?.navUsd), price = useCountUp(stats?.perShareUsd);
   const earning = stats?.sleeves.filter((s) => s.inRange && s.referenceAgrees).length;
   const estUsd = (() => { try { return stats && amount ? Number(formatEther(parseEther(amount))) * stats.ethUsd : undefined; } catch { return undefined; } })();
-  const pnl = mine.valueWei !== null ? walletPnl(mine.valueWei, mine.deposited, mine.withdrawn) : undefined;
+  const basisCurrent = mine.basisFor !== null && mine.basisFor === mine.shares;
+  const pnl = mine.valueWei !== null && basisCurrent ? walletPnl(mine.valueWei, mine.deposited, mine.withdrawn) : undefined;
   const maxEth = mine.ethBal > 400_000_000_000_000n ? mine.ethBal - 400_000_000_000_000n : ZERO; // keep gas
   const updated = stats ? Math.max(0, Math.round((now - stats.updatedAt) / 60)) : undefined;
   const sleeves = stats?.sleeves;
@@ -249,7 +257,7 @@ export function AutoLpExperience() {
         <p className="ap-big">{mine.valueWei !== null ? `${Number(formatEther(mine.valueWei)).toFixed(5)} ETH` : address ? "0 ETH" : "Connect to view"}</p>
         {mine.valueWei !== null && stats && <p className="ap-sub">{fmtUsd(Number(formatEther(mine.valueWei)) * stats.ethUsd)} · {Number(formatEther(mine.shares)).toFixed(4)} {AUTO_LP.symbol}</p>}
         <div className="ap-pnl">
-          <div><span>P/L</span><b className={pnl ? (pnl.pnlWei >= 0n ? "is-up" : "is-down") : ""}>{pnl ? `${pnl.pnlWei >= 0n ? "+" : ""}${Number(formatEther(pnl.pnlWei)).toFixed(5)} ETH (${fmtPct(pnl.pct)})` : mine.shares > ZERO && mine.deposited === ZERO ? "Seed position" : "—"}</b></div>
+          <div><span>P/L</span><b className={pnl ? (pnl.pnlWei >= 0n ? "is-up" : "is-down") : ""}>{pnl ? `${pnl.pnlWei >= 0n ? "+" : ""}${Number(formatEther(pnl.pnlWei)).toFixed(5)} ETH (${fmtPct(pnl.pct)})` : mine.shares > ZERO && mine.basisFor !== null && !basisCurrent ? "Updating…" : mine.shares > ZERO && mine.deposited === ZERO ? "Seed position" : "—"}</b></div>
           <div><span>Deposited</span><b>{Number(formatEther(mine.deposited)).toFixed(5)} ETH</b></div>
           <div><span>Withdrawn</span><b>{Number(formatEther(mine.withdrawn)).toFixed(5)} ETH</b></div>
         </div>

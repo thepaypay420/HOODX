@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient, formatEther, http, parseAbi } from "viem";
 import { robinhood } from "@/lib/chain";
 import { RPC_URL } from "@/lib/config";
+import { readAutoLpStats } from "@/lib/autolpStats";
 import { vaultNav, vaultUniverse } from "@/lib/myVaultsServer";
 import { guardedError, withWorkBudget } from "@/lib/requestGuard";
 
@@ -11,17 +12,24 @@ export type PlatformTvl = { usd: number; eth: number; ethUsd: number; vaults: nu
 
 /* Everything held in HOODX vaults: every index vault the factories created and Boosted ETH, from the shared 60-second
  * valuation (oracle-free vaults are valued at live quotes to sell every holding), plus Hands-free LP from its own stats.
- * Recomputed at most every two minutes and served from the CDN in between. */
-const read = unstable_cache(async (origin: string): Promise<PlatformTvl> => {
-  const [refs, lp] = await Promise.all([
-    vaultUniverse(),
-    fetch(`${origin}/api/autolp-stats`, { signal: AbortSignal.timeout(15_000) }).then((r) => r.ok ? r.json() as Promise<{ navEth: number; ethUsd: number }> : undefined).catch(() => undefined),
-  ]);
+ * The total is cached per set of share supplies: any deposit or withdrawal in any vault changes a supply, so the next
+ * request recomputes at once; otherwise a total is reused for up to two minutes. */
+const client = () => createPublicClient({ chain: robinhood, batch: { multicall: true }, transport: http(process.env.ROBINHOOD_RPC_URL || RPC_URL, { timeout: 12_000, retryCount: 1 }) });
+
+async function read(): Promise<PlatformTvl> {
+  const refs = await vaultUniverse();
+  // one batched supply read: finds the vaults worth valuing and fingerprints the platform for the cache
+  const supplies = await Promise.all(refs.map((r) => client().readContract({ address: r.vault, abi: supplyAbi, functionName: "totalSupply" }).then(String).catch(() => null)));
+  return total(refs.map((r, i) => `${r.vault}:${supplies[i] ?? "?"}`).join(","));
+}
+
+const total = unstable_cache(async (fingerprint: string): Promise<PlatformTvl> => {
+  const refs = await vaultUniverse();
+  const supplyOf = new Map(fingerprint.split(",").map((x) => x.split(":") as [string, string]));
+  const lp = await readAutoLpStats().catch(() => undefined);
   let complete = !!lp;
-  // most vaults the factories ever created are empty: one batched supply read finds the ones worth valuing
-  const client = createPublicClient({ chain: robinhood, batch: { multicall: true }, transport: http(process.env.ROBINHOOD_RPC_URL || RPC_URL, { timeout: 12_000, retryCount: 1 }) });
   const candidates = refs.filter((r) => r.kind !== "autolp");
-  const supplies = await Promise.all(candidates.map((r) => client.readContract({ address: r.vault, abi: supplyAbi, functionName: "totalSupply" }).catch(() => null)));
+  const supplies = candidates.map((r) => { const v = supplyOf.get(r.vault); return v && v !== "?" ? BigInt(v) : null; });
   if (supplies.some((x) => x === null)) complete = false;
   // four at a time with one retry: the public RPC rate-limits bursts, and each valuation is itself a few batched calls
   const targets = candidates.filter((_, i) => (supplies[i] ?? 0n) > 0n);
@@ -42,13 +50,13 @@ const read = unstable_cache(async (origin: string): Promise<PlatformTvl> => {
   // never cache a partial total: throwing here leaves the last complete one in place and retries on the next request
   if (!ethUsd || !complete) throw new Error(`incomplete (${navs.filter((n) => !n || n.assetsWei === null).length} vaults unvalued)`);
   return { usd: eth * ethUsd, eth, ethUsd, vaults: counted, complete, at: Date.now() };
-}, ["platform-tvl-v2"], { revalidate: 120 });
+}, ["platform-tvl-v3"], { revalidate: 120 });
 
 export async function GET(request: Request) {
   try {
     return await withWorkBudget("platform-tvl", 1, { capacity: 60, refillPerSecond: 2, maxConcurrent: 2 }, async () => {
       try {
-        return Response.json(await read(new URL(request.url).origin), { headers: { "Cache-Control": "public, max-age=60, s-maxage=120, stale-while-revalidate=900" } });
+        return Response.json(await read(), { headers: { "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=60" } });
       } catch (e) {
         console.error("platform-tvl", e instanceof Error ? e.message.split(String.fromCharCode(10))[0] : e);
         return Response.json({ error: "unavailable" }, { status: 503, headers: { "Cache-Control": "public, max-age=30" } });

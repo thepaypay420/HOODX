@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-/** Shape of /api/autolp-stats (edge-cached 5 min; one Multicall3 read server-side). */
+/** Shape of /api/autolp-stats (cached per vault share supply server-side; 30 s at the edge). */
 export type AutoLpSleeveStat = {
   symbol: string; valueUsd: number; tick: number; tickLower: number; tickUpper: number;
   inRange: boolean; referenceAgrees: boolean; breachStart: number; rebandReady: boolean;
@@ -17,16 +17,21 @@ export type AutoLpStatsView = {
 export function useAutoLpStats(pollMs = 60_000) {
   const [stats, setStats] = useState<AutoLpStatsView | null>(null);
   const [failed, setFailed] = useState(false);
+  const alive = useRef(true);
+  // fresh=true skips the browser and edge copies (after the visitor's own deposit or withdrawal); the server keys its
+  // cache by the vault's share supply, so it answers with figures that include that transaction
+  const load = useCallback((fresh = false) => fetch(fresh ? `/api/autolp-stats?t=${Date.now()}` : "/api/autolp-stats", fresh ? { cache: "no-store" } : undefined)
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((d: AutoLpStatsView) => { if (alive.current) { setStats(d); setFailed(false); } })
+    .catch(() => { if (alive.current) setFailed(true); }), []);
   useEffect(() => {
-    let alive = true;
-    const load = () => fetch("/api/autolp-stats").then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((d: AutoLpStatsView) => { if (alive) { setStats(d); setFailed(false); } })
-      .catch(() => { if (alive) setFailed(true); });
-    load();
-    const id = setInterval(load, pollMs);
-    return () => { alive = false; clearInterval(id); };
-  }, [pollMs]);
-  return { stats, failed };
+    alive.current = true;
+    void load();
+    const id = setInterval(() => void load(), pollMs);
+    return () => { alive.current = false; clearInterval(id); };
+  }, [pollMs, load]);
+  const refresh = useCallback(() => load(true), [load]);
+  return { stats, failed, refresh };
 }
 
 /** Animated count-up toward `target` (respects reduced motion). */
