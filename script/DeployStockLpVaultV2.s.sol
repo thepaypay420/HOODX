@@ -44,6 +44,7 @@ contract DeployStockLpVaultV2 is Script {
         PoolKey swap;
         address v3Pool;
         int24 halfWidth;
+        int24 makerWidth;
     }
 
     struct Deployed {
@@ -63,6 +64,9 @@ contract DeployStockLpVaultV2 is Script {
         uint256 minDeposit = vm.parseJsonUint(json, ".minDepositUsdg");
         uint256 cap = vm.parseJsonUint(json, ".tvlCapUsdg");
         uint256 seedEth = vm.parseJsonUint(json, ".seedEthWei");
+        // Optional (STKX v3): how long a sleeve stays out of range before the autopilot re-places it. The controller
+        // itself bounds this to 15 minutes .. 3 days. Absent: the original 24 h.
+        uint32 breachDelay = uint32(_uintOr(json, ".breachDelaySeconds", 24 hours));
         require(DEPLOYER.balance >= seedEth + 0.004 ether, "deployer needs seed + gas");
 
         bool live = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
@@ -110,9 +114,9 @@ contract DeployStockLpVaultV2 is Script {
             swapKeys[i] = e[i].swap;
             pol[i] = HoodxStockLpControllerV2.Policy({
                 halfWidth: e[i].halfWidth,
-                makerWidth: 2 * e[i].halfWidth,
+                makerWidth: e[i].makerWidth,
                 maxDivergenceBps: 150,
-                breachDelay: 24 hours,
+                breachDelay: breachDelay,
                 cooldown: 1 hours,
                 priceRef: IPriceReference(d.refs[i]),
                 tokenDecimals: IERC20Metadata(e[i].token).decimals(),
@@ -164,7 +168,7 @@ contract DeployStockLpVaultV2 is Script {
         console2.log("Initial shares to treasury", d.initialShares);
     }
 
-    function _entries(string memory json) internal pure returns (Entry[] memory e) {
+    function _entries(string memory json) internal view returns (Entry[] memory e) {
         uint256 n = vm.parseJsonUint(json, ".count");
         require(n >= 1 && n <= 8, "basket size");
         e = new Entry[](n);
@@ -177,7 +181,14 @@ contract DeployStockLpVaultV2 is Script {
             e[i].v3Pool = vm.parseJsonAddress(json, string.concat(p, ".v3Pool"));
             e[i].halfWidth = int24(vm.parseJsonInt(json, string.concat(p, ".halfWidthTicks")));
             require(e[i].halfWidth % e[i].lp.tickSpacing == 0, "half width not on spacing");
+            // Optional per sleeve: width of the one-sided range after a re-placement. Absent: twice the half width.
+            e[i].makerWidth = int24(int256(_uintOr(json, string.concat(p, ".makerWidthTicks"), uint256(int256(2 * e[i].halfWidth)))));
+            require(e[i].makerWidth > 0 && e[i].makerWidth % e[i].lp.tickSpacing == 0, "maker width not on spacing");
         }
+    }
+
+    function _uintOr(string memory json, string memory key, uint256 fallbackValue) internal view returns (uint256) {
+        return vm.keyExistsJson(json, key) ? vm.parseJsonUint(json, key) : fallbackValue;
     }
 
     function _key(string memory json, address token, string memory p) internal pure returns (PoolKey memory) {
