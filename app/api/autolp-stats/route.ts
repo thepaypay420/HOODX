@@ -84,7 +84,7 @@ async function readStats() {
 }
 
 // Only successful reads are cached: a failure throws through unstable_cache and is never stored.
-const cached = unstable_cache(readStats, ["autolp-stats-v2"], { revalidate: 300 });
+const cached = unstable_cache(readStats, ["autolp-stats-v3"], { revalidate: 300 });
 
 export async function GET() {
   if (!AUTO_LP.vault || !AUTO_LP.controller) return Response.json({ error: "not live" }, { status: 404 });

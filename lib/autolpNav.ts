@@ -5,12 +5,12 @@
  */
 const Q96 = 2 ** 96;
 
-/** Measured at the seeding block 77,213,506 (2026-10-01) with research/autolp_nav.py. */
+/** Measured at the v3 seeding block with the functions below (v2 launched at 77,213,506 on 2026-10-01). */
 export const AUTO_LP_LAUNCH = {
-  block: 77_213_506,
-  perShareUsd: 0.9941608298322877,
-  perShareEth: 0.0003717787466927154,
-  ethUsd: 2674.0657949820543,
+  block: 80_488_312, // v3 seeding transaction, 2026-10-05 (NAV $55.04, $6.88 per stock)
+  perShareUsd: 0.9901567891797377,
+  perShareEth: 0.0003646497830071709,
+  ethUsd: 2715.36371423061,
 } as const;
 
 export type SleeveRead = {

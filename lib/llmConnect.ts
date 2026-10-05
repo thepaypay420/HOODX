@@ -1,4 +1,4 @@
-import { AUTO_LP, AUTO_LP_V1 } from "@/lib/stockLp";
+import { AUTO_LP, AUTO_LP_V1, AUTO_LP_V2 } from "@/lib/stockLp";
 import { BOOST } from "@/lib/boost";
 import { verifiedV2Vaults } from "@/lib/v2";
 import { FEATURED_VAULTS } from "@/lib/vaults";
@@ -45,7 +45,7 @@ Boosted ETH vault (BOOSTX): ${BOOST.vault}
 Boosted ETH signal: ${BOOST.signal}
 Hands-free LP vault (STKX, automated stock LP): ${AUTO_LP.vault}
 Hands-free LP controller: ${AUTO_LP.controller}
-Retired Hands-free LP V1 vault (withdraw only): ${AUTO_LP_V1.vault}
+Retired Hands-free LP vaults (withdraw only): V2 ${AUTO_LP_V2.vault}, V1 ${AUTO_LP_V1.vault}
 Protocol treasury: 0x134d468b0bcaea6df127916f951f7938c06a37c6
 
 Discover any named vault with atomicFactory.bySlug(slug). Discover its controller from the factory's VaultCreated event or read vault.owner(); for atomic vaults the owner is the controller and controller.curator() is the human curator. Discover approved route configuration with atomicFactory.configIdByToken(token). A zero bytes32 value means the token cannot be launched yet.
@@ -121,7 +121,7 @@ exitToSleeveShares(uint256 shares,address receiver)
 
 depositEth mints an exact share amount and refunds unused ETH. Size it by simulation: probe a share amount near msg.value / perShareEth (from /api/autolp-stats or a probe), read ethUsed, scale shares to the ETH sent less a 3% margin, simulate again, then sign. BelowMinimum means too few shares (grow the probe); an ETH shortfall means too many (shrink). Minimum about $10; capacity is capped (tvlCapUsdg). Withdraw: simulate withdrawEth(shares, receiver, 1, deadline), set minEthOut 1.5% below the result, re-simulate, sign. exitToSleeveShares is the emergency exit: it returns the holder's share of each stock LP sleeve with no swap.
 Rebalancing (signalAll, executeReband, harvest, compound) runs automatically every hour by public keeper; holders never need to call it.
-The retired V1 vault (${AUTO_LP_V1.vault}) is exit only: offer withdrawEth to existing holders and never a deposit.
+The retired V2 (${AUTO_LP_V2.vault}) and V1 (${AUTO_LP_V1.vault}) vaults are exit only: offer withdrawEth to existing holders and never a deposit.
 
 ## Minimal viem connection
 

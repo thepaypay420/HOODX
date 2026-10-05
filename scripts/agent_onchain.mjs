@@ -6,7 +6,7 @@ import { createPublicClient, http, parseEther, formatEther } from "viem";
 const base = process.argv[2]?.startsWith("http") ? process.argv[2] : "http://127.0.0.1:3126";
 const wallet = process.argv.find((a) => /^0x[0-9a-fA-F]{40}$/.test(a)) ?? "0x134D468B0bcaeA6DF127916f951F7938c06A37C6";
 const chain = createPublicClient({ transport: http("https://rpc.mainnet.chain.robinhood.com") });
-const VAULT = { boost: "0x5e0135C3592095592C4B43d84c817c26A0F43515", autolp: "0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80", "696x": "0xb645A727ed525321509Ec16aa011D38E52f99a93" };
+const VAULT = { boost: "0x5e0135C3592095592C4B43d84c817c26A0F43515", autolp: "0xB064d074Ff141A68771AF32c3EAB9Dd3c9379f6D", "696x": "0xb645A727ed525321509Ec16aa011D38E52f99a93" };
 
 const CASES = [
   { q: "put 0.01 eth into boosted eth", vault: "boost", eth: "0.01" },

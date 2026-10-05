@@ -1,0 +1,216 @@
+{
+ "chainId": 4663,
+ "deployedAt": "2026-10-05",
+ "status": "LIVE",
+ "version": "v3-phase1",
+ "reviewedBuild": "0x4e2f886d9ed80810f5d4fd911764c595e252ebf59cd2d2581a366c01ad4bc1b4",
+ "manifest": "deployments/stock-lp-vault-v3-manifest.json",
+ "vault": "0xb064d074ff141a68771af32c3eab9dd3c9379f6d",
+ "controller": "0x5e58b414f0200af135f27ff0f7e490b7fdeda0f7",
+ "seeder": "0x5ee71a259dab4a2db03bf7e92a70ee2659edca46",
+ "curator": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+ "feeRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+ "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
+ "keeper": "0x9E63CE6E00cD0F28CDa0A03f83b41933Aa4118Ec",
+ "deployBlocks": [
+  80488143,
+  80488312
+ ],
+ "tvlCapUsdg": 10000000000,
+ "minDepositUsdg": 10000000,
+ "perfFeeBps": 1000,
+ "policy": {
+  "breachDelaySeconds": 900,
+  "cooldownSeconds": 3600,
+  "maxDivergenceBps": 150
+ },
+ "seed": {
+  "eth": "0.022",
+  "initialSharesToTreasury": "55.588676",
+  "deadShares": "0.001"
+ },
+ "replaces": {
+  "version": "v2-autopilot",
+  "vault": "0x67d2327ea0c42cf92c4601ebc59df0f3e9b2aa80",
+  "controller": "0x269c6ecac6acdd8d13b748b14ee8f76cded26585",
+  "note": "Retired 2026-10-05; exits stay open (treasury-only holdings)."
+ },
+ "sleeves": [
+  {
+   "symbol": "PLTR",
+   "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+   "sleeve": "0x047a7f8f301ede7b7e05645bd82dcdf3fca089d7",
+   "twapReference": "0x82003cf442c2aaaf2d91b4f8f3b223bc29813f62",
+   "v3Pool": "0x851680416a4f4e1c463d45171d61acddbc8554c0",
+   "lp": {
+    "fee": 1500,
+    "tickSpacing": 15
+   },
+   "swap": {
+    "fee": 1500,
+    "tickSpacing": 15
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 195,
+   "makerWidthTicks": 195,
+   "launchRange": [
+    223710,
+    224100
+   ]
+  },
+  {
+   "symbol": "SNDK",
+   "token": "0xB90A19fF0Af67f7779afF50A882A9CfF42446400",
+   "sleeve": "0x45985f6c41f02c5806a160d3dd8a9b91b921b1f2",
+   "twapReference": "0x2aff2bde72139f28a7e39c4d33d7c8aa7e814ddc",
+   "v3Pool": "0xa1e1c9519cd5ae47e9a935645e1a7b935b944559",
+   "lp": {
+    "fee": 10000,
+    "tickSpacing": 200
+   },
+   "swap": {
+    "fee": 10000,
+    "tickSpacing": 200
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 200,
+   "makerWidthTicks": 200,
+   "launchRange": [
+    201400,
+    201800
+   ]
+  },
+  {
+   "symbol": "MU",
+   "token": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
+   "sleeve": "0x21e10ae4258b77334d8776111354ce737f2b7567",
+   "twapReference": "0x5e8373bf0c33f69a308eece858da3ffd0dd69f7c",
+   "v3Pool": "0xd057b1bc54917855bbee58ead58647f47cab35e5",
+   "lp": {
+    "fee": 10000,
+    "tickSpacing": 200
+   },
+   "swap": {
+    "fee": 10000,
+    "tickSpacing": 200
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 200,
+   "makerWidthTicks": 200,
+   "launchRange": [
+    206200,
+    206600
+   ]
+  },
+  {
+   "symbol": "DELL",
+   "token": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
+   "sleeve": "0x892998ca14360a34c6edaff6e4ed18abda3bfd7d",
+   "twapReference": "0xbd545fecc47a9b6f038de8cec580de6ba671430e",
+   "v3Pool": "0xc30c89cb7815a1488b7998d15eec73961707fc5a",
+   "lp": {
+    "fee": 5000,
+    "tickSpacing": 25
+   },
+   "swap": {
+    "fee": 5000,
+    "tickSpacing": 25
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 200,
+   "makerWidthTicks": 200,
+   "launchRange": [
+    212700,
+    213100
+   ]
+  },
+  {
+   "symbol": "MSFT",
+   "token": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
+   "sleeve": "0x84e7959ce268a7fcb6bc27d7576de82d64af97e6",
+   "twapReference": "0xec1eca38bb09c0773ab6c0a0c137252e7af140bd",
+   "v3Pool": "0xeb60bcd1d920ad6e102690ccfc6fb488899e1510",
+   "lp": {
+    "fee": 3000,
+    "tickSpacing": 60
+   },
+   "swap": {
+    "fee": 3000,
+    "tickSpacing": 60
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 180,
+   "makerWidthTicks": 180,
+   "launchRange": [
+    213600,
+    213960
+   ]
+  },
+  {
+   "symbol": "AAPL",
+   "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+   "sleeve": "0xc6a49a0e6ab5daeaccbcb2b43c5b703cf2730001",
+   "twapReference": "0xe1c2541c8a9c38ff604c85d6b9b1178694ad4b25",
+   "v3Pool": "0xaae0d815ee56e4092a5e5c2911e676fea50b2d6d",
+   "lp": {
+    "fee": 3000,
+    "tickSpacing": 60
+   },
+   "swap": {
+    "fee": 3000,
+    "tickSpacing": 60
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 180,
+   "makerWidthTicks": 180,
+   "launchRange": [
+    217980,
+    218340
+   ]
+  },
+  {
+   "symbol": "USO",
+   "token": "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344",
+   "sleeve": "0xd2d5d8a4f9e47a6990f162c5fc0396993b2d88b9",
+   "twapReference": "0xbfe3cd591eb95e3e853cfa5723a6f54dff25216f",
+   "v3Pool": "0x02175608f1b5e6b5ed221ccfdc7be197d111d915",
+   "lp": {
+    "fee": 1200,
+    "tickSpacing": 15
+   },
+   "swap": {
+    "fee": 1200,
+    "tickSpacing": 15
+   },
+   "usdgIsToken0": true,
+   "halfWidthTicks": 195,
+   "makerWidthTicks": 195,
+   "launchRange": [
+    226350,
+    226740
+   ]
+  },
+  {
+   "symbol": "SPCX",
+   "token": "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
+   "sleeve": "0xfefb2fba692fa01a7882353243e28f9bb1d2c133",
+   "twapReference": "0xd40f62dd7ab8045a685b749643a0c4b101851b91",
+   "v3Pool": "0xeb07d9587efd1778dfb9c385ec43ef6d5f9fe401",
+   "lp": {
+    "fee": 3000,
+    "tickSpacing": 60
+   },
+   "swap": {
+    "fee": 250,
+    "tickSpacing": 3
+   },
+   "usdgIsToken0": false,
+   "halfWidthTicks": 180,
+   "makerWidthTicks": 180,
+   "launchRange": [
+    -225720,
+    -225360
+   ]
+  }
+ ]
+}

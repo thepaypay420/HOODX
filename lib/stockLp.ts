@@ -1,11 +1,12 @@
 import { parseAbi, type Address } from "viem";
 
-/** HOODX Automated LP (Stock LP vault V2 "autopilot"). Set `vault`/`controller` once V2 is deployed and verified. */
+/** HOODX Automated LP ("Hands-free LP"), v3 since 2026-10-05: the reviewed V2 autopilot contracts with higher-fee pools,
+ *  about ±2% ranges and a 15-minute re-placement rule (deployments/stock-lp-vault-v3-live.json). */
 export const AUTO_LP = {
   slug: "autolp",
   symbol: "STKX",
-  vault: "0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80" as Address | null, // live 2026-10-01, verified on-chain
-  controller: "0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585" as Address | null,
+  vault: "0xB064d074Ff141A68771AF32c3EAB9Dd3c9379f6D" as Address | null, // live 2026-10-05, verified on-chain
+  controller: "0x5E58B414f0200Af135F27Ff0f7e490B7FDeDA0F7" as Address | null,
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
   capUsd: 10_000,
   minUsd: 10,
@@ -13,20 +14,26 @@ export const AUTO_LP = {
   /** The autopilot rule, as shown on the page (manifest: halfWidthTicks ~ ±2%, breachDelaySeconds). */
   bandLabel: "±2%",
   breachDelaySec: 900,
-  stocks: ["NVDA", "META", "SPY", "SPCX", "PLTR", "BABA", "USO", "MSTR"],
-  /** First block of the V2 deployment (event scans start here). */
-  deployBlock: 77_213_266n,
-  /** Static per-sleeve config (from deployments/stock-lp-vault-v2-live.json), in controller order. */
+  stocks: ["PLTR", "SNDK", "MU", "DELL", "MSFT", "AAPL", "USO", "SPCX"],
+  /** First block of the v3 deployment (event scans start here). */
+  deployBlock: 80_488_143n,
+  /** Static per-sleeve config (from deployments/stock-lp-vault-v3-live.json), in controller order. */
   sleeves: [
-    { symbol: "NVDA", sleeve: "0xaAceE71743B165dA07Cb67e1516b0303C2bE1aB3", token: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC", usdgIsToken0: true },
-    { symbol: "META", sleeve: "0x5dc58931dF2751096A2A1592cDc7Ce9673461b50", token: "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35", usdgIsToken0: true },
-    { symbol: "SPY", sleeve: "0x8459EbE7B2a8628410f2A15bC3F6487263516c4e", token: "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C", usdgIsToken0: false },
-    { symbol: "SPCX", sleeve: "0xc1Bc64D2af27cfE28c084E0530A2FaD91eD9D09d", token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", usdgIsToken0: false },
-    { symbol: "PLTR", sleeve: "0x5087B8f98e317A1167085F9c1f709E05FB5224d0", token: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A", usdgIsToken0: true },
-    { symbol: "BABA", sleeve: "0xc2610F562D9a6ec34114C9Dcb6938273604c800B", token: "0xad25Ac6C84D497db898fa1E8387bf6Af3532a1c4", usdgIsToken0: true },
-    { symbol: "USO", sleeve: "0x3fA2dA43694934E1cB87f1DE8415d8cc09Ea0c8E", token: "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344", usdgIsToken0: true },
-    { symbol: "MSTR", sleeve: "0x99aA2A30571994eeDB614DeC0932A68A6ee77303", token: "0xec262a75e413fAfD0dF80480274532C79D42da09", usdgIsToken0: true },
+    { symbol: "PLTR", sleeve: "0x047a7F8F301Ede7b7e05645bD82DCDF3fCa089d7", token: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A", usdgIsToken0: true },
+    { symbol: "SNDK", sleeve: "0x45985F6C41F02c5806a160D3dd8A9b91B921B1f2", token: "0xB90A19fF0Af67f7779afF50A882A9CfF42446400", usdgIsToken0: true },
+    { symbol: "MU", sleeve: "0x21e10Ae4258B77334d8776111354ce737F2b7567", token: "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD", usdgIsToken0: true },
+    { symbol: "DELL", sleeve: "0x892998cA14360a34C6edAFF6e4ED18aBDA3BfD7d", token: "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd", usdgIsToken0: true },
+    { symbol: "MSFT", sleeve: "0x84E7959Ce268a7Fcb6BC27d7576DE82d64aF97E6", token: "0xe93237C50D904957Cf27E7B1133b510C669c2e74", usdgIsToken0: true },
+    { symbol: "AAPL", sleeve: "0xC6a49A0e6ab5daEaccBCb2B43c5b703Cf2730001", token: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9", usdgIsToken0: true },
+    { symbol: "USO", sleeve: "0xd2d5D8a4f9E47a6990f162C5fC0396993B2D88b9", token: "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344", usdgIsToken0: true },
+    { symbol: "SPCX", sleeve: "0xfefb2fbA692Fa01a7882353243E28F9bb1D2C133", token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", usdgIsToken0: false },
   ] as { symbol: string; sleeve: Address; token: Address; usdgIsToken0: boolean }[],
+} as const;
+
+/** Retired V2 (2026-10-01 .. 10-05: cheaper pools, ±1%, 24 h rule). Exit-only; only the treasury holds shares. */
+export const AUTO_LP_V2 = {
+  vault: "0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80" as Address,
+  controller: "0x269c6ECac6ACdD8d13b748B14ee8F76CdeD26585" as Address,
 } as const;
 
 /** Retired V1 (curator-signed management). Kept so the treasury can withdraw its seed. */
