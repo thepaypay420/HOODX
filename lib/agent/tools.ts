@@ -9,6 +9,7 @@ import type { ToolDef } from "./model";
 import type { Card, Row } from "./types";
 import { verifyTx } from "./verify";
 import { FEATURED_VAULTS } from "@/lib/vaults";
+import { AUTO_LP } from "@/lib/stockLp";
 
 export type ToolCtx = { origin: string; wallet?: Address; pageVault?: string; userMessages: string[]; dryRun: boolean };
 export type ToolResult = { data: unknown; cards: Card[]; final?: { reply: string } };
@@ -25,7 +26,7 @@ export function toolDefs(vaults: Entry[]): ToolDef[] {
     fn("get_boost_signal", "Boosted ETH's live trend signal: target leverage, which of its 16 trend flags are on, and the exact ETH prices that would change it. Use for any 'why is Boost at ...' or 'what would change the leverage' question."),
     fn("boost_what_if", "Exactly what Boosted ETH's target leverage would become if ETH (and BTC) moved by a given percent, using the vault's on-chain formula and its real trend thresholds. Use for any 'what if ETH drops/rises X%' question.",
       { eth_change_pct: { type: "number", description: "e.g. -10 for a 10% fall" }, btc_change_pct: { type: "number", description: "defaults to the same move as ETH" } }, ["eth_change_pct"]),
-    fn("find_indexes", "Which HOODX indexes hold a given stock, ETF or token (by ticker or company name), and what else they hold.", { asset: { type: "string", description: "e.g. NVDA or nvidia" } }, ["asset"]),
+    fn("find_indexes", "Which HOODX vaults (the indexes and the Hands-free LP) hold a given stock, ETF or token (by ticker or company name), and what else they hold.", { asset: { type: "string", description: "e.g. NVDA or nvidia" } }, ["asset"]),
     fn("get_my_positions", "The connected wallet's positions in every HOODX vault and its ETH balance. Needs a connected wallet."),
     fn("prepare_deposit", "Prepare a deposit for the user to review and sign. Give exactly ONE of amount_eth, amount_usd or percent_of_wallet, copied from the user's words.",
       { vault: slug, amount_eth: { type: "string", description: "ETH amount exactly as the user said it, e.g. \"0.1\"." }, amount_usd: { type: "string", description: "Dollar amount exactly as said, e.g. \"50\"." }, percent_of_wallet: { type: "integer", description: "Share of the wallet's ETH, e.g. 50 for half." } }, ["vault"]),
@@ -72,7 +73,9 @@ export async function runTool(name: string, args: Record<string, unknown>, ctx: 
       const q = String(args.asset ?? "").trim();
       const sym = ASSET_NAMES[q.toLowerCase()] ?? q.toUpperCase().replace(/^\$/, "");
       const hits = FEATURED_VAULTS.filter((v) => v.status !== "pilot" && v.assets.includes(sym)).map((v) => ({ slug: v.slug, name: v.name, ticker: v.symbol, holds: v.assets.join(", ") }));
-      return { data: { asset: sym, indexes: hits, note: hits.length ? undefined : `No HOODX index holds ${sym} today.` }, cards: [] };
+      // the Hands-free LP holds stocks too (as Uniswap V4 liquidity), so it counts as a vault holding them
+      if (AUTO_LP.vault && (AUTO_LP.stocks as readonly string[]).includes(sym)) hits.push({ slug: AUTO_LP.slug, name: "Hands-free LP", ticker: AUTO_LP.symbol, holds: `${AUTO_LP.stocks.join(", ")} (as Uniswap V4 liquidity)` });
+      return { data: { asset: sym, indexes: hits, note: hits.length ? undefined : `No HOODX vault holds ${sym} today.` }, cards: [] };
     }
     case "get_my_positions": {
       if (!ctx.wallet) return needWallet();
@@ -190,7 +193,7 @@ export { checkAddress };
 /** Plain names people use for tickers in the indexes. */
 const ASSET_NAMES: Record<string, string> = {
   nvidia: "NVDA", apple: "AAPL", microsoft: "MSFT", google: "GOOGL", alphabet: "GOOGL", amazon: "AMZN", meta: "META", facebook: "META", netflix: "NFLX",
-  tesla: "TSLA", amd: "AMD", intel: "INTC", tsmc: "TSM", taiwan: "TSM", broadcom: "AVGO", micron: "MU", palantir: "PLTR", coinbase: "COIN", microstrategy: "MSTR",
+  tesla: "TSLA", amd: "AMD", intel: "INTC", tsmc: "TSM", taiwan: "TSM", broadcom: "AVGO", micron: "MU", sandisk: "SNDK", dell: "DELL", palantir: "PLTR", coinbase: "COIN", microstrategy: "MSTR",
   strategy: "MSTR", circle: "CRCL", gamestop: "GME", reddit: "RDDT", roblox: "RBLX", moderna: "MRNA", lilly: "LLY", pfizer: "PFE", shopify: "SHOP", cloudflare: "NET",
   snowflake: "SNOW", oracle: "ORCL", gold: "GLD", silver: "SLV", oil: "USO", boeing: "BA", lockheed: "LMT", costco: "COST", lululemon: "LULU", spacex: "SPCX", "s&p 500": "SPY", "s&p": "SPY", nasdaq: "QQQ",
 };

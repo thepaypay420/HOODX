@@ -120,7 +120,7 @@ withdrawEth(uint256 shares,address receiver,uint256 minEthOut,uint256 deadline) 
 exitToSleeveShares(uint256 shares,address receiver)
 
 depositEth mints an exact share amount and refunds unused ETH. Size it by simulation: probe a share amount near msg.value / perShareEth (from /api/autolp-stats or a probe), read ethUsed, scale shares to the ETH sent less a 3% margin, simulate again, then sign. BelowMinimum means too few shares (grow the probe); an ETH shortfall means too many (shrink). Minimum about $10; capacity is capped (tvlCapUsdg). Withdraw: simulate withdrawEth(shares, receiver, 1, deadline), set minEthOut 1.5% below the result, re-simulate, sign. exitToSleeveShares is the emergency exit: it returns the holder's share of each stock LP sleeve with no swap.
-Rebalancing (signalAll, executeReband, harvest, compound) runs automatically every hour by public keeper; holders never need to call it.
+Holdings: ${AUTO_LP.stocks.join(", ")}, each in a ${AUTO_LP.bandLabel} Uniswap V4 range. Rebalancing (signalAll, executeReband, harvest, compound) runs automatically: a public keeper checks every 15 minutes, a stock out of range for ${AUTO_LP.breachDelaySec / 60} minutes is re-placed next to the price (no swaps), and fees compound daily. Holders never need to call it.
 The retired V2 (${AUTO_LP_V2.vault}) and V1 (${AUTO_LP_V1.vault}) vaults are exit only: offer withdrawEth to existing holders and never a deposit.
 
 ## Minimal viem connection
