@@ -63,6 +63,9 @@
 .ap-fine { margin-top:.7rem; color:var(--dim); font-size:.7rem; line-height:1.5; }
 .ap-text-btn { margin-top:1rem; padding:0; color:var(--dim); font-size:.72rem; text-align:left; background:none; border:0; text-decoration:underline; cursor:pointer; }
 .ap-msg { margin-top:1rem; padding:.7rem .9rem; border-radius:.8rem; color:#e9ddff; font-size:.78rem; background:rgba(185,140,255,.1); overflow-wrap:anywhere; }
+.ap-retired { margin-top:1rem; padding:.9rem 1rem; border-radius:.9rem; border:1px solid rgba(185,140,255,.35); background:rgba(185,140,255,.07); display:grid; gap:.7rem; }
+.ap-retired p { margin:0; color:#e9ddff; font-size:.82rem; line-height:1.45; }
+.ap-retired .landing-btn-primary { justify-self:start; }
 .ap-label { color:var(--dim); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; }
 .ap-big { margin-top:.6rem; font-size:clamp(1.8rem,3.6vw,2.6rem); font-weight:540; letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
 .ap-sub { margin-top:.3rem; color:var(--dim); font-size:.8rem; }

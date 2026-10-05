@@ -10,7 +10,7 @@ import { EXPLORER } from "@/lib/config";
 import { publicClient, useWallet } from "@/lib/wallet";
 import { walletPnl } from "@/lib/autolpNav";
 import {
-  AUTO_LP, AUTO_LP_V1, deadline, initialProbeShares, minOut, sizeShares,
+  AUTO_LP, AUTO_LP_V1, AUTO_LP_V2, deadline, initialProbeShares, minOut, sizeShares,
   stockLpControllerAbi, stockLpSleeveAbi, stockLpVaultAbi,
 } from "@/lib/stockLp";
 import { fmtPct, fmtUsd, useAutoLpStats, useCountUp, useReveal, type AutoLpSleeveStat } from "@/lib/useAutoLp";
@@ -59,7 +59,8 @@ export function AutoLpExperience() {
   }, []);
   const [mine, setMine] = useState<{ shares: bigint; valueWei: bigint | null; ethBal: bigint; deposited: bigint; withdrawn: bigint }>(
     { shares: ZERO, valueWei: null, ethBal: ZERO, deposited: ZERO, withdrawn: ZERO });
-  const [v1Shares, setV1Shares] = useState(ZERO);
+  /** Shares this wallet still holds in retired vaults (exit-only): shown with a one-click ETH withdrawal. */
+  const [retired, setRetired] = useState<{ label: string; vault: Address; shares: bigint }[]>([]);
   const [paused, setPaused] = useState(false);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const isCurator = !!address && address.toLowerCase() === AUTO_LP.curator.toLowerCase();
@@ -83,12 +84,11 @@ export function AutoLpExperience() {
     // "average" means shares also moved by transfer or in-kind exit: measure against the cost of the shares held now
     const avg = basis?.mode === "average" && basis.basisWei;
     setMine({ shares, valueWei, ethBal, deposited: BigInt(avg ? basis.basisWei : basis?.depositedWei ?? 0), withdrawn: avg ? 0n : BigInt(basis?.withdrawnWei ?? 0) });
+    const old = [{ label: "V2", vault: AUTO_LP_V2.vault }, { label: "V1", vault: AUTO_LP_V1.vault }];
+    const held = await Promise.all(old.map((o) => publicClient.readContract({ address: o.vault, abi: stockLpVaultAbi, functionName: "balanceOf", args: [address] }).catch(() => ZERO)));
+    setRetired(old.map((o, i) => ({ ...o, shares: held[i] })).filter((o) => o.shares > ZERO));
     if (isCurator) {
-      const [v1, p] = await Promise.all([
-        publicClient.readContract({ address: AUTO_LP_V1.vault, abi: stockLpVaultAbi, functionName: "balanceOf", args: [address] }),
-        publicClient.readContract({ address: AUTO_LP.sleeves[0].sleeve, abi: stockLpSleeveAbi, functionName: "managementPaused" }),
-      ]);
-      setV1Shares(v1); setPaused(p);
+      setPaused(await publicClient.readContract({ address: AUTO_LP.sleeves[0].sleeve, abi: stockLpSleeveAbi, functionName: "managementPaused" }));
     }
   }, [address, vault, isCurator]);
   useEffect(() => { void loadMine().catch(() => {}); }, [loadMine]);
@@ -181,12 +181,12 @@ export function AutoLpExperience() {
       if (o0 + o1 > ZERO) await send(`Claim ${s.symbol} fees`, () => walletClient.writeContract({ account: address, address: s.sleeve, abi: stockLpSleeveAbi, functionName: "claimFees", chain: robinhood }));
     }
   };
-  const withdrawV1 = async () => {
-    if (!(await ready()) || !address || !walletClient || v1Shares <= ZERO) return;
+  const withdrawRetired = async (r: { label: string; vault: Address; shares: bigint }) => {
+    if (!(await ready()) || !address || !walletClient || r.shares <= ZERO) return;
     try {
-      const sim = await publicClient.simulateContract({ account: address, address: AUTO_LP_V1.vault, abi: stockLpVaultAbi, functionName: "withdrawEth", args: [v1Shares, address, 1n, deadline()] });
-      await send("Withdraw V1 seed", () => walletClient.writeContract({ account: address, address: AUTO_LP_V1.vault, abi: stockLpVaultAbi, functionName: "withdrawEth", args: [v1Shares, address, minOut(sim.result), deadline()], chain: robinhood }));
-    } catch (e) { setMsg(`V1 withdraw: ${short(e)}`); }
+      const sim = await publicClient.simulateContract({ account: address, address: r.vault, abi: stockLpVaultAbi, functionName: "withdrawEth", args: [r.shares, address, 1n, deadline()] });
+      await send(`Withdraw from retired ${r.label}`, () => walletClient.writeContract({ account: address, address: r.vault, abi: stockLpVaultAbi, functionName: "withdrawEth", args: [r.shares, address, minOut(sim.result), deadline()], chain: robinhood }));
+    } catch (e) { setMsg(`Retired ${r.label} withdraw: ${short(e)}`); }
   };
 
   const since = useCountUp(stats?.sinceLaunchUsdPct), tvl = useCountUp(stats?.navUsd), price = useCountUp(stats?.perShareUsd);
@@ -238,6 +238,10 @@ export function AutoLpExperience() {
           <div className="ap-chips ap-chips-wide">{[...new Set([...(intentPct ? [intentPct] : []), 25n, 50n, 100n])].sort((a, b) => Number(a - b)).map((p) => <button key={String(p)} aria-pressed={p === intentPct} disabled={busy || mine.shares <= ZERO} onClick={() => withdraw(p)}>Withdraw {String(p)}%</button>)}</div>
           <button className="ap-text-btn" disabled={busy || mine.shares <= ZERO} onClick={emergency}>Emergency exit · receive the underlying positions</button>
         </div>}
+        {retired.map((r) => <div key={r.vault} className="ap-retired">
+          <p>You still hold {Number(formatEther(r.shares)).toFixed(2)} shares in the retired {r.label} vault. It is exit-only; withdraw them to ETH in one transaction.</p>
+          <button className="landing-btn-primary" disabled={busy} onClick={() => withdrawRetired(r)}>Withdraw {r.label} to ETH</button>
+        </div>)}
         {msg && <p className="ap-msg" role="status">{msg}</p>}
       </div>
       <div className="ap-card ap-pos-card">
@@ -312,7 +316,6 @@ export function AutoLpExperience() {
         <button disabled={busy} onClick={runAutopilot}>Run autopilot now</button>
         <button disabled={busy} onClick={claimAll}>Claim fees to treasury</button>
         <button disabled={busy} onClick={togglePause}>{paused ? "Resume management" : "Pause management"}</button>
-        {v1Shares > ZERO && <button disabled={busy} onClick={withdrawV1}>Withdraw V1 seed ({Number(formatEther(v1Shares)).toFixed(2)} shares)</button>}
       </div>
       {msg && <p className="ap-msg" role="status">{msg}</p>}
     </section>}
