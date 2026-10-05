@@ -14,6 +14,11 @@ export const STOCK_LOGOS: Record<string, { light?: boolean; name: string }> = {
   BABA: { name: "Alibaba" },
   USO: { light: true, name: "United States Oil Fund" },
   MSTR: { name: "Strategy" },
+  SNDK: { name: "Sandisk" },
+  MU: { name: "Micron" }, // the lowercase "m" is Micron's 2024 mark (the orbit "M" was retired)
+  DELL: { name: "Dell Technologies" },
+  MSFT: { name: "Microsoft" },
+  AAPL: { name: "Apple" },
 };
 
 export const stockLogoSrc = (symbol: string) => assetLogo(symbol) ?? null;
