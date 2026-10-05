@@ -3,6 +3,7 @@
  * becomes a question back to the user, never a transaction. Pure functions: unit-tested in guard.test.ts. */
 import { parseEther } from "viem";
 import { amountMentions, canonDecimal, meansCurrentVault, vaultMentions, type AmountMention, type VaultRef } from "./understand";
+import type { WatchRule } from "./watch";
 
 export type DepositIntent = { vault: string; amount_eth?: string; amount_usd?: string; percent_of_wallet?: number };
 export type WithdrawIntent = { vault: string; percent?: number; amount_eth?: string };
@@ -48,6 +49,8 @@ export function checkVault(chosen: string, ctx: ReturnType<typeof context>, vaul
   return clarify(`You mentioned ${ctx.mentions.map((s) => nameOf(s, vaults)).join(" and ")}. Which one should this use?`, ctx.mentions.map((s) => nameOf(s, vaults)));
 }
 
+/** "0.1 ETH", "$2,500", " 50 usd " -> the bare decimal the model meant (its formatting, not a different amount). */
+const unitless = (v: unknown) => String(v).trim().replace(/^\$/, "").replace(/\s*(eth|ether|usd|dollars?)$/i, "").replace(/,(?=\d{3})/g, "").trim();
 /** How many different amounts the user said (0.1 ETH and "0.10 eth" are one). */
 function distinct(said: AmountMention[], deposit: boolean) {
   return new Set(said.map((m) => { const e = ethOf(m, deposit); if (e !== null) { try { return `eth:${parseEther(e)}`; } catch { return `eth:${e}`; } } return m.kind === "usd" ? `usd:${m.usd}` : m.kind === "percent" ? `pct:${m.percent}` : `bare:${(m as { value: string }).value}`; })).size;
@@ -67,14 +70,14 @@ export function checkDeposit(intent: DepositIntent, userMessages: string[], vaul
   if (given !== 1) return clarify(`How much should go into ${nameOf(vault, vaults)}?`, said.map(describe));
 
   if (intent.amount_eth !== undefined) {
-    const eth = canonDecimal(String(intent.amount_eth));
+    const eth = canonDecimal(unitless(intent.amount_eth));
     if (!eth || !said.some((m) => { const e = ethOf(m, true); return e !== null && sameEth(e, eth); })) return mismatch(said, vault, vaults);
     if (Number(eth) <= 0) return clarify("The amount has to be above zero. How much ETH?");
     if (Number(eth) > LIMITS.maxDepositEth) return clarify(`The assistant can prepare deposits up to ${LIMITS.maxDepositEth} ETH at a time. Use the deposit form on the vault page for more, or choose a smaller amount.`);
     return { decision: "ok", vault, amount_eth: eth };
   }
   if (intent.amount_usd !== undefined) {
-    const usd = canonDecimal(String(intent.amount_usd));
+    const usd = canonDecimal(unitless(intent.amount_usd));
     if (!usd || !said.some((m) => m.kind === "usd" && m.usd === usd)) return mismatch(said, vault, vaults);
     return { decision: "ok", vault, amount_usd: usd };
   }
@@ -98,11 +101,31 @@ export function checkWithdraw(intent: WithdrawIntent, userMessages: string[], va
     return { decision: "ok", vault, percent: p };
   }
   if (intent.amount_eth !== undefined) {
-    const eth = canonDecimal(String(intent.amount_eth));
+    const eth = canonDecimal(unitless(intent.amount_eth));
     if (!eth || !said.some((m) => m.kind === "eth" && sameEth(m.eth, eth))) return mismatch(said, vault, vaults, true);
     return { decision: "ok", vault, amount_eth: eth };
   }
   return clarify(`How much of ${nameOf(vault, vaults)} should I withdraw?`, ["25%", "50%", "100%"]);
+}
+
+/** A watch rule from the model: every number in it must be one the user said, and a vault must be one they named (or
+ *  the one on screen). Same promise as deposits: the model can't invent what you're alerted about. */
+export function checkWatch(rule: WatchRule, userMessages: string[], vaults: VaultRef[], pageVault?: string): { decision: "ok"; rule: WatchRule } | Clarify {
+  const ctx = context(userMessages, vaults);
+  const nums = ctx.amounts.map((m) => Number(m.kind === "eth" ? m.eth : m.kind === "usd" ? m.usd : m.kind === "percent" ? m.percent : m.value));
+  const leverage = [...ctx.latest.toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*x\b/g)].map((m) => Number(m[1]));
+  const has = (n: number, list: number[]) => list.some((x) => Math.abs(x - n) < 1e-9);
+  switch (rule.kind) {
+    case "eth_price": return has(rule.usd, nums) ? { decision: "ok", rule } : clarify("At what ETH price should I alert you?");
+    case "boost_leverage": return has(rule.x, [...leverage, ...nums]) ? { decision: "ok", rule } : clarify("At what leverage should I alert you, for example 1×?");
+    case "boost_event": return { decision: "ok", rule };
+    case "position_value": case "position_change": {
+      const v = checkVault(rule.vault, ctx, vaults, pageVault);
+      if (typeof v !== "string") return v;
+      const n = rule.kind === "position_value" ? rule.usd : Math.abs(rule.pct);
+      return has(n, nums) ? { decision: "ok", rule: { ...rule, vault: v } } : clarify(rule.kind === "position_value" ? "At what value should I alert you?" : "By how many percent?");
+    }
+  }
 }
 
 function describe(m: AmountMention) {

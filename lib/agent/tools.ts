@@ -3,7 +3,8 @@
  * address, verify.ts decodes the result, and the card is built from that decode. */
 import { formatEther, parseEther, type Address } from "viem";
 import { boostSignal, boostStats, checkAddress, client, getVault, overview, positions, quoteDeposit, quoteWithdraw, registry, type Entry } from "@/lib/mcp/hoodx";
-import { checkDeposit, checkWithdraw, type Clarify } from "./guard";
+import { checkDeposit, checkWatch, checkWithdraw, type Clarify } from "./guard";
+import { describeRule, validRule } from "./watch";
 import type { ToolDef } from "./model";
 import type { Card, Row } from "./types";
 import { verifyTx } from "./verify";
@@ -30,6 +31,10 @@ export function toolDefs(vaults: Entry[]): ToolDef[] {
       { vault: slug, amount_eth: { type: "string", description: "ETH amount exactly as the user said it, e.g. \"0.1\"." }, amount_usd: { type: "string", description: "Dollar amount exactly as said, e.g. \"50\"." }, percent_of_wallet: { type: "integer", description: "Share of the wallet's ETH, e.g. 50 for half." } }, ["vault"]),
     fn("prepare_withdraw", "Prepare a withdrawal for the user to review and sign. Give percent (whole number 1-100) or amount_eth.",
       { vault: slug, percent: { type: "integer", minimum: 1, maximum: 100 }, amount_eth: { type: "string" } }, ["vault"]),
+    fn("create_watch", "Set up an alert the user asked for, e.g. 'tell me if ETH drops below 2500' (eth_price below 2500), 'let me know if Boost steps aside' (boost_event steps_aside), 'alert me if my LP position falls 10%' (position_change autolp -10). Numbers must be the user's own.",
+      { kind: { type: "string", enum: ["eth_price", "boost_leverage", "boost_event", "position_value", "position_change"] }, op: { type: "string", enum: ["below", "above"] },
+        usd: { type: "number", description: "dollar level for eth_price or position_value" }, x: { type: "number", description: "leverage level for boost_leverage, e.g. 1" },
+        event: { type: "string", enum: ["steps_aside", "leaves_max", "any_change"] }, vault: slug, pct: { type: "number", description: "percent move for position_change; negative for a fall" } }, ["kind"]),
     fn("ask_user", "Ask the user a short clarifying question when the vault or the amount is unclear.", { question: { type: "string" }, options: { type: "array", items: { type: "string" }, maxItems: 4 } }, ["question"]),
   ];
 }
@@ -78,6 +83,20 @@ export async function runTool(name: string, args: Record<string, unknown>, ctx: 
       const q = String(args.question ?? "Could you say a bit more?").slice(0, 200);
       const options = Array.isArray(args.options) ? args.options.map(String).slice(0, 4) : [];
       return { data: { asked: q }, cards: [{ type: "clarify", question: q, options }], final: { reply: q } };
+    }
+    case "create_watch": {
+      // keep only the fields each kind uses: models sometimes add a stray one (a vault on a Boost event, an op on a move)
+      const FIELDS: Record<string, string[]> = { eth_price: ["op", "usd"], boost_leverage: ["op", "x"], boost_event: ["event"], position_value: ["vault", "op", "usd"], position_change: ["vault", "pct"] };
+      const num = (v: unknown) => (typeof v === "string" ? Number(v.replace(/[$,\s]|eth|usd/gi, "")) : v);
+      // an event with no leverage level is a Boost event, whatever kind the model labelled it (events carry no numbers)
+      const kind = args.event && (args.x === undefined || args.x === null) ? "boost_event" : String(args.kind);
+      const rule = Object.fromEntries([["kind", kind], ...(FIELDS[kind] ?? []).map((k) => [k, ["usd", "x", "pct"].includes(k) ? num(args[k]) : args[k]])].filter(([, v]) => v !== undefined && v !== null));
+      if (!validRule(rule, vaults.map((v) => v.slug))) { if (process.env.NODE_ENV !== "production") console.error("[agent] invalid watch", JSON.stringify(args)); return clarifyResult({ decision: "clarify", question: "What exactly should I watch for? For example: ETH below $2,500, or Boost stepping aside.", options: [] }); }
+      const g = checkWatch(rule, ctx.userMessages, refs(vaults), ctx.pageVault);
+      if (g.decision === "clarify") return clarifyResult(g);
+      if (["position_value", "position_change"].includes(g.rule.kind) && !ctx.wallet) return needWallet();
+      const label = describeRule(g.rule, (s) => vaults.find((v) => v.slug === s)?.name ?? s);
+      return { data: { watch: label }, cards: [{ type: "watch", rule: g.rule, label }], final: { reply: `I'll watch for: ${label}. Tap Start watching to turn it on.` } };
     }
     case "prepare_deposit": return prepareDeposit(args, ctx, vaults);
     case "prepare_withdraw": return prepareWithdraw(args, ctx, vaults);

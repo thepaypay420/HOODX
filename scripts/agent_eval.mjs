@@ -55,7 +55,16 @@ const HAND = [
   [["put 0.1 eth somewhere safe"], { clarify: true, answerOk: true }],
   [["buy 0.1 eth of nvidia"], { clarify: true, answerOk: true }],
   [["put 50 eth into boost"], { clarify: true, answerOk: true }],
+  [["tell me if ETH drops below $2,500"], { watch: { kind: "eth_price", op: "below", usd: 2500 } }],
+  [["alert me when eth goes above 3000"], { watch: { kind: "eth_price", op: "above", usd: 3000 } }],
+  [["let me know if boost steps aside"], { watch: { kind: "boost_event", event: "steps_aside" } }],
+  [["ping me if boosted eth drops under 1x"], { watch: { kind: "boost_leverage", op: "below", x: 1 } }],
+  [["notify me if the boost leverage changes"], { watch: { kind: "boost_event", event: "any_change" } }],
+  [["warn me if my hands free lp falls 10%"], { watch: { kind: "position_change", vault: "autolp", pct: -10 } }],
+  [["tell me if my boost position goes over $250"], { watch: { kind: "position_value", vault: "boost", op: "above", usd: 250 } }],
   [["why is boost at its current leverage?"], { answer: true, tool: "get_boost_signal" }],
+  [["what happens to boost if eth falls 15%?"], { answer: true, tool: "boost_what_if" }],
+  [["which index has tesla?"], { answer: true, tool: "find_indexes" }],
   [["what would make boosted eth step aside?"], { answer: true, tool: "get_boost_signal" }],
   [["how much is in hoodx right now?"], { answer: true }],
   [["what's in the AI stack index?"], { answer: true }],
@@ -75,6 +84,13 @@ function score(c, res) {
     if (!intent) return { exact: false, wrong: false, got: clar ? "clarify" : "answer" };
     const same = intent.action === e.action && intent.vault === e.vault && ["amount_eth", "amount_usd", "percent_of_wallet", "percent"].every((k) => (intent[k] === undefined ? undefined : String(intent[k])) === (e[k] === undefined ? undefined : String(e[k])));
     return { exact: same, wrong: !same, got: intent };
+  }
+  if (e.watch) {
+    const w = res.cards?.find((k) => k.type === "watch");
+    if (intent) return { exact: false, wrong: true, got: intent };
+    if (!w) return { exact: false, wrong: false, got: clar ? "clarify" : "answer" };
+    const same = Object.entries(e.watch).every(([k, v]) => String(w.rule[k]) === String(v));
+    return { exact: same, wrong: !same, got: w.rule };
   }
   if (e.clarify) { if (intent && e.allowAction && ["action", "vault", "percent"].every((k) => String(intent[k]) === String(e.allowAction[k]))) return { exact: true, wrong: false, got: intent }; if (intent) return { exact: false, wrong: true, got: intent }; return { exact: !!clar || !!e.answerOk, wrong: false, got: clar ? "clarify" : "answer" }; }
   if (intent) return { exact: false, wrong: true, got: intent };

@@ -6,6 +6,8 @@ import { BrandMark } from "@/components/BrandMark";
 import type { Card, ChatMessage } from "@/lib/agent/types";
 import { useWallet } from "@/lib/wallet";
 import { AgentCard } from "./AgentCards";
+import { useWatch, type LastVisit, type LiveState } from "./useWatch";
+import type { SavedRule } from "@/lib/agent/watch";
 
 /** Ask the companion from anywhere: a "Why?" chip calls askHoodx("Why is …?"). */
 export function askHoodx(question: string) { window.dispatchEvent(new CustomEvent("hoodx:ask", { detail: question })); }
@@ -45,6 +47,16 @@ export function Companion() {
   const inputRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const vault = vaultFromPath(path);
+  const [unread, setUnread] = useState(false);
+  const openRef = useRef(open); openRef.current = open;
+  // a watch rule fired: it lands in the conversation as an alert, and the launcher shows a dot until opened
+  const onFire = useCallback((text: string) => {
+    setTurns((t) => [...t, { role: "assistant", text: `Alert: ${text}` }]);
+    if (!openRef.current) setUnread(true);
+  }, []);
+  const watch = useWatch(address, onFire);
+  const { markVisit } = watch;
+  useEffect(() => { if (open) { setUnread(false); markVisit(); } }, [open, markVisit]);
 
   // the conversation survives navigation within the tab, and only within it
   const [ready, setReady] = useState(false);
@@ -84,8 +96,9 @@ export function Companion() {
   return (
     <>
       {!open && (
-        <button type="button" className="agent-launch" onClick={() => setOpen(true)} aria-label="Ask HOODX">
+        <button type="button" className={`agent-launch${unread ? " has-alert" : ""}`} onClick={() => setOpen(true)} aria-label={unread ? "Ask HOODX, new alert" : "Ask HOODX"}>
           <Core size={40} />
+          {unread && <i className="agent-dot" aria-hidden />}
           <span className="agent-launch-text"><b>Ask HOODX</b><span>Your vaults, explained</span></span>
           <kbd className="agent-kbd">Ctrl K</kbd>
         </button>
@@ -101,6 +114,7 @@ export function Companion() {
         </header>
 
         <div className="agent-list" ref={listRef} aria-live="polite">
+          <Briefing state={watch.state} last={watch.lastVisit} rules={watch.rules} onRemove={watch.remove} connected={!!address} />
           {turns.length === 0 && (
             <div className="agent-empty">
               <p>Ask about any vault, your positions, or say what you&apos;d like to do. I prepare it, you check it and sign.</p>
@@ -112,7 +126,7 @@ export function Companion() {
           ) : (
             <div key={i} className="agent-msg-bot">
               <p>{t.text}</p>
-              {t.cards?.map((c, k) => <AgentCard key={k} card={c} onAsk={(q) => void send(q)} />)}
+              {t.cards?.map((c, k) => <AgentCard key={k} card={c} onAsk={(q) => void send(q)} onWatch={watch.add} watching={(label) => watch.rules.some((r) => r.label === label)} />)}
             </div>
           ))}
           {busy && <div className="agent-thinking" aria-label="Thinking"><i /><i /><i /></div>}
@@ -132,4 +146,40 @@ export function Companion() {
 /** A small "Why?" next to a number: opens the companion with the question already asked. */
 export function WhyChip({ question, label = "Why?" }: { question: string; label?: string }) {
   return <button type="button" className="agent-why" onClick={() => askHoodx(question)}>{label}</button>;
+}
+
+const usd = (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** "Today": the three lines worth knowing, from live data, plus what is being watched. No model involved. */
+function Briefing({ state, last, rules, onRemove, connected }: { state: LiveState | null; last: LastVisit | null; rules: SavedRule[]; onRemove: (id: string) => void; connected: boolean }) {
+  if (!state) return null;
+  const lines: { dot: string; text: React.ReactNode }[] = [];
+  if (state.boost) {
+    const t = state.boost.target, lv = state.boostLevels;
+    lines.push({ dot: "#ff9a3c", text: t >= 1.99 ? <>Boost is at full <b>2×</b>{lv?.firstStepBelow ? <>; it steps down below <b>{usd(lv.firstStepBelow)}</b></> : null}.</>
+      : t <= 0.05 ? <>Boost is <b>aside in dollars</b>{lv?.fullAbove ? <>; it leans back in above <b>{usd(lv.fullAbove)}</b></> : null}.</>
+      : <>Boost is at <b>{t.toFixed(2)}×</b>{lv?.fullAbove ? <>; full 2× above <b>{usd(lv.fullAbove)}</b></> : null}.</> });
+  }
+  if (connected && state.totalUsd !== null) {
+    const d = last?.totalUsd ? state.totalUsd - last.totalUsd : null;
+    lines.push({ dot: "#4fd7cb", text: <>Your vaults hold <b>{usd(state.totalUsd)}</b>{d !== null && Math.abs(d) >= 0.01 ? <> · <span className={d >= 0 ? "up" : "down"}>{d >= 0 ? "+" : "−"}{usd(Math.abs(d))}</span> since your last visit</> : null}.</> });
+  }
+  if (state.ethUsd) lines.push({ dot: "#b98cff", text: <>ETH is <b>{usd(state.ethUsd)}</b>.</> });
+  return (
+    <div className="agent-card agent-brief">
+      <div className="agent-brief-top"><span className="agent-eyebrow agent-eyebrow-teal">Today</span><span className="agent-fine">Live from the chain</span></div>
+      <div className="agent-brief-lines">{lines.map((l, i) => <div key={i}><i style={{ background: l.dot }} /><span>{l.text}</span></div>)}</div>
+      {rules.length > 0 && (
+        <div className="agent-watching">
+          <span className="agent-eyebrow">Watching for you</span>
+          <div className="agent-watch-chips">{rules.map((r) => (
+            <span key={r.id} className={`agent-watch-chip${r.firedAt ? " fired" : ""}`} title={r.firedText}>
+              {r.firedAt ? "Triggered: " : ""}{r.label}
+              <button type="button" onClick={() => onRemove(r.id)} aria-label={`Stop watching ${r.label}`}>×</button>
+            </span>
+          ))}</div>
+        </div>
+      )}
+    </div>
+  );
 }

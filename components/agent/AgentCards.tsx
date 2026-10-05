@@ -90,8 +90,24 @@ function Signal({ card }: { card: Extract<Card, { type: "signal" }> }) {
   );
 }
 
-export function AgentCard({ card, onAsk }: { card: Card; onAsk: (q: string) => void }) {
+function Watch({ card, onWatch, watching }: { card: Extract<Card, { type: "watch" }>; onWatch?: (rule: Extract<Card, { type: "watch" }>["rule"], label: string, notify: boolean) => void; watching?: (label: string) => boolean }) {
+  const [notify, setNotify] = useState(true);
+  const on = watching?.(card.label);
+  return (
+    <div className="agent-card agent-watch">
+      <span className="agent-eyebrow">Watch</span>
+      <p className="agent-proposal-head">{card.label}</p>
+      <p className="agent-fine">Checked every 2 minutes while HOODX is open in a tab. You get an alert here{notify ? " and a browser notification" : ""}.</p>
+      {!on && <label className="agent-check"><input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />Also notify me in this browser</label>}
+      {on ? <span className="agent-done"><Check />Watching</span>
+        : <button type="button" className="agent-btn agent-btn-primary" onClick={() => onWatch?.(card.rule, card.label, notify)}>Start watching</button>}
+    </div>
+  );
+}
+
+export function AgentCard({ card, onAsk, onWatch, watching }: { card: Card; onAsk: (q: string) => void; onWatch?: (rule: Extract<Card, { type: "watch" }>["rule"], label: string, notify: boolean) => void; watching?: (label: string) => boolean }) {
   switch (card.type) {
+    case "watch": return <Watch card={card} onWatch={onWatch} watching={watching} />;
     case "proposal": return <Proposal card={card} onAsk={onAsk} />;
     case "signal": return <Signal card={card} />;
     case "clarify":

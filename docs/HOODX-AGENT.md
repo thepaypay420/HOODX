@@ -76,8 +76,20 @@ mistral-nemo, though cheap and fast, made up figures ("$54.54M", "1.8x"), which 
 - **Privacy:** messages and the connected wallet address go to the model host through OpenRouter. No keys, no balances
   beyond what the tools read from the public chain.
 
+## Briefing and watch rules
+
+- **Today** (top of the panel): Boost's level and next trigger price, your total and its change since your last visit,
+  and ETH's price, all from `GET /api/agent/state` (plain data, cached a minute; positions per wallet). No model.
+- **Watch rules** from plain English ("tell me if ETH drops below $2,500", "let me know if Boost steps aside", "warn me
+  if my LP falls 10%"). The model calls `create_watch`; `checkWatch` in guard.ts refuses any number the user did not say;
+  the card's **Start watching** saves the rule in this browser (`lib/agent/watch.ts`, `components/agent/useWatch.ts`).
+- Plain code checks every two minutes while a HOODX tab is open (and at once when a rule is added): an alert in the
+  panel, a dot on the launcher, and a browser notification if allowed. Each rule fires once and then shows as triggered.
+- Tests: 20 watch cases (when rules fire; numbers only from the user) in `scripts/agent_unit.mjs` and
+  `lib/agent/watch.test.ts`; the model eval now includes watch, what-if and index questions (gpt-oss-120b 260/260).
+
 ## Next
 
-1. Daily briefing and plain-English watch rules ("tell me if Boost steps aside"), run as code, alerting only on change.
+1. Alerts with no tab open: store rules server-side (a small KV store) and send Web Push from a scheduled check.
 2. "Why?" chips on more numbers (index pages, My Vaults).
 3. Scoped session keys (smart-account permissions) for opt-in automation within user-set limits.

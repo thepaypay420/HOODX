@@ -9,6 +9,7 @@ export type Card =
   | { type: "signal"; target: number; ethPrice: number; eth: boolean[]; btc: boolean[]; fullAbove: number | null; firstStepBelow: number | null; asideBelowEth: number | null }
   | { type: "vault"; slug: string; name: string; ticker: string; valueUsd: number | null; sinceLaunchPct: number | null; summary: string; url: string }
   | { type: "notice"; tone: "info" | "warn"; text: string; link?: { label: string; href: string } }
+  | { type: "watch"; rule: import("./watch").WatchRule; label: string }
   | { type: "intent"; action: "deposit" | "withdraw"; vault: string; amount_eth?: string; amount_usd?: string; percent_of_wallet?: number; percent?: number };
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
