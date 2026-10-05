@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { BrandMark } from "@/components/BrandMark";
 import type { Card, ChatMessage } from "@/lib/agent/types";
 import { useWallet } from "@/lib/wallet";
 import { AgentCard } from "./AgentCards";
@@ -30,8 +29,17 @@ function suggestions(vault?: string): string[] {
 export function Core({ size = 40 }: { size?: number }) {
   return (
     <span className="agent-core" style={{ width: size, height: size }} aria-hidden>
-      <svg width={size} height={size} viewBox="0 0 40 40"><ellipse cx="20" cy="20" rx="15" ry="6" /><ellipse cx="20" cy="20" rx="6" ry="15" /></svg>
-      <BrandMark size={Math.round(size * 0.5)} />
+      <svg className="agent-bot" width={size} height={size} viewBox="2.5 2.5 35 35">
+        <path className="agent-bot-line" d="M20 12.5V9.6" />
+        <circle className="agent-bot-signal" cx="20" cy="8.2" r="1.7" />
+        <rect className="agent-bot-ear" x="7.6" y="17.6" width="3" height="5.6" rx="1.3" />
+        <rect className="agent-bot-ear" x="29.4" y="17.6" width="3" height="5.6" rx="1.3" />
+        <rect className="agent-bot-head" x="10.6" y="12.5" width="18.8" height="15.6" rx="5.6" />
+        <rect className="agent-bot-visor" x="13.4" y="16.4" width="13.2" height="6.8" rx="3.4" />
+        <circle className="agent-bot-eye" cx="17.3" cy="19.8" r="1.55" />
+        <circle className="agent-bot-eye" cx="22.7" cy="19.8" r="1.55" />
+        <path className="agent-bot-mouth" d="M18.2 25.2h3.6" />
+      </svg>
     </span>
   );
 }
@@ -127,7 +135,8 @@ export function Companion() {
     window.addEventListener("hoodx:ask", onAsk); window.addEventListener("keydown", onKey);
     return () => { window.removeEventListener("hoodx:ask", onAsk); window.removeEventListener("keydown", onKey); };
   }, [send]);
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 120); }, [open]);
+  // focus the input on open only with a real keyboard; on touch screens the on-screen keyboard waits for a tap
+  useEffect(() => { if (open && window.matchMedia("(hover: hover) and (pointer: fine)").matches) setTimeout(() => inputRef.current?.focus(), 120); }, [open]);
 
   return (
     <>
