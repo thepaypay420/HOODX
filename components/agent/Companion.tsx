@@ -65,29 +65,37 @@ export function Companion() {
   useEffect(() => { if (!ready) return; try { sessionStorage.setItem(STORE, JSON.stringify(turns.slice(-20))); } catch { /* storage unavailable */ } }, [turns, ready]);
   useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }); }, [turns, busy]);
 
-  // Phones: the keyboard shrinks only the *visible* area, so a sheet pinned to the page bottom gets pushed out of view.
-  // While the panel is open, lock the page and track the visible area: with the keyboard up the sheet fills exactly the
-  // space above it (header on top, input on the keyboard), like a messaging app.
+  // Phones: the sheet never moves when the keyboard opens. The keyboard slides over the sheet's lower part and only the
+  // input rises to sit on it (the sheet reserves the keyboard's height at its bottom). Chromium browsers tell us the
+  // keyboard's size directly and leave the page alone (VirtualKeyboard API); elsewhere (iOS) the browser pans the page
+  // up, so the sheet follows the pan to stay put on screen. The page behind is locked while the sheet is open.
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open || !window.matchMedia("(max-width: 767px)").matches) return;
+    type VK = EventTarget & { overlaysContent: boolean; boundingRect: DOMRect };
+    const vk = (navigator as Navigator & { virtualKeyboard?: VK }).virtualKeyboard;
     const vv = window.visualViewport, html = document.documentElement, body = document.body;
-    const prev = { html: html.style.overflow, body: body.style.overflow, touch: body.style.overscrollBehavior };
+    const prev = { html: html.style.overflow, body: body.style.overflow, touch: body.style.overscrollBehavior, vk: vk?.overlaysContent };
     html.style.overflow = "hidden"; body.style.overflow = "hidden"; body.style.overscrollBehavior = "none";
+    if (vk) vk.overlaysContent = true;
     const apply = () => {
-      const el = panelRef.current; if (!el || !vv) return;
-      const typing = window.innerHeight - vv.height > 120;
-      el.style.setProperty("--vv-top", `${vv.offsetTop}px`);
-      el.style.setProperty("--vv-h", `${vv.height}px`);
+      const el = panelRef.current; if (!el) return;
+      const [kb, shift] = vk ? [vk.boundingRect.height, 0] : vv ? [Math.max(0, window.innerHeight - vv.height), vv.offsetTop] : [0, 0];
+      const typing = kb > 120;
+      el.style.setProperty("--kb", `${typing ? Math.min(kb, el.offsetHeight - 170) : 0}px`);
+      el.style.setProperty("--kb-shift", `${typing ? shift : 0}px`);
       if (typing !== el.classList.contains("typing")) {
         el.classList.toggle("typing", typing);
         if (typing) requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight }));
       }
     };
     apply();
+    vk?.addEventListener("geometrychange", apply);
     vv?.addEventListener("resize", apply); vv?.addEventListener("scroll", apply);
     return () => {
+      vk?.removeEventListener("geometrychange", apply);
       vv?.removeEventListener("resize", apply); vv?.removeEventListener("scroll", apply);
+      if (vk) vk.overlaysContent = prev.vk ?? false;
       html.style.overflow = prev.html; body.style.overflow = prev.body; body.style.overscrollBehavior = prev.touch;
       panelRef.current?.classList.remove("typing");
     };
