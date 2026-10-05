@@ -1,8 +1,8 @@
 {
-  "status": "DRAFT",
-  "approvedAt": null,
-  "reviewedBuild": "0x307ecf30f2053564b9c2147f4352f374045efb5fa783e469136756565406e8e8",
-  "note": "STKX v3 phase 1 (research: docs/STOCK-LP-V3-SYSTEM-RESEARCH-2026-10-05.md). Same reviewed V2 contracts; new pools, about +/-2% ranges, re-placed 15 min after leaving range. DRAFT: not approved for broadcast.",
+  "status": "APPROVED",
+  "approvedAt": "2026-10-05",
+  "reviewedBuild": "0x4e2f886d9ed80810f5d4fd911764c595e252ebf59cd2d2581a366c01ad4bc1b4",
+  "note": "STKX v3 phase 1, approved for launch by the owner on 2026-10-05 (research: docs/STOCK-LP-V3-SYSTEM-RESEARCH-2026-10-05.md). Same reviewed V2 contracts: the executable bytecode of all five (controller, vault, seeder, sleeve, TWAP reference) is identical to the live V2 deployment with immutables masked; only the metadata hash differs, so the build fingerprint changed from 0x307ecf30... to 0x4e2f886d.... New pools, about +/-2% ranges, re-placed 15 minutes after leaving range.",
   "perfFeeBps": 1000,
   "minDepositUsdg": 10000000,
   "tvlCapUsdg": 10000000000,
