@@ -10,6 +10,9 @@ export const AUTO_LP = {
   capUsd: 10_000,
   minUsd: 10,
   perfFeePct: 10,
+  /** The autopilot rule, as shown on the page (manifest: halfWidthTicks ~ ±2%, breachDelaySeconds). */
+  bandLabel: "±2%",
+  breachDelaySec: 900,
   stocks: ["NVDA", "META", "SPY", "SPCX", "PLTR", "BABA", "USO", "MSTR"],
   /** First block of the V2 deployment (event scans start here). */
   deployBlock: 77_213_266n,
@@ -109,8 +112,8 @@ export function sleeveState(s: { inRange: boolean; referenceAgrees: boolean; bre
   if (s.inRange) return { label: "Earning in range", tone: "good" as const };
   if (s.rebandReady) return { label: "Rebalance due", tone: "info" as const };
   if (s.breachStart > 0n) {
-    const hrs = Math.max(0, Math.floor((nowSec - Number(s.breachStart)) / 3600));
-    return { label: `Waiting · ${hrs}h of 24h`, tone: "info" as const };
+    const left = Math.ceil((AUTO_LP.breachDelaySec - (nowSec - Number(s.breachStart))) / 60);
+    return { label: left > 0 ? `Out of range · ${left} min to rebalance` : "At the band edge", tone: "info" as const };
   }
   return { label: "Maker range · waiting for price", tone: "info" as const };
 }

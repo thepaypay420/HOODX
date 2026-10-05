@@ -140,7 +140,7 @@ def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--controller", help="controller address (default: deployments/stock-lp-vault-v2-live.json)")
+    ap.add_argument("--controller", help="controller address (default: the newest deployments/stock-lp-vault-v*-live.json)")
     ap.add_argument("--keystore")
     ap.add_argument("--password-file")
     ap.add_argument("--private-key-env", help="ENV var holding a key (local fork tests only)")
@@ -167,9 +167,11 @@ def main() -> int:
         return 2
     if a.gas_price_wei:
         signer = [*signer, "--legacy", "--gas-price", str(a.gas_price_wei)]
-    live = ROOT / "deployments" / "stock-lp-vault-v2-live.json"
+    # The newest live deployment (v3 replaced v2 on 2026-10-05; the retired vault needs no keeper to exit).
+    lives = [ROOT / "deployments" / f"stock-lp-vault-{v}-live.json" for v in ("v3", "v2")]
+    live = next((f for f in lives if f.exists()), lives[-1])
     if not a.controller and not live.exists():
-        log("Automated LP V2 is not live yet; nothing to do")
+        log("Automated LP is not live yet; nothing to do")
         return 0
     controller = a.controller or json.loads(live.read_text())["controller"]
     try:
