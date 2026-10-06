@@ -17,9 +17,7 @@ interface IControlledVaultV2 {
     function addConstituent(bytes32 id) external;
     function replaceConfig(bytes32 id) external;
     function removeConstituent(address token) external;
-    function emergencyUnwind(address token, uint256 amount, uint256 minOut, uint256 deadline)
-        external
-        returns (uint256);
+    function emergencyUnwind(address token, uint256 amount, uint256 minOut, uint256 deadline) external returns (uint256);
     function setImageURI(string calldata uri) external;
 }
 
@@ -49,11 +47,7 @@ contract HoodxRebalanceControllerV2 is ReentrancyGuard {
 
     event Activated(address indexed vault, address indexed curator);
     event AtomicRebalance(
-        address indexed vault,
-        address indexed curator,
-        bytes32 indexed planHash,
-        uint256 stepCount,
-        uint256 cashAfter
+        address indexed vault, address indexed curator, bytes32 indexed planHash, uint256 stepCount, uint256 cashAfter
     );
     event CuratorTransferStarted(address indexed currentCurator, address indexed nextCurator);
     event CuratorTransferred(address indexed previousCurator, address indexed nextCurator);

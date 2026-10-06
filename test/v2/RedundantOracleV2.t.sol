@@ -8,7 +8,12 @@ import {HoodxRedundantOracleV2} from "../../contracts/v2/HoodxRedundantOracleV2.
 contract MockReferenceV2 is IV2Oracle {
     uint256 public answer;
     bool public fails;
-    function configure(uint256 answer_, bool fails_) external { answer = answer_; fails = fails_; }
+
+    function configure(uint256 answer_, bool fails_) external {
+        answer = answer_;
+        fails = fails_;
+    }
+
     function value(address, uint256 amount) external view returns (uint256) {
         if (fails) revert();
         return answer * amount / 1 ether;

@@ -40,7 +40,9 @@ contract HoodxSelfHealingControllerV2 is HoodxRebalanceControllerV2 {
         if (msg.sender != curator || target.pendingOwner() != address(this)) revert Unauthorized();
         target.acceptOwnership();
         if (target.owner() != address(this)) revert Invalid();
-        for (uint256 i; i < ids.length; ++i) _setRecoveryConfig(ids[i], true);
+        for (uint256 i; i < ids.length; ++i) {
+            _setRecoveryConfig(ids[i], true);
+        }
         emit Activated(address(vault), curator);
     }
 
@@ -50,7 +52,9 @@ contract HoodxSelfHealingControllerV2 is HoodxRebalanceControllerV2 {
     }
 
     function setRecoveryConfigs(bytes32[] calldata ids, bool approved) external onlyCurator {
-        for (uint256 i; i < ids.length; ++i) _setRecoveryConfig(ids[i], approved);
+        for (uint256 i; i < ids.length; ++i) {
+            _setRecoveryConfig(ids[i], approved);
+        }
     }
 
     function _setRecoveryConfig(bytes32 id, bool approved) private {

@@ -8,7 +8,9 @@ import {HoodxFeeModelV4} from "../contracts/v3/HoodxFeeModelV4.sol";
 import {HoodxProportionalV3} from "../contracts/v3/HoodxProportionalV3.sol";
 import {HoodxProportionalFactoryV3} from "../contracts/v3/HoodxProportionalFactoryV3.sol";
 
-interface IPolicyIdentityV4 { function executor() external view returns (address); }
+interface IPolicyIdentityV4 {
+    function executor() external view returns (address);
+}
 
 /// @notice Deploys only the immutable V4 fee model and replacement canary factory.
 /// It reuses the reviewed live registry, executor, routing, and policy. It does
@@ -30,8 +32,7 @@ contract DeployProportionalFeeV4 is Script {
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
             require(
-                keccak256(bytes(vm.envOr("HOODX_DEPLOY_STAGE", string(""))))
-                    == keccak256("reviewed-doppler-fee-v4"),
+                keccak256(bytes(vm.envOr("HOODX_DEPLOY_STAGE", string("")))) == keccak256("reviewed-doppler-fee-v4"),
                 "wrong deployment stage"
             );
             require(vm.envBytes32("HOODX_REVIEWED_BUILD") == buildFingerprint(), "reviewed build mismatch");
@@ -40,12 +41,10 @@ contract DeployProportionalFeeV4 is Script {
         console2.log("Reviewed build fingerprint");
         console2.logBytes32(buildFingerprint());
         vm.startBroadcast(DEPLOYER);
-        HoodxFeeModelV4 fees = new HoodxFeeModelV4(
-            ROUTING, QUOTRON_HOOK, PONS_HOOK, POOL_MANAGER, DOPPLER_INITIALIZER, REHYPE_HOOK
-        );
+        HoodxFeeModelV4 fees =
+            new HoodxFeeModelV4(ROUTING, QUOTRON_HOOK, PONS_HOOK, POOL_MANAGER, DOPPLER_INITIALIZER, REHYPE_HOOK);
         HoodxProportionalV3 implementation = new HoodxProportionalV3(POLICY, address(fees));
-        HoodxProportionalFactoryV3 factory =
-            new HoodxProportionalFactoryV3(DEPLOYER, TREASURY, address(implementation));
+        HoodxProportionalFactoryV3 factory = new HoodxProportionalFactoryV3(DEPLOYER, TREASURY, address(implementation));
         vm.stopBroadcast();
 
         require(factory.owner() == DEPLOYER && factory.treasury() == TREASURY, "factory roles mismatch");
