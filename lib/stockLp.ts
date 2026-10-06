@@ -19,15 +19,15 @@ export const AUTO_LP = {
   deployBlock: 80_488_143n,
   /** Static per-sleeve config (from deployments/stock-lp-vault-v3-live.json), in controller order. */
   sleeves: [
-    { symbol: "PLTR", sleeve: "0x047a7F8F301Ede7b7e05645bD82DCDF3fCa089d7", token: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A", usdgIsToken0: true },
-    { symbol: "SNDK", sleeve: "0x45985F6C41F02c5806a160D3dd8A9b91B921B1f2", token: "0xB90A19fF0Af67f7779afF50A882A9CfF42446400", usdgIsToken0: true },
-    { symbol: "MU", sleeve: "0x21e10Ae4258B77334d8776111354ce737F2b7567", token: "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD", usdgIsToken0: true },
-    { symbol: "DELL", sleeve: "0x892998cA14360a34C6edAFF6e4ED18aBDA3BfD7d", token: "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd", usdgIsToken0: true },
-    { symbol: "MSFT", sleeve: "0x84E7959Ce268a7Fcb6BC27d7576DE82d64aF97E6", token: "0xe93237C50D904957Cf27E7B1133b510C669c2e74", usdgIsToken0: true },
-    { symbol: "AAPL", sleeve: "0xC6a49A0e6ab5daEaccBCb2B43c5b703Cf2730001", token: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9", usdgIsToken0: true },
-    { symbol: "USO", sleeve: "0xd2d5D8a4f9E47a6990f162C5fC0396993B2D88b9", token: "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344", usdgIsToken0: true },
-    { symbol: "SPCX", sleeve: "0xfefb2fbA692Fa01a7882353243E28F9bb1D2C133", token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", usdgIsToken0: false },
-  ] as { symbol: string; sleeve: Address; token: Address; usdgIsToken0: boolean }[],
+    { symbol: "PLTR", sleeve: "0x047a7F8F301Ede7b7e05645bD82DCDF3fCa089d7", token: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A", usdgIsToken0: true, tickSpacing: 15, makerWidth: 195 },
+    { symbol: "SNDK", sleeve: "0x45985F6C41F02c5806a160D3dd8A9b91B921B1f2", token: "0xB90A19fF0Af67f7779afF50A882A9CfF42446400", usdgIsToken0: true, tickSpacing: 200, makerWidth: 200 },
+    { symbol: "MU", sleeve: "0x21e10Ae4258B77334d8776111354ce737F2b7567", token: "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD", usdgIsToken0: true, tickSpacing: 200, makerWidth: 200 },
+    { symbol: "DELL", sleeve: "0x892998cA14360a34C6edAFF6e4ED18aBDA3BfD7d", token: "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd", usdgIsToken0: true, tickSpacing: 25, makerWidth: 200 },
+    { symbol: "MSFT", sleeve: "0x84E7959Ce268a7Fcb6BC27d7576DE82d64aF97E6", token: "0xe93237C50D904957Cf27E7B1133b510C669c2e74", usdgIsToken0: true, tickSpacing: 60, makerWidth: 180 },
+    { symbol: "AAPL", sleeve: "0xC6a49A0e6ab5daEaccBCb2B43c5b703Cf2730001", token: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9", usdgIsToken0: true, tickSpacing: 60, makerWidth: 180 },
+    { symbol: "USO", sleeve: "0xd2d5D8a4f9E47a6990f162C5fC0396993B2D88b9", token: "0xa30FA36Db767ad9eD3f7a60fC79526fB4d56D344", usdgIsToken0: true, tickSpacing: 15, makerWidth: 195 },
+    { symbol: "SPCX", sleeve: "0xfefb2fbA692Fa01a7882353243E28F9bb1D2C133", token: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", usdgIsToken0: false, tickSpacing: 60, makerWidth: 180 },
+  ] as { symbol: string; sleeve: Address; token: Address; usdgIsToken0: boolean; tickSpacing: number; makerWidth: number }[],
 } as const;
 
 /** Retired V2 (2026-10-01 .. 10-05: cheaper pools, ±1%, 24 h rule). Exit-only; only the treasury holds shares. */
@@ -113,10 +113,23 @@ export function minOut(quotedWei: bigint, slippageBps = 150n): bigint {
   return m > 0n ? m : 1n;
 }
 
+/** The range HoodxStockLpControllerV2.executeReband would move an out-of-range sleeve to, or null when the move would be a
+ *  no-op (the contract refuses a new range equal to the current one): the sleeve already sits in the band beside the
+ *  price, and moves once the price clears the next tick-spacing step. Mirrors the contract's floor-to-spacing rule. */
+export function nextBand(s: { tick: number; tickLower: number; tickUpper: number; tickSpacing: number; makerWidth: number }): [number, number] | null {
+  const floor = (t: number, sp: number) => { const c = Math.trunc(t / sp) * sp; return t < 0 && t % sp !== 0 ? c - sp : c; };
+  let lower: number, upper: number;
+  if (s.tick >= s.tickUpper) { upper = floor(s.tick, s.tickSpacing); if (upper > s.tick) upper -= s.tickSpacing; lower = upper - s.makerWidth; }
+  else if (s.tick < s.tickLower) { lower = floor(s.tick, s.tickSpacing) + s.tickSpacing; upper = lower + s.makerWidth; }
+  else return null;
+  return lower === s.tickLower && upper === s.tickUpper ? null : [lower, upper];
+}
+
 /** Human status for one sleeve from the controller's status() view. */
-export function sleeveState(s: { inRange: boolean; referenceAgrees: boolean; breachStart: bigint; rebandReady: boolean }, nowSec: number) {
+export function sleeveState(s: { inRange: boolean; referenceAgrees: boolean; breachStart: bigint; rebandReady: boolean; atEdge?: boolean }, nowSec: number) {
   if (!s.referenceAgrees) return { label: "Price check paused", tone: "warn" as const };
   if (s.inRange) return { label: "Earning in range", tone: "good" as const };
+  if (s.rebandReady && s.atEdge) return { label: "At the band edge", tone: "info" as const };
   if (s.rebandReady) return { label: "Rebalance due", tone: "info" as const };
   if (s.breachStart > 0n) {
     const left = Math.ceil((AUTO_LP.breachDelaySec - (nowSec - Number(s.breachStart))) / 60);

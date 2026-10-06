@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient, http, keccak256, encodeAbiParameters, parseAbi, type Address } from "viem";
 import { robinhood } from "@/lib/chain";
 import { RPC_URL, USDG } from "@/lib/config";
-import { AUTO_LP, stockLpControllerAbi, stockLpVaultAbi } from "@/lib/stockLp";
+import { AUTO_LP, nextBand, stockLpControllerAbi, stockLpVaultAbi } from "@/lib/stockLp";
 import { ethUsdFromSqrt, navSummary, sleeveValueUsd, AUTO_LP_LAUNCH } from "@/lib/autolpNav";
 
 // Automated LP stats: one Multicall3 request (~90 reads), cached per vault share supply. A deposit or withdrawal changes
@@ -74,6 +74,8 @@ async function readStats() {
     return {
       symbol: s.symbol, valueUsd: sleeveValueUsd(read), tick: Number(tick), tickLower: read.tickLower, tickUpper: read.tickUpper,
       inRange: status[0], referenceAgrees: status[1], breachStart: Number(status[2]), rebandReady: status[4],
+      // out of range, but a re-placement would land on the same ticks: already in the band beside the price
+      atEdge: !status[0] && nextBand({ tick: Number(tick), tickLower: read.tickLower, tickUpper: read.tickUpper, tickSpacing: s.tickSpacing, makerWidth: s.makerWidth }) === null,
     };
   });
   const summary = navSummary(sleeves.map((s) => s.valueUsd), supply, ethUsd);

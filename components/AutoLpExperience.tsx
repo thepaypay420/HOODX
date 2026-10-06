@@ -29,6 +29,7 @@ const short = (e: unknown) => errName(e) || (e instanceof BaseError ? e.shortMes
 function describe(s: AutoLpSleeveStat, now: number) {
   if (!s.referenceAgrees) return { tone: "warn", label: "Price check paused", hint: "Pool and TWAP disagree; automation waits for them to agree." };
   if (s.inRange) return { tone: "good", label: "Earning", hint: `Price is inside its ${AUTO_LP.bandLabel} band, so every trade pays this position.` };
+  if (s.atEdge) return { tone: "wait", label: "At the band edge", hint: "Already in the band right beside the price. It earns as soon as the price comes back, and moves once the price clears the pool's next price step." };
   if (s.rebandReady) return { tone: "info", label: "Rebalance due", hint: "The autopilot moves it next to the price on its next run (every 15 minutes)." };
   if (s.breachStart > 0) {
     const left = Math.ceil((AUTO_LP.breachDelaySec - (now - s.breachStart)) / 60);

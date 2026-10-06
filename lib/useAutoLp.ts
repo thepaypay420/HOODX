@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /** Shape of /api/autolp-stats (cached per vault share supply server-side; 30 s at the edge). */
 export type AutoLpSleeveStat = {
   symbol: string; valueUsd: number; tick: number; tickLower: number; tickUpper: number;
-  inRange: boolean; referenceAgrees: boolean; breachStart: number; rebandReady: boolean;
+  inRange: boolean; referenceAgrees: boolean; breachStart: number; rebandReady: boolean; atEdge?: boolean;
 };
 export type AutoLpStatsView = {
   updatedAt: number; block: number; navUsd: number; navEth: number; supply: number; perShareUsd: number;
