@@ -1,0 +1,161 @@
+{
+ "prev_hash": "6c1d5fb5631e209270a3e17ee13c97a5b7c030ef2d99d41fd212e7c8b53edf46",
+ "hash": "4453c50814979516c7dedf081a656ed92d70ae95e6394524fe3c414f7cdf7ab1",
+ "payload": {
+  "start": "2026-10-10",
+  "decision_block": 84562145,
+  "frozen_utc": "2026-10-10T06:24:53.363641+00:00",
+  "evidence_status": "late_exploratory",
+  "books": {
+   "B0": [
+    {
+     "symbol": "SNDK",
+     "pool_id": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
+     "score": 0.009050106116744993
+    },
+    {
+     "symbol": "MU",
+     "pool_id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "score": 0.008116471921570034
+    },
+    {
+     "symbol": "DELL",
+     "pool_id": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "score": 0.0074211506873540275
+    },
+    {
+     "symbol": "COIN",
+     "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "score": 0.006918627434741505
+    },
+    {
+     "symbol": "PLTR",
+     "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+     "score": 0.006512928686173913
+    },
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.00627134963787529
+    },
+    {
+     "symbol": "INTC",
+     "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "score": 0.0061554411097911
+    },
+    {
+     "symbol": "AMD",
+     "pool_id": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "score": 0.004989365760018783
+    }
+   ],
+   "E1": [
+    {
+     "symbol": "SNDK",
+     "pool_id": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
+     "score": 0.009050106116744993
+    },
+    {
+     "symbol": "MU",
+     "pool_id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+     "score": 0.008116471921570034
+    },
+    {
+     "symbol": "DELL",
+     "pool_id": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+     "score": 0.0074211506873540275
+    },
+    {
+     "symbol": "COIN",
+     "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+     "score": 0.006918627434741505
+    },
+    {
+     "symbol": "PLTR",
+     "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+     "score": 0.006512928686173913
+    },
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.00627134963787529
+    },
+    {
+     "symbol": "INTC",
+     "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+     "score": 0.0061554411097911
+    },
+    {
+     "symbol": "AMD",
+     "pool_id": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+     "score": 0.004989365760018783
+    }
+   ],
+   "G1": [
+    {
+     "symbol": "PLTR",
+     "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+     "score": 0.006512928686173913
+    },
+    {
+     "symbol": "MSTR",
+     "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+     "score": 0.00627134963787529
+    },
+    {
+     "symbol": "CRCL",
+     "pool_id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+     "score": 0.004768624887414037
+    },
+    {
+     "symbol": "USO",
+     "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+     "score": 0.004029410260467949
+    },
+    {
+     "symbol": "BABA",
+     "pool_id": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+     "score": 0.0032269355359570997
+    },
+    {
+     "symbol": "NVDA",
+     "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+     "score": 0.0030808004611256805
+    },
+    {
+     "symbol": "AMZN",
+     "pool_id": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+     "score": 0.0027446065348475253
+    },
+    {
+     "symbol": "META",
+     "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+     "score": 0.0025746143038796582
+    }
+   ]
+  },
+  "round_trip_bps_at_250": {
+   "SNDK": 176.1,
+   "MU": 220.6,
+   "DELL": 122.6,
+   "COIN": 72.0,
+   "PLTR": 39.4,
+   "MSTR": 56.2,
+   "INTC": 220.9,
+   "AMD": 219.3,
+   "SPCX": 75.7,
+   "CRCL": 52.0,
+   "USO": 30.2,
+   "BABA": 38.7,
+   "NVDA": 3.0,
+   "AMZN": 62.1,
+   "META": 9.5,
+   "TSLA": 70.5,
+   "MSFT": 72.5,
+   "GOOGL": 55.0,
+   "AAPL": 70.3,
+   "SPY": 12.5
+  },
+  "rule": "A25/A26 (docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md)"
+ }
+}
