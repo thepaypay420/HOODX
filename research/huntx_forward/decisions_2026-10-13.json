@@ -1,0 +1,152 @@
+{
+ "prev_hash": "d12d16b335988930464aa230111549280b1482a1ef5fb6d390c11d7f38b8656f",
+ "hash": "7c157bd23015debfe4512699ba7e35be7573d8b0849d2fd24779e5291c29247b",
+ "payload": {
+  "day": "2026-10-13",
+  "decision_block": 87077802,
+  "universe": 1124,
+  "frozen_utc": "2026-10-13T07:05:41.355736+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0x5ea36826ed6dc26945496eb19aa9e6f2d5d6b0b31c9924a98c71aee1217f55af",
+    "token": "0x3ba500f1ababbcf0f0247d06d1c56fd7e6c4c09d",
+    "score": 0.15465705199760135,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xf995afbcf406c641a5185ba2330cfef8ec0fd7502f06d638798c48e78e6e9dac",
+    "token": "0xbc9e7b1c5c0081f4ae85e71ec95703d3dec9ffad",
+    "score": 0.13309010381026545,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7159c43bcc3961cf25e85875cbfca5eb4294fb54ce7dd88047bc3559794d832f",
+    "token": "0xded852de9fe9ba9b6f27f39e8e81cf851a5c79cc",
+    "score": 0.08602174139047827,
+    "initializer": null
+   }
+  ],
+  "H8": [
+   {
+    "pool_id": "0x7159c43bcc3961cf25e85875cbfca5eb4294fb54ce7dd88047bc3559794d832f",
+    "token": "0xded852de9fe9ba9b6f27f39e8e81cf851a5c79cc",
+    "score": 0.10531329778118012,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x5ea36826ed6dc26945496eb19aa9e6f2d5d6b0b31c9924a98c71aee1217f55af",
+    "token": "0x3ba500f1ababbcf0f0247d06d1c56fd7e6c4c09d",
+    "score": 0.0395578621557001,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xf995afbcf406c641a5185ba2330cfef8ec0fd7502f06d638798c48e78e6e9dac",
+    "token": "0xbc9e7b1c5c0081f4ae85e71ec95703d3dec9ffad",
+    "score": 0.019258060393936932,
+    "initializer": null
+   }
+  ],
+  "SLP25": [
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.0034702013774765583
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.003310242980487212
+   },
+   {
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.0030035495208928535
+   },
+   {
+    "pool_id": "0xc59eaeda6d1a6f031bc7e1d039772f2d675e7b4de2c8668610f4471bd60b3802",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.0017680706515136946
+   },
+   {
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "token": "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344",
+    "symbol": "USO",
+    "score": 0.0015530261770550433
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0009040550262082244
+   },
+   {
+    "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+    "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+    "symbol": "SPCX",
+    "score": 0.0008122537283523449
+   },
+   {
+    "pool_id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+    "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+    "symbol": "GOOGL",
+    "score": 0.0008110158115076978
+   },
+   {
+    "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0007140764828663197
+   },
+   {
+    "pool_id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0006383285657739161
+   },
+   {
+    "pool_id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+    "token": "0x322f0929c4625ed5bad873c95208d54e1c003b2d",
+    "symbol": "TSLA",
+    "score": 0.0006212645598252167
+   },
+   {
+    "pool_id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0005616113796988617
+   },
+   {
+    "pool_id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+    "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+    "symbol": "AAPL",
+    "score": 0.00048435437988550125
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.00011610649611081469
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 5.971160255100024e-05
+   }
+  ],
+  "gate_census": {
+   "PASS": 154,
+   "G6": 894,
+   "G7": 658,
+   "G5": 51,
+   "G3": 64,
+   "G4": 5
+  }
+ }
+}
