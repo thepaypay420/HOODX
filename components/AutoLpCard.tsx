@@ -11,7 +11,8 @@ import { fmtPct, useAutoLpStats } from "@/lib/useAutoLp";
 export function AutoLpCard() {
   const { stats } = useAutoLpStats(120_000);
   const earning = stats?.sleeves.filter((s) => s.inRange && s.referenceAgrees).length;
-  return <Link href={`/${AUTO_LP.slug}`} className="discovery-card is-featured is-autolp" data-testid="autolp-card" style={{ "--vault-accent": "#b98cff" } as CSSProperties}>
+  const paused = AUTO_LP.paused;
+  return <Link href={`/${AUTO_LP.slug}`} className={`discovery-card is-featured is-autolp${paused ? " is-paused" : ""}`} data-testid="autolp-card" style={{ "--vault-accent": "#b98cff" } as CSSProperties}>
     <div className="discovery-card-top">
       <span className="autolp-mark" aria-hidden><BrandMark size={44} /></span>
       <div className="discovery-model">
@@ -20,13 +21,13 @@ export function AutoLpCard() {
       </div>
     </div>
     <div className="discovery-card-copy">
-      <p><span className="autolp-live"><i aria-hidden />Autopilot · Automated LP</span></p>
+      <p><span className="autolp-live"><i aria-hidden />{paused ? "Paused · Automated LP" : "Autopilot · Automated LP"}</span></p>
       <h3>Hands-free LP.</h3>
-      <span>Deposit ETH once. Earn trading fees on 8 tokenized stocks, rebalanced and compounded on-chain.</span>
+      <span>{paused ? AUTO_LP.pausedNote : "Deposit ETH once. Earn trading fees on 8 tokenized stocks, rebalanced and compounded on-chain."}</span>
     </div>
     <div className="discovery-card-foot">
       <AssetChips assets={AUTO_LP.stocks} max={8} />
-      <span>{earning !== undefined ? `${earning} of 8 earning` : "8 stocks"} <i aria-hidden>→</i></span>
+      <span>{paused ? "Withdraw only" : earning !== undefined ? `${earning} of 8 earning` : "8 stocks"} <i aria-hidden>→</i></span>
     </div>
   </Link>;
 }

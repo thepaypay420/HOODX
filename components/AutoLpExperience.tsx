@@ -47,7 +47,7 @@ export function AutoLpExperience() {
   const { address, chainId, walletClient, connect, switchToRobinhood } = useWallet();
   const { stats, failed, refresh: refreshStats } = useAutoLpStats();
   const vault = AUTO_LP.vault!, controller = AUTO_LP.controller!;
-  const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
+  const [tab, setTab] = useState<"deposit" | "withdraw">(AUTO_LP.paused ? "withdraw" : "deposit");
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -55,7 +55,7 @@ export function AutoLpExperience() {
   const [intentPct, setIntentPct] = useState<bigint | null>(null);
   useEffect(() => {
     const i = readIntent();
-    if (i.deposit) { setTab("deposit"); setAmount(i.deposit); setMsg(INTENT_NOTE); }
+    if (i.deposit && !AUTO_LP.paused) { setTab("deposit"); setAmount(i.deposit); setMsg(INTENT_NOTE); }
     else if (i.withdraw) { setTab("withdraw"); setIntentPct(BigInt(i.withdraw)); setMsg(INTENT_NOTE); }
   }, []);
   // basisFor: the share balance the cost basis was built for. P/L is shown only when it matches the live balance, so a
@@ -118,7 +118,7 @@ export function AutoLpExperience() {
   };
 
   const deposit = async () => {
-    if (!stats || !(await ready()) || !address || !walletClient) return;
+    if (AUTO_LP.paused || !stats || !(await ready()) || !address || !walletClient) return;
     let value: bigint;
     try { value = parseEther(amount || "0"); } catch { setMsg("Enter an ETH amount."); return; }
     if (value <= ZERO) { setMsg("Enter an ETH amount."); return; }
@@ -211,15 +211,16 @@ export function AutoLpExperience() {
     <section className="ap-hero" ref={heroRef}>
       <div className="ap-hero-copy">
         <Link href="/explore" className="ap-back">← Explore</Link>
-        <div className="ap-eyebrow"><span className="autolp-badge"><i aria-hidden /> Autopilot</span><span>Automated LP strategy</span><span className="ap-live"><i aria-hidden />Live on Robinhood Chain</span></div>
+        <div className="ap-eyebrow"><span className="autolp-badge"><i aria-hidden /> Autopilot</span><span>Automated LP strategy</span>{AUTO_LP.paused ? <span className="ap-live ap-paused"><i aria-hidden />Paused · withdrawals open</span> : <span className="ap-live"><i aria-hidden />Live on Robinhood Chain</span>}</div>
         <h1 className="ap-title"><span>Stock LP,</span><span>on autopilot.</span></h1>
         <p className="ap-thesis">Deposit ETH once. Your capital provides liquidity on eight tokenized stocks, earns their trading fees, and is rebalanced and compounded by on-chain rules, not by anyone&apos;s discretion.</p>
+        {AUTO_LP.paused && <p className="ap-msg">{AUTO_LP.pausedNote}</p>}
         <div className="ap-hero-stats">
           <Stat label="Since launch" why="How does Hands-free LP earn, and how has it done since launch?" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
           <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH` : undefined} />
           <Stat label="Share price" value={stats ? `$${price.toFixed(4)}` : "—"} sub={earning !== undefined ? `${earning} of 8 stocks earning now` : undefined} />
         </div>
-        <div className="ap-cta"><a href="#trade" className="landing-btn-primary">Deposit ETH</a><a href={addr(vault)} target="_blank" rel="noreferrer" className="ap-link-btn">View vault on explorer ↗</a></div>
+        <div className="ap-cta"><a href="#trade" className="landing-btn-primary">{AUTO_LP.paused ? "Withdraw" : "Deposit ETH"}</a><a href={addr(vault)} target="_blank" rel="noreferrer" className="ap-link-btn">View vault on explorer ↗</a></div>
       </div>
       <AutoLpOrbit sleeves={sleeves} symbols={AUTO_LP.stocks} now={now} />
     </section>
@@ -233,7 +234,7 @@ export function AutoLpExperience() {
     <section id="trade" className="ap-trade">
       <div className="ap-card ap-trade-card">
         <div className="ap-tabs" role="tablist">
-          {(["deposit", "withdraw"] as const).map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "is-on" : ""} onClick={() => setTab(t)}>{t === "deposit" ? "Deposit" : "Withdraw"}</button>)}
+          {(AUTO_LP.paused ? ["withdraw"] as const : ["deposit", "withdraw"] as const).map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "is-on" : ""} onClick={() => setTab(t)}>{t === "deposit" ? "Deposit" : "Withdraw"}</button>)}
         </div>
         {tab === "deposit" ? <div className="ap-pane">
           <label className="ap-input"><input inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="ETH amount" /><span>ETH</span></label>

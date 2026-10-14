@@ -57,7 +57,7 @@ Indexed asset universe and route metadata: https://www.xhoodindex.com/universe.j
 
 Every HOODX vault is an ERC-20 share token: deposit ETH, receive shares, withdraw ETH. Rules run on-chain; curators and keepers cannot move holder assets out of the vault.
 - Boosted ETH (/boost): smart ETH leverage, 0x to 2x. An on-chain trend signal holds up to 2x ETH while crypto trends up and steps aside into dollars earning yield (steakUSDG) when the trend breaks.
-- Hands-free LP (/autolp): deposit ETH once; the vault provides Uniswap V4 liquidity on 8 tokenized stocks (each paired with USDG), rebalanced and compounded by on-chain rules.
+- Hands-free LP (/autolp)${AUTO_LP.paused ? ` — PAUSED: ${AUTO_LP.pausedNote} Offer holders withdrawEth; never prepare a deposit.` : ""}: deposit ETH once; the vault provides Uniswap V4 liquidity on 8 tokenized stocks (each paired with USDG), rebalanced and compounded by on-chain rules.
 - Index collections (/i/{slug}): one token for a curated basket of tokenized stocks or Robinhood Chain tokens, with a WETH cash sleeve.
 
 Official collections (slug, ticker, vault):

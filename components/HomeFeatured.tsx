@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { AutoLpCard } from "@/components/AutoLpCard";
 import { BoostCard } from "@/components/BoostCard";
+import { AUTO_LP } from "@/lib/stockLp";
 
 /** The two flagship vaults, live, as they appear on Explore. Old "/#create" links land on the Create page. */
 export function HomeFeatured() {
@@ -21,7 +22,7 @@ export function HomeFeatured() {
       </div>
       <div className="discovery-leads">
         <BoostCard />
-        <AutoLpCard />
+        {!AUTO_LP.paused && <AutoLpCard />}
       </div>
     </section>
   );

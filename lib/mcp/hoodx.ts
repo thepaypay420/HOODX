@@ -37,7 +37,7 @@ export function registry(): Entry[] {
   if (BOOST.vault) out.push({ slug: "boost", name: "Boosted ETH", ticker: "BOOSTX", kind: "boost", type: "automated", address: BOOST.vault, url: `${SITE_URL}/boost`,
     summary: "Smart ETH leverage from 0x to 2x. An on-chain trend signal (Chainlink ETH and BTC) holds up to 2x ETH while crypto trends up and steps aside into dollars earning yield when the trend breaks." });
   if (AUTO_LP.vault) out.push({ slug: "autolp", name: "Hands-free LP", ticker: "STKX", kind: "autolp", type: "automated", address: AUTO_LP.vault, url: `${SITE_URL}/autolp`,
-    summary: `Deposit ETH once. Earns trading fees as Uniswap V4 liquidity on ${AUTO_LP.stocks.length} tokenized stocks (${AUTO_LP.stocks.join(", ")}) in ${AUTO_LP.bandLabel} ranges; on-chain rules re-place a stock ${AUTO_LP.breachDelaySec / 60} minutes after it leaves its range, and compound daily.` });
+    summary: `${AUTO_LP.paused ? `PAUSED: ${AUTO_LP.pausedNote} ` : ""}Deposit ETH once. Earns trading fees as Uniswap V4 liquidity on ${AUTO_LP.stocks.length} tokenized stocks (${AUTO_LP.stocks.join(", ")}) in ${AUTO_LP.bandLabel} ranges; on-chain rules re-place a stock ${AUTO_LP.breachDelaySec / 60} minutes after it leaves its range, and compound daily.` });
   for (const v of FEATURED_VAULTS) {
     if (v.status === "pilot") continue;
     const address = (v.address ?? verifiedV2Vaults[v.slug]) as Address | undefined;
@@ -150,6 +150,7 @@ export async function getVault(origin: string, query: string) {
     const s = await lpStats(origin);
     return { ...base(e), strategy: e.summary, state: s && { valueUsd: round(s.navUsd), valueEth: round(s.navEth, 5), perShareUsd: round(s.perShareUsd, 4), sinceLaunchUsdPct: round(s.sinceLaunchUsdPct), capacityUsed: `${round(s.capacityPct)}% of $${s.capUsd.toLocaleString("en-US")}`,
       sleeves: s.sleeves?.map((x) => ({ stock: x.symbol, earningFees: x.inRange && x.referenceAgrees, inRange: x.inRange })) },
+      status: AUTO_LP.paused ? AUTO_LP.pausedNote : "open",
       terms: { minimumDeposit: "about $10", exits: "withdrawEth any time; exitToSleeveShares is the swap-free emergency exit", management: `public keeper checks every 15 minutes: a stock out of its ${AUTO_LP.bandLabel} range for ${AUTO_LP.breachDelaySec / 60} minutes is re-placed next to the price (no swaps); fees compound daily` } };
   }
   // index vaults: holdings and weights straight from the chain
@@ -227,6 +228,7 @@ export async function positions(origin: string, wallet: string) {
 /* ------------------------------------------------------------------ transaction builders (simulate, never sign) */
 export async function quoteDeposit(origin: string, query: string, amountEth: string, wallet: string) {
   const e = await resolveAny(query), from = checkAddress(wallet), c = client();
+  if (e.kind === "autolp" && AUTO_LP.paused) throw new Error(`Hands-free LP is not taking deposits: ${AUTO_LP.pausedNote}`);
   let value: bigint;
   try { value = parseEther(amountEth); } catch { throw new Error(`"${amountEth}" is not an ETH amount.`); }
   if (value <= 0n) throw new Error("Amount must be above zero.");

@@ -1980,6 +1980,9 @@ body {
   .is-featured .autolp-mark { width:3.4rem; }
 }
 @media (prefers-reduced-motion:reduce) { .discovery-card.is-autolp::after, .autolp-live i { animation:none; } }
+/* paused: no spinning border or pulse, muted dot */
+.discovery-card.is-autolp.is-paused::after { animation:none; opacity:.35; }
+.discovery-card.is-paused .autolp-live i { animation:none; background:#8a8f98; }
 
 /* ---- Vault page: one glance, one action. Hero, deposit card, holdings; everything else folds away. ---- */
 .vault-dashboard {gap:16px;}

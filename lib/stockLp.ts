@@ -8,6 +8,10 @@ export const AUTO_LP = {
   vault: "0xB064d074Ff141A68771AF32c3EAB9Dd3c9379f6D" as Address | null, // live 2026-10-05, verified on-chain
   controller: "0x5E58B414f0200Af135F27Ff0f7e490B7FDeDA0F7" as Address | null,
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
+  /** Keeper paused 2026-10-14 while the strategy is retuned (docs/AUTOLP-PROFITABILITY-2026-10-14.md): the site stops
+   *  featuring it and closes new deposits (the vault itself has no deposit switch); withdrawals stay open. */
+  paused: true as boolean,
+  pausedNote: "Paused while we retune the strategy. New deposits are closed; holders can withdraw any time.",
   capUsd: 10_000,
   minUsd: 10,
   perfFeePct: 10,

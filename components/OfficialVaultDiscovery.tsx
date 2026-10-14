@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from
 import { AssetChips } from "@/components/AssetChips";
 import { AutoLpCard } from "@/components/AutoLpCard";
 import { BoostCard } from "@/components/BoostCard";
+import { AUTO_LP } from "@/lib/stockLp";
 import { MyVaults, holdings, useMyVaults } from "@/components/MyVaults";
 import { useAutoLpStats } from "@/lib/useAutoLp";
 import { useWallet } from "@/lib/wallet";
@@ -137,7 +138,7 @@ export function OfficialVaultDiscovery() {
 
     {view === "mine" && hasMine ? <MyVaults list={myList} loading={mine.loading} updatedAt={mine.data?.updatedAt} onRefresh={mine.refresh} ethUsd={stats?.ethUsd} /> : <>
       <Group label="Automated" count={2} note="Deposit ETH once. The rules run on-chain, around the clock.">
-        <div className="discovery-leads"><AutoLpCard /><BoostCard /></div>
+        <div className="discovery-leads">{AUTO_LP.paused ? <><BoostCard /><AutoLpCard /></> : <><AutoLpCard /><BoostCard /></>}</div>
       </Group>
 
       <Group label="Index collections" count={collections.length} note="One token for a whole theme, with a WETH cash sleeve."
