@@ -30,12 +30,10 @@ function describe(s: AutoLpSleeveStat, now: number) {
   if (!s.referenceAgrees) return { tone: "warn", label: "Price check paused", hint: "Pool and TWAP disagree; automation waits for them to agree." };
   if (s.inRange) return { tone: "good", label: "Earning", hint: `Price is inside its ${AUTO_LP.bandLabel} band, so every trade pays this position.` };
   if (s.atEdge) return { tone: "wait", label: "At the band edge", hint: "Already in the band right beside the price. It earns as soon as the price comes back, and moves once the price clears the pool's next price step." };
-  if (s.rebandReady) return { tone: "info", label: "Rebalance due", hint: "The autopilot moves it next to the price on its next run (every 15 minutes)." };
-  if (s.breachStart > 0) {
-    const left = Math.ceil((AUTO_LP.breachDelaySec - (now - s.breachStart)) / 60);
-    if (left <= 0) return { tone: "wait", label: "At the band edge", hint: "Just past its band: a move would land on the same range, so it waits for the price to move clearly." };
-    return { tone: "wait", label: `Out of range · ${left} min to rebalance`, hint: `Waits ${AUTO_LP.breachDelaySec / 60} minutes before moving, so a brief spike doesn't trigger a move.` };
-  }
+  const left = s.breachStart > 0 ? Math.ceil((AUTO_LP.keeperWaitSec - (now - s.breachStart)) / 60) : 0;
+  if (left > 0) return { tone: "wait", label: `Out of range · ${left} min to rebalance`, hint: `Waits ${AUTO_LP.keeperWaitSec / 3600} hours before moving, so a brief spike doesn't trigger a move.` };
+  if (s.rebandReady) return { tone: "info", label: "Rebalance due", hint: `The autopilot moves it next to the price on its next run, or after ${AUTO_LP.trendWaitSec / 3600} hours if the stock keeps trending through its band.` };
+  if (s.breachStart > 0) return { tone: "wait", label: "At the band edge", hint: "Just past its band: a move would land on the same range, so it waits for the price to move clearly." };
   return { tone: "wait", label: "Waiting for price", hint: "Positioned next to the price, ready for it to come back." };
 }
 
@@ -269,7 +267,7 @@ export function AutoLpExperience() {
 
     <section className="ap-board" ref={boardRef}>
       <div className="ap-sec-head"><div><p className="landing-eyebrow">Autopilot status</p><h2>Eight engines, one rulebook.</h2></div>
-        <p>Each stock earns while its price sits inside its {AUTO_LP.bandLabel} band. If it stays outside for {AUTO_LP.breachDelaySec / 60} minutes and the pool agrees with an independent TWAP, the autopilot moves it next to the price. No swaps, no discretion.</p></div>
+        <p>Each stock earns while its price sits inside its {AUTO_LP.bandLabel} band. If it stays outside for {AUTO_LP.keeperWaitSec / 3600} hours ({AUTO_LP.trendWaitSec / 3600} if it keeps trending the same way) and the pool agrees with an independent TWAP, the autopilot moves it next to the price. No swaps, no discretion.</p></div>
       <div className="ap-grid">
         {(board.length ? board : AUTO_LP.stocks.map((sym, i) => ({ s: undefined, i, d: { tone: "idle", label: "Loading…", hint: "" }, sym }))).map(({ s, i, d }) => {
           const sym = s?.symbol ?? AUTO_LP.stocks[i];
@@ -291,9 +289,9 @@ export function AutoLpExperience() {
       <ol className="ap-steps">
         {[
           ["Provide", `Your ETH becomes ${AUTO_LP.bandLabel} Uniswap V4 liquidity on 8 tokenized stocks, in their higher-fee pools, quoted in USDG, earning every trade's fee.`],
-          ["Wait", `If a stock leaves its band for ${AUTO_LP.breachDelaySec / 60} minutes, and the pool agrees with an independent 30-minute TWAP, a rebalance unlocks.`],
+          ["Wait", `If a stock leaves its band for ${AUTO_LP.keeperWaitSec / 3600} hours (${AUTO_LP.trendWaitSec / 3600} when it keeps trending the same way), and the pool agrees with an independent 30-minute TWAP, it is moved.`],
           ["Rebalance", "The contracts move the position next to the price, on the side it already holds. No swaps, no human choosing amounts."],
-          ["Compound", "Earned fees are reinvested daily. 10% of LP fees (never principal) goes to the HOODX treasury."],
+          ["Compound", "Earned fees are reinvested weekly. 10% of LP fees (never principal) goes to the HOODX treasury."],
         ].map(([h, p], i) => <li key={h} style={{ "--d": `${i * 120}ms` } as CSSProperties}><span>0{i + 1}</span><h3>{h}</h3><p>{p}</p></li>)}
       </ol>
     </section>

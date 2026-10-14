@@ -37,7 +37,7 @@ export function registry(): Entry[] {
   if (BOOST.vault) out.push({ slug: "boost", name: "Boosted ETH", ticker: "BOOSTX", kind: "boost", type: "automated", address: BOOST.vault, url: `${SITE_URL}/boost`,
     summary: "Smart ETH leverage from 0x to 2x. An on-chain trend signal (Chainlink ETH and BTC) holds up to 2x ETH while crypto trends up and steps aside into dollars earning yield when the trend breaks." });
   if (AUTO_LP.vault) out.push({ slug: "autolp", name: "Hands-free LP", ticker: "STKX", kind: "autolp", type: "automated", address: AUTO_LP.vault, url: `${SITE_URL}/autolp`,
-    summary: `${AUTO_LP.paused ? `PAUSED: ${AUTO_LP.pausedNote} ` : ""}Deposit ETH once. Earns trading fees as Uniswap V4 liquidity on ${AUTO_LP.stocks.length} tokenized stocks (${AUTO_LP.stocks.join(", ")}) in ${AUTO_LP.bandLabel} ranges; on-chain rules re-place a stock ${AUTO_LP.breachDelaySec / 60} minutes after it leaves its range, and compound daily.` });
+    summary: `${AUTO_LP.paused ? `PAUSED: ${AUTO_LP.pausedNote} ` : ""}Deposit ETH once. Earns trading fees as Uniswap V4 liquidity on ${AUTO_LP.stocks.length} tokenized stocks (${AUTO_LP.stocks.join(", ")}) in ${AUTO_LP.bandLabel} ranges; a keeper re-places a stock ${AUTO_LP.keeperWaitSec / 3600} hours after it leaves its range (${AUTO_LP.trendWaitSec / 3600} hours when it keeps trending the same way) and compounds weekly.` });
   for (const v of FEATURED_VAULTS) {
     if (v.status === "pilot") continue;
     const address = (v.address ?? verifiedV2Vaults[v.slug]) as Address | undefined;
@@ -151,7 +151,7 @@ export async function getVault(origin: string, query: string) {
     return { ...base(e), strategy: e.summary, state: s && { valueUsd: round(s.navUsd), valueEth: round(s.navEth, 5), perShareUsd: round(s.perShareUsd, 4), sinceLaunchUsdPct: round(s.sinceLaunchUsdPct), capacityUsed: `${round(s.capacityPct)}% of $${s.capUsd.toLocaleString("en-US")}`,
       sleeves: s.sleeves?.map((x) => ({ stock: x.symbol, earningFees: x.inRange && x.referenceAgrees, inRange: x.inRange })) },
       status: AUTO_LP.paused ? AUTO_LP.pausedNote : "open",
-      terms: { minimumDeposit: "about $10", exits: "withdrawEth any time; exitToSleeveShares is the swap-free emergency exit", management: `public keeper checks every 15 minutes: a stock out of its ${AUTO_LP.bandLabel} range for ${AUTO_LP.breachDelaySec / 60} minutes is re-placed next to the price (no swaps); fees compound daily` } };
+      terms: { minimumDeposit: "about $10", exits: "withdrawEth any time; exitToSleeveShares is the swap-free emergency exit", management: `public keeper checks every 15 minutes: a stock out of its ${AUTO_LP.bandLabel} range for ${AUTO_LP.keeperWaitSec / 3600} hours (${AUTO_LP.trendWaitSec / 3600} when it keeps trending the same way) is re-placed next to the price (no swaps); fees compound weekly` } };
   }
   // index vaults: holdings and weights straight from the chain
   const abi = e.kind === "atomic" ? proportionalAbi : v2VaultAbi;

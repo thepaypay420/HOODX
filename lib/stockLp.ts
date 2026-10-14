@@ -17,7 +17,12 @@ export const AUTO_LP = {
   perfFeePct: 10,
   /** The autopilot rule, as shown on the page (manifest: halfWidthTicks ~ ±2%, breachDelaySeconds). */
   bandLabel: "±2%",
+  /** The contract's minimum time out of range before anyone may re-place a sleeve. */
   breachDelaySec: 900,
+  /** The keeper's own rule on top (scripts/stock_lp_keeper.py, since 2026-10-14): 2 hours out of range, 24 hours when
+   *  a stock's last two moves went the same way as this one (trending through its band). */
+  keeperWaitSec: 2 * 3600,
+  trendWaitSec: 24 * 3600,
   stocks: ["PLTR", "SNDK", "MU", "DELL", "MSFT", "AAPL", "USO", "SPCX"],
   /** First block of the v3 deployment (event scans start here). */
   deployBlock: 80_488_143n,
@@ -134,10 +139,9 @@ export function sleeveState(s: { inRange: boolean; referenceAgrees: boolean; bre
   if (!s.referenceAgrees) return { label: "Price check paused", tone: "warn" as const };
   if (s.inRange) return { label: "Earning in range", tone: "good" as const };
   if (s.rebandReady && s.atEdge) return { label: "At the band edge", tone: "info" as const };
+  const left = s.breachStart > 0n ? Math.ceil((AUTO_LP.keeperWaitSec - (nowSec - Number(s.breachStart))) / 60) : 0;
+  if (left > 0) return { label: `Out of range · ${left} min to rebalance`, tone: "info" as const };
   if (s.rebandReady) return { label: "Rebalance due", tone: "info" as const };
-  if (s.breachStart > 0n) {
-    const left = Math.ceil((AUTO_LP.breachDelaySec - (nowSec - Number(s.breachStart))) / 60);
-    return { label: left > 0 ? `Out of range · ${left} min to rebalance` : "At the band edge", tone: "info" as const };
-  }
+  if (s.breachStart > 0n) return { label: "At the band edge", tone: "info" as const };
   return { label: "Maker range · waiting for price", tone: "info" as const };
 }

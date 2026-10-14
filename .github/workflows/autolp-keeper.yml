@@ -3,7 +3,10 @@ name: Automated LP keeper
 # HoodxStockLpControllerV2: the contracts decide whether a rebalance/compound is allowed and how much to move, so
 # the keeper key only pays gas and cannot move vault funds. Each transaction is simulated first.
 #
-# Timing. The contracts restart a sleeve's 24 h out-of-range clock if it is not re-checked within 2 h, and GitHub's
+# Policy (scripts/stock_lp_keeper.py): re-place after 2 h out of range, 24 h when the stock is trending through its band,
+# compound weekly. Paused 2026-10-14 (workflow disabled) while the vault is too small to cover gas.
+#
+# Timing. The contracts restart a sleeve's out-of-range clock if it is not re-checked within 2 h, and GitHub's
 # scheduler is best-effort (runs can arrive hours late or not at all). So this workflow does not rely on the
 # schedule for timing: one job keeps its own clock, running the keeper every 15 minutes for about five hours, then
 # starts its successor. The schedule below is only a watchdog that restarts the loop if it ever stops.
@@ -56,6 +59,15 @@ jobs:
         if: steps.gate.outputs.run == '1'
         with:
           python-version: "3.12"
+      # the keeper's state (each sleeve's recent re-placement directions for the trend brake, last compound and fee
+      # claim) carries over from the previous loop; if it is ever lost, the brake simply starts from no history
+      - name: Restore keeper state
+        if: steps.gate.outputs.run == '1'
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: .keeper-state
+          key: autolp-keeper-state-${{ github.run_id }}
+          restore-keys: autolp-keeper-state-
       - name: Run keeper every 15 minutes
         id: loop
         if: steps.gate.outputs.run == '1'
@@ -67,11 +79,17 @@ jobs:
           end=$(( $(date +%s) + 5 * 3600 ))
           fails=0
           while [ "$(date +%s)" -lt "$end" ]; do
-            python scripts/stock_lp_keeper.py --private-key-env AUTOLP_KEEPER_PRIVATE_KEY --stateless || fails=$((fails + 1))
+            python scripts/stock_lp_keeper.py --private-key-env AUTOLP_KEEPER_PRIVATE_KEY --state .keeper-state/autolp.json || fails=$((fails + 1))
             # wake shortly after the next quarter-hour, so runs land at the same minutes every hour
             sleep $(( 900 - $(date +%s) % 900 + 20 ))
           done
           echo "fails=$fails" >> "$GITHUB_OUTPUT"
+      - name: Save keeper state
+        if: ${{ always() && steps.gate.outputs.run == '1' }}
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: .keeper-state
+          key: autolp-keeper-state-${{ github.run_id }}
       - name: Start the next loop
         if: ${{ !cancelled() && steps.gate.outputs.run == '1' }}
         env:

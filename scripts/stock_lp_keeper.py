@@ -4,6 +4,11 @@ Every action it sends is a permissionless, rule-bound crank on HoodxStockLpContr
 whether a reband/compound is allowed and how much liquidity to use, so the keeper wallet chooses nothing and
 can move no funds. The keeper wallet only pays gas. Each send is simulated first and skipped if it would revert.
 
+Keeper policy on top of the contract's 15-minute minimum (docs/AUTOLP-PROFITABILITY-2026-10-14.md, research/slp3
+study2 "edge ±2% wait 2h brake"): re-place a sleeve only after 2 hours out of range, and after 24 hours when its last
+two re-placements went the same way as this one (a stock trending through its band); compound and claim weekly.
+The re-placement history is kept in the state file (cloud: restored between loops by the workflow's cache).
+
 Signer (pick one):
   --keystore <file> --password-file <file>   unattended (the gas-only keeper wallet)
   --private-key-env <ENV_VAR>                 local fork tests only
@@ -30,6 +35,10 @@ WEEK = 7 * DAY
 # breach every 90 minutes keeps it alive with margin; nothing else needs a signal, so the keeper no longer pays for an
 # all-sleeve signalAll (about 720k gas) every 15 minutes while a sleeve waits at the band edge.
 KEEPALIVE = 90 * 60
+WAIT = 2 * 3600          # out of range this long before a re-placement
+BRAKE_K = 2              # ... unless the last BRAKE_K re-placements went the same way as this one:
+BRAKE_WAIT = DAY         # then wait this long
+COMPOUND_EVERY = WEEK    # harvest + compound, and claim the performance fee
 
 
 def next_band(tick: int, lower: int, upper: int, spacing: int, maker: int) -> tuple[int, int] | None:
@@ -105,14 +114,20 @@ class Chain:
         return float(r.stdout.strip() or 0)
 
 
+def brake_wait(dirs: list[bool], up: bool) -> int:
+    """How long a sleeve must be out of range before it is re-placed (up = the price left through the top)."""
+    return BRAKE_WAIT if len(dirs) >= BRAKE_K and all(d == up for d in dirs[-BRAKE_K:]) else WAIT
+
+
 def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth: float,
              geometry: list[tuple[int, int]] | None = None) -> dict:
-    """With state_path=None (cloud, stateless): compound at the 00 UTC run, claim fees at the Monday 00 UTC run."""
+    """With state_path=None (stateless): compound and claim at the first run of Monday 00 UTC, and no trend brake."""
     state = json.loads(state_path.read_text()) if state_path and state_path.exists() else {}
     now = int(time.time())
     utc = datetime.now(timezone.utc)
-    daily_due = (lambda key: utc.hour == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= DAY)
-    weekly_due = (lambda key: utc.hour == 0 and utc.weekday() == 0) if state_path is None else (lambda key: now - state.get(key, 0) >= WEEK)
+    weekly_due = ((lambda key: utc.weekday() == 0 and utc.hour == 0 and utc.minute < 15) if state_path is None
+                  else (lambda key: now - state.get(key, 0) >= COMPOUND_EVERY))
+    bands = state.setdefault("bands", {})
     keeper = chain.address()
     bal = chain.balance_eth(keeper)
     if bal < min_gas_eth:
@@ -129,31 +144,50 @@ def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth
                "referenceDisagrees": [i for i, s in enumerate(statuses) if not s["agrees"]], "sent": []}
     log(f"status: out of range {summary['outOfRange']}, reference disagrees {summary['referenceDisagrees']}")
 
+    # 0) Each sleeve's range; a change since the last run is a re-placement (ours or anyone's): record its direction.
+    for i, s in enumerate(statuses):
+        lo = int(chain.call(sleeves[i], "tickLower()(int24)")[0])
+        hi = int(chain.call(sleeves[i], "tickUpper()(int24)")[0])
+        s["range"] = (lo, hi)
+        h = bands.setdefault(sleeves[i].lower(), {"range": [lo, hi], "dirs": []})
+        if tuple(h["range"]) != (lo, hi):
+            h["dirs"] = (h["dirs"] + [lo > h["range"][0]])[-4:]
+            h["range"] = [lo, hi]
+        s["dirs"] = h["dirs"]
+
     # 1) Observe only the sleeves that need it (per-sleeve signal(i), about an eighth of signalAll's gas):
     #    out of range with no timer yet (starts the 15-minute clock), an open timer last seen >= 90 min ago (keeps it
-    #    alive under the 2 h gap), or back in range with an old timer (clears it so the next exit starts fresh).
+    #    alive under the 2 h gap), or back in range with an old timer (clears it, so the next exit starts a fresh wait).
     #    A sleeve at the band edge (a re-placement would land on the same ticks) needs no timer: it is observed again
-    #    once the price clears the pool's next tick step, and moves 15 minutes later.
+    #    once the price clears the pool's next tick step, and its wait starts then.
     for i, s in enumerate(statuses):
         if geometry is not None and not s["inRange"]:
-            lo = int(chain.call(sleeves[i], "tickLower()(int24)")[0])
-            hi = int(chain.call(sleeves[i], "tickUpper()(int24)")[0])
-            s["movable"] = next_band(s["tick"], lo, hi, *geometry[i]) is not None
+            s["movable"] = next_band(s["tick"], *s["range"], *geometry[i]) is not None
         else:
             s["movable"] = True
         stale = s["lastSeen"] == 0 or now - s["lastSeen"] >= KEEPALIVE
-        need = not s["inRange"] and s["movable"] and (s["breachSince"] == 0 or stale)
+        need = (not s["inRange"] and s["movable"] and (s["breachSince"] == 0 or stale)) or (s["inRange"] and s["breachSince"] != 0)
         if need and chain.send(controller, "signal(uint256)", i):
             summary["sent"].append(f"signal({i})")
-            statuses[i]["ready"] = chain.call(controller, "status(uint256)(bool,bool,uint64,uint64,bool,int24)", i)[4] == "true"
-    # 2) Rebands the rules allow now.
+            r = chain.call(controller, "status(uint256)(bool,bool,uint64,uint64,bool,int24)", i)
+            s["breachSince"], s["ready"] = int(r[2]), r[4] == "true"
+    # 2) Re-placements: the contract must allow it, and the sleeve must have been out for the keeper's wait.
+    waiting = {}
     for i, s in enumerate(statuses):
-        if s["ready"] and s.get("movable", True) and chain.send(controller, "executeReband(uint256)", i):
+        if not (s["ready"] and s["movable"]):
+            continue
+        wait = brake_wait(s["dirs"], s["tick"] >= s["range"][1])
+        if now - s["breachSince"] < wait:
+            waiting[i] = f"{(now - s['breachSince']) // 60}m of {wait // 60}m"
+            continue
+        if chain.send(controller, "executeReband(uint256)", i):
             summary["sent"].append(f"executeReband({i})")
-    # 3) Daily harvest + compound per sleeve.
+    if waiting:
+        summary["waiting"] = waiting
+    # 3) Weekly harvest + compound per sleeve.
     for i in range(n):
         key = f"compound_{sleeves[i].lower()}"
-        if daily_due(key):
+        if weekly_due(key):
             chain.send(controller, "harvest(uint256)", i)
             if chain.send(controller, "compound(uint256)", i):
                 summary["sent"].append(f"compound({i})")
@@ -180,7 +214,7 @@ def main() -> int:
     ap.add_argument("--private-key-env", help="ENV var holding a key (local fork tests only)")
     ap.add_argument("--rpc-env", default="ROBINHOOD_RPC_URL")
     ap.add_argument("--state", default=str(Path.home() / ".hoodx" / "stock_lp_keeper_state.json"))
-    ap.add_argument("--stateless", action="store_true", help="cloud mode: schedule daily/weekly steps by the UTC clock")
+    ap.add_argument("--stateless", action="store_true", help="no state file: weekly steps by the UTC clock, no trend brake")
     ap.add_argument("--min-gas-eth", type=float, default=0.002)
     ap.add_argument("--gas-price-wei", type=int, help="fixed legacy gas price (local forks without fee history)")
     a = ap.parse_args()
