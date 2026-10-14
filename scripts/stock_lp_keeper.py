@@ -1,4 +1,4 @@
-"""HOODX Stock LP V2 keeper ("autopilot"). Run hourly.
+"""HOODX Stock LP V2 keeper ("autopilot"). Runs every 15 minutes.
 
 Every action it sends is a permissionless, rule-bound crank on HoodxStockLpControllerV2: the contracts decide
 whether a reband/compound is allowed and how much liquidity to use, so the keeper wallet chooses nothing and
@@ -26,6 +26,29 @@ _LOCAL_CAST = Path.home() / ".foundry" / "bin" / ("cast.exe" if os.name == "nt" 
 CAST = str(_LOCAL_CAST) if _LOCAL_CAST.exists() else (shutil.which("cast") or "cast")
 DAY = 24 * 3600
 WEEK = 7 * DAY
+# The controller restarts a breach timer if a sleeve is not observed for 2 h (MAX_OBSERVATION_GAP). Observing an open
+# breach every 90 minutes keeps it alive with margin; nothing else needs a signal, so the keeper no longer pays for an
+# all-sleeve signalAll (about 720k gas) every 15 minutes while a sleeve waits at the band edge.
+KEEPALIVE = 90 * 60
+
+
+def next_band(tick: int, lower: int, upper: int, spacing: int, maker: int) -> tuple[int, int] | None:
+    """The range executeReband would move an out-of-range sleeve to, or None when it would be a no-op (the sleeve
+    already sits in the band beside the price). Mirrors the controller's floor-to-spacing rule (lib/stockLp.ts)."""
+    def floor(t: int) -> int:
+        c = int(t / spacing) * spacing
+        return c - spacing if t < 0 and t % spacing != 0 else c
+    if tick >= upper:
+        hi = floor(tick)
+        if hi > tick:
+            hi -= spacing
+        new = (hi - maker, hi)
+    elif tick < lower:
+        lo = floor(tick) + spacing
+        new = (lo, lo + maker)
+    else:
+        return None
+    return None if new == (lower, upper) else new
 
 
 def log(msg: str) -> None:
@@ -82,7 +105,8 @@ class Chain:
         return float(r.stdout.strip() or 0)
 
 
-def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth: float) -> dict:
+def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth: float,
+             geometry: list[tuple[int, int]] | None = None) -> dict:
     """With state_path=None (cloud, stateless): compound at the 00 UTC run, claim fees at the Monday 00 UTC run."""
     state = json.loads(state_path.read_text()) if state_path and state_path.exists() else {}
     now = int(time.time())
@@ -100,21 +124,31 @@ def run_once(chain: Chain, controller: str, state_path: Path | None, min_gas_eth
         in_range, agrees, since, seen, ready, tick = chain.call(
             controller, "status(uint256)(bool,bool,uint64,uint64,bool,int24)", i)
         statuses.append({"inRange": in_range == "true", "agrees": agrees == "true", "breachSince": int(since),
-                         "ready": ready == "true", "tick": int(tick)})
+                         "lastSeen": int(seen), "ready": ready == "true", "tick": int(tick)})
     summary = {"sleeves": n, "outOfRange": [i for i, s in enumerate(statuses) if not s["inRange"]],
                "referenceDisagrees": [i for i, s in enumerate(statuses) if not s["agrees"]], "sent": []}
     log(f"status: out of range {summary['outOfRange']}, reference disagrees {summary['referenceDisagrees']}")
 
-    # 1) Keep breach timers alive (only needed while something is out of range or a breach is open).
-    if any(not s["inRange"] or s["breachSince"] for s in statuses):
-        if chain.send(controller, "signalAll()"):
-            summary["sent"].append("signalAll")
-        for i in range(n):
-            ready = chain.call(controller, "status(uint256)(bool,bool,uint64,uint64,bool,int24)", i)[4] == "true"
-            statuses[i]["ready"] = ready
+    # 1) Observe only the sleeves that need it (per-sleeve signal(i), about an eighth of signalAll's gas):
+    #    out of range with no timer yet (starts the 15-minute clock), an open timer last seen >= 90 min ago (keeps it
+    #    alive under the 2 h gap), or back in range with an old timer (clears it so the next exit starts fresh).
+    #    A sleeve at the band edge (a re-placement would land on the same ticks) needs no timer: it is observed again
+    #    once the price clears the pool's next tick step, and moves 15 minutes later.
+    for i, s in enumerate(statuses):
+        if geometry is not None and not s["inRange"]:
+            lo = int(chain.call(sleeves[i], "tickLower()(int24)")[0])
+            hi = int(chain.call(sleeves[i], "tickUpper()(int24)")[0])
+            s["movable"] = next_band(s["tick"], lo, hi, *geometry[i]) is not None
+        else:
+            s["movable"] = True
+        stale = s["lastSeen"] == 0 or now - s["lastSeen"] >= KEEPALIVE
+        need = not s["inRange"] and s["movable"] and (s["breachSince"] == 0 or stale)
+        if need and chain.send(controller, "signal(uint256)", i):
+            summary["sent"].append(f"signal({i})")
+            statuses[i]["ready"] = chain.call(controller, "status(uint256)(bool,bool,uint64,uint64,bool,int24)", i)[4] == "true"
     # 2) Rebands the rules allow now.
     for i, s in enumerate(statuses):
-        if s["ready"] and chain.send(controller, "executeReband(uint256)", i):
+        if s["ready"] and s.get("movable", True) and chain.send(controller, "executeReband(uint256)", i):
             summary["sent"].append(f"executeReband({i})")
     # 3) Daily harvest + compound per sleeve.
     for i in range(n):
@@ -173,9 +207,14 @@ def main() -> int:
     if not a.controller and not live.exists():
         log("Automated LP is not live yet; nothing to do")
         return 0
-    controller = a.controller or json.loads(live.read_text())["controller"]
+    deployment = json.loads(live.read_text()) if live.exists() else {}
+    controller = a.controller or deployment["controller"]
+    # tick spacing and maker width per sleeve, in controller order (v3 live file); unknown -> treat every sleeve as movable
+    geometry = None
+    if controller.lower() == str(deployment.get("controller", "")).lower() and all("makerWidthTicks" in x for x in deployment.get("sleeves", [])):
+        geometry = [(int(x["lp"]["tickSpacing"]), int(x["makerWidthTicks"])) for x in deployment["sleeves"]]
     try:
-        summary = run_once(Chain(rpc, signer), controller, None if a.stateless else Path(a.state), a.min_gas_eth)
+        summary = run_once(Chain(rpc, signer), controller, None if a.stateless else Path(a.state), a.min_gas_eth, geometry)
     except Exception as exc:  # one bad run must never crash the schedule
         log(f"ERROR {str(exc)[:300]}")
         return 1
