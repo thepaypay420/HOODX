@@ -50,10 +50,7 @@ contract DeploySelfHealingControllersV2 is Script {
         require(HoodxSelfHealingControllerV2(controller696x).curator() == CURATOR, "696 curator mismatch");
         require(HoodxSelfHealingControllerV2(controllerFaangx).curator() == CURATOR, "faang curator mismatch");
         require(address(HoodxSelfHealingControllerV2(controller696x).vault()) == VAULT_696X, "696 vault mismatch");
-        require(
-            address(HoodxSelfHealingControllerV2(controllerFaangx).vault()) == VAULT_FAANGX,
-            "faang vault mismatch"
-        );
+        require(address(HoodxSelfHealingControllerV2(controllerFaangx).vault()) == VAULT_FAANGX, "faang vault mismatch");
         console2.log("696X controller", controller696x);
         console2.log("FAANGX controller", controllerFaangx);
     }

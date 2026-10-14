@@ -36,9 +36,8 @@ contract MemeOracleRepairForkTest is Test {
         // Read the old pool price with depth disabled only as a fork comparison. This
         // comparison oracle is never installed in policy or used by the vault.
         HoodxTwapV2 comparison = new HoodxTwapV2(V3_FACTORY, MEME, WETH, OLD_POOL, address(0), 1800, 1, 0);
-        HoodxTwapV2 secondary = new HoodxTwapV2(
-            V3_FACTORY, MEME, WETH, ALTERNATE_POOL, address(0), 1800, REVIEWED_ABSOLUTE_DEPTH, 0
-        );
+        HoodxTwapV2 secondary =
+            new HoodxTwapV2(V3_FACTORY, MEME, WETH, ALTERNATE_POOL, address(0), 1800, REVIEWED_ABSOLUTE_DEPTH, 0);
         uint256 oldPrice = comparison.value(MEME, 1 ether);
         uint256 candidatePrice = secondary.value(MEME, 1 ether);
         assertApproxEqRel(candidatePrice, oldPrice, 0.02 ether, "independent TWAPs disagree by >2%");

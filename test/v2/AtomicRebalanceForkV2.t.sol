@@ -63,14 +63,7 @@ contract AtomicRebalanceForkV2Test is Test {
         steps[0] = HoodxRebalanceControllerV2.Step(sellToken, false, sellAmount, sellValue * 97 / 100);
 
         vm.prank(curator);
-        controller.atomicRebalance(
-            cashBps,
-            weights,
-            steps,
-            basketHash,
-            cashBefore,
-            block.timestamp + 5 minutes
-        );
+        controller.atomicRebalance(cashBps, weights, steps, basketHash, cashBefore, block.timestamp + 5 minutes);
 
         assertEq(vault.owner(), address(controller));
         assertEq(controller.curator(), curator);

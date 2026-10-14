@@ -58,7 +58,8 @@ contract DeployStockLpVaultV2 is Script {
 
     function run() external returns (Deployed memory d) {
         require(block.chainid == 4663, "wrong chain");
-        string memory json = vm.readFile(vm.envOr("HOODX_STOCK_LP_MANIFEST", string("deployments/stock-lp-vault-v2-manifest.json")));
+        string memory json =
+            vm.readFile(vm.envOr("HOODX_STOCK_LP_MANIFEST", string("deployments/stock-lp-vault-v2-manifest.json")));
         Entry[] memory e = _entries(json);
         uint16 perfBps = uint16(vm.parseJsonUint(json, ".perfFeeBps"));
         uint256 minDeposit = vm.parseJsonUint(json, ".minDepositUsdg");
@@ -107,8 +108,17 @@ contract DeployStockLpVaultV2 is Script {
             int24 c = _floor(tick, e[i].lp.tickSpacing);
             d.sleeves[i] = address(
                 new HoodxStockLpSleeveV2(
-                    DEPLOYER, PM, STATE_VIEW, e[i].lp, protocolFee, c - e[i].halfWidth, c + e[i].halfWidth, TREASURY,
-                    perfBps, string.concat("HOODX Stock LP ", e[i].symbol), string.concat("hx", e[i].symbol)
+                    DEPLOYER,
+                    PM,
+                    STATE_VIEW,
+                    e[i].lp,
+                    protocolFee,
+                    c - e[i].halfWidth,
+                    c + e[i].halfWidth,
+                    TREASURY,
+                    perfBps,
+                    string.concat("HOODX Stock LP ", e[i].symbol),
+                    string.concat("hx", e[i].symbol)
                 )
             );
             swapKeys[i] = e[i].swap;
@@ -124,8 +134,19 @@ contract DeployStockLpVaultV2 is Script {
             });
         }
         d.vault = new HoodxStockLpVaultV1(
-            DEPLOYER, PM, USDG, ETH_POOL_FEE, ETH_POOL_SPACING, d.sleeves, swapKeys, minDeposit, cap,
-            uint16(vm.parseJsonUint(json, ".bufferBps")), vm.parseJsonString(json, ".strategy"), "HOODX Stock LP", "STKX"
+            DEPLOYER,
+            PM,
+            USDG,
+            ETH_POOL_FEE,
+            ETH_POOL_SPACING,
+            d.sleeves,
+            swapKeys,
+            minDeposit,
+            cap,
+            uint16(vm.parseJsonUint(json, ".bufferBps")),
+            vm.parseJsonString(json, ".strategy"),
+            "HOODX Stock LP",
+            "STKX"
         );
         for (uint256 i; i < n; ++i) {
             HoodxStockLpSleeveV2(d.sleeves[i]).setVault(address(d.vault));

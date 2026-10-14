@@ -69,7 +69,9 @@ contract PrepareAtomicFactoryV3 is Script {
             }
             bytes32[] memory batchIds =
                 routeAdmin.approveRoutes(batchTokens, batchBuys, batchSells, ProportionalWatchlistV3.evidence());
-            for (uint256 i; i < batchIds.length; ++i) ids[start + i] = batchIds[i];
+            for (uint256 i; i < batchIds.length; ++i) {
+                ids[start + i] = batchIds[i];
+            }
         }
         vm.stopBroadcast();
 

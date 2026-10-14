@@ -51,16 +51,14 @@ contract DeployProportionalInfrastructureV3 is Script {
         HoodxHookRegistryV3 registry = new HoodxHookRegistryV3(DEPLOYER);
         registry.propose(PONS_HOOK, evidence);
         registry.propose(QUOTRON_HOOK, evidence);
-        HoodxExecutorV3 executor = new HoodxExecutorV3(
-            WETH, ROUTER, PERMIT2, V4_MANAGER, V4_STATE, POSITION_MANAGER, address(registry)
-        );
+        HoodxExecutorV3 executor =
+            new HoodxExecutorV3(WETH, ROUTER, PERMIT2, V4_MANAGER, V4_STATE, POSITION_MANAGER, address(registry));
         HoodxRoutingV3 routing =
             new HoodxRoutingV3(address(executor), V2_FACTORY, address(registry), QUOTRON_ROUTER, QUOTRON_HOOK);
         HoodxFeeModelV3 fees = new HoodxFeeModelV3(address(routing), QUOTRON_HOOK, PONS_HOOK);
         HoodxProportionalPolicyV3 policy = new HoodxProportionalPolicyV3(DEPLOYER, address(routing));
         HoodxProportionalV3 implementation = new HoodxProportionalV3(address(policy), address(fees));
-        HoodxProportionalFactoryV3 factory =
-            new HoodxProportionalFactoryV3(DEPLOYER, TREASURY, address(implementation));
+        HoodxProportionalFactoryV3 factory = new HoodxProportionalFactoryV3(DEPLOYER, TREASURY, address(implementation));
         vm.stopBroadcast();
 
         require(registry.owner() == DEPLOYER && policy.owner() == DEPLOYER, "owner mismatch");

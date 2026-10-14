@@ -74,14 +74,8 @@ contract RebalanceControllerV2Test is Test {
         vm.etch(vaultFaangx, hex"00");
         HoodxSelfHealingControllerV2 healer696x = new HoodxSelfHealingControllerV2(vault696x, curator);
         HoodxSelfHealingControllerV2 healerFaangx = new HoodxSelfHealingControllerV2(vaultFaangx, curator);
-        assertEq(
-            address(healer696x).codehash,
-            0x41e8567f1112ae11771d45e7039cb263620bcb5d70a4175c8a7ebde925dccaef
-        );
-        assertEq(
-            address(healerFaangx).codehash,
-            0xcedd2d454f08a23716da753e9a06a57db911cc3f5d7e45129333a0412e9ed17b
-        );
+        assertEq(address(healer696x).codehash, 0x41e8567f1112ae11771d45e7039cb263620bcb5d70a4175c8a7ebde925dccaef);
+        assertEq(address(healerFaangx).codehash, 0xcedd2d454f08a23716da753e9a06a57db911cc3f5d7e45129333a0412e9ed17b);
     }
 
     function _weights(uint16 a, uint16 b) internal pure returns (uint16[] memory weights) {

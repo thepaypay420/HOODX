@@ -28,7 +28,13 @@ contract CreateOfficialVaultCatalogV3 is Script {
         bytes32[][] memory configs = new bytes32[][](length);
         uint16[][] memory weights = new uint16[][](length);
         for (uint256 i; i < length; ++i) {
-            (string memory slug, string memory symbol, uint16 cashBps, uint256[] memory indexes, uint16[] memory targetWeights) = OfficialVaultCatalogV3.vault(i);
+            (
+                string memory slug,
+                string memory symbol,
+                uint16 cashBps,
+                uint256[] memory indexes,
+                uint16[] memory targetWeights
+            ) = OfficialVaultCatalogV3.vault(i);
             slugs[i] = slug;
             weights[i] = targetWeights;
             configs[i] = new bytes32[](indexes.length);

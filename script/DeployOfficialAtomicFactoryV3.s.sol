@@ -28,13 +28,18 @@ contract DeployOfficialAtomicFactoryV3 is Script {
             (address token, bytes memory buy, bytes memory sell) = OfficialVaultCatalogV3.routeFor(i);
             ids[i] = keccak256(abi.encode(token, token.codehash, buy, sell, OfficialVaultCatalogV3.evidence()));
             (address stored,, bytes memory storedBuy, bytes memory storedSell) = policy.config(ids[i]);
-            require(stored == token && keccak256(storedBuy) == keccak256(buy) && keccak256(storedSell) == keccak256(sell), "route not approved");
+            require(
+                stored == token && keccak256(storedBuy) == keccak256(buy) && keccak256(storedSell) == keccak256(sell),
+                "route not approved"
+            );
         }
         vm.startBroadcast(DEPLOYER);
         HoodxAtomicFactoryV3 factory = new HoodxAtomicFactoryV3(ADMIN, ADMIN, IMPLEMENTATION, ids);
         vm.stopBroadcast();
         require(factory.owner() == ADMIN && factory.treasury() == ADMIN, "roles mismatch");
-        require(factory.implementation() == IMPLEMENTATION && address(factory.routePolicy()) == POLICY, "identity mismatch");
+        require(
+            factory.implementation() == IMPLEMENTATION && address(factory.routePolicy()) == POLICY, "identity mismatch"
+        );
         factoryAddress = address(factory);
         console2.log("Official atomic factory", factoryAddress);
         console2.logBytes32(OfficialVaultCatalogV3.fingerprint());

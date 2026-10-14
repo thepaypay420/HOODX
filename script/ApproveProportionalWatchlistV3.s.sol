@@ -41,8 +41,7 @@ contract ApproveProportionalWatchlistV3 is Script {
             for (uint256 i = start; i < end; ++i) {
                 (tokens[i - start], buys[i - start], sells[i - start]) = ProportionalWatchlistV3.routeFor(i);
             }
-            bytes32[] memory ids =
-                routeAdmin.approveRoutes(tokens, buys, sells, ProportionalWatchlistV3.evidence());
+            bytes32[] memory ids = routeAdmin.approveRoutes(tokens, buys, sells, ProportionalWatchlistV3.evidence());
             for (uint256 i; i < ids.length; ++i) {
                 require(ids[i] == routeId(tokens[i], buys[i], sells[i]), "route id mismatch");
             }

@@ -22,7 +22,8 @@ contract CreateOfficialVaultV3 is Script {
             require(vm.envOr("HOODX_LIVE_BROADCAST", uint256(0)) == 1, "live switch missing");
             require(vm.envBytes32("HOODX_REVIEWED_ROUTES") == OfficialVaultCatalogV3.fingerprint(), "route mismatch");
         }
-        (string memory slug, string memory symbol, uint16 cashBps, uint256[] memory indexes, uint16[] memory weights) = OfficialVaultCatalogV3.vault(index);
+        (string memory slug, string memory symbol, uint16 cashBps, uint256[] memory indexes, uint16[] memory weights) =
+            OfficialVaultCatalogV3.vault(index);
         bytes32[] memory ids = new bytes32[](indexes.length);
         for (uint256 i; i < indexes.length; ++i) {
             (address token, bytes memory buy, bytes memory sell) = OfficialVaultCatalogV3.routeFor(indexes[i]);

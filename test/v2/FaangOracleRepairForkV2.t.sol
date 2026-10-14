@@ -57,17 +57,11 @@ contract FaangOracleRepairForkV2Test is Test {
         assertEq(vault.balanceOf(CURATOR), 0);
     }
 
-    function _installAmzn(
-        HoodxIndexV2 vault,
-        HoodxPolicyV2 policy,
-        HoodxRebalanceControllerV2 controller
-    ) private {
+    function _installAmzn(HoodxIndexV2 vault, HoodxPolicyV2 policy, HoodxRebalanceControllerV2 controller) private {
         bytes32 oldId = vault.configId(AMZN);
         (address token,, bytes memory buy, bytes memory sell) = policy.config(oldId);
         assertEq(token, AMZN);
-        HoodxTwapV2 oracle = new HoodxTwapV2(
-            FACTORY, AMZN, WETH, AMZN_POOL, BRIDGE, 1800, AMZN_DEPTH, BRIDGE_DEPTH
-        );
+        HoodxTwapV2 oracle = new HoodxTwapV2(FACTORY, AMZN, WETH, AMZN_POOL, BRIDGE, 1800, AMZN_DEPTH, BRIDGE_DEPTH);
         assertGt(oracle.value(AMZN, 1 ether), 0);
         vm.prank(CURATOR);
         bytes32 id = policy.approveConfig(
@@ -78,24 +72,16 @@ contract FaangOracleRepairForkV2Test is Test {
         assertEq(vault.configId(AMZN), id);
     }
 
-    function _installGoogl(
-        HoodxIndexV2 vault,
-        HoodxPolicyV2 policy,
-        HoodxRebalanceControllerV2 controller
-    ) private {
+    function _installGoogl(HoodxIndexV2 vault, HoodxPolicyV2 policy, HoodxRebalanceControllerV2 controller) private {
         bytes32 oldId = vault.configId(GOOGL);
         (address token,, bytes memory buy, bytes memory sell) = policy.config(oldId);
         assertEq(token, GOOGL);
-        HoodxTwapV2 primary = new HoodxTwapV2(
-            FACTORY, GOOGL, WETH, GOOGL_PRIMARY_POOL, address(0), 1800, GOOGL_PRIMARY_DEPTH, 0
-        );
-        HoodxTwapV2 secondary = new HoodxTwapV2(
-            FACTORY, GOOGL, WETH, GOOGL_SECONDARY_POOL, address(0), 1800, GOOGL_SECONDARY_DEPTH, 0
-        );
+        HoodxTwapV2 primary =
+            new HoodxTwapV2(FACTORY, GOOGL, WETH, GOOGL_PRIMARY_POOL, address(0), 1800, GOOGL_PRIMARY_DEPTH, 0);
+        HoodxTwapV2 secondary =
+            new HoodxTwapV2(FACTORY, GOOGL, WETH, GOOGL_SECONDARY_POOL, address(0), 1800, GOOGL_SECONDARY_DEPTH, 0);
         assertApproxEqRel(primary.value(GOOGL, 1 ether), secondary.value(GOOGL, 1 ether), 0.01 ether);
-        HoodxRedundantOracleV2 oracle = new HoodxRedundantOracleV2(
-            GOOGL, address(primary), address(secondary), 300
-        );
+        HoodxRedundantOracleV2 oracle = new HoodxRedundantOracleV2(GOOGL, address(primary), address(secondary), 300);
         assertGt(oracle.value(GOOGL, 1 ether), 0);
         vm.prank(CURATOR);
         bytes32 id = policy.approveConfig(
