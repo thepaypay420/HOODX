@@ -1,0 +1,380 @@
+{
+ "prev_hash": "3ae99237a627266d8f047676f1136e23aa4124956a087d64c7eebb0d1fe6d687",
+ "hash": "89976d9ae4e76887f16e78b90794134989b0743ae2cc4e216ad218d45432b579",
+ "payload": {
+  "day": "2026-10-16",
+  "decision_block": 89635595,
+  "universe": 1125,
+  "frozen_utc": "2026-10-16T04:58:25.521098+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0xe5ac9a60195b9b5876ce39151cd0fff595b51edc02f9296f3a1e421266bc78c8",
+    "token": "0xe8729dc9dca85167e06b7e9c66a58b22457c5f30",
+    "score": 0.21701765036086407,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317",
+    "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
+    "score": 0.12375703715798146,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xcdfbebe244e465969b4c38c5304e1c4f71275c8f349f3ef5016dac224c63ca11",
+    "token": "0xf24f8f6b08fe87cf062e833a732ad7f636064bc8",
+    "score": 0.1178415873198048,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x0ff2e264ba5a85052e0ba970365fbce49a7bf426c78ee15fefc51077cd377355",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "score": 0.08072088180770613,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xac9e954695a0297f761822e248a3f8c2fd3834e79f2351fd987b565e78457dba",
+    "token": "0x8db244f6bf052571f4e0c6065b700e714092d4b6",
+    "score": 0.07826320329818122,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xa3318d6ff46aa685b3dcee29cb09211d19a53b142fe503f8ff572258fd4c5aad",
+    "token": "0xd5f1afea47b1a9eab414d2ee740cf1d6d039e725",
+    "score": 0.07821861152256913,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xf995afbcf406c641a5185ba2330cfef8ec0fd7502f06d638798c48e78e6e9dac",
+    "token": "0xbc9e7b1c5c0081f4ae85e71ec95703d3dec9ffad",
+    "score": 0.07733601436196931,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7aebd80541bfaaf23dbb6e99ce13d4d31c1a84c91414f971eadbff7db5f85995",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "score": 0.060156427345447315,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x508ab5b7a7b447598017eba58530c2a2a5d647b8074a2dc85aa533dfbed4d543",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "score": 0.03456253896963453,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xbb90be5000017cb62c8e07ade58cc11f0d2a2af41d193f46727f666694e72e1d",
+    "token": "0xa3b6aee90017b72c0812dc1e013de70eb2917ba3",
+    "score": 0.03338091807133562,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x1e897da34d22953c916133d7846665bd7b269d782b8f2dfc5d29c62d31237356",
+    "token": "0x8db244f6bf052571f4e0c6065b700e714092d4b6",
+    "score": 0.03199728219160111,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x5b4649defb9728a2d51e5f22c3daee1e75bbd824e84f469da4f66e86a20063b4",
+    "token": "0x11b70d0243baf75e85ce03201a92b5b7c33beb59",
+    "score": 0.029907443281262592,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x2c2a754cf5416edf5a815d489927b3b815f4c5a7fc78d4765003fcb696549b75",
+    "token": "0xd5f1afea47b1a9eab414d2ee740cf1d6d039e725",
+    "score": 0.026312095468243143,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xa92a3df27a00a276183ff7265fd8affa11df1fe8bb23ddfaf13f6c879a3f818b",
+    "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+    "score": 0.024862663819001683,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+    "token": "0xad25ac6c84d497db898fa1e8387bf6af3532a1c4",
+    "score": 0.007762033875060745,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x1318b3ffba2a8f04a9ce03b2370705c4e17040c5303436ab84e7831912c6c1c3",
+    "token": "0x27495511b8a2e163efc75d788706a40dd100bc27",
+    "score": 0.00659777557808382,
+    "initializer": null
+   }
+  ],
+  "H8": [
+   {
+    "pool_id": "0xf995afbcf406c641a5185ba2330cfef8ec0fd7502f06d638798c48e78e6e9dac",
+    "token": "0xbc9e7b1c5c0081f4ae85e71ec95703d3dec9ffad",
+    "score": 0.045878006147380586,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xa3318d6ff46aa685b3dcee29cb09211d19a53b142fe503f8ff572258fd4c5aad",
+    "token": "0xd5f1afea47b1a9eab414d2ee740cf1d6d039e725",
+    "score": 0.03871063754166075,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7aebd80541bfaaf23dbb6e99ce13d4d31c1a84c91414f971eadbff7db5f85995",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "score": 0.03735958190475065,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x2c2a754cf5416edf5a815d489927b3b815f4c5a7fc78d4765003fcb696549b75",
+    "token": "0xd5f1afea47b1a9eab414d2ee740cf1d6d039e725",
+    "score": 0.027573307609285343,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xbb90be5000017cb62c8e07ade58cc11f0d2a2af41d193f46727f666694e72e1d",
+    "token": "0xa3b6aee90017b72c0812dc1e013de70eb2917ba3",
+    "score": 0.025326305906628897,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317",
+    "token": "0x812486eaea648819853f8e372dc9f1516c7868bd",
+    "score": 0.025193208699122744,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x0ff2e264ba5a85052e0ba970365fbce49a7bf426c78ee15fefc51077cd377355",
+    "token": "0x2e8c31162b855a2ffa90f6f8634643ad6f111e18",
+    "score": 0.020367409239965828,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xac9e954695a0297f761822e248a3f8c2fd3834e79f2351fd987b565e78457dba",
+    "token": "0x8db244f6bf052571f4e0c6065b700e714092d4b6",
+    "score": 0.011814959054432106,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xa92a3df27a00a276183ff7265fd8affa11df1fe8bb23ddfaf13f6c879a3f818b",
+    "token": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+    "score": 0.010693399343376197,
+    "initializer": null
+   }
+  ],
+  "SLP25": [
+   {
+    "pool_id": "0x1791fc651cc794a282e5dbcb56d0b2b38eff8754b677c8876e86901521ecc439",
+    "token": "0xad25ac6c84d497db898fa1e8387bf6af3532a1c4",
+    "symbol": "BABA",
+    "score": 0.031579189156375774
+   },
+   {
+    "pool_id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+    "token": "0xff080c8ce2e5feadaca0da81314ae59d232d4afd",
+    "symbol": "MU",
+    "score": 0.012831837406470835
+   },
+   {
+    "pool_id": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
+    "token": "0xb90a19ff0af67f7779aff50a882a9cff42446400",
+    "symbol": "SNDK",
+    "score": 0.012303018561227785
+   },
+   {
+    "pool_id": "0x7c2f9ce1214ba9baf56d1b6a1fc640c1b63e9a711172c0c7d10e5a9c4a3d4f0c",
+    "token": "0x9d9c6684f596f66a64c030b93a886d51fd4d7931",
+    "symbol": "NBIS",
+    "score": 0.012152750329428344
+   },
+   {
+    "pool_id": "0xde9f85fdd9e05a943a52f2c69ffafe3064a3287df03d02c9b431bc92d4781274",
+    "token": "0x86923f96303d656e4aa86d9d42d1e57ad2023fdc",
+    "symbol": "AMD",
+    "score": 0.01081786354256596
+   },
+   {
+    "pool_id": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
+    "token": "0xc72b96e0e48ecd4dc75e1e45396e26300bc39681",
+    "symbol": "INTC",
+    "score": 0.009221037988924888
+   },
+   {
+    "pool_id": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
+    "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+    "symbol": "SPCX",
+    "score": 0.008625607811143902
+   },
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.008600838884591653
+   },
+   {
+    "pool_id": "0x970df1466b2e888c80e8f66e014e4637ead055085557514a084468695e669daf",
+    "token": "0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5",
+    "symbol": "CRCL",
+    "score": 0.0083027875404501
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.008152346319929348
+   },
+   {
+    "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+    "token": "0x6330d8c3178a418788df01a47479c0ce7ccf450b",
+    "symbol": "COIN",
+    "score": 0.007576512471831286
+   },
+   {
+    "pool_id": "0x659e64f089e5d9ea30c4c50d01d365008cfd336b396c05853ea7700af3eb78f5",
+    "token": "0x1b0e319c6a659f002271b69db8a7df2f911c153e",
+    "symbol": "GME",
+    "score": 0.007409387252616443
+   },
+   {
+    "pool_id": "0x5177eac8c2176468bbf15e44081e151d35c2e7d068e96d3db94f496a4dc944b2",
+    "token": "0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5",
+    "symbol": "CRCL",
+    "score": 0.007356385553694136
+   },
+   {
+    "pool_id": "0x0112f42d2da7164a1e224ef55be60c10ef9607cabdadbc003123daa500750358",
+    "token": "0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5",
+    "symbol": "CRCL",
+    "score": 0.00610149058733228
+   },
+   {
+    "pool_id": "0x729651c09684919bdffda473141be4e908ee0e8cf8a43f41135831217fa7d3bb",
+    "token": "0x941ae714ec6d8130c7b75d67160ca08f1e7d11dd",
+    "symbol": "DELL",
+    "score": 0.005708239541102555
+   },
+   {
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.005482524487692214
+   },
+   {
+    "pool_id": "0xc59eaeda6d1a6f031bc7e1d039772f2d675e7b4de2c8668610f4471bd60b3802",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.005212098200724555
+   },
+   {
+    "pool_id": "0x0ba5d53d2f6255f334b7c8ead4f56b6aef5af3402c5e4d11180afd38c6b85fb1",
+    "token": "0x58ffe4a942d3885baa22d7520691f611ef09e7aa",
+    "symbol": "TSM",
+    "score": 0.005128450123714934
+   },
+   {
+    "pool_id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+    "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+    "symbol": "GOOGL",
+    "score": 0.0033949073307478358
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0033858505180054846
+   },
+   {
+    "pool_id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+    "token": "0x322f0929c4625ed5bad873c95208d54e1c003b2d",
+    "symbol": "TSLA",
+    "score": 0.0033249182713835242
+   },
+   {
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "token": "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344",
+    "symbol": "USO",
+    "score": 0.0031549660103022824
+   },
+   {
+    "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0030467991352385493
+   },
+   {
+    "pool_id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.002810114425313968
+   },
+   {
+    "pool_id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+    "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+    "symbol": "AAPL",
+    "score": 0.002536291686396314
+   },
+   {
+    "pool_id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0024388490891534375
+   },
+   {
+    "pool_id": "0xefc94885c96b02696b9b45de43eeeb8ac53c0199cab42b4daae4911b96fb8825",
+    "token": "0x12f190a9f9d7d37a250758b26824b97ce941bf54",
+    "symbol": "AMZN",
+    "score": 0.002299610457239056
+   },
+   {
+    "pool_id": "0xdf5c0bcd967d54774c139a4ef803ec994779736346fb4c21b50ed241b1fd2682",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0021566712988003466
+   },
+   {
+    "pool_id": "0xfbc47e0b533fb83e4de65c4a192d85395da62c78fe20365aa237cc25445e610e",
+    "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+    "symbol": "SPCX",
+    "score": 0.002142601698315153
+   },
+   {
+    "pool_id": "0xa0d0bf9947aed50801f5202e714ad04463ba8b5ab409712372af3e6bd66d1fa0",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.002126410701069907
+   },
+   {
+    "pool_id": "0x9194a557b6a6bb2236b49ea7e2bbccec5d3eeb705aef00903be4b3de1d949579",
+    "token": "0xe93237c50d904957cf27e7b1133b510c669c2e74",
+    "symbol": "MSFT",
+    "score": 0.0020711689243093708
+   },
+   {
+    "pool_id": "0x43fe16b75cabbf38f5b185d16142b02d1d9200d8f1ba17cb6cf899f562c6197f",
+    "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+    "symbol": "GOOGL",
+    "score": 0.0011511980512983475
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0003665326032994209
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.00027116148623708506
+   }
+  ],
+  "gate_census": {
+   "PASS": 192,
+   "G3": 105,
+   "G6": 819,
+   "G7": 603,
+   "G5": 60,
+   "G4": 3
+  }
+ }
+}
