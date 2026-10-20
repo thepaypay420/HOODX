@@ -107,7 +107,7 @@ contract BoostVaultForkTest is BoostForkBase {
         vm.deal(alice, 1_000 ether);
         vm.prank(alice);
         vm.expectRevert(HoodxBoostVaultV1.CapExceeded.selector);
-        vault.deposit{value: 400 ether}(alice, 0, vm.getBlockTimestamp() + 60);
+        vault.deposit{value: 500 ether}(alice, 0, vm.getBlockTimestamp() + 60);
     }
 
     function test_pauseStopsDepositsNotExits() public {
@@ -159,18 +159,21 @@ contract BoostVaultForkTest is BoostForkBase {
         sig.set(1e18, true);
         vm.expectRevert(HoodxBoostVaultV1.NotNeeded.selector); // inside the band
         vault.rebalance();
+        vm.roll(block.number + 1);
         sig.set(1.8e18, false);
         vm.expectRevert(HoodxBoostVaultV1.Stale.selector); // stale signal
         vault.rebalance();
+        vm.roll(block.number + 1);
         sig.set(1.8e18, true);
         vault.rebalance();
+        vm.roll(block.number + 1);
         sig.set(0, true);
         vm.expectRevert(HoodxBoostVaultV1.NotNeeded.selector); // min interval
         vault.rebalance();
-        vm.warp(vm.getBlockTimestamp() + 56 minutes);
-        uint256 p = IMorphoOracle(ORACLE).price();
-        vm.mockCall(ORACLE, abi.encodeWithSelector(IMorphoOracle.price.selector), abi.encode(p * 102 / 100));
-        vm.expectRevert(HoodxBoostVaultV1.Divergence.selector); // pool disagrees with oracle
+        vm.warp(vm.getBlockTimestamp() + 61 minutes);
+        vm.roll(block.number + 1);
+        _pushPoolBy(150); // pool disagrees with oracle beyond maxDivBps
+        vm.expectRevert(HoodxBoostVaultV1.Divergence.selector);
         vault.rebalance();
     }
 
@@ -179,6 +182,7 @@ contract BoostVaultForkTest is BoostForkBase {
         _deposit(alice, 150 ether); // ~$400k vault
         sig.set(2e18, true);
         vault.rebalance();
+        vm.roll(block.number + 1);
         HoodxBoostVaultV1.State memory s = vault.state();
         // one call moves at most maxSlice ($100k) of exposure
         assertLt(s.debt, 101_000e6);
@@ -190,8 +194,10 @@ contract BoostVaultForkTest is BoostForkBase {
         _rebalanceTo(2e18);
         uint256 p = IMorphoOracle(ORACLE).price();
         vm.mockCall(ORACLE, abi.encodeWithSelector(IMorphoOracle.price.selector), abi.encode(p * 96 / 100));
+        _nudgePoolTowardOracle();
         assertGt(_lev(), vault.HARD_CAP());
         sig.set(2e18, false); // keeper's signal is stale; anyone may still cut
+        vm.roll(block.number + 1);
         (bool ready, bool emergency,,,) = vault.rebalanceStatus();
         assertTrue(ready && emergency);
         vm.prank(bob);

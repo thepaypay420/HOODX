@@ -34,8 +34,9 @@ import {
 ///        shortfall), release that share of collateral and cash, and return ETH. `exitInKind` needs no swap at all.
 ///      - `rebalance()` is a permissionless crank: the contract computes the target, the size (at most `maxSlice` dollars
 ///        per call, at most one call per `minInterval`) and the oracle-bounded swap limits; the caller chooses nothing.
-///        Above `hardCap` leverage anyone may cut at once, even if the signal is stale; and if the signal has been silent
-///        for DEAD_SIGNAL (e.g. a retired feed), anyone may step leverage down to 1x, never up.
+///        Above `hardCap` leverage anyone may cut toward target without waiting for `minInterval`, even if the signal is
+///        stale, but still at most once per block and only when the pool agrees with the oracle (same as deposits). If the
+///        signal has been silent for DEAD_SIGNAL (e.g. a retired feed), anyone may step leverage down to 1x, never up.
 ///      - 10% performance fee above a high-water mark of NAV per share, crystallised at most every 30 days.
 ///      - The owner (curator) can pause deposits and rescue unrelated tokens. It cannot touch funds, parameters or exits.
 contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlashLoanCallback, IUniswapV3SwapCallback {
@@ -101,6 +102,7 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
     bool public bootstrapped;
     bool public depositsPaused;
     uint64 public lastRebalance;
+    uint64 public lastRebalanceBlock;
     uint64 public lastFeeTime;
     uint256 public highWaterMark;   // NAV per share (USDG units per 1e18 shares, WAD-scaled)
     uint256 public launchEthPrice;  // oracle price at bootstrap, for "since launch in ETH" displays
@@ -213,7 +215,10 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
         fresh = signal.isFresh();
         target_ = signal.target();
         emergency = leverage > HARD_CAP;
-        if (emergency) return (true, true, leverage, target_, fresh);
+        if (emergency) {
+            ready = s.nav > 0 && _poolAgrees(s.price, maxDivBps) && uint64(block.number) != lastRebalanceBlock;
+            return (ready, true, leverage, target_, fresh);
+        }
         if (!fresh && _signalDead() && leverage > WAD) target_ = WAD;
         uint256 gap = leverage > target_ ? leverage - target_ : target_ - leverage;
         ready = (fresh || (_signalDead() && leverage > WAD)) && gap > BAND && block.timestamp >= uint256(lastRebalance) + minInterval && s.nav > 0
@@ -369,16 +374,19 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
     // ================================================================== rebalance (permissionless)
 
     /// @notice Moves the vault one slice toward the signal's target leverage. Anyone may call; the contract decides
-    ///         whether, which way and how much. Above HARD_CAP it may be called at once, even with a stale signal.
+    ///         whether, which way and how much. Above HARD_CAP it may cut without `minInterval`, even with a stale signal,
+    ///         but still at most once per block and only when the pool agrees with the oracle.
     function rebalance() external nonReentrant returns (uint256 leverageAfter) {
         if (!bootstrapped) revert Invalid();
         _accrue();
         State memory s = state();
         if (s.nav == 0) revert Invalid();
+        if (uint64(block.number) == lastRebalanceBlock) revert NotNeeded();
         bool emergency = s.leverage > HARD_CAP;
         uint256 goal;
         uint16 slip;
         if (emergency) {
+            if (!_poolAgrees(s.price, maxDivBps)) revert Divergence();
             goal = signal.isFresh() ? Math.min(signal.target(), signal.cap()) : signal.cap();
             slip = emergencySlipBps;
         } else {
@@ -422,6 +430,7 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
         State memory a = state();
         _requireHealthy(a);
         lastRebalance = uint64(block.timestamp);
+        lastRebalanceBlock = uint64(block.number);
         leverageAfter = a.leverage;
         emit Rebalanced(s.leverage, goal, leverageAfter, change, emergency, msg.sender);
     }

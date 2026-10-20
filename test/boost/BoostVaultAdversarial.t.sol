@@ -8,34 +8,23 @@ import {HoodxBoostVaultV1} from "../../contracts/boost/HoodxBoostVaultV1.sol";
 import {HoodxBoostSignalV1} from "../../contracts/boost/HoodxBoostSignalV1.sol";
 import {IMorphoOracle, IUniswapV3PoolLike} from "../../contracts/boost/BoostTypes.sol";
 import {BoostForkBase, IMorphoSupply} from "./BoostForkBase.sol";
-
-/// @dev Moves the WETH/USDG pool to an exact price with its own funds (an attacker or a large trader).
-contract PoolPusher {
-    address immutable pool;
-
-    constructor(address p) {
-        pool = p;
-    }
-
-    function push(bool wethIn, uint160 limit) external {
-        IUniswapV3PoolLike(pool).swap(address(this), wethIn, type(int128).max, limit, "");
-    }
-
-    function uniswapV3SwapCallback(int256 a0, int256 a1, bytes calldata) external {
-        if (a0 > 0) IERC20(IUniswapV3PoolLike(pool).token0()).transfer(pool, uint256(a0));
-        if (a1 > 0) IERC20(IUniswapV3PoolLike(pool).token1()).transfer(pool, uint256(a1));
-    }
-}
+import {PoolPusher} from "./PoolPusher.sol";
 
 /// @notice Adversarial fork tests: price manipulation around rebalances, exhausted borrow liquidity, an illiquid dollar
 ///         vault, price shocks at full leverage, and the real on-chain signal driving the vault end to end.
 contract BoostVaultAdversarialTest is BoostForkBase {
-    function _pushPoolBy(int256 bps) internal {
+    function _syncPoolToOracle(uint256 oraclePrice) internal {
         PoolPusher p = new PoolPusher(POOL);
         deal(USDG, address(p), 200_000_000e6);
         deal(WETH, address(p), 100_000 ether);
         (uint160 sp,,,,,,) = IUniswapV3PoolLike(POOL).slot0();
-        // price ~ sqrtP^2: a move of `bps` needs sqrtP * sqrt(1 + bps/1e4)
+        uint256 poolPrice = Math.mulDiv(Math.mulDiv(uint256(sp), uint256(sp), 1 << 96), 1e36, 1 << 96);
+        uint256 hi = Math.max(poolPrice, oraclePrice);
+        uint256 lo = Math.min(poolPrice, oraclePrice);
+        if ((hi - lo) * 10_000 <= hi * vault.maxDivBps()) return;
+        int256 bps = poolPrice > oraclePrice
+            ? -int256((poolPrice - oraclePrice) * 10_000 / poolPrice) - 5
+            : int256((oraclePrice - poolPrice) * 10_000 / oraclePrice) - 5;
         uint256 f = Math.sqrt(uint256(int256(10_000 + bps)) * 1e36 / 10_000);
         p.push(bps < 0, uint160(uint256(sp) * f / 1e18));
     }
@@ -53,6 +42,7 @@ contract BoostVaultAdversarialTest is BoostForkBase {
         assertGt(traded, 0);
         assertGe(s.nav, nav0 - traded * 60 / 10_000, "loss bounded by the 0.5% swap bound plus the pool fee");
         vm.warp(vm.getBlockTimestamp() + 1 hours);
+        vm.roll(block.number + 1);
         sig.set(0, true);
         _pushPoolBy(-100); // from +0.3% to about -0.7% vs the oracle: inside the 1% band, beyond the 0.5% swap bound
         vm.expectRevert(HoodxBoostVaultV1.Slippage.selector);
@@ -120,8 +110,10 @@ contract BoostVaultAdversarialTest is BoostForkBase {
         for (uint256 i = 1; i <= 4; ++i) {
             uint256 shocked = p * (100 - 3 * i) / 100; // -3%, -6%, -9%, -12%
             vm.mockCall(ORACLE, abi.encodeWithSelector(IMorphoOracle.price.selector), abi.encode(shocked));
+            _syncPoolToOracle(shocked);
             (bool ready, bool emergency,,,) = vault.rebalanceStatus();
             if (ready && emergency) vault.rebalance();
+            vm.roll(block.number + 1);
             HoodxBoostVaultV1.State memory s = vault.state();
             uint256 ltv = s.debt * 1e18 / (s.collateral * s.price / 1e36);
             assertLt(ltv, 0.5625e18, "below the vault's own LTV ceiling");
@@ -134,19 +126,22 @@ contract BoostVaultAdversarialTest is BoostForkBase {
         _deposit(alice, 5 ether);
         _rebalanceTo(1.9e18);
         sig.set(1.9e18, false); // signal stops updating
+        vm.roll(block.number + 1);
         vm.warp(vm.getBlockTimestamp() + 2 hours);
         vm.expectRevert(HoodxBoostVaultV1.Stale.selector); // stale but not yet dead
         vault.rebalance();
         vm.warp(vm.getBlockTimestamp() + 24 hours);
+        vm.roll(block.number + 1);
         (bool ready,,, uint256 t,) = vault.rebalanceStatus();
         assertTrue(ready);
         assertEq(t, 1e18);
         vm.prank(bob);
         vault.rebalance();
         assertApproxEqAbs(vault.state().leverage, 1e18, 0.1e18);
-        // at 1x a dead signal cannot push leverage anywhere
+        // at ~1x a dead signal cannot push leverage anywhere (gap inside the band)
         vm.warp(vm.getBlockTimestamp() + 1 hours);
-        vm.expectRevert(HoodxBoostVaultV1.Stale.selector);
+        vm.roll(block.number + 1);
+        vm.expectRevert(HoodxBoostVaultV1.NotNeeded.selector);
         vault.rebalance();
     }
 
