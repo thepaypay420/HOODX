@@ -26,16 +26,20 @@ contract DeployBoostEthV1 is Script {
 
     function run() external returns (Deployed memory d) {
         require(block.chainid == 4663, "wrong chain");
-        string memory m = vm.readFile(vm.envOr("HOODX_BOOST_MANIFEST", string("deployments/boost-eth-v1-manifest.json")));
+        string memory m =
+            vm.readFile(vm.envOr("HOODX_BOOST_MANIFEST", string("deployments/boost-eth-v1-manifest.json")));
         address treasury = vm.parseJsonAddress(m, ".curatorAndFeeRecipient");
         uint256 seedEth = vm.parseUint(vm.parseJsonString(m, ".seedEthWei"));
         require(DEPLOYER.balance >= seedEth + 0.003 ether, "deployer needs seed + gas");
 
         bool live = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
         if (live) {
-            require(keccak256(bytes(vm.parseJsonString(m, ".status"))) == keccak256("APPROVED"), "manifest not approved");
             require(
-                keccak256(bytes(vm.envString("HOODX_REVIEWED_BUILD"))) == keccak256(bytes(vm.parseJsonString(m, ".reviewedBuild"))),
+                keccak256(bytes(vm.parseJsonString(m, ".status"))) == keccak256("APPROVED"), "manifest not approved"
+            );
+            require(
+                keccak256(bytes(vm.envString("HOODX_REVIEWED_BUILD")))
+                    == keccak256(bytes(vm.parseJsonString(m, ".reviewedBuild"))),
                 "build is not the reviewed build"
             );
         }
@@ -77,7 +81,9 @@ contract DeployBoostEthV1 is Script {
         console2.log("Vault   ", address(d.vault));
         console2.log("Shares to treasury", d.initialShares);
         console2.log("Signal target (1e18 = 1x)", d.signal.target());
-        console2.log("Next: the treasury calls acceptOwnership() on the vault; then record deployments/boost-eth-v1-live.json");
+        console2.log(
+            "Next: the treasury calls acceptOwnership() on the vault; then record deployments/boost-eth-v1-live.json"
+        );
     }
 
     function _deploySignal(string memory m) internal returns (HoodxBoostSignalV1) {
@@ -92,9 +98,16 @@ contract DeployBoostEthV1 is Script {
         }
         uint256 stale = vm.parseJsonUint(m, ".feedMaxStaleSec");
         return new HoodxBoostSignalV1(
-            vm.parseJsonAddress(m, ".ethUsdFeed"), vm.parseJsonAddress(m, ".btcUsdFeed"), stale, stale, ee, be,
-            uint8(vm.parseJsonUint(seed, ".ethFlags")), uint8(vm.parseJsonUint(seed, ".btcFlags")),
-            vm.parseUint(vm.parseJsonString(seed, ".ethVar")), vm.parseUint(vm.parseJsonString(seed, ".ethLast")),
+            vm.parseJsonAddress(m, ".ethUsdFeed"),
+            vm.parseJsonAddress(m, ".btcUsdFeed"),
+            stale,
+            stale,
+            ee,
+            be,
+            uint8(vm.parseJsonUint(seed, ".ethFlags")),
+            uint8(vm.parseJsonUint(seed, ".btcFlags")),
+            vm.parseUint(vm.parseJsonString(seed, ".ethVar")),
+            vm.parseUint(vm.parseJsonString(seed, ".ethLast")),
             vm.parseUint(vm.parseJsonString(seed, ".btcLast"))
         );
     }

@@ -20,8 +20,10 @@ describe("stockLp helpers", () => {
     const base = { inRange: true, referenceAgrees: true, breachStart: 0n, rebandReady: false };
     expect(sleeveState(base, 0).label).toBe("Earning in range");
     expect(sleeveState({ ...base, referenceAgrees: false }, 0).tone).toBe("warn");
-    expect(sleeveState({ ...base, inRange: false, breachStart: 1000n }, 1000 + 6 * 60).label).toBe("Out of range · 9 min to rebalance");
-    expect(sleeveState({ ...base, inRange: false, breachStart: 1000n }, 1000 + 20 * 60).label).toBe("At the band edge");
+    // the keeper waits 2 hours out of range (the contract allows 15 minutes)
+    expect(sleeveState({ ...base, inRange: false, breachStart: 1000n }, 1000 + 6 * 60).label).toBe("Out of range · 114 min to rebalance");
+    expect(sleeveState({ ...base, inRange: false, breachStart: 1000n, rebandReady: true }, 1000 + 20 * 60).label).toBe("Out of range · 100 min to rebalance");
+    expect(sleeveState({ ...base, inRange: false, breachStart: 1000n }, 1000 + 125 * 60).label).toBe("At the band edge");
     expect(sleeveState({ ...base, inRange: false, rebandReady: true, atEdge: true }, 0).label).toBe("At the band edge");
     expect(sleeveState({ ...base, inRange: false, rebandReady: true }, 0).label).toBe("Rebalance due");
   });
