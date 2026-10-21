@@ -145,3 +145,12 @@ whole position, leaving only the locked dead shares (≈ $0.001). No loss occurr
 - Rehearsal on a local fork (2026-10-21): v1.1 deployed on the live signal with a 0.005 ETH seed, the treasury accepted
   ownership and deposited 0.072 ETH, the real keeper levered it 1.0x → 1.75x in one slice, and a 10% withdrawal
   returned 10% of NAV.
+
+## Deployment v1.1 (2026-10-21)
+
+Deployed from the reviewed build `d4f44a6` (manifest `deployments/boost-eth-v1.1-manifest.json`) by the HOODX deployer:
+- Vault `0x09F856af8f1054C25f63C8C0d9516d79d2de1C11` (block 94,474,546) on the existing signal `0x5356…b232`;
+  bootstrapped with 0.005 ETH, ownership accepted by the treasury; emergency slippage 1.5%, `EMERGENCY_INTERVAL` 120 s.
+- The treasury moved its v1 position across (0.08 ETH) and a first rebalance took it to the signal's 1.75x.
+- Blockscout: source verified, exact match (MIT, solc 0.8.24, via-IR, 200 runs, cancun).
+- v1 `0x5e01…3515` is retired: deposits paused, only the locked dead shares remain.

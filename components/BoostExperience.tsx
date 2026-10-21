@@ -173,7 +173,7 @@ export function BoostExperience() {
         <p className="ap-thesis">Deposit ETH. When crypto trends up, the vault rides ETH up to 2x with cheap on-chain leverage. When the trend breaks, it steps aside into dollars earning Robinhood Earn yield, then buys back in. Every move is computed on-chain from Chainlink prices.</p>
         <div className="ap-hero-stats">
           {live ? <>
-            <Stat label="Since launch" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms` : undefined} />
+            <Stat label="Since launch" value={stats ? fmtPct(since) : "—"} tone={stats ? (stats.sinceLaunchUsdPct >= 0 ? "up" : "down") : undefined} sub={stats ? `${fmtPct(stats.sinceLaunchEthPct)} in ETH terms · since ${BOOST.launchedLabel}` : undefined} />
             <Stat label="Vault value" value={stats ? fmtUsd(tvl) : "—"} sub={stats ? `${stats.navEth.toFixed(4)} ETH · ${stats.markedAt === "market" ? "live price" : "Chainlink price"}` : undefined} />
             <Stat label="Right now" value={reg.label} sub={stats ? `${stats.leverage.toFixed(2)}x ETH exposure` : undefined} why="Why is Boosted ETH at its current leverage?" />
           </> : <>
@@ -240,7 +240,7 @@ export function BoostExperience() {
         {[
           ["Read", "Every hour the vault reads ETH and BTC prices and checks whether both are trending up, and how volatile ETH is."],
           ["Position", "Strong, calm uptrend: up to 2x ETH, borrowed cheaply on Morpho. Trend breaks: it sells to dollars earning Robinhood Earn yield."],
-          ["Protect", "It moves in hourly steps of up to $100k at oracle-checked prices, never above 2x. You can withdraw at any time."],
+          ["Protect", "It moves in hourly steps of up to $100k at oracle-checked prices, never above 2x. If a crash pushes it past 2.05x, anyone can cut it early, one step every 2 minutes and only while the pool agrees with Chainlink. You can withdraw at any time."],
         ].map(([h, p], i) => <li key={h} style={{ "--d": `${i * 120}ms` } as CSSProperties}><span>0{i + 1}</span><h3>{h}</h3><p>{p}</p></li>)}
       </ol>
     </section>
@@ -271,11 +271,12 @@ export function BoostExperience() {
 
     {live && <section className="ap-chain" ref={chainRef}>
       <div className="ap-sec-head"><div><p className="landing-eyebrow">Verify on-chain</p><h2>Everything is public.</h2></div>
-        <p>Open source, fork-tested against live Morpho, Uniswap, Chainlink and steakUSDG, internally reviewed. Exits never depend on the website, the keeper or the signal.</p></div>
+        <p>Open source, fork-tested against live Morpho, Uniswap, Chainlink and steakUSDG, internally reviewed. An issue in the emergency cut reported by KupiaSec was fixed in this v1.1 vault (Oct 21, 2026) before it affected anyone; the v1 vault is retired. Exits never depend on the website, the keeper or the signal.</p></div>
       <div className="ap-links">
         <a href={addr(vault)} target="_blank" rel="noreferrer"><span>Vault · {BOOST.symbol}</span><code>{vault.slice(0, 6)}…{vault.slice(-4)}</code><i>↗</i></a>
         <a href={addr(signal)} target="_blank" rel="noreferrer"><span>On-chain signal</span><code>{signal.slice(0, 6)}…{signal.slice(-4)}</code><i>↗</i></a>
         <a href="https://github.com/thepaypay420/HOODX/blob/main/deployments/BOOST-ETH-VAULT-SECURITY-REVIEW.md" target="_blank" rel="noreferrer"><span>Security review</span><code>GitHub</code><i>↗</i></a>
+        <a href={addr(BOOST.retiredVault)} target="_blank" rel="noreferrer"><span>Retired v1 vault</span><code>{BOOST.retiredVault.slice(0, 6)}…{BOOST.retiredVault.slice(-4)}</code><i>↗</i></a>
       </div>
       <div className="ap-sleeve-links">
         <a href={addr(BOOST.morpho)} target="_blank" rel="noreferrer">Morpho Blue ↗</a><a href={addr(BOOST.pool)} target="_blank" rel="noreferrer">Uniswap ETH pool ↗</a>
@@ -289,7 +290,7 @@ export function BoostExperience() {
         <li>This is leveraged ETH. At 2x a 30% ETH fall costs about 60% before the vault can cut; deep drawdowns are normal.</li>
         <li>Trend following lags sudden reversals: a crash out of a strong uptrend can hurt more than holding ETH.</li>
         <li>It relies on Morpho, Uniswap, Chainlink and the steakUSDG vault. A failure in any of them can cause losses. No formal audit yet.</li>
-        <li>Returns are not guaranteed. The research figures are a backtest; live performance is shown above once launched. 10% performance fee above a high-water mark.</li>
+        <li>Returns are not guaranteed. The research figures are a backtest; live performance above counts from this vault&apos;s launch on {BOOST.launchedLabel}. 10% performance fee above a high-water mark.</li>
       </ul>
     </section>
 

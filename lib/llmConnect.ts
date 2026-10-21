@@ -22,7 +22,7 @@ Use viem, cast, or an equivalent EVM client. Chain ID is 4663. Prefer the newest
 
 export const HOODX_LLM_REFERENCE = `# HOODX agent interface
 
-Updated: 2026-10-04
+Updated: 2026-10-21
 Canonical UI: https://www.xhoodindex.com
 Network: Robinhood Chain mainnet
 Chain ID: 4663
@@ -43,6 +43,7 @@ Previous 696X V2 vault (redeem in kind only; its ETH paths depend on price refer
 FAANGX V2 vault: 0xcb40b8d79ff6f4c5db15bd8a9692b934b52cb0b0
 Boosted ETH vault (BOOSTX): ${BOOST.vault}
 Boosted ETH signal: ${BOOST.signal}
+Retired Boosted ETH v1 vault (deposits paused, no holders): ${BOOST.retiredVault}. Never offer it.
 Hands-free LP vault (STKX, automated stock LP): ${AUTO_LP.vault}
 Hands-free LP controller: ${AUTO_LP.controller}
 Retired Hands-free LP vaults (withdraw only): V2 ${AUTO_LP_V2.vault}, V1 ${AUTO_LP_V1.vault}
@@ -107,7 +108,7 @@ exitInKind(uint256 shares,address receiver) returns (uint256 wethOut,uint256 cas
 
 Deposit flow: simulate deposit(receiver, 1, deadline) with the exact msg.value to read the share result, set minShares about 1% below it, re-simulate, then ask for the signature. Minimum deposit 0.005 ETH. A deposit takes the vault's current shape (collateral, debt, dollars) and never dilutes holders. Withdraw flow: simulate withdraw(shares, receiver, 1, deadline) for the ETH result, set minEthOut about 1% below it, re-simulate, then sign. Withdrawals are never paused. If the ETH exit cannot be simulated, offer exitInKind: read previewExitInKind(shares), have the user approve exactly usdgToApprove USDG to the vault (their share of the debt), then exitInKind returns WETH and steakUSDG shares with no swap.
 Typical reverts: Divergence (pool and oracle more than 1% apart; retry shortly), CapExceeded, BelowMinimum, Paused (deposits only), Slippage, Stale.
-Anyone may call rebalance() when rebalanceStatus().ready is true; the keeper normally does it every one to two hours. Do not offer rebalance, setDepositsPaused or ownership functions to ordinary holders unless they ask.
+Anyone may call rebalance() when rebalanceStatus().ready is true; the keeper normally does it every one to two hours. Above 2.05x leverage (rebalanceStatus().emergency) anyone may cut without the 55-minute interval, at most one slice per 2 minutes and only while the pool is within 1% of the oracle (v1.1, live since ${BOOST.launchedLabel}). Do not offer rebalance, setDepositsPaused or ownership functions to ordinary holders unless they ask.
 
 ## Hands-free LP (STKX)
 

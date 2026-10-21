@@ -12,6 +12,10 @@ export const BOOST = {
   vault: envAddr(process.env.NEXT_PUBLIC_BOOST_VAULT) ?? ("0x09F856af8f1054C25f63C8C0d9516d79d2de1C11" as Address),
   signal: envAddr(process.env.NEXT_PUBLIC_BOOST_SIGNAL) ?? ("0x53569D741Abd674dA942D0Af660684953193b232" as Address),
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
+  /** v1 vault (2026-10-04 .. 10-21): retired, deposits paused, only its locked dead shares remain. */
+  retiredVault: "0x5e0135C3592095592C4B43d84c817c26A0F43515" as Address,
+  /** When this vault (v1.1) opened; "since launch" figures count from here. */
+  launchedLabel: "Oct 21, 2026",
   deployBlock: BigInt(process.env.NEXT_PUBLIC_BOOST_DEPLOY_BLOCK ?? "94474546"),
   capUsd: 1_000_000,
   minDepositEth: 0.005,
