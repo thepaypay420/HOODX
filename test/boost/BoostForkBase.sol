@@ -81,7 +81,7 @@ abstract contract BoostForkBase is Test {
         return HoodxBoostVaultV1.Config({
             morpho: MORPHO, marketId: MARKET, pool: POOL, weth: WETH, usdg: USDG, cash: CASH, signal: s,
             feeRecipient: fees, minDeposit: 0.005 ether, tvlCapUsdg: 1_000_000e6, maxSliceUsdg: 100_000e6,
-            minInterval: 55 minutes, maxSlipBps: 50, emergencySlipBps: 300, maxDivBps: 100
+            minInterval: 55 minutes, maxSlipBps: 50, emergencySlipBps: 150, maxDivBps: 100
         });
     }
 

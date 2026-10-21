@@ -114,6 +114,7 @@ contract BoostVaultAdversarialTest is BoostForkBase {
             (bool ready, bool emergency,,,) = vault.rebalanceStatus();
             if (ready && emergency) vault.rebalance();
             vm.roll(block.number + 1);
+            vm.warp(vm.getBlockTimestamp() + vault.EMERGENCY_INTERVAL()); // shocks a few minutes apart
             HoodxBoostVaultV1.State memory s = vault.state();
             uint256 ltv = s.debt * 1e18 / (s.collateral * s.price / 1e36);
             assertLt(ltv, 0.5625e18, "below the vault's own LTV ceiling");

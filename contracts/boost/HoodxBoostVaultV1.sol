@@ -35,8 +35,9 @@ import {
 ///      - `rebalance()` is a permissionless crank: the contract computes the target, the size (at most `maxSlice` dollars
 ///        per call, at most one call per `minInterval`) and the oracle-bounded swap limits; the caller chooses nothing.
 ///        Above `hardCap` leverage anyone may cut toward target without waiting for `minInterval`, even if the signal is
-///        stale, but still at most once per block and only when the pool agrees with the oracle (same as deposits). If the
-///        signal has been silent for DEAD_SIGNAL (e.g. a retired feed), anyone may step leverage down to 1x, never up.
+///        stale, but at most one slice per EMERGENCY_INTERVAL and only when the pool agrees with the oracle (same as
+///        deposits). If the signal has been silent for DEAD_SIGNAL (e.g. a retired feed), anyone may step leverage down to
+///        1x, never up.
 ///      - 10% performance fee above a high-water mark of NAV per share, crystallised at most every 30 days.
 ///      - The owner (curator) can pause deposits and rescue unrelated tokens. It cannot touch funds, parameters or exits.
 contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlashLoanCallback, IUniswapV3SwapCallback {
@@ -64,6 +65,11 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
     uint256 public constant BAND = 0.10e18;          // rebalance only when |actual - target| > 0.10x
     uint256 public constant HARD_CAP = 2.05e18;      // above this anyone may cut leverage immediately
     uint256 public constant DEAD_SIGNAL = 24 hours;  // a signal silent this long lets anyone step leverage down to 1x
+    /// @dev Spacing between emergency slices. Robinhood Chain makes ~10 blocks a second, so a per-block limit would still let
+    ///      a sandwicher take a slice every block; 2 minutes keeps a $1M vault's full emergency cut under ~25 minutes while
+    ///      leaving it at most ~51% LTV against Morpho's 77% liquidation line.
+    uint256 public constant EMERGENCY_INTERVAL = 2 minutes;
+    uint16 public constant MAX_EMERGENCY_SLIP_BPS = 200;
     uint256 public constant MAX_LTV_WAD = 0.5625e18; // no action may leave LTV above 56.25% (leverage 2.29x); LLTV is 77%
     uint256 public constant PERF_FEE_BPS = 1_000;    // 10% of gains above the high-water mark
     uint256 public constant FEE_PERIOD = 30 days;
@@ -102,7 +108,6 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
     bool public bootstrapped;
     bool public depositsPaused;
     uint64 public lastRebalance;
-    uint64 public lastRebalanceBlock;
     uint64 public lastFeeTime;
     uint256 public highWaterMark;   // NAV per share (USDG units per 1e18 shares, WAD-scaled)
     uint256 public launchEthPrice;  // oracle price at bootstrap, for "since launch in ETH" displays
@@ -138,7 +143,7 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
                 || c.usdg.code.length == 0 || c.cash.code.length == 0 || c.signal.code.length == 0
                 || c.feeRecipient == address(0) || c.minDeposit == 0 || c.tvlCapUsdg == 0 || c.maxSliceUsdg == 0
                 || c.minInterval < 15 minutes || c.minInterval > 6 hours || c.maxSlipBps == 0 || c.maxSlipBps > 200
-                || c.emergencySlipBps < c.maxSlipBps || c.emergencySlipBps > 1_000 || c.maxDivBps == 0 || c.maxDivBps > 300
+                || c.emergencySlipBps < c.maxSlipBps || c.emergencySlipBps > MAX_EMERGENCY_SLIP_BPS || c.maxDivBps == 0 || c.maxDivBps > 300
         ) revert Invalid();
         (address loan, address coll, address oracle_, address irm_, uint256 lltv_) = IMorphoBlue(c.morpho).idToMarketParams(c.marketId);
         if (loan != c.usdg || coll != c.weth || oracle_ == address(0) || lltv_ < 0.7e18) revert Invalid();
@@ -216,7 +221,7 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
         target_ = signal.target();
         emergency = leverage > HARD_CAP;
         if (emergency) {
-            ready = s.nav > 0 && _poolAgrees(s.price, maxDivBps) && uint64(block.number) != lastRebalanceBlock;
+            ready = s.nav > 0 && _poolAgrees(s.price, maxDivBps) && block.timestamp >= uint256(lastRebalance) + EMERGENCY_INTERVAL;
             return (ready, true, leverage, target_, fresh);
         }
         if (!fresh && _signalDead() && leverage > WAD) target_ = WAD;
@@ -375,17 +380,17 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
 
     /// @notice Moves the vault one slice toward the signal's target leverage. Anyone may call; the contract decides
     ///         whether, which way and how much. Above HARD_CAP it may cut without `minInterval`, even with a stale signal,
-    ///         but still at most once per block and only when the pool agrees with the oracle.
+    ///         but at most one slice per EMERGENCY_INTERVAL and only when the pool agrees with the oracle.
     function rebalance() external nonReentrant returns (uint256 leverageAfter) {
         if (!bootstrapped) revert Invalid();
         _accrue();
         State memory s = state();
         if (s.nav == 0) revert Invalid();
-        if (uint64(block.number) == lastRebalanceBlock) revert NotNeeded();
         bool emergency = s.leverage > HARD_CAP;
         uint256 goal;
         uint16 slip;
         if (emergency) {
+            if (block.timestamp < uint256(lastRebalance) + EMERGENCY_INTERVAL) revert NotNeeded();
             if (!_poolAgrees(s.price, maxDivBps)) revert Divergence();
             goal = signal.isFresh() ? Math.min(signal.target(), signal.cap()) : signal.cap();
             slip = emergencySlipBps;
@@ -430,7 +435,6 @@ contract HoodxBoostVaultV1 is ERC20, Ownable2Step, ReentrancyGuard, IMorphoFlash
         State memory a = state();
         _requireHealthy(a);
         lastRebalance = uint64(block.timestamp);
-        lastRebalanceBlock = uint64(block.number);
         leverageAfter = a.leverage;
         emit Rebalanced(s.leverage, goal, leverageAfter, change, emergency, msg.sender);
     }
