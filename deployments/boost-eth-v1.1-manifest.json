@@ -1,0 +1,30 @@
+{
+ "status": "DRAFT",
+ "reviewedBuild": "",
+ "name": "HOODX Boosted ETH",
+ "symbol": "BOOSTX",
+ "chainId": 4663,
+ "replaces": "0x5e0135C3592095592C4B43d84c817c26A0F43515",
+ "signal": "0x53569D741Abd674dA942D0Af660684953193b232",
+ "curatorAndFeeRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
+ "seedEthWei": "5000000000000000",
+ "minDepositWei": "5000000000000000",
+ "tvlCapUsdg": "1000000000000",
+ "maxSliceUsdg": "100000000000",
+ "minIntervalSec": 3300,
+ "maxSlipBps": 50,
+ "emergencySlipBps": 150,
+ "maxDivBps": 100,
+ "morpho": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+ "marketId": "0x7c820d6a09502d63be80bb8025ec479d29d7c06e70f8df65a92aaeed23a366e2",
+ "pool": "0x52e65B17fB6E5BA00Ed806f37Afcd2DaA50271Ca",
+ "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+ "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+ "cash": "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+ "notes": [
+  "v1.1 = the KupiaSec emergency-rebalance fix (PR #15): emergency slices at most every 2 minutes and only when the pool agrees with the oracle; emergency slippage 1.5% (contract cap 2%). Every other parameter is unchanged from v1.",
+  "Reuses the live signal (the fix is vault-only), so there is no new signal and no seed file. The deploy script requires the signal to be fresh: the Boosted ETH keeper pokes it every 2 hours.",
+  "Seed: 0.005 ETH from the deployer (the vault's minimum deposit). The treasury then moves its v1 position across: withdraw from v1, deposit into v1.1 (deposits on v1 stay paused).",
+  "Set status to APPROVED and reviewedBuild to the commit of the reviewed build only after FOUNDRY_PROFILE=boost forge test passes on it."
+ ]
+}

@@ -119,3 +119,28 @@ Deployed from the reviewed build `3e01f6f` by the HOODX deployer (`deployments/b
 - Vault `0x5e0135C3592095592C4B43d84c817c26A0F43515` (block 79,671,870), bootstrapped with 0.075 ETH (201.86 shares to the
   treasury, dead shares locked), ownership transferred to the treasury pending `acceptOwnership()`.
 - A dry run of the same script against live state preceded the broadcast. Total deployment gas ≈ 6.9M (≈ 0.00014 ETH).
+
+## Post-launch finding: emergency rebalance stacking (KupiaSec, 2026-10-20)
+
+**Issue (v1, live vault `0x5e01…3515`).** Above the 2.05x hard cap, `rebalance()` took the emergency branch with no
+`minInterval` and no pool/oracle agreement check, and `lastRebalance` was timestamp-only. Anyone could skew the
+Uniswap pool and call emergency rebalances back to back (same block, or the next blocks: Robinhood Chain makes ~10 a
+second), each selling up to a $100k slice at up to `emergencySlipBps` (3%) below the oracle into their own sandwich.
+Reachable only while leverage is above 2.05x, which needs the vault near its 2x target and a fast ETH drop (it happened
+once, on 2026-10-07, at the seed size).
+
+**Response.** Deposits paused on v1 (`setDepositsPaused(true)`, treasury, 2026-10-21); the treasury then withdrew its
+whole position, leaving only the locked dead shares (≈ $0.001). No loss occurred.
+
+**Fix (v1.1, PR #15).**
+- Emergency slices at most every `EMERGENCY_INTERVAL` (2 minutes) after the last rebalance; this also covers same-block
+  stacking. A $1M vault still completes a full emergency cut in under ~25 minutes at ≈ 51% LTV (Morpho liquidates at 77%).
+- Emergency slices require the same 1% pool/oracle agreement as deposits and ordinary rebalances. Trade-off: if the pool
+  lags the oracle by more than 1%, the cut waits for arbitrage to close the gap.
+- The constructor rejects `emergencySlipBps` above 2% (`MAX_EMERGENCY_SLIP_BPS`); v1.1 deploys with 1.5%.
+- Tests: `BoostVaultEmergencyExploit.t.sol` (same-block and next-block stacking after a second shock, divergent pool,
+  slip cap, delever resumes after the interval). `FOUNDRY_PROFILE=boost forge test`: 51/52; `test_realSignalEndToEnd`
+  fails only because the stored signal seed is no longer within 3% of the live feeds (v1.1 reuses the live signal).
+- Rehearsal on a local fork (2026-10-21): v1.1 deployed on the live signal with a 0.005 ETH seed, the treasury accepted
+  ownership and deposited 0.072 ETH, the real keeper levered it 1.0x → 1.75x in one slice, and a 10% withdrawal
+  returned 10% of NAV.
