@@ -40,7 +40,7 @@ reverting). We would like positions shown under a "HOODX" protocol entry, valued
 
 | Vault | Token | Address | Type |
 |---|---|---|---|
-| Boosted ETH | BOOSTX | `0x5e0135C3592095592C4B43d84c817c26A0F43515` | ETH leverage vault (Morpho + steakUSDG) |
+| Boosted ETH | BOOSTX | `0x09F856af8f1054C25f63C8C0d9516d79d2de1C11` | ETH leverage vault (Morpho + steakUSDG) |
 | Hands-free LP | STKX | `0xB064d074Ff141A68771AF32c3EAB9Dd3c9379f6D` | Uniswap V4 stock-LP vault (live since 2026-10-05) |
 | Hands-free LP V2 (retired, exit only) | STKX | `0x67D2327eA0C42Cf92C4601ebc59df0F3e9b2aa80` | same contract type |
 | Index vaults (V2 factory) | per vault | `Created(address vault, string slug, address curator, address creator)` events of `0x5e846680bf8d702072b65e1e403d07e5a5f98b90` | index vault |

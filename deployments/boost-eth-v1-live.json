@@ -1,25 +1,33 @@
 {
- "vault": "0x5e0135C3592095592C4B43d84c817c26A0F43515",
+ "vault": "0x09F856af8f1054C25f63C8C0d9516d79d2de1C11",
  "signal": "0x53569D741Abd674dA942D0Af660684953193b232",
- "deployBlock": 79671870,
+ "deployBlock": 94474546,
  "signalBlock": 79671848,
- "deployedAt": "2026-10-04T05:00Z",
+ "deployedAt": "2026-10-21T17:59Z",
+ "version": "v1.1 (KupiaSec emergency-rebalance fix, PR #15)",
+ "manifest": "deployments/boost-eth-v1.1-manifest.json",
+ "reviewedBuild": "d4f44a6d2ed799bbf8a59423d86c9f9295c4b0f0",
  "deployer": "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19",
  "curatorAndFeeRecipient": "0x134D468B0bcaeA6DF127916f951F7938c06A37C6",
- "reviewedBuild": "3e01f6f291cafb607e6773c7db5bbe4aa9e958df",
- "seedEth": "0.075",
- "initialShares": "201861557000000000000",
+ "seedEth": "0.005",
+ "initialShares": "12547291000000000000",
  "transactions": {
-  "deploySignal": "0x999ac8ed4c59badcdab10849ea807c701f24b4f2dc2736cec14868976c54ffa0",
-  "deployVault": "0x34cb00c9381adb90f03137ca2c784b85e838b0746a1d52d9203c98ba29b50be9",
-  "bootstrap": "0x77b9894eb4327d96987cdc9b349d3be761446a4918d7293696263de907743546",
-  "transferOwnership": "0x639b07b4ec6f309b51af88415ab10038f151143930e876b787f7da514eb6a31e"
+  "deployVault": "0x464460886cbf147660777e1619cea17744b558e0c45e7b65263d53085a5084fd",
+  "bootstrap": "0x1369f2b69498c1667f163c9c30aa52ce43764b5a86052af942456671dbccfee2",
+  "transferOwnership": "0xd97bb35d28640eb3a3714bd6b7f75907e67ed6a16acf77227de0723cddf58855"
  },
- "signalSeed": {
-  "lastHourUtc": "2026-10-04T04:00:00+00:00",
-  "target": 1.875,
-  "ethFlags": 239,
-  "btcFlags": 255
- },
- "ownership": "accepted by the treasury 0x134D468B0bcaeA6DF127916f951F7938c06A37C6 (2026-10-04)"
+ "ownership": "pending: the treasury accepts on /boost (Accept vault ownership)",
+ "retired": {
+  "vault": "0x5e0135C3592095592C4B43d84c817c26A0F43515",
+  "deployBlock": 79671870,
+  "deployedAt": "2026-10-04T05:00Z",
+  "reviewedBuild": "3e01f6f291cafb607e6773c7db5bbe4aa9e958df",
+  "transactions": {
+   "deploySignal": "0x999ac8ed4c59badcdab10849ea807c701f24b4f2dc2736cec14868976c54ffa0",
+   "deployVault": "0x34cb00c9381adb90f03137ca2c784b85e838b0746a1d52d9203c98ba29b50be9",
+   "bootstrap": "0x77b9894eb4327d96987cdc9b349d3be761446a4918d7293696263de907743546",
+   "transferOwnership": "0x639b07b4ec6f309b51af88415ab10038f151143930e876b787f7da514eb6a31e"
+  },
+  "status": "deposits paused 2026-10-21; treasury withdrew; only dead shares remain"
+ }
 }

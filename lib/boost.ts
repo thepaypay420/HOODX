@@ -2,16 +2,17 @@ import { parseAbi, type Address } from "viem";
 
 const envAddr = (v: string | undefined) => (v && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as Address) : null);
 
-/** HOODX Boosted ETH (HoodxBoostVaultV1 + HoodxBoostSignalV1), live since 2026-10-04 (deployments/boost-eth-v1-live.json).
- *  The env variables only override the deployed addresses (e.g. for a local fork rehearsal). */
+/** HOODX Boosted ETH (HoodxBoostVaultV1 + HoodxBoostSignalV1). v1.1 vault since 2026-10-21 (the KupiaSec emergency-rebalance
+ *  fix) on the signal live since 2026-10-04 (deployments/boost-eth-v1-live.json). The v1 vault 0x5e01…3515 is retired: deposits
+ *  paused, only its locked dead shares remain. The env variables only override the deployed addresses (e.g. a fork rehearsal). */
 export const BOOST = {
   slug: "boost",
   name: "Boosted ETH",
   symbol: "BOOSTX",
-  vault: envAddr(process.env.NEXT_PUBLIC_BOOST_VAULT) ?? ("0x5e0135C3592095592C4B43d84c817c26A0F43515" as Address),
+  vault: envAddr(process.env.NEXT_PUBLIC_BOOST_VAULT) ?? ("0x09F856af8f1054C25f63C8C0d9516d79d2de1C11" as Address),
   signal: envAddr(process.env.NEXT_PUBLIC_BOOST_SIGNAL) ?? ("0x53569D741Abd674dA942D0Af660684953193b232" as Address),
   curator: "0x134D468B0bcaeA6DF127916f951F7938c06A37C6" as Address,
-  deployBlock: BigInt(process.env.NEXT_PUBLIC_BOOST_DEPLOY_BLOCK ?? "79671870"),
+  deployBlock: BigInt(process.env.NEXT_PUBLIC_BOOST_DEPLOY_BLOCK ?? "94474546"),
   capUsd: 1_000_000,
   minDepositEth: 0.005,
   maxLeverage: 2,
