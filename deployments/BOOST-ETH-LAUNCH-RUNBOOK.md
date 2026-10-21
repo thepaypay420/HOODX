@@ -55,6 +55,23 @@ signal's current target.
 | No USDG to borrow on Morpho | Nothing to do: the vault runs less boosted; deposits and exits work. |
 | Monthly | `crystalliseFees()` (the keeper does it after 30 days). |
 
+## 4b. v1.1 migration (KupiaSec emergency-rebalance fix, PR #15)
+
+Status 2026-10-21: v1 deposits are paused and the treasury has withdrawn its position. v1.1 is the same vault with the fix,
+on the live signal (no new signal, no seed file).
+
+1. Merge PR #15. Run `FOUNDRY_PROFILE=boost forge test` on the merge commit, then in
+   `deployments/boost-eth-v1.1-manifest.json` set `"status": "APPROVED"` and `"reviewedBuild"` to that commit.
+2. Deployer `0xf63E…fC19` needs ≥ 0.008 ETH (0.005 seed + gas). Deploy (keystore password in Foundry's prompt only):
+   `powershell -ExecutionPolicy Bypass -File scripts/run_boost_eth_deployer.ps1 -Manifest deployments/boost-eth-v1.1-manifest.json`
+   The script refuses a stale signal; the Boosted keeper pokes it every 2 hours.
+3. Treasury (Rabby): `acceptOwnership()` on the new vault, then deposit the ETH withdrawn from v1 on `/boost` once the
+   site points at v1.1 (step 4), or directly with `deposit(treasury, minShares, deadline)`.
+4. Switch over (one commit to `main`): `deployments/boost-eth-v1-live.json` → the new vault (keeper follows), Vercel
+   `NEXT_PUBLIC_BOOST_VAULT` and `NEXT_PUBLIC_BOOST_DEPLOY_BLOCK` (the signal is unchanged), verify on Blockscout.
+   Keep v1 listed as exit-only until no one but the dead shares holds it.
+5. The keeper levers v1.1 to the signal's target in one slice at this size.
+
 ## 5. Never
 
 - Never sign anything an automation prepared without reading it. Never share keystore passwords or the private RPC.

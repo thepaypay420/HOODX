@@ -3,8 +3,10 @@ pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {HoodxBoostVaultV1} from "../../contracts/boost/HoodxBoostVaultV1.sol";
-import {MarketParams, IMorphoOracle} from "../../contracts/boost/BoostTypes.sol";
+import {MarketParams, IMorphoOracle, IUniswapV3PoolLike} from "../../contracts/boost/BoostTypes.sol";
+import {PoolPusher} from "./PoolPusher.sol";
 
 contract MockSignal {
     uint256 public target = 1e18;
@@ -58,7 +60,7 @@ abstract contract BoostForkBase is Test {
     address keeper = makeAddr("keeper");
     address lender = makeAddr("lender");
 
-    function setUp() public {
+    function setUp() public virtual {
         vm.createSelectFork(vm.envOr("ROBINHOOD_RPC_URL", string("https://rpc.mainnet.chain.robinhood.com")));
         sig = new MockSignal();
         vault = new HoodxBoostVaultV1(curator, _config(address(sig)), "HOODX Boosted ETH", "BOOSTX");
@@ -79,7 +81,7 @@ abstract contract BoostForkBase is Test {
         return HoodxBoostVaultV1.Config({
             morpho: MORPHO, marketId: MARKET, pool: POOL, weth: WETH, usdg: USDG, cash: CASH, signal: s,
             feeRecipient: fees, minDeposit: 0.005 ether, tvlCapUsdg: 1_000_000e6, maxSliceUsdg: 100_000e6,
-            minInterval: 55 minutes, maxSlipBps: 50, emergencySlipBps: 300, maxDivBps: 100
+            minInterval: 55 minutes, maxSlipBps: 50, emergencySlipBps: 150, maxDivBps: 100
         });
     }
 
@@ -99,11 +101,38 @@ abstract contract BoostForkBase is Test {
             if (!ready) break;
             vm.prank(keeper);
             vault.rebalance();
+            vm.roll(block.number + 1);
             vm.warp(vm.getBlockTimestamp() + 1 hours);
         }
     }
 
     function _lev() internal view returns (uint256) {
         return vault.state().leverage;
+    }
+
+    function _pushPoolBy(int256 bps) internal {
+        PoolPusher p = new PoolPusher(POOL);
+        deal(USDG, address(p), 200_000_000e6);
+        deal(WETH, address(p), 100_000 ether);
+        (uint160 sp,,,,,,) = IUniswapV3PoolLike(POOL).slot0();
+        uint256 f = Math.sqrt(uint256(int256(10_000 + bps)) * 1e36 / 10_000);
+        p.push(bps < 0, uint160(uint256(sp) * f / 1e18));
+    }
+
+    function _nudgePoolTowardOracle() internal {
+        HoodxBoostVaultV1.State memory s = vault.state();
+        (uint160 sp,,,,,,) = IUniswapV3PoolLike(POOL).slot0();
+        uint256 poolPrice = Math.mulDiv(Math.mulDiv(uint256(sp), uint256(sp), 1 << 96), 1e36, 1 << 96);
+        uint256 hi = Math.max(poolPrice, s.price);
+        uint256 lo = Math.min(poolPrice, s.price);
+        if ((hi - lo) * 10_000 <= hi * vault.maxDivBps()) return;
+        PoolPusher p = new PoolPusher(POOL);
+        deal(USDG, address(p), 200_000_000e6);
+        deal(WETH, address(p), 100_000 ether);
+        int256 bps = poolPrice > s.price
+            ? -int256((poolPrice - s.price) * 10_000 / poolPrice) - 5
+            : int256((s.price - poolPrice) * 10_000 / s.price) - 5;
+        uint256 f = Math.sqrt(uint256(int256(10_000 + bps)) * 1e36 / 10_000);
+        p.push(bps < 0, uint160(uint256(sp) * f / 1e18));
     }
 }
