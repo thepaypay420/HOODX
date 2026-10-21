@@ -3,8 +3,9 @@ param(
   [string]$Account = "hoodx-deployer-v2",
   # Optional: a keystore file path instead (e.g. one saved on the Desktop).
   [string]$Keystore = "",
-  # Manifest to deploy (v1.1 = the KupiaSec-fixed vault on the live signal)
-  [string]$Manifest = ""
+  # Manifest to deploy (v1.1 = the KupiaSec-fixed vault on the live signal). Not named $Manifest internally: PowerShell
+  # variables ignore case, so a [string] $Manifest would turn the parsed $manifest object below into text.
+  [Alias("Manifest")][string]$ManifestFile = ""
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -12,7 +13,7 @@ Set-Location -LiteralPath $root
 $forge = Join-Path $env:USERPROFILE ".foundry\bin\forge.exe"
 $deployer = "0xf63E63a80A25611154C5d1c06E55FD763E0cfC19"
 
-$manifestPath = if ($Manifest) { $Manifest } elseif ($env:HOODX_BOOST_MANIFEST) { $env:HOODX_BOOST_MANIFEST } else { "deployments\boost-eth-v1-manifest.json" }
+$manifestPath = if ($ManifestFile) { $ManifestFile } elseif ($env:HOODX_BOOST_MANIFEST) { $env:HOODX_BOOST_MANIFEST } else { "deployments\boost-eth-v1-manifest.json" }
 $env:HOODX_BOOST_MANIFEST = $manifestPath
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ($manifest.status -ne "APPROVED") {
