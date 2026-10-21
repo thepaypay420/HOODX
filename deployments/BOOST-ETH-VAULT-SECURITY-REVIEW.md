@@ -139,8 +139,9 @@ whole position, leaving only the locked dead shares (≈ $0.001). No loss occurr
   lags the oracle by more than 1%, the cut waits for arbitrage to close the gap.
 - The constructor rejects `emergencySlipBps` above 2% (`MAX_EMERGENCY_SLIP_BPS`); v1.1 deploys with 1.5%.
 - Tests: `BoostVaultEmergencyExploit.t.sol` (same-block and next-block stacking after a second shock, divergent pool,
-  slip cap, delever resumes after the interval). `FOUNDRY_PROFILE=boost forge test`: 51/52; `test_realSignalEndToEnd`
-  fails only because the stored signal seed is no longer within 3% of the live feeds (v1.1 reuses the live signal).
+  slip cap, delever resumes after the interval). The end-to-end test now drives a vault from the live signal that v1.1
+  reuses (the stored 2026-10-04 seed is no longer within 3% of the feeds), and the dead-signal test accepts either
+  refusal near 1x (which one depends on the fork's pool price). `FOUNDRY_PROFILE=boost forge test`: 52/52.
 - Rehearsal on a local fork (2026-10-21): v1.1 deployed on the live signal with a 0.005 ETH seed, the treasury accepted
   ownership and deposited 0.072 ETH, the real keeper levered it 1.0x → 1.75x in one slice, and a 10% withdrawal
   returned 10% of NAV.

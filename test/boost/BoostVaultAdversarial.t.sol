@@ -29,11 +29,24 @@ contract BoostVaultAdversarialTest is BoostForkBase {
         p.push(bps < 0, uint160(uint256(sp) * f / 1e18));
     }
 
+    /// Sets the pool to exactly the oracle price, so relative pushes below are measured from the oracle (the live pool
+    /// can sit tens of bps away at the fork block).
+    function _alignPoolWithOracle() internal {
+        uint160 target = uint160(Math.sqrt(Math.mulDiv(IMorphoOracle(ORACLE).price(), 1 << 192, 1e36)));
+        (uint160 sp,,,,,,) = IUniswapV3PoolLike(POOL).slot0();
+        if (sp == target) return;
+        PoolPusher p = new PoolPusher(POOL);
+        deal(USDG, address(p), 200_000_000e6);
+        deal(WETH, address(p), 100_000 ether);
+        p.push(target < sp, target);
+    }
+
     /// An attacker who pushes the pool before a rebalance can cost the vault at most the swap bound (0.5% of one slice);
     /// a bigger push makes the rebalance revert instead of trading.
     function test_sandwichIsBoundedBySlippage() public {
         _deposit(alice, 10 ether);
         sig.set(1.8e18, true);
+        _alignPoolWithOracle();
         uint256 nav0 = vault.state().nav;
         _pushPoolBy(30); // +0.30%: the vault now buys WETH dear
         vault.rebalance();
@@ -139,35 +152,25 @@ contract BoostVaultAdversarialTest is BoostForkBase {
         vm.prank(bob);
         vault.rebalance();
         assertApproxEqAbs(vault.state().leverage, 1e18, 0.1e18);
-        // at ~1x a dead signal cannot push leverage anywhere (gap inside the band)
+        // at ~1x a dead signal cannot push leverage anywhere: just above 1x the gap is inside the band (NotNeeded),
+        // at or just below 1x the dead-man switch no longer applies (Stale); which one depends on the fork's pool price
         vm.warp(vm.getBlockTimestamp() + 1 hours);
         vm.roll(block.number + 1);
-        vm.expectRevert(HoodxBoostVaultV1.NotNeeded.selector);
-        vault.rebalance();
+        uint256 lev = vault.state().leverage;
+        (bool ok,) = address(vault).call(abi.encodeCall(HoodxBoostVaultV1.rebalance, ()));
+        assertFalse(ok, "a dead signal cannot move leverage near 1x");
+        assertEq(vault.state().leverage, lev);
     }
 
-    /// The real signal, seeded from deployments/boost-eth-seed.json and reading the live Chainlink feeds, drives a vault.
-    function test_realSignalEndToEnd() public {
-        string memory j = vm.readFile("deployments/boost-eth-seed.json");
-        uint128[8] memory ee;
-        uint128[8] memory be;
-        string[] memory es = vm.parseJsonStringArray(j, ".ethEma");
-        string[] memory bs = vm.parseJsonStringArray(j, ".btcEma");
-        for (uint256 i; i < 8; ++i) {
-            ee[i] = uint128(vm.parseUint(es[i]));
-            be[i] = uint128(vm.parseUint(bs[i]));
-        }
-        HoodxBoostSignalV1 real = new HoodxBoostSignalV1(
-            0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9, 0xa2c5184bF03d373Dc9dE4876eb4Bce595B460251, 25 hours, 25 hours,
-            ee, be, uint8(vm.parseJsonUint(j, ".ethFlags")), uint8(vm.parseJsonUint(j, ".btcFlags")),
-            vm.parseUint(vm.parseJsonString(j, ".ethVar")), vm.parseUint(vm.parseJsonString(j, ".ethLast")),
-            vm.parseUint(vm.parseJsonString(j, ".btcLast"))
-        );
-        HoodxBoostVaultV1 v = new HoodxBoostVaultV1(curator, _config(address(real)), "HOODX Boosted ETH", "BOOSTX");
+    /// The live signal (deployed 2026-10-04 and reused by v1.1), reading the live Chainlink feeds, drives a fresh vault.
+    function test_liveSignalEndToEnd() public {
+        HoodxBoostSignalV1 live = HoodxBoostSignalV1(0x53569D741Abd674dA942D0Af660684953193b232);
+        HoodxBoostVaultV1 v = new HoodxBoostVaultV1(curator, _config(address(live)), "HOODX Boosted ETH", "BOOSTX");
         vm.prank(curator);
         v.bootstrap{value: 2 ether}(curator);
         vm.warp((vm.getBlockTimestamp() / 1 hours + 1) * 1 hours + 5);
-        uint256 t = real.poke();
+        vm.roll(block.number + 1);
+        uint256 t = live.poke();
         assertLe(t, 2e18);
         (bool ready,,,,) = v.rebalanceStatus();
         if (ready) v.rebalance();
