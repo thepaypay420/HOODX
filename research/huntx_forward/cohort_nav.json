@@ -507,6 +507,27 @@
     "net_after_entry_usd": -4.8973,
     "worst_sleeve_usd": -1.906
    }
+  },
+  "2026-10-26": {
+   "evidence_status": "late_exploratory",
+   "B0": {
+    "net_usd": -4.2192,
+    "entry_exit_cost_usd": 1.0296,
+    "net_after_entry_usd": -5.2488,
+    "worst_sleeve_usd": -1.476
+   },
+   "E1": {
+    "net_usd": -3.6719,
+    "entry_exit_cost_usd": 0.9811,
+    "net_after_entry_usd": -4.653,
+    "worst_sleeve_usd": -1.476
+   },
+   "G1": {
+    "net_usd": -4.0946,
+    "entry_exit_cost_usd": 0.39,
+    "net_after_entry_usd": -4.4846,
+    "worst_sleeve_usd": -1.851
+   }
   }
  }
 }
