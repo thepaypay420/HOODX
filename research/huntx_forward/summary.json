@@ -1,9 +1,9 @@
 {
- "updated_utc": "2026-10-29T06:26:22.443672+00:00",
+ "updated_utc": "2026-10-30T06:24:41.659104+00:00",
  "H3": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 186,
+  "exploratory_positions_excluded": 188,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -35,7 +35,7 @@
  "SLP25": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 582,
+  "exploratory_positions_excluded": 593,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -51,29 +51,29 @@
  },
  "SLP10K8_book": {
   "evidence_status": "late_exploratory",
-  "book_exit_value": 174.572,
-  "skew_book_exit_value": 175.0674,
+  "book_exit_value": 165.9806,
+  "skew_book_exit_value": 166.4792,
   "skew_per_sleeve": [
-   -6.726,
-   -2.692,
-   -2.745,
-   -6.185,
-   -0.879,
-   -3.182,
-   -4.62,
-   2.097
+   -7.617,
+   -3.806,
+   -3.99,
+   -10.6,
+   -0.871,
+   -4.427,
+   -6.565,
+   4.356
   ],
-  "hold_stocks_value": 176.0519,
+  "hold_stocks_value": 163.0728,
   "hold_usdg": 200.0,
   "per_sleeve": [
-   -6.822,
-   -2.692,
-   -2.796,
-   -6.185,
-   -1.167,
-   -3.078,
-   -4.632,
-   1.944
+   -7.708,
+   -3.806,
+   -4.037,
+   -10.6,
+   -1.16,
+   -4.329,
+   -6.574,
+   4.195
   ],
   "rebands": [
    17,
@@ -82,7 +82,7 @@
    20,
    13,
    12,
-   12,
+   13,
    11
   ]
  },
@@ -153,22 +153,22 @@
   "2026-10-28": {
    "evidence_status": "late_exploratory",
    "B0": {
-    "net_usd": -0.5899,
+    "net_usd": -2.1662,
     "entry_exit_cost_usd": 0.7641,
-    "net_after_entry_usd": -1.354,
-    "worst_sleeve_usd": -0.386
+    "net_after_entry_usd": -2.9304,
+    "worst_sleeve_usd": -0.875
    },
    "E1": {
-    "net_usd": -0.0748,
+    "net_usd": -2.8178,
     "entry_exit_cost_usd": 0.6717,
-    "net_after_entry_usd": -0.7464,
-    "worst_sleeve_usd": -0.499
+    "net_after_entry_usd": -3.4895,
+    "worst_sleeve_usd": -1.138
    },
    "G1": {
-    "net_usd": -0.1641,
+    "net_usd": -3.0661,
     "entry_exit_cost_usd": 0.3538,
-    "net_after_entry_usd": -0.5179,
-    "worst_sleeve_usd": -0.589
+    "net_after_entry_usd": -3.4199,
+    "worst_sleeve_usd": -1.348
    }
   }
  }
