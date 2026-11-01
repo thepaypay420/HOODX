@@ -1,0 +1,122 @@
+{
+ "prev_hash": "6bcf157ddea5f73f746cc2873cfe2c2c1284f4a8a5d04122afcf9b4fabd50667",
+ "hash": "c51c96b76706c7a537a9c0289ad4b6e5daaceab711db0f7adc9e7a9a0544b671",
+ "payload": {
+  "day": "2026-11-01",
+  "decision_block": 102953058,
+  "universe": 1130,
+  "frozen_utc": "2026-11-01T06:48:23.282954+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0x51d1a40389e7fe42bd4f3d4c3c901ec8846d8d6e051d7375b65782f340898d58",
+    "token": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+    "score": 0.06208539466246822,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x5ea36826ed6dc26945496eb19aa9e6f2d5d6b0b31c9924a98c71aee1217f55af",
+    "token": "0x3ba500f1ababbcf0f0247d06d1c56fd7e6c4c09d",
+    "score": 0.04923876852094719,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+    "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+    "score": 0.027155803373419343,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x93cc54eb4e1928e841cb8b2e488bd82e8d97d56e0aab16cf078ef71c576dcded",
+    "token": "0x91a2dae9699f0b82540b5886b0d8759c22820ba3",
+    "score": 0.019930132924753666,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x0fef17ec9ef628d47aa90990e96aac90f355145cfa601b8b73c4e5d52b166237",
+    "token": "0xff080c8ce2e5feadaca0da81314ae59d232d4afd",
+    "score": 0.0005829494975916373,
+    "initializer": null
+   }
+  ],
+  "H8": [
+   {
+    "pool_id": "0x5ea36826ed6dc26945496eb19aa9e6f2d5d6b0b31c9924a98c71aee1217f55af",
+    "token": "0x3ba500f1ababbcf0f0247d06d1c56fd7e6c4c09d",
+    "score": 0.06684532986673179,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xd33c8fd38b06e989cdbd4dffdefab71c4bdd415b24964c8d69e38ff35b068f92",
+    "token": "0xe934e36a439c94017b64a3fece66af12099abf50",
+    "score": 0.007301492424724196,
+    "initializer": null
+   }
+  ],
+  "SLP25": [
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.009452125658116784
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.009052103362143156
+   },
+   {
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.006173958789615704
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.00506697086989104
+   },
+   {
+    "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.002419123348058174
+   },
+   {
+    "pool_id": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
+    "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+    "symbol": "AAPL",
+    "score": 0.0022811298249205427
+   },
+   {
+    "pool_id": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.0014730017672242367
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0005929227627912462
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0003349517495705042
+   }
+  ],
+  "gate_census": {
+   "G6": 970,
+   "G7": 711,
+   "PASS": 111,
+   "G5": 30,
+   "G3": 76,
+   "G4": 1
+  }
+ }
+}
