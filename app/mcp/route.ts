@@ -93,10 +93,14 @@ async function handle(request: Request) {
 }
 
 export async function POST(request: Request) { return handle(request); }
-export async function DELETE(request: Request) { return handle(request); }
+/* Stateless: no sessions to end and no server-to-client stream. Per the MCP spec a server that offers no GET stream answers
+ * 405, and clients stop opening one. Accepting it held every connected client's listener open until the 60 s function
+ * timeout, about once a minute per client (98% of the site's function time, 2026-11). */
+const NO_STREAM = () => withCors(new Response(null, { status: 405, headers: { Allow: "POST, OPTIONS" } }));
+export function DELETE() { return NO_STREAM(); }
 export function OPTIONS() { return new Response(null, { status: 204, headers: CORS }); }
 /** A person (or a link preview) opening the URL gets a short description instead of a protocol error. */
 export async function GET(request: Request) {
-  if ((request.headers.get("accept") ?? "").includes("text/event-stream")) return handle(request);
+  if ((request.headers.get("accept") ?? "").includes("text/event-stream")) return NO_STREAM();
   return withCors(Response.json({ name: "HOODX MCP server", url: `${SITE_URL}/mcp`, transport: "Streamable HTTP (MCP)", connect: `${SITE_URL}/?connect=ai`, reference: `${SITE_URL}/llms.txt` }));
 }
