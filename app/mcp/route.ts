@@ -96,7 +96,9 @@ export async function POST(request: Request) { return handle(request); }
 /* Stateless: no sessions to end and no server-to-client stream. Per the MCP spec a server that offers no GET stream answers
  * 405, and clients stop opening one. Accepting it held every connected client's listener open until the 60 s function
  * timeout, about once a minute per client (98% of the site's function time, 2026-11). */
-const NO_STREAM = () => withCors(new Response(null, { status: 405, headers: { Allow: "POST, OPTIONS" } }));
+// A JSON body (with a length) so the response ends: an empty 405 left keep-alive connections hanging in production.
+const NO_STREAM = () => withCors(Response.json({ error: "This MCP server is stateless: use POST. There is no GET stream or session to end." },
+  { status: 405, headers: { Allow: "POST, OPTIONS" } }));
 export function DELETE() { return NO_STREAM(); }
 export function OPTIONS() { return new Response(null, { status: 204, headers: CORS }); }
 /** A person (or a link preview) opening the URL gets a short description instead of a protocol error. */
