@@ -1,0 +1,92 @@
+{
+ "prev_hash": "9bdf2fc4b05ec7cf409dc2d94aeeba1b9bf49a801879dc9884bd6d5810cb265a",
+ "hash": "04d2aa8bb29dddec9d801c218649dbee80d1abd6532a0a09a5a6c59776b79b03",
+ "payload": {
+  "day": "2026-11-09",
+  "decision_block": 109623865,
+  "universe": 1131,
+  "frozen_utc": "2026-11-09T07:08:24.171191+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0x7159c43bcc3961cf25e85875cbfca5eb4294fb54ce7dd88047bc3559794d832f",
+    "token": "0xded852de9fe9ba9b6f27f39e8e81cf851a5c79cc",
+    "score": 0.03913607817749569,
+    "initializer": null
+   },
+   {
+    "pool_id": "0x7499938c352d5b5b8f0c648722aca5ee964ef9b85c3a3041f1ec379726291d9d",
+    "token": "0x05a3d1cd21d0c88145e82600e62e7e496e0f222b",
+    "score": 0.0008511928755682101,
+    "initializer": null
+   }
+  ],
+  "H8": [
+   {
+    "pool_id": "0x7159c43bcc3961cf25e85875cbfca5eb4294fb54ce7dd88047bc3559794d832f",
+    "token": "0xded852de9fe9ba9b6f27f39e8e81cf851a5c79cc",
+    "score": 0.0902634886608429,
+    "initializer": null
+   }
+  ],
+  "SLP25": [
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.010120891486405433
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.01011747241282681
+   },
+   {
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "token": "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344",
+    "symbol": "USO",
+    "score": 0.008648676810216123
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.00303706959639144
+   },
+   {
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.0028891086316527887
+   },
+   {
+    "pool_id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0016768329462683094
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0006587764630647574
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0005101612799039235
+   }
+  ],
+  "gate_census": {
+   "G6": 993,
+   "G7": 801,
+   "PASS": 97,
+   "G5": 23,
+   "G3": 69,
+   "G4": 4
+  }
+ }
+}
