@@ -1,9 +1,9 @@
 {
- "updated_utc": "2026-11-13T07:13:38.562222+00:00",
+ "updated_utc": "2026-11-14T06:59:23.247402+00:00",
  "H3": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 233,
+  "exploratory_positions_excluded": 235,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -19,7 +19,7 @@
  "H8": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 109,
+  "exploratory_positions_excluded": 110,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -35,7 +35,7 @@
  "SLP25": {
   "scored_decision_days": 0,
   "positions": 0,
-  "exploratory_positions_excluded": 836,
+  "exploratory_positions_excluded": 844,
   "mean_net_per_100": null,
   "day_cluster_90": null,
   "tokens": 0,
@@ -51,39 +51,39 @@
  },
  "SLP10K8_book": {
   "evidence_status": "late_exploratory",
-  "book_exit_value": 142.5689,
-  "skew_book_exit_value": 143.0176,
+  "book_exit_value": 137.8422,
+  "skew_book_exit_value": 138.2758,
   "skew_per_sleeve": [
-   -11.198,
-   -6.069,
-   -7.049,
-   -13.144,
-   -4.489,
-   -8.298,
-   -10.212,
-   3.477
+   -12.925,
+   -6.431,
+   -7.45,
+   -13.135,
+   -5.219,
+   -9.017,
+   -10.986,
+   3.439
   ],
-  "hold_stocks_value": 139.2604,
+  "hold_stocks_value": 132.4525,
   "hold_usdg": 200.0,
   "per_sleeve": [
-   -11.273,
-   -6.069,
-   -7.086,
-   -13.144,
-   -4.74,
-   -8.223,
-   -10.215,
-   3.319
+   -12.992,
+   -6.431,
+   -7.486,
+   -13.135,
+   -5.462,
+   -8.946,
+   -10.987,
+   3.281
   ],
   "rebands": [
-   25,
-   20,
-   16,
-   30,
+   26,
    20,
    17,
+   31,
    21,
-   15
+   18,
+   22,
+   16
   ]
  },
  "cohorts_A25_A26": {
