@@ -1,0 +1,121 @@
+{
+ "prev_hash": "6d8f6cee35d26ce6d7222976746c77d8d0c74010b756cf34ffc0040c16611a4e",
+ "hash": "062e346f888d2d655ee122c52571eb44336ef5b57cef186d6c6d88b10f95c87f",
+ "payload": {
+  "day": "2026-11-15",
+  "decision_block": 114547881,
+  "universe": 1132,
+  "frozen_utc": "2026-11-15T07:08:47.090583+00:00",
+  "evidence_status": "late_exploratory",
+  "rules": "docs/HUNTX-EDGE-PREREGISTRATION-2026-09-30.md A6 (sha256 chain in research/huntx_edge_prereg.sha256)",
+  "H3": [
+   {
+    "pool_id": "0x09f9f97c04966c8ac9e99649599162e521aa1acaabfbd1cdf8910622534db11e",
+    "token": "0x1937cad42b17d43bb2b347ce16d5288887c46c33",
+    "score": 0.013806844261960072,
+    "initializer": null
+   },
+   {
+    "pool_id": "0xd46b205df6118c13a3023fd88421a2004fde3cade174045809100ed1183890f2",
+    "token": "0x4a72b9702f991b790788f8afa9e7112541f4e8f8",
+    "score": 0.007711402976677664,
+    "initializer": null
+   }
+  ],
+  "H8": [],
+  "SLP25": [
+   {
+    "pool_id": "0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1",
+    "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "symbol": "NVDA",
+    "score": 0.014726280895244769
+   },
+   {
+    "pool_id": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
+    "token": "0xff080c8ce2e5feadaca0da81314ae59d232d4afd",
+    "symbol": "MU",
+    "score": 0.012046750947689911
+   },
+   {
+    "pool_id": "0x1f2ad5a274a776d8e1408292bde1d92d8fa7b6444acf14ad60b9c3e4e5b66420",
+    "token": "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344",
+    "symbol": "USO",
+    "score": 0.008926448174396513
+   },
+   {
+    "pool_id": "0x319bac87e616a89e241c10aeb8afd4892a852cdd8b373cd9765ecddc40b87cfe",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.00820138284810555
+   },
+   {
+    "pool_id": "0xc105b8300ff65d750a0e4e63c7a879e20504069b770713464a5315e797735326",
+    "token": "0xec262a75e413fafd0df80480274532c79d42da09",
+    "symbol": "MSTR",
+    "score": 0.0071733393972122006
+   },
+   {
+    "pool_id": "0x007a13fa152f6dc383cad20a8eaab4e1e2538b606936eae2a424f8aa47d6db31",
+    "token": "0x6330d8c3178a418788df01a47479c0ce7ccf450b",
+    "symbol": "COIN",
+    "score": 0.007018093967274579
+   },
+   {
+    "pool_id": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
+    "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+    "symbol": "SPCX",
+    "score": 0.005856398655946423
+   },
+   {
+    "pool_id": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
+    "token": "0x322f0929c4625ed5bad873c95208d54e1c003b2d",
+    "symbol": "TSLA",
+    "score": 0.005431193628506371
+   },
+   {
+    "pool_id": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
+    "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+    "symbol": "GOOGL",
+    "score": 0.0037725203050657614
+   },
+   {
+    "pool_id": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
+    "token": "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a",
+    "symbol": "PLTR",
+    "score": 0.003602033817706725
+   },
+   {
+    "pool_id": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.0028844818313227146
+   },
+   {
+    "pool_id": "0xc58bb68060bcb7b3ea0f6d4a4afef1e57f628722e808db12afb6d1733552872f",
+    "token": "0xc0d6457c16cc70d6790dd43521c899c87ce02f35",
+    "symbol": "META",
+    "score": 0.00198471151667761
+   },
+   {
+    "pool_id": "0xe5923c8a8be481ec89a2ca784a2bbfa4235de6d88f92260fd66b660c4babf907",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0005486764985920196
+   },
+   {
+    "pool_id": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
+    "token": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "symbol": "SPY",
+    "score": 0.0005485547518440071
+   }
+  ],
+  "gate_census": {
+   "G6": 977,
+   "G7": 787,
+   "PASS": 99,
+   "G4": 4,
+   "G5": 32,
+   "G3": 60
+  }
+ }
+}
